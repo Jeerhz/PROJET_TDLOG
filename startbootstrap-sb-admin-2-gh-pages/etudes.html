@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR - Facture</title>
+    <title>BIBI JR - ETUDES</title>
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -365,74 +365,105 @@
 
                 </nav>
                 <!-- End of Topbar -->
-                <div id="wrapper">
-                    <div class="container-fluid">
 
-                        <!-- Page Heading -->
-                        <h1 class="h3 mb-4 text-gray-800">Générer Facture</h1>
-    
-                        <!-- Content Row -->
-                        <div class="row">
-    
-                            <!-- Content Column -->
-                            <div class="col-lg-6">
-    
-                                <!-- Facture Form -->
-                                <form id="invoiceForm">
-    
-                                    <div class="form-group">
-                                        <label for="invoiceNumber">Numéro de Facture:</label>
-                                        <input type="text" class="form-control" id="invoiceNumber" name="invoiceNumber" required>
-                                    </div>
-    
-                                    <div class="form-group">
-                                        <label for="clientName">Nom du Client:</label>
-                                        <input type="text" class="form-control" id="clientName" name="clientName" required>
-                                    </div>
-    
-                                    <div class="form-group">
-                                        <label for="item">Article:</label>
-                                        <input type="text" class="form-control" id="item" name="item" required>
-                                    </div>
-    
-                                    <div class="form-group">
-                                        <label for="quantity">Quantité:</label>
-                                        <input type="number" class="form-control" id="quantity" name="quantity" required>
-                                    </div>
-    
-                                    <div class="form-group">
-                                        <label for="price">Prix unitaire:</label>
-                                        <input type="number" class="form-control" id="price" name="price" required>
-                                    </div>
-    
-                                    <button type="button" class="btn btn-success" onclick="generateInvoice()">Générer Facture</button>
-                                </form>
-    
-                                <!-- Invoice Result -->
-                                <div id="invoiceResult" class="mt-4">
-                                    <h2>Récapitulatif de la Facture</h2>
-                                    <p><strong>Numéro de Facture:</strong> <span id="resultInvoiceNumber"></span></p>
-                                    <p><strong>Nom du Client:</strong> <span id="resultClientName"></span></p>
-                                    <p><strong>Article:</strong> <span id="resultItem"></span></p>
-                                    <p><strong>Quantité:</strong> <span id="resultQuantity"></span></p>
-                                    <p><strong>Prix unitaire:</strong> <span id="resultPrice"></span></p>
-                                    <p><strong>Total:</strong> <span id="resultTotal"></span></p>
-                                </div>
-    
-                            </div>
-    
-                        </div>
-                        <!-- /.container-fluid -->
-    
-                    </div>
-                    <!-- End of Main Content -->
-    
-                </div>
-                <!-- End of Content Wrapper -->
-    
-            </div>
-            
+                <!-- Begin Page Content -->
+                    <div class="container mt-4">
+
+                        <!-- Boutons pour basculer entre les annuaires -->
+                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiant</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Client</a>
+                            </li>
+                        </ul>
                 
+                    
+
+                        <!-- Contenu des onglets -->
+                        <div class="tab-content mt-2">
+                            <!-- Onglet Annuaire Étudiant -->
+                            <div class="tab-pane fade show active" id="pills-etudiant">
+                                <h2 class="mb-4">Listes Etudes</h2>
+                                
+                        <!-- Barre de recherche -->
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                        </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-borderless table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>N° de mission</th>
+                                                <th>Date</th>
+                                                <th>Client</th>
+                                                <th>Elève employé</th>
+                                                <th>Année</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="etudesTableBody">
+                                            <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                                            <tr onclick="window.location.href='blank.html';">
+                                                <td>1111111111</td>
+                                                <td>7/7/777</td>
+                                                <td>123-456-7890</td>
+                                                <td>etudiant1@example.com</td>
+                                                <td>2ème année</td>
+                                            </tr>
+                                            <tr onclick="window.location.href='blank.html';">
+                                                <td>Étudiant 2</td>
+                                                <td>Prénom2</td>
+                                                <td>987-654-3210</td>
+                                                <td>etudiant2@example.com</td>
+                                                <td>3ème année</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                
+                            <!-- Onglet Annuaire Client -->
+                            <div class="tab-pane fade" id="pills-client">
+                                <h2 class="mb-4">Annuaire Client</h2>
+
+                            <!-- Barre de recherche -->
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                        </div>
+                                <div class="table-responsive">
+                                    <table class="table table-borderless table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Téléphone</th>
+                                                <th>Email</th>
+                                                <th>Ville</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="clientTableBody">
+                                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
+                                            <tr onclick="window.location.href='profil_clientA.html';">
+                                                <td>Client A</td>
+                                                <td>111-222-3333</td>
+                                                <td>clientA@example.com</td>
+                                                <td>Paris</td>
+                                            </tr>
+                                            <tr onclick="window.location.href='profil_clientB.html';">
+                                                <td>Client B</td>
+                                                <td>444-555-6666</td>
+                                                <td>clientB@example.com</td>
+                                                <td>Lyon</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+             
+    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>

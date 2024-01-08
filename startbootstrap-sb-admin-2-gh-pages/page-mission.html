@@ -20,6 +20,30 @@
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
 
+    <style>
+        body {
+            background-color: #f8f9fa; /* Couleur de fond agréable */
+            color: #495057; /* Couleur de la police */
+        }
+
+        .custom-container {
+            margin-top: 50px; /* Espace au-dessus du container */
+        }
+
+        h2 {
+            color: #007bff; /* Couleur du titre */
+            margin-bottom: 20px; /* Espacement en dessous du titre */
+        }
+
+        .dl-horizontal dt {
+            color: #28a745; /* Couleur des termes du glossaire */
+        }
+
+        .btn {
+            margin-top: 10px; /* Espace au-dessus des boutons */
+        }
+    </style>
+
 </head>
 
 
@@ -365,142 +389,45 @@
 
                 </nav>
                 <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                    <div class="container mt-4">
-
-                        <!-- Boutons pour basculer entre les annuaires -->
-                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiant</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Client</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false">Annuaire Etudes</a>
-                            </li>
-                        </ul>
                 
-                    
 
-                        <!-- Contenu des onglets -->
-                        <div class="tab-content mt-2">
-                            <!-- Onglet Annuaire Étudiant -->
-                            <div class="tab-pane fade show active" id="pills-etudiant">
-                                <h2 class="mb-4">Annuaire Étudiant</h2>
-                                
-                        <!-- Barre de recherche -->
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
-                        </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-borderless table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Nom</th>
-                                                <th>Prénom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Année</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="etudiantTableBody">
-                                            <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 1</td>
-                                                <td>Prénom1</td>
-                                                <td>123-456-7890</td>
-                                                <td>etudiant1@example.com</td>
-                                                <td>2ème année</td>
-                                            </tr>
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 2</td>
-                                                <td>Prénom2</td>
-                                                <td>987-654-3210</td>
-                                                <td>etudiant2@example.com</td>
-                                                <td>3ème année</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                <div class="container">
+                    <h2>Détails de la Mission</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="dl-horizontal">
+                                <dt>Entreprise :</dt>
+                                <dd id="entreprise">Nom de l'entreprise</dd>
                 
-                            <!-- Onglet Annuaire Client -->
-                            <div class="tab-pane fade" id="pills-client">
-                                <h2 class="mb-4">Annuaire Client</h2>
-
-                            <!-- Barre de recherche -->
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                                <dt>Élèves :</dt>
+                                <dd id="eleves">Liste des élèves</dd>
+                
+                                <dt>Date :</dt>
+                                <dd id="date">Date de la mission</dd>
+                
+                                <dt>N° Mission :</dt>
+                                <dd id="numMission">Numéro de la mission</dd>
+                
+                                <dt>N° Siret :</dt>
+                                <dd id="numSiret">Numéro SIRET de l'entreprise</dd>
+                            </dl>
+                            <button class="btn btn-primary" onclick="modifierMission()">Modifier la Mission</button>
+                            <button class="btn btn-success" onclick="genererFacture()">Générer la Facture</button>
                         </div>
-                                <div class="table-responsive">
-                                    <table class="table table-borderless table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Nom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Ville</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="clientTableBody">
-                                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='profil_clientA.html';">
-                                                <td>Client A</td>
-                                                <td>111-222-3333</td>
-                                                <td>clientA@example.com</td>
-                                                <td>Paris</td>
-                                            </tr>
-                                            <tr onclick="window.location.href='profil_clientB.html';">
-                                                <td>Client B</td>
-                                                <td>444-555-6666</td>
-                                                <td>clientB@example.com</td>
-                                                <td>Lyon</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Onglet Annuaire Études -->
-                        <div class="tab-pane fade" id="pills-etudes">
-                            <h2 class="mb-4">Listes Etudes</h2>
-                            
-                    <!-- Barre de recherche -->
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
                     </div>
+                </div>
+                
+                
+                
 
-                            <div class="table-responsive">
-                                <table class="table table-borderless table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>N° de mission</th>
-                                            <th>Date</th>
-                                            <th>Client</th>
-                                            <th>Elève employé</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="etudesTableBody">
-                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>1111111111</td>
-                                            <td>7/7/777</td>
-                                            <td>Durand</td>
-                                            <td>JF Delmas</td>
-                                        </tr>
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>2222222222</td>
-                                            <td>6/6/666</td>
-                                            <td>Patric</td>
-                                            <td>Dormieux Luc</td>
-                            </div>
-                    </div>
 
-             
-    </div>
+
+
+
+
+
+
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -511,6 +438,19 @@
 
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
+
+    <!-- Fonction pour gérer les boutons-->
+    <script>
+        function modifierMission() {
+            // Code pour gérer la modification de la mission
+            alert("Fonction de modification de la mission à implémenter.");
+        }
+    
+        function genererFacture() {
+            // Code pour générer la facture
+            alert("Fonction de génération de la facture à implémenter.");
+        }
+    </script>
 
 </body>
 
