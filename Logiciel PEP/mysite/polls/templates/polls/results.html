@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<h1>Hello {{ user }} è.é</h1>
+
+<p>Welcome in your customer area !</p>>
+
+<section>
+  <form action="{% url 'students' %}">
+    <button type="submit">Elèves</button>
+  </form>
+  <form action="{% url 'etudes' %}">
+    <button type="submit">Etudes</button>
+  </form>
+  <form action="{% url 'clients' %}">
+    <button type="submit">Clients</button>
+  </form>
+</section>
+
+<a href="{% url 'index' %}">Wanna change user?</a>
