@@ -86,6 +86,21 @@ def clients(request):
         context = {'form':UserForm()}
     return HttpResponse(template.render(context, request))
 
+def annuaire(request):
+    #if 'user_authenticated' in request.session:
+    template = loader.get_template("polls/annuaire.html")
+    client_list = Client.objects.all()
+    etude_list = Etude.objects.all()
+    student_list = Student.objects.all()
+    attribute_client = ["name", "country"]
+    attribute_etude = ["description", "client", "begin", "end"]
+    attribute_student = ["first_name", "last_name"]
+    context = {"client_list":client_list, "student_list":student_list, "etude_list":etude_list, "attribute_client":attribute_client, "attribute_etude":attribute_etude, "attribute_student":attribute_student}
+    #else:
+    #    template = loader.get_template("polls/index.html")
+    #    context = {'form':UserForm()}
+    return HttpResponse(template.render(context, request))
+
 def input(request, modelName):
     if 'user_authenticated' in request.session:
         template = loader.get_template("polls/input.html")
