@@ -106,3 +106,9 @@ def input(request, modelName):
         context = {'form':UserForm()} 
     return HttpResponse(template.render(context, request))
 
+
+def annuaire(request):
+    etudiants = Student.objects.all()  
+    context = {'etudiants': etudiants}
+    return render(request, 'annuaire.html', context)
+

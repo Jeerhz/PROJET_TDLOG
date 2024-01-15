@@ -386,45 +386,40 @@
                         <!-- Contenu des onglets -->
                         <div class="tab-content mt-2">
                             <!-- Onglet Annuaire Étudiant -->
-                            <div class="tab-pane fade show active" id="pills-etudiant">
-                                <h2 class="mb-4">Annuaire Étudiant</h2>
-                                
-                        <!-- Barre de recherche -->
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
-                        </div>
+<div class="tab-pane fade show active" id="pills-etudiant">
+    <h2 class="mb-4">Annuaire Étudiant</h2>
+    
+    <!-- Barre de recherche -->
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+    </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-borderless table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Nom</th>
-                                                <th>Prénom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Année</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="etudiantTableBody">
-                                            <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 1</td>
-                                                <td>Prénom1</td>
-                                                <td>123-456-7890</td>
-                                                <td>etudiant1@example.com</td>
-                                                <td>2ème année</td>
-                                            </tr>
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 2</td>
-                                                <td>Prénom2</td>
-                                                <td>987-654-3210</td>
-                                                <td>etudiant2@example.com</td>
-                                                <td>3ème année</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+    <div class="table-responsive">
+        <table class="table table-borderless table-hover">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Année</th>
+                </tr>
+            </thead>
+            <tbody id="etudiantTableBody">
+                <!-- Utilisation d'une boucle pour itérer sur les étudiants -->
+                {% for etudiant in etudiants %}
+                <tr onclick="window.location.href='page-mission.html';">
+                        <td>{{ etudiant.nom }}</td>
+                        <td>{{ etudiant.prenom }}</td>
+                        <td>{{ etudiant.telephone }}</td>
+                        <td>{{ etudiant.email }}</td>
+                        <td>{{ etudiant.annee }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
                 
                             <!-- Onglet Annuaire Client -->
                             <div class="tab-pane fade" id="pills-client">
