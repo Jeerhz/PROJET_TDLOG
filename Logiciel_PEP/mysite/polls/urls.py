@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 
+
 urlpatterns = [
     path("", views.index, name="index"),
     # ex: /polls/5/results/
@@ -12,4 +13,5 @@ urlpatterns = [
     path("clients/", views.clients, name="clients"),
     path("input/<str:modelName>", views.input, name="input"),
     path("logout/", views.logout, name="logout"),
+    path('annuaire/', views.annuaire, name='annuaire'),
 ]
