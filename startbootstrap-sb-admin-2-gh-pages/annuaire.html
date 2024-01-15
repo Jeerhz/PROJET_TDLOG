@@ -397,22 +397,17 @@
                                     <table class="table table-borderless table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Nom</th>
                                                 <th>Prénom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Année</th>
+                                                <th>Nom</th>
                                             </tr>
                                         </thead>
                                         <tbody id="etudiantTableBody">
                                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                             {% for student in student_list %}
                                       <tr onclick="window.location.href='{{ etudiant.get_absolute_url }}';">
-                                        <td>{{ student.last_name }}</td>
-                                        <td>{{ student.first_name }}</td>
-                                        <td>{{ student.phone_number }}</td>
-                                        <td>{{ student.mail }}</td>
-                                        <td>{{ student.promotion }}</td>
+                                        {% for attribute in attribute_student %}
+                                        <td>{{ getattr(student, attribute, "Non défini") }}</td>
+                                        {% endfor %}
                                     </tr>
                                             {% endfor %}
                                         </tbody>
@@ -433,25 +428,18 @@
                                         <thead>
                                             <tr>
                                                 <th>Nom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Ville</th>
+                                                <th>Pays</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='profil_clientA.html';">
-                                                <td>Client A</td>
-                                                <td>111-222-3333</td>
-                                                <td>clientA@example.com</td>
-                                                <td>Paris</td>
-                                            </tr>
-                                            <tr onclick="window.location.href='profil_clientB.html';">
-                                                <td>Client B</td>
-                                                <td>444-555-6666</td>
-                                                <td>clientB@example.com</td>
-                                                <td>Lyon</td>
-                                            </tr>
+                                            {% for client in client_list %}
+                                      <tr onclick="window.location.href='{{ etudiant.get_absolute_url }}';">
+                                        {% for attribute in attribute_client %}
+                                        <td>{{ getattr(client, attribute, "Non défini") }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -470,25 +458,20 @@
                                 <table class="table table-borderless table-hover">
                                     <thead>
                                         <tr>
-                                            <th>N° de mission</th>
-                                            <th>Date</th>
+                                            <th>Description</th>
                                             <th>Client</th>
-                                            <th>Elève employé</th>
+                                            <th>Debut</th>
+                                            <th>Fin</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody">
-                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>1111111111</td>
-                                            <td>7/7/777</td>
-                                            <td>Durand</td>
-                                            <td>JF Delmas</td>
-                                        </tr>
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>2222222222</td>
-                                            <td>6/6/666</td>
-                                            <td>Patric</td>
-                                            <td>Dormieux Luc</td>
+                                        {% for etude in etude_list %}
+                                      <tr onclick="window.location.href='{{ etudiant.get_absolute_url }}';">
+                                        {% for attribute in attribute_etude %}
+                                        <td>{{ getattr(etude, attribute, "Non défini") }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                            {% endfor %}
                             </div>
                     </div>
 

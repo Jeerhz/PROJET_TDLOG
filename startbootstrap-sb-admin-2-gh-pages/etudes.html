@@ -399,25 +399,29 @@
                                                 <th>N° de mission</th>
                                                 <th>Date</th>
                                                 <th>Client</th>
-                                                <th>Elève employé</th>
-                                                <th>Année</th>
+                                                <th>Chargé de mission</th>
                                             </tr>
                                         </thead>
                                         <tbody id="etudesTableBody">
                                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                                            {% for object in objects %}
+                                            <tr onclick="window.location.href='blank.html';">
+                                                {% for attribute in attributes %}
+                                                <td>{{ getattr(object, attribute, "Non défini") }}</td>
+                                                    {% endfor %}
+                                            </tr>
+                                            {% endfor %}
                                             <tr onclick="window.location.href='blank.html';">
                                                 <td>1111111111</td>
                                                 <td>7/7/777</td>
                                                 <td>123-456-7890</td>
                                                 <td>etudiant1@example.com</td>
-                                                <td>2ème année</td>
                                             </tr>
                                             <tr onclick="window.location.href='blank.html';">
                                                 <td>Étudiant 2</td>
                                                 <td>Prénom2</td>
                                                 <td>987-654-3210</td>
                                                 <td>etudiant2@example.com</td>
-                                                <td>3ème année</td>
                                             </tr>
                                         </tbody>
                                     </table>

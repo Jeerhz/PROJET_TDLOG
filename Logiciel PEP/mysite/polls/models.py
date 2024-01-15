@@ -44,13 +44,36 @@ class Client(models.Model):
         return AddClient()
     
     def retrieveForm(form):
-        return AddClient(form)
+        return AddClient(form)   
     
+class Student(models.Model):
+    first_name = models.CharField(max_length = 200)
+    last_name = models.CharField(max_length = 200)
+    mail = models.EmailField(max_length = 200)
+    phone_number = models.CharField(max_length=200, blank=True)
+    adress = models.CharField(max_length = 300)
+    country = models.CharField(max_length = 100)
+    promotion = models.CharField(max_length = 200, blank=True)
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
+
+    def __str__(self):
+        return self.first_name+' '+self.last_name
+    
+    def createForm():
+        return AddStudent()
+    
+    def retrieveForm(form):
+        return AddStudent(form)
+
+class Member(models.Model):
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
 
 class Etude(models.Model):
     description = models.CharField(max_length=200)
     begin = models.DateField()
     end = models.DateField()
+    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
+    students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
     
@@ -71,26 +94,7 @@ class Etude(models.Model):
     def retrieveForm(form):
         return AddEtude(form)
     
-    
-class Student(models.Model):
-    first_name = models.CharField(max_length = 200)
-    last_name = models.CharField(max_length = 200)
-    mail = models.EmailField(max_length = 200)
-    phone_number = models.CharField(max_length=200, blank=True)
-    adress = models.CharField(max_length = 300)
-    country = models.CharField(max_length = 100)
-    promotion = models.CharField(max_length = 200, blank=True)
-    etudes = models.ManyToManyField(Etude, blank=True)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
 
-    def __str__(self):
-        return self.first_name+' '+self.last_name
-    
-    def createForm():
-        return AddStudent()
-    
-    def retrieveForm(form):
-        return AddStudent(form)
     
 class User(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)

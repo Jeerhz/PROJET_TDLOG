@@ -12,4 +12,5 @@ urlpatterns = [
     path("clients/", views.clients, name="clients"),
     path("input/<str:modelName>", views.input, name="input"),
     path("logout/", views.logout, name="logout"),
+    path("annuaire/", views.annuaire, name="annuaire"),
 ]
