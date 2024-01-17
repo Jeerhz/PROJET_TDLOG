@@ -14,30 +14,31 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 
-def connexion(request):
-    try:
+def login(request):
+    error_message = ""
+    if request.method == 'POST':
         fetchform = UserForm(request.POST)
         if fetchform.is_valid():
-            selected_user = User.objects.get(username=fetchform.cleaned_data["username"])
-            if(fetchform.cleaned_data["password"]!=selected_user.password):
-                raise User.DoesNotExist
-        else:
-            raise KeyError
-    except (KeyError, User.DoesNotExist):
-        # Redisplay the question voting form.
-        return render(
-            request,
-            "polls/index.html",
-            {
-                "error_message": "Incorrect username or password.",
-                "form":fetchform
-            },
-        )
-    else:
-        request.session["member_id"] = selected_user.id
-        request.session['user_authenticated'] = True
-        template = loader.get_template("polls/results.html")
-        return HttpResponse(template.render({}, request))
+            selected_user = User.objects.filter(username=fetchform.cleaned_data["username"])
+            if selected_user.exists() and (fetchform.cleaned_data["password"]==selected_user.password):
+                request.session["member_id"] = selected_user.id
+                request.session['user_authenticated'] = True
+                template = loader.get_template("polls/index.html")
+                return HttpResponse(template.render({}, request))
+            else:
+                error_message = "Nom d'utilisateur ou mot de passe incorrect."
+                context = {"error_message":error_message, 'form':fetchform}
+                template = loader.get_template("polls/login.html")
+                return HttpResponse(template.render(context, request))
+        else :
+            error_message = "Le format des données est invalide."
+            context = {"error_message":error_message, 'form':UserForm()}
+            template = loader.get_template("polls/login.html")
+            return HttpResponse(template.render(context, request))
+
+    template = loader.get_template("polls/login.html")
+    context = {'form':UserForm()}
+    return HttpResponse(template.render(context, request))
     
 def logout(request):
     try:
@@ -45,45 +46,15 @@ def logout(request):
     except KeyError:
         pass
     return HttpResponse("You're logged out.")
-    
-def results(request):
-    if 'user_authenticated' in request.session:
-        user = User.objects.get(id=request.session["member_id"])
-        context = {"user":user}
-        template = loader.get_template("polls/results.html")
-    else:
-        template = loader.get_template("polls/index.html")
-        context = {'form':UserForm()}
-    return HttpResponse(template.render(context, request))
 
 def students(request):
-    if 'user_authenticated' in request.session:
-        template = loader.get_template("polls/students.html")
-        student_list = Student.objects.all()
-        context = {"student_list":student_list}
-    else:
-        template = loader.get_template("polls/index.html")
-        context = {'form':UserForm()}
-    return HttpResponse(template.render(context, request))
-
-def etudes(request):
-    if 'user_authenticated' in request.session:
-        template = loader.get_template("polls/etudes.html")
-        etudes_list = Etude.objects.all()
-        context = {"etudes_list":etudes_list}
-    else:
-        template = loader.get_template("polls/index.html")
-        context = {'form':UserForm()}   
-    return HttpResponse(template.render(context, request))
-
-def clients(request):
-    if 'user_authenticated' in request.session:
-        template = loader.get_template("polls/clients.html")
-        client_list = Client.objects.all()
-        context = {"client_list":client_list}
-    else:
-        template = loader.get_template("polls/index.html")
-        context = {'form':UserForm()}
+    #if 'user_authenticated' in request.session:
+    template = loader.get_template("polls/students.html")
+    student_list = Student.objects.all()
+    context = {"student_list":student_list}
+    #else:
+    #    template = loader.get_template("polls/index.html")
+    #    context = {'form':UserForm()}
     return HttpResponse(template.render(context, request))
 
 def annuaire(request):
@@ -92,13 +63,27 @@ def annuaire(request):
     client_list = Client.objects.all()
     etude_list = Etude.objects.all()
     student_list = Student.objects.all()
-    attribute_client = ["name", "country"]
-    attribute_etude = ["description", "client", "begin", "end"]
-    attribute_student = ["first_name", "last_name"]
-    context = {"client_list":client_list, "student_list":student_list, "etude_list":etude_list, "attribute_client":attribute_client, "attribute_etude":attribute_etude, "attribute_student":attribute_student}
+    
+    context = {"client_list":client_list, "student_list":student_list, "etude_list":etude_list}
     #else:
     #    template = loader.get_template("polls/index.html")
     #    context = {'form':UserForm()}
+    return HttpResponse(template.render(context, request))
+
+def details(request, modelName, iD):
+    if 'user_authenticated' in request.session:
+        template = loader.get_template("polls/page_details.html")
+        model = apps.get_model(app_label="polls", model_name=modelName)
+        try :
+            instance = model.objects.get(id=iD)
+            context = {'attribute_list': instance.get_display_dict(), 'title':"Détails de la mission"}
+            template = loader.get_template("polls/page_details.html")
+        except:
+            context = {'error_message': "The selected object does not exist in the database."}
+            template = loader.get_template("polls/page_error.html")
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {'form':UserForm()} 
     return HttpResponse(template.render(context, request))
 
 def input(request, modelName):
