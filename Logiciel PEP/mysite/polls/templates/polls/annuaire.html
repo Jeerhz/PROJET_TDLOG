@@ -9,16 +9,17 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR - ANNUAIRE</title>
+    <title>BIBI JR - ANNUAIRE </title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    {% load static %}
+    <link href= "{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
 
 </head>
 
@@ -146,13 +147,6 @@
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-            <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>
-
         </ul>
         <!-- End of Sidebar -->
 
@@ -278,7 +272,7 @@
                                 </h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -290,7 +284,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
                                             alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
@@ -302,7 +296,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
@@ -336,7 +330,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    src="{% static 'polls/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -392,36 +386,28 @@
                                 
                         <!-- Barre de recherche -->
                         <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInputStudent">
                         </div>
 
                                 <div class="table-responsive">
                                     <table class="table table-borderless table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Nom</th>
                                                 <th>Prénom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Année</th>
+                                                <th>Nom</th>
+                                                <th>Promotion</th>
                                             </tr>
                                         </thead>
                                         <tbody id="etudiantTableBody">
                                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 1</td>
-                                                <td>Prénom1</td>
-                                                <td>123-456-7890</td>
-                                                <td>etudiant1@example.com</td>
-                                                <td>2ème année</td>
+                                            {% for student in student_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
+                                                <td> {{ student.first_name }} </td>
+                                                <td> {{ student.last_name }} </td>
+                                                <td> {{ student.promotion }} </td>
+
                                             </tr>
-                                            <tr onclick="window.location.href='blank.html';">
-                                                <td>Étudiant 2</td>
-                                                <td>Prénom2</td>
-                                                <td>987-654-3210</td>
-                                                <td>etudiant2@example.com</td>
-                                                <td>3ème année</td>
-                                            </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -433,32 +419,24 @@
 
                             <!-- Barre de recherche -->
                         <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Rechercher..." id="searchInputClient">
                         </div>
                                 <div class="table-responsive">
                                     <table class="table table-borderless table-hover">
                                         <thead>
                                             <tr>
                                                 <th>Nom</th>
-                                                <th>Téléphone</th>
-                                                <th>Email</th>
-                                                <th>Ville</th>
+                                                <th>Pays</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
-                                            <tr onclick="window.location.href='profil_clientA.html';">
-                                                <td>Client A</td>
-                                                <td>111-222-3333</td>
-                                                <td>clientA@example.com</td>
-                                                <td>Paris</td>
+                                            {% for client in client_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
+                                                <td> {{ client.name }} </td>
+                                                <td> {{ client.country }} </td>
                                             </tr>
-                                            <tr onclick="window.location.href='profil_clientB.html';">
-                                                <td>Client B</td>
-                                                <td>444-555-6666</td>
-                                                <td>clientB@example.com</td>
-                                                <td>Lyon</td>
-                                            </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -470,32 +448,33 @@
                             
                     <!-- Barre de recherche -->
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                        <input type="text" class="form-control" placeholder="Rechercher..." id="searchInputEtude">
                     </div>
 
                             <div class="table-responsive">
                                 <table class="table table-borderless table-hover">
                                     <thead>
                                         <tr>
-                                            <th>N° de mission</th>
-                                            <th>Date</th>
+                                            <th>Description</th>
                                             <th>Client</th>
-                                            <th>Elève employé</th>
+                                            <th>Debut</th>
+                                            <th>Fin</th>
+                                            <th>Responsable</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody">
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>1111111111</td>
-                                            <td>7/7/777</td>
-                                            <td>Durand</td>
-                                            <td>JF Delmas</td>
-                                        </tr>
-                                        <tr onclick="window.location.href='page-mission.html';">
-                                            <td>2222222222</td>
-                                            <td>6/6/666</td>
-                                            <td>Patric</td>
-                                            <td>Dormieux Luc</td>
+                                        {% for etude in etude_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id %}&quot;">
+                                                <td> {{ etude.description }} </td>
+                                                <td> {{ etude.client }} </td>
+                                                <td> {{ etude.begin }} </td>
+                                                <td> {{ etude.end }} </td>
+                                                <td> {{ etude.responsable }} </td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                            </table>
                             </div>
                     </div>
 
@@ -503,14 +482,14 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
 
 </body>
 

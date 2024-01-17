@@ -39,6 +39,9 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_display_dict(self):
+        return {'Nom':self.name, 'Pays':self.country}
     
     def createForm():
         return AddClient()
@@ -59,6 +62,9 @@ class Student(models.Model):
     def __str__(self):
         return self.first_name+' '+self.last_name
     
+    def get_display_dict(self):
+        return {"Prénom":self.first_name, "Nom":self.last_name, "Promotion":self.promotion}
+    
     def createForm():
         return AddStudent()
     
@@ -67,6 +73,9 @@ class Student(models.Model):
 
 class Member(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
+
+    def __str__(self):
+        return self.student.__str__()
 
 class Etude(models.Model):
     description = models.CharField(max_length=200)
@@ -79,6 +88,9 @@ class Etude(models.Model):
     
     def __str__(self):
         return self.description
+
+    def get_display_dict(self):
+        return {'Description':self.description, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__()}
     
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
@@ -98,7 +110,7 @@ class Etude(models.Model):
     
 class User(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
-    username = models.CharField(max_length = 200)
+    username = models.CharField(max_length = 200, primary_key=True)
     password = models.CharField(max_length=100)
     student = models.OneToOneField(Student, on_delete=models.CASCADE)
     def __str__(self):

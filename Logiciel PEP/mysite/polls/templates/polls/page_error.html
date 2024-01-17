@@ -9,40 +9,18 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR - ANNUAIRE</title>
+    <title>BIBI JR - ANNUAIRE </title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    {% load static %}
+    {% load getattr %}
+    <link href= "{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            background-color: #f8f9fa; /* Couleur de fond agréable */
-            color: #495057; /* Couleur de la police */
-        }
-
-        .custom-container {
-            margin-top: 50px; /* Espace au-dessus du container */
-        }
-
-        h2 {
-            color: #007bff; /* Couleur du titre */
-            margin-bottom: 20px; /* Espacement en dessous du titre */
-        }
-
-        .dl-horizontal dt {
-            color: #28a745; /* Couleur des termes du glossaire */
-        }
-
-        .btn {
-            margin-top: 10px; /* Espace au-dessus des boutons */
-        }
-    </style>
+    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
 
 </head>
 
@@ -170,13 +148,6 @@
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-            <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>
-
         </ul>
         <!-- End of Sidebar -->
 
@@ -302,7 +273,7 @@
                                 </h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -314,7 +285,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
                                             alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
@@ -326,7 +297,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
@@ -360,7 +331,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    src="{% static 'polls/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -389,68 +360,24 @@
 
                 </nav>
                 <!-- End of Topbar -->
-                
 
-
-                <div class="container">
-                    <h2>Détails de la Mission</h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="dl-horizontal">
-                                <dt>Entreprise :</dt>
-                                <dd id="entreprise">Nom de l'entreprise</dd>
-                
-                                <dt>Élèves :</dt>
-                                <dd id="eleves">Liste des élèves</dd>
-                
-                                <dt>Date :</dt>
-                                <dd id="date">Date de la mission</dd>
-                
-                                <dt>N° Mission :</dt>
-                                <dd id="numMission">Numéro de la mission</dd>
-                
-                                <dt>N° Siret :</dt>
-                                <dd id="numSiret">Numéro SIRET de l'entreprise</dd>
-                            </dl>
-                            <button class="btn btn-primary" onclick="modifierMission()">Modifier la Mission</button>
-                            <button class="btn btn-success" onclick="genererFacture()">Générer la Facture</button>
-                        </div>
+                <!-- Begin Page Content -->
+                    <div class="container mt-4">
+                        <p>{{ error_message }}</p>
                     </div>
-                </div>
-                
-                
-                
-
-
-
-
-
-
-
-
+                        
+        </div>     
+    </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
-
-    <!-- Fonction pour gérer les boutons-->
-    <script>
-        function modifierMission() {
-            // Code pour gérer la modification de la mission
-            alert("Fonction de modification de la mission à implémenter.");
-        }
-    
-        function genererFacture() {
-            // Code pour générer la facture
-            alert("Fonction de génération de la facture à implémenter.");
-        }
-    </script>
+    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
 
 </body>
 
