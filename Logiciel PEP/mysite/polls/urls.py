@@ -5,10 +5,11 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     # ex: /polls/5/results/
-    path("login/", views.login, name="login"),
+    path("login/", views.custom_login, name="custom_login"),
     path("students/", views.students, name="students"),
     path("details/<str:modelName>/<int:iD>", views.details, name="details"),
-    path("input/<str:modelName>", views.input, name="input"),
-    path("logout/", views.logout, name="logout"),
+    path("input/<str:modelName>/<int:iD>", views.input, name="input"),
+    path("logout/", views.custom_logout, name="custom_logout"),
     path("annuaire/", views.annuaire, name="annuaire"),
+    path("facture/<int:iD>", views.facture, name="facture"),
 ]
