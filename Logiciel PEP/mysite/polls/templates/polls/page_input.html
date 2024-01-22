@@ -399,20 +399,29 @@
                     <h2 class="panel-title text-center"> {{ title }} </h2>
                     <div class="row">
                         <div class="col-md-6">
+                            <p>{{message}}</p>
+                            <form action="{% url 'input' modelName=modelName iD=iD %}" method="post">
                             <dl class="dl-horizontal">
-                                {% for key, value in attribute_list.items %}
-                                    <dt> {{ key }} </dt>
-                                    <dd> {{ value }} </dd>
-                                {% endfor %}                               
+                                {% csrf_token %}
+        
+                                {% for field in form %}
+                                 <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}                             
                             </dl>
                             <div class="text-center">
-                                {% if is_etude %} <!-- Vérifiez si une étude est sélectionnée -->
-                                    <a class="btn btn-primary" href="{% url 'input' modelName=modelName iD=iD %}">Modifier la Mission</button>
-                                    <a class="btn btn-success" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
-                                {% else %}
-                                    <a class="btn btn-info" href="{% url 'input' modelName=modelName iD=iD %}">Modifier les Informations</a>
-                                {% endif %}
+                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
                             </div>
+                        </form>
                         </div>
                     </div>
                 </div>
@@ -450,19 +459,6 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Fonction pour gérer les boutons-->
-    <script>
-        function modifierMission() {
-            // Code pour gérer la modification de la mission
-            alert("Fonction de modification de la mission à implémenter.");
-        }
-    
-        function genererFacture() {
-            // Code pour générer la facture
-            alert("Fonction de génération de la facture à implémenter.");
-        }
-    </script>
 
 </body>
 

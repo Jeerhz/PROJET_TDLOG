@@ -5,9 +5,11 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class JE(models.Model):
+    nom = models.CharField(max_length = 200)
     raison_sociale = models.CharField(max_length = 200)
     adress = models.CharField(max_length = 200)
     siret = models.CharField(max_length = 14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits')), MinLengthValidator(14, 'This field must contain exactly 14 caracters.')])
@@ -17,8 +19,12 @@ class JE(models.Model):
     BIC = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special caracters are not allowed.'))])
     check_order = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.nom
+
     def default():
         new_je = JE()
+        new_je.nom = "PEP"
         new_je.raison_sociale = "Junio-Entreprise des Ponts"
         new_je.adress = "6-8 Avenue Blaise Pascal, 77420 Champs-sur-Marne"
         new_je.siret = "01234567890123"
@@ -28,11 +34,18 @@ class JE(models.Model):
         new_je.BIC = "0000000000000000000000"
         new_je.check_order = ""
         return new_je
+
+    def get_title_details(self):
+        return "Détails de la Junior-Entreprise"
     
 
 class Client(models.Model):
-    name = models.CharField(max_length = 300)
-    adress = models.CharField(max_length = 300)
+    name = models.CharField(max_length = 200)
+    raison_sociale = models.CharField(max_length = 150)
+    rue = models.CharField(max_length = 300)
+    ville = models.CharField(max_length = 100)
+    code_postal = models.CharField(max_length = 20)
+    representant = models.CharField(max_length = 100)
     country = models.CharField(max_length = 100)
     siret = models.CharField(max_length = 15, default='12345678901234', validators=[RegexValidator(r'^[0-9]+$'), MinLengthValidator(14, 'This field must contain exactly 14 caracters.')])
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
@@ -41,13 +54,19 @@ class Client(models.Model):
         return self.name
 
     def get_display_dict(self):
-        return {'Nom':self.name, 'Pays':self.country}
+        return {'Nom':self.name, 'Pays':self.country, 'Représentant':representant}
+
+    def get_title_details(self):
+        return "Détails du client"
     
     def createForm():
         return AddClient()
     
     def retrieveForm(form):
-        return AddClient(form)   
+        return AddClient(form) 
+
+    def modifyForm(instance):
+        return AddClient(instance=instance)  
     
 class Student(models.Model):
     first_name = models.CharField(max_length = 200)
@@ -64,6 +83,9 @@ class Student(models.Model):
     
     def get_display_dict(self):
         return {"Prénom":self.first_name, "Nom":self.last_name, "Promotion":self.promotion}
+
+    def get_title_details(self):
+        return "Détails de l'étudiant"
     
     def createForm():
         return AddStudent()
@@ -71,17 +93,64 @@ class Student(models.Model):
     def retrieveForm(form):
         return AddStudent(form)
 
-class Member(models.Model):
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
+    def modifyForm(instance):
+        return AddStudent(instance=instance)
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password, je=None, student=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        if not password:
+            raise ValueError('The password field must be set.')
+        email = self.normalize_email(email)
+        user = self.model(email=email, je=je, student=student)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password, username, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        return self.create_user(email, password, **extra_fields)
+
+
+class Member(AbstractUser):
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, default=1)
+    email = models.EmailField(max_length=200, primary_key=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.student.__str__()
+    
+    def createForm():
+        return AddMember()
+    
+    def retrieveForm(form):
+        return AddMember(form)
+
+    def modifyForm(instance):
+        return AddMember(instance=instance)
+
+    def get_display_dict(self):
+        return student.get_display_dict()
+
+    def get_title_details(self):
+        return student.get_title_details()
+
+    def save(self, *args, **kwargs):
+        self.username = self.email  # Set username to email
+        super().save(*args, **kwargs)
 
 class Etude(models.Model):
     description = models.CharField(max_length=200)
     begin = models.DateField()
     end = models.DateField()
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
+    nb_JEH = models.IntegerField()
+    montant_HT = models.FloatField()
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
@@ -91,6 +160,9 @@ class Etude(models.Model):
 
     def get_display_dict(self):
         return {'Description':self.description, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__()}
+
+    def get_title_details(self):
+        return "Détails de la mission"
     
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
@@ -105,42 +177,27 @@ class Etude(models.Model):
     
     def retrieveForm(form):
         return AddEtude(form)
-    
 
-    
-class User(models.Model):
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
-    username = models.CharField(max_length = 200, primary_key=True)
-    password = models.CharField(max_length=100)
-    student = models.OneToOneField(Student, on_delete=models.CASCADE)
+    def modifyForm(instance):
+        return AddEtude(instance=instance)
+
+
+class AddMember(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields='__all__'
     def __str__(self):
-        return self.student.__str__()
-    
-    def createForm():
-        return AddUser()
-    
-    def retrieveForm(form):
-        return AddUser(form)
-    
-class UserForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['username', 'password']
-        widgets = {
-        'password': forms.PasswordInput(),
-    }
+        return "Ajouter un membre"
+    def name(self):
+        return "AddMember"
 
-class AddUser(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = '__all__'
     
 class AddStudent(forms.ModelForm):
     class Meta:
         model = Student
         fields='__all__'
     def __str__(self):
-        return "Ajouter un étudiant"
+        return "Informations de l'étudiant"
     def name(self):
         return "AddStudent"
     
@@ -150,7 +207,7 @@ class AddEtude(forms.ModelForm):
         model = Etude
         fields='__all__'
     def __str__(self):
-        return "Ajouter une étude"
+        return "Informations de l'étude"
     def name(self):
         return "AddEtude"
     def clean(self):
@@ -169,7 +226,7 @@ class AddClient(forms.ModelForm):
         model = Client
         fields='__all__'
     def __str__(self):
-        return "Ajouter un client"
+        return "Informations du client"
     def name(self):
         return "AddClient"
     

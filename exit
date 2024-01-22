@@ -1,0 +1,1037 @@
+[33mcommit 4b62f9185dcae67e25f1554de3ce9559548c9eff[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: Edgar Duc <edgar.duc@eleves.enpc.fr>
+Date:   Wed Jan 17 12:53:00 2024 +0100
+
+    Les pages qui marchent correctement sont annuaire et details, lle login a été légèrement modifié mais ne marche pas tout à fait
+
+[1mdiff --git a/Logiciel PEP/mysite/polls/__pycache__/models.cpython-39.pyc b/Logiciel PEP/mysite/polls/__pycache__/models.cpython-39.pyc[m
+[1mindex 4703584..dea4d9d 100644[m
+Binary files a/Logiciel PEP/mysite/polls/__pycache__/models.cpython-39.pyc and b/Logiciel PEP/mysite/polls/__pycache__/models.cpython-39.pyc differ
+[1mdiff --git a/Logiciel PEP/mysite/polls/__pycache__/urls.cpython-39.pyc b/Logiciel PEP/mysite/polls/__pycache__/urls.cpython-39.pyc[m
+[1mindex e30aa10..82a4d40 100644[m
+Binary files a/Logiciel PEP/mysite/polls/__pycache__/urls.cpython-39.pyc and b/Logiciel PEP/mysite/polls/__pycache__/urls.cpython-39.pyc differ
+[1mdiff --git a/Logiciel PEP/mysite/polls/__pycache__/views.cpython-39.pyc b/Logiciel PEP/mysite/polls/__pycache__/views.cpython-39.pyc[m
+[1mindex 583895a..c3e844f 100644[m
+Binary files a/Logiciel PEP/mysite/polls/__pycache__/views.cpython-39.pyc and b/Logiciel PEP/mysite/polls/__pycache__/views.cpython-39.pyc differ
+[1mdiff --git a/Logiciel PEP/mysite/polls/models.py b/Logiciel PEP/mysite/polls/models.py[m
+[1mindex 195ed8d..fb897ea 100644[m
+[1m--- a/Logiciel PEP/mysite/polls/models.py[m	
+[1m+++ b/Logiciel PEP/mysite/polls/models.py[m	
+[36m@@ -39,6 +39,9 @@[m [mclass Client(models.Model):[m
+ [m
+     def __str__(self):[m
+         return self.name[m
+[32m+[m
+[32m+[m[32m    def get_display_dict(self):[m
+[32m+[m[32m        return {'Nom':self.name, 'Pays':self.country}[m
+     [m
+     def createForm():[m
+         return AddClient()[m
+[36m@@ -59,6 +62,9 @@[m [mclass Student(models.Model):[m
+     def __str__(self):[m
+         return self.first_name+' '+self.last_name[m
+     [m
+[32m+[m[32m    def get_display_dict(self):[m
+[32m+[m[32m        return {"Prénom":self.first_name, "Nom":self.last_name, "Promotion":self.promotion}[m
+[32m+[m[41m    [m
+     def createForm():[m
+         return AddStudent()[m
+     [m
+[36m@@ -68,6 +74,9 @@[m [mclass Student(models.Model):[m
+ class Member(models.Model):[m
+     student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)[m
+ [m
+[32m+[m[32m    def __str__(self):[m
+[32m+[m[32m        return self.student.__str__()[m
+[32m+[m
+ class Etude(models.Model):[m
+     description = models.CharField(max_length=200)[m
+     begin = models.DateField()[m
+[36m@@ -79,6 +88,9 @@[m [mclass Etude(models.Model):[m
+     [m
+     def __str__(self):[m
+         return self.description[m
+[32m+[m
+[32m+[m[32m    def get_display_dict(self):[m
+[32m+[m[32m        return {'Description':self.description, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__()}[m
+     [m
+     def save(self, *args, **kwargs):[m
+         # Your custom validation logic here before saving[m
+[36m@@ -98,7 +110,7 @@[m [mclass Etude(models.Model):[m
+     [m
+ class User(models.Model):[m
+     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)[m
+[31m-    username = models.CharField(max_length = 200)[m
+[32m+[m[32m    username = models.CharField(max_length = 200, primary_key=True)[m
+     password = models.CharField(max_length=100)[m
+     student = models.OneToOneField(Student, on_delete=models.CASCADE)[m
+     def __str__(self):[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/css/sb-admin-2.css b/Logiciel PEP/mysite/polls/static/polls/css/sb-admin-2.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/css/sb-admin-2.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/css/sb-admin-2.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/css/sb-admin-2.min.css b/Logiciel PEP/mysite/polls/static/polls/css/sb-admin-2.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/css/sb-admin-2.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/css/sb-admin-2.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_posting_photo.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_posting_photo.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_posting_photo.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_posting_photo.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_profile.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_profile.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_1.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_1.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_1.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_1.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_2.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_2.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_2.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_2.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_3.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_3.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_profile_3.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_profile_3.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/img/undraw_rocket.svg b/Logiciel PEP/mysite/polls/static/polls/img/undraw_rocket.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/img/undraw_rocket.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/img/undraw_rocket.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-area-demo.js b/Logiciel PEP/mysite/polls/static/polls/js/demo/chart-area-demo.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-area-demo.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/demo/chart-area-demo.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-bar-demo.js b/Logiciel PEP/mysite/polls/static/polls/js/demo/chart-bar-demo.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-bar-demo.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/demo/chart-bar-demo.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-pie-demo.js b/Logiciel PEP/mysite/polls/static/polls/js/demo/chart-pie-demo.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/demo/chart-pie-demo.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/demo/chart-pie-demo.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/demo/datatables-demo.js b/Logiciel PEP/mysite/polls/static/polls/js/demo/datatables-demo.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/demo/datatables-demo.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/demo/datatables-demo.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/sb-admin-2.js b/Logiciel PEP/mysite/polls/static/polls/js/sb-admin-2.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/sb-admin-2.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/sb-admin-2.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/js/sb-admin-2.min.js b/Logiciel PEP/mysite/polls/static/polls/js/sb-admin-2.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/js/sb-admin-2.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/js/sb-admin-2.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_buttons.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_buttons.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_buttons.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_buttons.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_cards.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_cards.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_cards.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_cards.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_charts.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_charts.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_charts.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_charts.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_dropdowns.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_dropdowns.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_dropdowns.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_dropdowns.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_error.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_error.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_error.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_error.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_footer.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_footer.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_footer.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_footer.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_global.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_global.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_global.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_global.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_login.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_login.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_login.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_login.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_mixins.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_mixins.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_mixins.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_mixins.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_navs.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_navs.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_navs.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_navs.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_utilities.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_utilities.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_utilities.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_utilities.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/_variables.scss b/Logiciel PEP/mysite/polls/static/polls/scss/_variables.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/_variables.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/_variables.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/navs/_global.scss b/Logiciel PEP/mysite/polls/static/polls/scss/navs/_global.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/navs/_global.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/navs/_global.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/navs/_sidebar.scss b/Logiciel PEP/mysite/polls/static/polls/scss/navs/_sidebar.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/navs/_sidebar.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/navs/_sidebar.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/navs/_topbar.scss b/Logiciel PEP/mysite/polls/static/polls/scss/navs/_topbar.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/navs/_topbar.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/navs/_topbar.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/sb-admin-2.scss b/Logiciel PEP/mysite/polls/static/polls/scss/sb-admin-2.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/sb-admin-2.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/sb-admin-2.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_animation.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_animation.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_animation.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_animation.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_background.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_background.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_background.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_background.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_border.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_border.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_border.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_border.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_display.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_display.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_display.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_display.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_progress.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_progress.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_progress.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_progress.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_rotate.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_rotate.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_rotate.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_rotate.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_text.scss b/Logiciel PEP/mysite/polls/static/polls/scss/utilities/_text.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/scss/utilities/_text.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/scss/utilities/_text.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.js b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.js.map b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.js.map[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.js.map[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.js.map[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.min.js.map b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.min.js.map[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.bundle.min.js.map[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.bundle.min.js.map[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.js b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.js.map b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.js.map[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.js.map[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.js.map[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.min.js.map b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.min.js.map[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/js/bootstrap.min.js.map[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/js/bootstrap.min.js.map[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_alert.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_alert.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_alert.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_alert.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_badge.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_badge.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_badge.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_badge.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_breadcrumb.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_breadcrumb.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_breadcrumb.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_breadcrumb.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_button-group.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_button-group.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_button-group.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_button-group.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_buttons.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_buttons.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_buttons.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_buttons.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_card.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_card.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_card.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_card.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_carousel.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_carousel.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_carousel.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_carousel.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_close.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_close.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_close.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_close.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_code.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_code.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_code.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_code.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_custom-forms.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_custom-forms.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_custom-forms.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_custom-forms.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_dropdown.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_dropdown.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_dropdown.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_dropdown.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_forms.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_forms.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_forms.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_forms.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_functions.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_functions.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_functions.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_functions.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_grid.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_grid.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_grid.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_grid.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_images.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_images.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_images.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_images.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_input-group.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_input-group.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_input-group.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_input-group.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_jumbotron.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_jumbotron.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_jumbotron.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_jumbotron.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_list-group.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_list-group.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_list-group.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_list-group.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_media.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_media.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_media.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_media.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_mixins.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_mixins.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_mixins.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_mixins.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_modal.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_modal.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_modal.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_modal.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_nav.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_nav.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_nav.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_nav.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_navbar.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_navbar.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_navbar.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_navbar.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_pagination.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_pagination.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_pagination.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_pagination.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_popover.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_popover.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_popover.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_popover.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_print.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_print.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_print.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_print.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_progress.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_progress.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_progress.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_progress.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_reboot.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_reboot.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_reboot.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_reboot.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_root.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_root.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_root.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_root.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_spinners.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_spinners.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_spinners.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_spinners.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_tables.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_tables.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_tables.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_tables.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_toasts.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_toasts.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_toasts.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_toasts.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_tooltip.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_tooltip.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_tooltip.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_tooltip.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_transitions.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_transitions.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_transitions.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_transitions.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_type.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_type.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_type.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_type.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_utilities.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_utilities.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_utilities.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_utilities.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_variables.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_variables.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/_variables.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/_variables.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap-grid.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap-grid.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap-grid.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap-grid.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap-reboot.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap-reboot.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap-reboot.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap-reboot.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/bootstrap.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/bootstrap.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_alert.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_alert.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_alert.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_alert.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_background-variant.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_background-variant.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_background-variant.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_background-variant.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_badge.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_badge.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_badge.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_badge.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_border-radius.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_border-radius.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_border-radius.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_border-radius.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_box-shadow.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_box-shadow.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_box-shadow.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_box-shadow.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_breakpoints.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_breakpoints.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_breakpoints.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_breakpoints.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_buttons.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_buttons.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_buttons.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_buttons.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_caret.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_caret.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_caret.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_caret.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_clearfix.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_clearfix.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_clearfix.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_clearfix.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_deprecate.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_deprecate.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_deprecate.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_deprecate.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_float.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_float.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_float.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_float.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_forms.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_forms.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_forms.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_forms.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_gradients.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_gradients.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_gradients.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_gradients.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_grid-framework.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_grid-framework.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_grid-framework.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_grid-framework.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_grid.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_grid.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_grid.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_grid.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_hover.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_hover.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_hover.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_hover.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_image.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_image.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_image.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_image.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_list-group.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_list-group.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_list-group.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_list-group.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_lists.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_lists.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_lists.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_lists.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_nav-divider.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_nav-divider.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_nav-divider.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_nav-divider.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_pagination.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_pagination.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_pagination.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_pagination.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_reset-text.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_reset-text.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_reset-text.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_reset-text.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_resize.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_resize.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_resize.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_resize.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_screen-reader.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_screen-reader.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_screen-reader.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_screen-reader.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_size.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_size.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_size.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_size.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_table-row.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_table-row.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_table-row.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_table-row.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-emphasis.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-emphasis.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-emphasis.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-emphasis.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-hide.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-hide.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-hide.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-hide.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-truncate.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-truncate.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_text-truncate.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_text-truncate.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_transition.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_transition.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_transition.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_transition.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_visibility.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_visibility.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/mixins/_visibility.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/mixins/_visibility.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_align.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_align.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_align.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_align.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_background.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_background.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_background.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_background.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_borders.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_borders.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_borders.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_borders.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_clearfix.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_clearfix.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_clearfix.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_clearfix.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_display.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_display.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_display.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_display.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_embed.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_embed.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_embed.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_embed.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_flex.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_flex.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_flex.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_flex.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_float.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_float.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_float.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_float.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_interactions.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_interactions.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_interactions.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_interactions.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_overflow.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_overflow.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_overflow.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_overflow.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_position.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_position.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_position.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_position.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_screenreaders.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_screenreaders.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_screenreaders.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_screenreaders.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_shadows.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_shadows.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_shadows.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_shadows.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_sizing.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_sizing.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_sizing.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_sizing.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_spacing.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_spacing.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_spacing.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_spacing.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_stretched-link.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_stretched-link.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_stretched-link.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_stretched-link.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_text.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_text.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_text.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_text.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_visibility.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_visibility.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/utilities/_visibility.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/utilities/_visibility.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/vendor/_rfs.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/vendor/_rfs.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/bootstrap/scss/vendor/_rfs.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/bootstrap/scss/vendor/_rfs.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.bundle.js b/Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.bundle.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.bundle.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.bundle.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.bundle.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.bundle.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.bundle.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.bundle.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.js b/Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/chart.js/Chart.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/chart.js/Chart.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.css b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.js b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/dataTables.bootstrap4.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/dataTables.bootstrap4.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/jquery.dataTables.js b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/jquery.dataTables.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/jquery.dataTables.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/jquery.dataTables.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/jquery.dataTables.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/datatables/jquery.dataTables.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/datatables/jquery.dataTables.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/datatables/jquery.dataTables.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/LICENSE.txt b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/LICENSE.txt[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/LICENSE.txt[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/LICENSE.txt[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/attribution.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/attribution.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/attribution.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/attribution.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/all.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/all.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/all.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/all.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/all.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/all.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/all.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/all.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/brands.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/brands.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/brands.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/brands.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/brands.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/brands.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/brands.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/brands.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/fontawesome.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/fontawesome.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/fontawesome.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/fontawesome.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/fontawesome.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/fontawesome.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/fontawesome.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/fontawesome.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/regular.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/regular.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/regular.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/regular.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/regular.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/regular.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/regular.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/regular.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/solid.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/solid.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/solid.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/solid.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/solid.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/solid.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/solid.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/solid.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/svg-with-js.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/svg-with-js.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/svg-with-js.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/svg-with-js.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/svg-with-js.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/svg-with-js.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/svg-with-js.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/svg-with-js.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/v4-shims.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/v4-shims.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/v4-shims.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/v4-shims.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/v4-shims.min.css b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/v4-shims.min.css[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/css/v4-shims.min.css[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/css/v4-shims.min.css[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/all.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/all.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/all.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/all.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/all.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/all.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/all.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/all.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/brands.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/brands.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/brands.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/brands.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/brands.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/brands.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/brands.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/brands.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/conflict-detection.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/conflict-detection.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/conflict-detection.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/conflict-detection.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/conflict-detection.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/conflict-detection.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/conflict-detection.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/conflict-detection.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/fontawesome.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/fontawesome.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/fontawesome.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/fontawesome.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/fontawesome.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/fontawesome.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/fontawesome.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/fontawesome.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/regular.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/regular.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/regular.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/regular.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/regular.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/regular.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/regular.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/regular.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/solid.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/solid.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/solid.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/solid.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/solid.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/solid.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/solid.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/solid.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/v4-shims.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/v4-shims.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/v4-shims.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/v4-shims.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/v4-shims.min.js b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/v4-shims.min.js[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/js/v4-shims.min.js[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/js/v4-shims.min.js[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_animated.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_animated.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_animated.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_animated.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_bordered-pulled.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_bordered-pulled.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_bordered-pulled.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_bordered-pulled.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_core.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_core.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_core.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_core.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_fixed-width.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_fixed-width.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_fixed-width.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_fixed-width.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_icons.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_icons.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_icons.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_icons.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_larger.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_larger.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_larger.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_larger.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_list.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_list.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_list.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_list.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_mixins.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_mixins.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_mixins.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_mixins.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_rotated-flipped.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_rotated-flipped.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_rotated-flipped.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_rotated-flipped.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_screen-reader.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_screen-reader.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_screen-reader.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_screen-reader.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_shims.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_shims.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_shims.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_shims.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_stacked.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_stacked.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_stacked.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_stacked.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_variables.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_variables.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/_variables.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/_variables.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/brands.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/brands.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/brands.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/brands.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/fontawesome.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/fontawesome.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/fontawesome.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/fontawesome.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/regular.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/regular.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/regular.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/regular.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/solid.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/solid.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/solid.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/solid.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/v4-shims.less b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/v4-shims.less[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/less/v4-shims.less[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/less/v4-shims.less[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/categories.yml b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/categories.yml[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/categories.yml[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/categories.yml[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/icons.yml b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/icons.yml[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/icons.yml[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/icons.yml[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/shims.yml b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/shims.yml[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/shims.yml[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/shims.yml[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/sponsors.yml b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/sponsors.yml[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/metadata/sponsors.yml[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/metadata/sponsors.yml[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/package.json b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/package.json[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/package.json[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/package.json[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_animated.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_animated.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_animated.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_animated.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_bordered-pulled.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_bordered-pulled.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_bordered-pulled.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_bordered-pulled.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_core.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_core.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_core.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_core.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_fixed-width.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_fixed-width.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_fixed-width.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_fixed-width.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_icons.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_icons.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_icons.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_icons.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_larger.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_larger.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_larger.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_larger.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_list.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_list.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_list.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_list.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_mixins.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_mixins.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_mixins.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_mixins.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_rotated-flipped.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_rotated-flipped.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_rotated-flipped.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_rotated-flipped.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_screen-reader.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_screen-reader.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_screen-reader.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_screen-reader.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_shims.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_shims.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_shims.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_shims.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_stacked.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_stacked.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_stacked.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_stacked.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_variables.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_variables.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/_variables.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/_variables.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/brands.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/brands.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/brands.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/brands.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/fontawesome.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/fontawesome.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/fontawesome.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/fontawesome.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/regular.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/regular.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/regular.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/regular.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/solid.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/solid.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/solid.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/solid.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/v4-shims.scss b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/v4-shims.scss[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/scss/v4-shims.scss[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/scss/v4-shims.scss[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/brands.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/brands.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/brands.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/brands.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/regular.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/regular.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/regular.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/regular.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/solid.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/solid.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/sprites/solid.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/sprites/solid.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/500px.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/500px.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/500px.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/500px.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/accessible-icon.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/accessible-icon.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/accessible-icon.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/accessible-icon.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/accusoft.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/accusoft.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/accusoft.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/accusoft.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/acquisitions-incorporated.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/acquisitions-incorporated.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/acquisitions-incorporated.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/acquisitions-incorporated.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/adn.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/adn.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/adn.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/adn.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/adversal.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/adversal.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/adversal.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/adversal.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/affiliatetheme.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/affiliatetheme.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/affiliatetheme.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/affiliatetheme.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/airbnb.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/airbnb.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/airbnb.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/airbnb.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/algolia.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/algolia.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/algolia.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/algolia.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/alipay.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/alipay.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/alipay.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/alipay.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amazon-pay.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amazon-pay.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amazon-pay.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amazon-pay.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amazon.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amazon.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amazon.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amazon.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amilia.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amilia.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/amilia.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/amilia.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/android.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/android.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/android.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/android.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angellist.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angellist.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angellist.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angellist.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angrycreative.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angrycreative.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angrycreative.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angrycreative.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angular.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angular.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/angular.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/angular.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/app-store-ios.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/app-store-ios.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/app-store-ios.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/app-store-ios.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/app-store.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/app-store.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/app-store.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/app-store.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apper.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apper.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apper.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apper.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apple-pay.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apple-pay.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apple-pay.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apple-pay.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apple.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apple.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/apple.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/apple.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/artstation.svg b/Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/artstation.svg[m
+[1msimilarity index 100%[m
+[1mrename from Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/artstation.svg[m
+[1mrename to Logiciel PEP/mysite/polls/static/polls/vendor/fontawesome-free/svgs/brands/artstation.svg[m
+[1mdiff --git a/Logiciel PEP/mysite/polls/templates/polls/vendor/fontawesome-free/svgs/brands/asymmetrik.svg b/Logiciel PEP/mysite
