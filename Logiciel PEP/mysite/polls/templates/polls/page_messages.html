@@ -9,44 +9,18 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR - PAGE DETAILS</title>
+    <title>BIBI JR - ANNUAIRE </title>
 
+    <!-- Custom fonts for this template-->
     {% load static %}
     {% load format_duration %}
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href= "{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
     <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
-
-    <style>
-        body {
-            background-color: #f8f9fa; /* Couleur de fond agréable */
-            color: #495057; /* Couleur de la police */
-        }
-
-        .custom-container {
-            margin-top: 50px; /* Espace au-dessus du container */
-        }
-
-        h2 {
-            color: #007bff; /* Couleur du titre */
-            margin-bottom: 20px; /* Espacement en dessous du titre */
-        }
-
-        .dl-horizontal dt {
-            color: #28a745; /* Couleur des termes du glossaire */
-        }
-
-        .btn {
-            margin-top: 10px; /* Espace au-dessus des boutons */
-        }
-
-        
-    </style>
 
 </head>
 
@@ -171,13 +145,6 @@
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-            <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="{% static 'polls/img/undraw_rocket.svg' %}" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
             </div>
 
         </ul>
@@ -401,56 +368,41 @@
 
                 </nav>
                 <!-- End of Topbar -->
-                
 
-                <!-- Main Content -->
-                <div class="container mt-3">
-                    <h2 class="panel-title text-center"> {{ title }} </h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="dl-horizontal">
-                                {% for key, value in attribute_list.items %}
-                                    <dt> {{ key }} </dt>
-                                    <dd> {{ value }} </dd>
-                                {% endfor %}                               
-                            </dl>
-                            <div class="text-center">
-                                {% if is_etude %} <!-- Vérifiez si une étude est sélectionnée -->
-                                    <a class="btn btn-primary" href="{% url 'input' modelName=modelName iD=iD %}">Modifier la Mission</button>
-                                    <a class="btn btn-success" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
-                                {% elif is_message %}
-                                    <a class="btn btn-info" href="{% url 'input' modelName=modelName iD=0 %}">Répondre</a>
-                                {% else %}
-                                    <a class="btn btn-info" href="{% url 'input' modelName=modelName iD=iD %}">Modifier les Informations</a>
-                                {% endif %}
+                <!-- Begin Page Content -->
+                    <div class="container mt-4">                   
+
+                            <h2 class="mb-4">Listes Messages</h2>
+                            
+                            {% if message_list|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-borderless table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Expéditeur</th>
+                                            <th>Date</th>
+                                            <th>Contenu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="etudesTableBody">
+                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                                        {% for message in message_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Message' message.id %}&quot;">
+                                                <td> {{ message.expediteur }} </td>
+                                                <td> {{ message.date }} </td>
+                                                <td> {{ message }} </td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                            </table>
                             </div>
-                        </div>
+                            {% else %}
+                            <p> Aucun message. </p>
+                            {% endif %}
                     </div>
-                </div>
-                <br>   
-                <!-- End Main Content -->
 
-
-                <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2021</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
-                
-                
-                
-
-
-
-
-
-
-
-
+             
+    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
@@ -461,19 +413,6 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Fonction pour gérer les boutons-->
-    <script>
-        function modifierMission() {
-            // Code pour gérer la modification de la mission
-            alert("Fonction de modification de la mission à implémenter.");
-        }
-    
-        function genererFacture() {
-            // Code pour générer la facture
-            alert("Fonction de génération de la facture à implémenter.");
-        }
-    </script>
 
 </body>
 

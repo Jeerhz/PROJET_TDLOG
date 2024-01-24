@@ -5,14 +5,17 @@ from django.template import loader
 from django.urls import reverse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
+from django.utils import timezone 
 
-from .models import JE, Member, Student, Etude, Client, AddStudent, AddClient, AddEtude, AddMember
+from .models import JE, Member, Student, Etude, Client, AddStudent, AddClient, AddEtude, AddMember, Message, AddMessage
 
 
 def index(request):
     if request.user.is_authenticated :
+        liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+        message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
         template = loader.get_template("polls/index.html")
-        context = {}
+        context = {'liste_messages':liste_messages, 'message_count':message_count}
     else :
         template = loader.get_template("polls/login.html")
         context = {}
@@ -39,7 +42,9 @@ def custom_login(request):
     
 def custom_logout(request):
     logout(request)
-    return HttpResponse("You're logged out.")
+    template = loader.get_template("polls/login.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 def students(request):
     if request.user.is_authenticated:
@@ -53,12 +58,14 @@ def students(request):
 
 def annuaire(request):
     if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+        message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
         template = loader.get_template("polls/annuaire.html")
-        client_list = Client.objects.all()
-        etude_list = Etude.objects.all()
-        student_list = Student.objects.all()
+        client_list = Client.objects.filter(je=request.user.je)
+        etude_list = Etude.objects.filter(je=request.user.je)
+        student_list = Student.objects.filter(je=request.user.je)
     
-        context = {"client_list":client_list, "student_list":student_list, "etude_list":etude_list}
+        context = {"client_list":client_list, "student_list":student_list, "etude_list":etude_list, 'liste_messages':liste_messages, 'message_count':message_count}
     else :
         template = loader.get_template("polls/login.html")
         context = {}
@@ -66,14 +73,19 @@ def annuaire(request):
 
 def details(request, modelName, iD):
     if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+        message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
         template = loader.get_template("polls/page_details.html")
         model = apps.get_model(app_label="polls", model_name=modelName)
         try :
-            instance = model.objects.get(id=iD)
-            context = {'attribute_list': instance.get_display_dict(), 'title':instance.get_title_details(), 'is_etude':(modelName=="Etude"), 'modelName':modelName, 'iD':iD}
+            instance = model.objects.get(id=iD, je=request.user.je)
+            if(modelName=="Message"):
+                instance.read = True
+                instance.save()
+            context = {'attribute_list': instance.get_display_dict(), 'title':instance.get_title_details(), 'is_etude':(modelName=="Etude"), 'is_message':(modelName=="Message"), 'modelName':modelName, 'iD':iD, 'liste_messages':liste_messages, 'message_count':message_count}
             template = loader.get_template("polls/page_details.html")
         except:
-            context = {'error_message': "The selected object does not exist in the database."}
+            context = {'error_message': "The selected object does not exist in the database.", 'liste_messages':liste_messages, 'message_count':message_count}
             template = loader.get_template("polls/page_error.html")
     else :
         template = loader.get_template("polls/login.html")
@@ -82,28 +94,30 @@ def details(request, modelName, iD):
 
 def input(request, modelName, iD):
     if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+        message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
         template = loader.get_template("polls/page_input.html")
         if(request.method=="GET"):
             model = apps.get_model(app_label="polls", model_name=modelName)
             if(iD==0):
-                form = model.createForm()
-                context = {'form':form, 'model_name':modelName, 'title':str(form), 'message':"", 'modelName':modelName, 'iD':iD}
+                form = model.createForm(je=request.user.je)
+                context = {'form':form, 'title':str(form), 'message':"", 'modelName':modelName, 'iD':iD, 'liste_messages':liste_messages, 'message_count':message_count}
             else:
                 try:
-                    instance = model.objects.get(id=iD)
+                    instance = model.objects.get(id=iD, je=request.user.je)
                     form = model.modifyForm(instance)
-                    context = {'form':form, 'model_name':modelName, 'title':str(form), 'message':"", 'modelName':modelName, 'iD':iD}
+                    context = {'form':form, 'title':str(form), 'message':"", 'modelName':modelName, 'iD':iD, 'liste_messages':liste_messages, 'message_count':message_count}
                 except:
-                    context = {'error_message': "The selected object does not exist in the database."}
+                    context = {'error_message': "The selected object does not exist in the database.", 'liste_messages':liste_messages, 'message_count':message_count}
                     template = loader.get_template("polls/page_error.html")
         else:
             model = apps.get_model(app_label="polls", model_name=modelName)
             fetchform = model.retrieveForm(request.POST)
             if(fetchform.is_valid()):
-                fetchform.save(commit=True)
-                context = {'form':fetchform, 'model_name': modelName, 'title':str(fetchform), 'message':"Le formulaire a été envoyé avec succès", 'modelName':modelName, 'iD':iD}
+                fetchform.save(commit=True, expediteur=request.user)
+                context = {'form':fetchform, 'title':str(fetchform), 'message':"Le formulaire a été envoyé avec succès", 'modelName':modelName, 'iD':iD, 'liste_messages':liste_messages, 'message_count':message_count}
             else:
-                context = {'form':fetchform, 'model_name': modelName, 'title':str(fetchform), 'message':"Entree invalide", 'modelName':modelName, 'iD':iD}
+                context = {'form':fetchform, 'title':str(fetchform), 'message':"Entree invalide", 'modelName':modelName, 'iD':iD, 'liste_messages':liste_messages, 'message_count':message_count}
     else :
         template = loader.get_template("polls/login.html")
         context = {}
@@ -121,6 +135,19 @@ def facture(request, iD):
             template = loader.get_template("polls/page_error.html")
             context = {'error_message':"Erreur dans l'identification de la mission."}
     else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def messages(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+        message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
+        message_list = Message.objects.filter(destinataire=request.user).order_by('date')
+        template = loader.get_template("polls/page_messages.html")
+    
+        context = {'message_list':message_list, 'liste_messages':liste_messages, 'message_count':message_count}
+    else :
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
