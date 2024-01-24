@@ -59,7 +59,7 @@ class Client(models.Model):
     def get_title_details(self):
         return "Détails du client"
     
-    def createForm():
+    def createForm(**kwargs):
         return AddClient()
     
     def retrieveForm(form):
@@ -87,7 +87,7 @@ class Student(models.Model):
     def get_title_details(self):
         return "Détails de l'étudiant"
     
-    def createForm():
+    def createForm(**kwargs):
         return AddStudent()
     
     def retrieveForm(form):
@@ -125,7 +125,7 @@ class Member(AbstractUser):
     def __str__(self):
         return self.student.__str__()
     
-    def createForm():
+    def createForm(**kwargs):
         return AddMember()
     
     def retrieveForm(form):
@@ -172,7 +172,7 @@ class Etude(models.Model):
 
         super().save(*args, **kwargs)
     
-    def createForm():
+    def createForm(**kwargs):
         return AddEtude()
     
     def retrieveForm(form):
@@ -180,6 +180,62 @@ class Etude(models.Model):
 
     def modifyForm(instance):
         return AddEtude(instance=instance)
+
+class Message(models.Model):
+    contenu = models.CharField(max_length=5000)
+    date = models.DateTimeField()
+    expediteur = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="expediteur")
+    destinataire = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="destinataire")
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default=1)
+    read = models.BooleanField(default = False)
+
+    def __str__(self):
+        if len(self.contenu)>50:
+            return self.contenu[:50]+"..."
+        else:
+            return self.contenu
+
+    def createForm(**kwargs):
+        return AddMessage(**kwargs)
+    
+    def retrieveForm(form):
+        return AddMessage(form)
+
+    def modifyForm(instance):
+        return AddMessage(instance=instance)
+
+    def since(self):
+        return timezone.now() - self.date
+
+    def get_display_dict(self):
+        return {'Expéditeur':self.expediteur, 'Contenu':self.contenu}
+
+    def get_title_details(self):
+        return "Détails du message"
+
+
+class AddMessage(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['destinataire', 'contenu']
+
+    def __init__(self, *args, **kwargs):
+        je = kwargs.pop('je', None)
+        super(AddMessage, self).__init__(*args, **kwargs) 
+        if je:
+            self.fields['destinataire'].queryset = Member.objects.filter(je=je)
+
+    def save(self, commit=True, **kwargs):
+        message = super(AddMessage, self).save(commit=False)
+        message.expediteur = kwargs['expediteur']
+        message.je = message.expediteur.je
+        message.date = timezone.now()
+        if commit:
+            message.save()
+        return message
+
+    def __str__(self):
+        return "Nouveau message"
 
 
 class AddMember(forms.ModelForm):
