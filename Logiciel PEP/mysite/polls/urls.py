@@ -13,4 +13,5 @@ urlpatterns = [
     path("annuaire/", views.annuaire, name="annuaire"),
     path("facture/<int:iD>", views.facture, name="facture"),
     path("messages/", views.messages, name="messages"),
+    path("register/", views.register, name="register"),
 ]
