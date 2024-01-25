@@ -238,14 +238,49 @@ class AddMessage(forms.ModelForm):
         return "Nouveau message"
 
 
-class AddMember(forms.ModelForm):
-    class Meta:
-        model = Member
-        fields='__all__'
+class AddMember(forms.Form):
+    first_name = forms.CharField(max_length=200)
+    last_name = forms.CharField(max_length=200)
+    mail = forms.EmailField(max_length=200)
+    password = forms.CharField(widget=forms.PasswordInput)
+    password_confirmation = forms.CharField(widget=forms.PasswordInput) 
+    phone_number = forms.CharField(max_length=200, required=False)
+    adress = forms.CharField(max_length=300)
+    country = forms.CharField(max_length=100)
+    promotion = forms.CharField(max_length=200, required=False)
+    je = forms.ModelChoiceField(queryset=JE.objects.all(), empty_label=None)
     def __str__(self):
         return "Ajouter un membre"
     def name(self):
         return "AddMember"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirmation = cleaned_data.get('password_confirmation')
+
+        if password and password_confirmation and password != password_confirmation:
+            raise forms.ValidationError("Passwords do not match.")
+
+    def save(self, commit=True, **kwargs):
+        self.clean()
+        # Create and save a new Student object using the form data
+        student = Student(
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name'],
+            mail=self.cleaned_data['mail'],
+            phone_number=self.cleaned_data['phone_number'],
+            adress=self.cleaned_data['adress'],
+            country=self.cleaned_data['country'],
+            promotion=self.cleaned_data['promotion'],
+            je=self.cleaned_data['je']
+        )
+        student.save()
+        new_member = Member(email=self.cleaned_data['mail'], student=student, je=self.cleaned_data['je'])
+        new_member.set_password(self.cleaned_data['password'])
+        new_member.save()
+        return new_member
+
 
     
 class AddStudent(forms.ModelForm):

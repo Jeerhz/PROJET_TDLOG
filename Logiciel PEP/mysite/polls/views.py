@@ -154,3 +154,24 @@ def messages(request):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def register(request):
+    if request.method == 'GET':
+        form = AddMember()
+        context = {'form':form}
+        template = loader.get_template("polls/register.html")
+    else:
+        fetchform = AddMember(request.POST)
+        if fetchform.is_valid():
+            new_member = fetchform.save()
+            login(request, new_member)
+            liste_messages = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).order_by('date')[0:3]
+            message_count = Message.objects.filter(destinataire=request.user, read=False, date__range=(timezone.now()-timezone.timedelta(days=20), timezone.now())).count()
+            context = {'liste_messages':liste_messages, 'message_count':message_count}
+            template = loader.get_template("polls/index.html")
+        else:
+            context = {'form':fetchform}
+            template = loader.get_template("polls/register.html")
+    return HttpResponse(template.render(context, request))
+
+
+
