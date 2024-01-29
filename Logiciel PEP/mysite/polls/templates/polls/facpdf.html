@@ -3,6 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        {% load static %}
 		<title>HTML-to-PDF Example</title>
 		<meta
 			name="viewport"
@@ -247,7 +248,7 @@
 	<body>
 		<button type="button" class="btn btn-primary bouton_pdf" id="download-button">Download as PDF</button>
         
-        <img src="bdc.png" alt="Logo Junior" class="image_logo ">
+        <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
         
         
 		<div id="invoice">
