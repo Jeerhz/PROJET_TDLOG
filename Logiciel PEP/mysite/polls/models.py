@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from django import forms
 from django.db import models
 from django.utils import timezone 
@@ -6,18 +7,26 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.files.storage import FileSystemStorage
+
+IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
+
 
 
 class JE(models.Model):
     nom = models.CharField(max_length = 200)
     raison_sociale = models.CharField(max_length = 200)
-    adress = models.CharField(max_length = 200)
+    rue = models.CharField(max_length = 200)
+    ville = models.CharField(max_length = 100)
+    code_postal = models.CharField(max_length = 10)
     siret = models.CharField(max_length = 14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits')), MinLengthValidator(14, 'This field must contain exactly 14 caracters.')])
     APE = models.CharField(max_length=5, validators=[RegexValidator(r'^[0-9]{4}[A-Za-z]$', _('The expected format is 0000A.'))])
     TVA = models.CharField(max_length=13, validators=[RegexValidator(r'^[A-Za-z]{2}[0-9]{11}$', _('The expected format is 2 letters and 11 digits')), MinLengthValidator(13, 'This field must contain exactly 13 caracters.')])
     IBAN = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special caracters are not allowed.'))])
     BIC = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special caracters are not allowed.'))])
     check_order = models.CharField(max_length=50)
+    logo = models.ImageField(storage=IMAGE_STORAGE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     def __str__(self):
         return self.nom
@@ -25,36 +34,39 @@ class JE(models.Model):
     def default():
         new_je = JE()
         new_je.nom = "PEP"
-        new_je.raison_sociale = "Junio-Entreprise des Ponts"
-        new_je.adress = "6-8 Avenue Blaise Pascal, 77420 Champs-sur-Marne"
+        new_je.raison_sociale = "Junior-Entreprise des Ponts"
+        new_je.rue = "6-8 Avenue Blaise Pascal"
+        new_je.ville = "Champs-sur-Marne"
+        new_je.code_postal = "77420"
         new_je.siret = "01234567890123"
         new_je.APE = "0000A"
         new_je.TVA = "AA01234567890"
         new_je.IBAN = "FR000000000000000000000"
         new_je.BIC = "0000000000000000000000"
-        new_je.check_order = ""
+        new_je.check_order = "ORDRE_CHEQUE"
+        new_je.logo = "/static/polls/img/bdc.png"
         return new_je
-
-    def get_title_details(self):
-        return "Détails de la Junior-Entreprise"
     
 
 class Client(models.Model):
-    name = models.CharField(max_length = 200)
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    nom_societe = models.CharField(max_length = 200)
+    
     raison_sociale = models.CharField(max_length = 150)
     rue = models.CharField(max_length = 300)
     ville = models.CharField(max_length = 100)
     code_postal = models.CharField(max_length = 20)
-    representant = models.CharField(max_length = 100)
     country = models.CharField(max_length = 100)
-    siret = models.CharField(max_length = 15, default='12345678901234', validators=[RegexValidator(r'^[0-9]+$'), MinLengthValidator(14, 'This field must contain exactly 14 caracters.')])
+    titre_representant = models.CharField(max_length = 5, choices=TITRE_CHOIX)
+    nom_representant = models.CharField(max_length = 100)
+    fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
 
     def __str__(self):
-        return self.name
+        return self.nom_societe
 
     def get_display_dict(self):
-        return {'Nom':self.name, 'Pays':self.country, 'Représentant':representant}
+        return {'Nom de société':self.nom_societe, 'Raison sociale': self.raison_sociale, 'Adresse': self.rue+'\n'+self.ville+'\n'+self.code_postal,'Pays':self.country, 'Représentant':self.nom_representant, 'Fonction du représentant':self.fonction_representant}
 
     def get_title_details(self):
         return "Détails du client"
@@ -82,7 +94,7 @@ class Student(models.Model):
         return self.first_name+' '+self.last_name
     
     def get_display_dict(self):
-        return {"Prénom":self.first_name, "Nom":self.last_name, "Promotion":self.promotion}
+        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion}
 
     def get_title_details(self):
         return "Détails de l'étudiant"
@@ -95,6 +107,9 @@ class Student(models.Model):
 
     def modifyForm(instance):
         return AddStudent(instance=instance)
+
+    def default():
+        return Student(first_name="Edgar", last_name="Duc", mail="edgar.duc@eleves.enpc.fr", phone_number="+33783654605", adress="7 Allée des Sorbiers, 77420 Champs-sur-Marne", country="France", promotion="025", je=JE.objects.get(id=JE.objects.all()[0].id))
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, je=None, student=None, **extra_fields):
@@ -116,8 +131,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class Member(AbstractUser):
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE.objects.get(id=JE.objects.all()[0].id))
     student = models.OneToOneField(Student, on_delete=models.CASCADE, default=1)
+    titre = models.CharField(max_length = 5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -135,17 +152,19 @@ class Member(AbstractUser):
         return AddMember(instance=instance)
 
     def get_display_dict(self):
-        return student.get_display_dict()
+        return self.student.get_display_dict()
 
     def get_title_details(self):
-        return student.get_title_details()
+        return self.student.get_title_details()
 
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
 
 class Etude(models.Model):
-    description = models.CharField(max_length=200)
+    titre = models.CharField(max_length = 200)
+    numero = models.CharField(max_length = 10)
+    description = models.TextField(max_length=500, blank=True)
     begin = models.DateField()
     end = models.DateField()
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
@@ -156,10 +175,14 @@ class Etude(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
     
     def __str__(self):
-        return self.description
+        return self.titre
 
     def get_display_dict(self):
-        return {'Description':self.description, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__()}
+        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH, 'Montant HT':self.montant_HT}
+        liste_etudiants = self.students.all()
+        for index in range(len(liste_etudiants)) :
+            intermediary_dict['Etudiant '+str(index+1)] = liste_etudiants[index].__str__()
+        return intermediary_dict
 
     def get_title_details(self):
         return "Détails de la mission"
@@ -181,8 +204,11 @@ class Etude(models.Model):
     def modifyForm(instance):
         return AddEtude(instance=instance)
 
+    def numero_AP(self, nom_doc):
+        return self.numero+nom_doc
+
 class Message(models.Model):
-    contenu = models.CharField(max_length=5000)
+    contenu = models.TextField(max_length=5000)
     date = models.DateTimeField()
     expediteur = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="expediteur")
     destinataire = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="destinataire")
@@ -208,7 +234,7 @@ class Message(models.Model):
         return timezone.now() - self.date
 
     def get_display_dict(self):
-        return {'Expéditeur':self.expediteur, 'Contenu':self.contenu}
+        return {'Expéditeur':self.expediteur, 'Date': self.date, 'Contenu':self.contenu}
 
     def get_title_details(self):
         return "Détails du message"
@@ -239,16 +265,18 @@ class AddMessage(forms.ModelForm):
 
 
 class AddMember(forms.Form):
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     first_name = forms.CharField(max_length=200)
     last_name = forms.CharField(max_length=200)
+    titre = forms.ChoiceField(choices=TITRE_CHOIX)
     mail = forms.EmailField(max_length=200)
     password = forms.CharField(widget=forms.PasswordInput)
     password_confirmation = forms.CharField(widget=forms.PasswordInput) 
-    phone_number = forms.CharField(max_length=200, required=False)
+    phone_number = forms.CharField(max_length=200)
     adress = forms.CharField(max_length=300)
     country = forms.CharField(max_length=100)
     promotion = forms.CharField(max_length=200, required=False)
-    je = forms.ModelChoiceField(queryset=JE.objects.all(), empty_label=None)
+    identifiant_je = forms.CharField(max_length = 50)
     def __str__(self):
         return "Ajouter un membre"
     def name(self):
@@ -261,10 +289,15 @@ class AddMember(forms.Form):
 
         if password and password_confirmation and password != password_confirmation:
             raise forms.ValidationError("Passwords do not match.")
+        try:
+            JE.objects.get(id=identifiant_je)
+        except:
+            raise forms.ValidationError("This JE identifier does not exist.")
 
     def save(self, commit=True, **kwargs):
         self.clean()
         # Create and save a new Student object using the form data
+        je = JE.objects.get(id=self.cleaned_data['identifiant_je'])
         student = Student(
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
@@ -273,10 +306,10 @@ class AddMember(forms.Form):
             adress=self.cleaned_data['adress'],
             country=self.cleaned_data['country'],
             promotion=self.cleaned_data['promotion'],
-            je=self.cleaned_data['je']
+            je=je
         )
         student.save()
-        new_member = Member(email=self.cleaned_data['mail'], student=student, je=self.cleaned_data['je'])
+        new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member
@@ -286,17 +319,23 @@ class AddMember(forms.Form):
 class AddStudent(forms.ModelForm):
     class Meta:
         model = Student
-        fields='__all__'
+        exclude = ['je']
     def __str__(self):
         return "Informations de l'étudiant"
     def name(self):
         return "AddStudent"
+    def save(self, commit=True, **kwargs):
+        student = super(AddStudent, self).save(commit=False)
+        student.je = kwargs['expediteur'].je
+        if commit:
+            student.save()
+        return student
     
 class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        fields='__all__'
+        exclude = ['je']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -311,15 +350,27 @@ class AddEtude(forms.ModelForm):
             raise ValidationError(_('Start date must be before the end date.'))
 
         return cleaned_data
+    def save(self, commit=True, **kwargs):
+        etude = super(AddEtude, self).save(commit=False)
+        etude.je = kwargs['expediteur'].je
+        if commit:
+            etude.save()
+        return etude
     
 class AddClient(forms.ModelForm):
     class Meta:
         model = Client
-        fields='__all__'
+        exclude = ['je']
     def __str__(self):
         return "Informations du client"
     def name(self):
         return "AddClient"
+    def save(self, commit=True, **kwargs):
+        client = super(AddClient, self).save(commit=False)
+        client.je = kwargs['expediteur'].je
+        if commit:
+            client.save()
+        return client
     
 
 
