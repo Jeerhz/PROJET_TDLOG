@@ -38,6 +38,16 @@
                             </div>
                             <form class="user" method="post" action="{% url 'register' %}">
                                 {% csrf_token %}
+                                {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>Erreur de formulaire:</strong>
+                                    <ul>
+                                        {% for error in form.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         {{ form.first_name.label_tag }}
@@ -49,6 +59,11 @@
                                         {{ form.last_name }}
                                         {{ form.last_name.errors }}
                                     </div>
+                                </div>
+                                <div class="form-group">
+                                    {{ form.titre.label_tag }}
+                                    {{ form.titre }}
+                                    {{ form.titre.errors }}
                                 </div>
                                 <div class="form-group">
                                     {{ form.mail.label_tag }}
@@ -88,9 +103,9 @@
                                     {{ form.promotion.errors }}
                                 </div>
                                 <div class="form-group">
-                                    {{ form.je.label_tag }}
-                                    {{ form.je }}
-                                    {{ form.je.errors }}
+                                    {{ form.identifiant_je.label_tag }}
+                                    {{ form.identifiant_je }}
+                                    {{ form.identifiant_je.errors }}
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-user btn-block">
                                     Register Account
