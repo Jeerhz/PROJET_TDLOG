@@ -88,7 +88,7 @@ class Student(models.Model):
     adress = models.CharField(max_length = 300)
     country = models.CharField(max_length = 100)
     promotion = models.CharField(max_length = 200, blank=True)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = 1)
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = None)
 
     def __str__(self):
         return self.first_name+' '+self.last_name
@@ -112,13 +112,13 @@ class Student(models.Model):
         return Student(first_name="Edgar", last_name="Duc", mail="edgar.duc@eleves.enpc.fr", phone_number="+33783654605", adress="7 Allée des Sorbiers, 77420 Champs-sur-Marne", country="France", promotion="025", je=JE.objects.get(id=JE.objects.all()[0].id))
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password, je=None, student=None, **extra_fields):
+    def create_user(self, email, password, je=None, student=None, titre=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         if not password:
             raise ValueError('The password field must be set.')
         email = self.normalize_email(email)
-        user = self.model(email=email, je=je, student=student)
+        user = self.model(email=email, je=je, student=student, titre=titre)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -288,16 +288,18 @@ class AddMember(forms.Form):
         password_confirmation = cleaned_data.get('password_confirmation')
 
         if password and password_confirmation and password != password_confirmation:
-            raise forms.ValidationError("Passwords do not match.")
+            self.add_error('password', "Passwords do not match.")
+            raise forms.ValidationError("Passwords do not match.", code="password")
         try:
-            JE.objects.get(id=identifiant_je)
+            id = uuid.UUID(cleaned_data.get('identifiant_je'))
+            JE.objects.get(id=id)
         except:
-            raise forms.ValidationError("This JE identifier does not exist.")
+            self.add_error('identifiant_je', "This JE identifier does not exist.")
+            raise forms.ValidationError("This JE identifier does not exist.", code="JE")
 
     def save(self, commit=True, **kwargs):
-        self.clean()
         # Create and save a new Student object using the form data
-        je = JE.objects.get(id=self.cleaned_data['identifiant_je'])
+        je = JE.objects.get(id=uuid.UUID(self.cleaned_data['identifiant_je']))
         student = Student(
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
