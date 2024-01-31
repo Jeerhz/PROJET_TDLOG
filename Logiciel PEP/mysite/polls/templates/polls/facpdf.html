@@ -18,35 +18,28 @@
 		></script>
         <style>
             body {
-            width: 320mm; /* A4 width */
-            height: 297mm;
-            font-family: "Lucida Sans", sans-serif;
             line-height: 1.1;
-            margin: 20px;
             font-size: 12px;
-            border: 2px solid #000;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .container {
-            
+            font-family: "Lucida Sans", sans-serif;
             width: 210mm; /* A4 width */
             height: 297mm; /* A4 height */
-            margin-top: 0px;
-            margin-bottom: 0px;
-            margin-left: 0px;
-            margin-right: 0px;
-            border: 2px solid #000;
-            padding: 0px;
+            outline: 2px solid #000;
             box-sizing: border-box;
-            position: relative;
-            left: 0%;
-            top: 10%
+            position : relative;
+            overflow:hidden;
         }
         .image_logo {
             position: absolute;
             width: 120px;
             height: auto;
-            top: 7%; 
-            left: 7%;            
+            top: 5%; 
+            left: 10%;            
         }
         .info_PEP {
             position: absolute;
@@ -169,7 +162,6 @@
             left: 7%;
             width: 55%;
             border-collapse: collapse;
-            margin-bottom: 20px;
 
         }
         .table_paiement th {
@@ -186,12 +178,12 @@
         .footer {
             display: inline-block;
             position: absolute;
-            top: 90%;
+            bottom: 0%;
             left: 0%; /* Distance from the left side */
             right: 0%; 
             background-color: rgb(255,255,255); /* Grey background color */
             border: 0px;
-            padding: 10px;
+            padding-bottom: 2%;
             height: auto;
             width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
             display: inline; 
@@ -236,193 +228,191 @@
             color :rgb(255,255,255);
         }
         .bouton_pdf {
-            position: absolute;
-            top: 0%;
-            left: 40%;
-            
-
+            background-color: #4495f1;
+            border-radius: 3px;
+            color : #fff;
+            border-color: #1170dc;
+            font-family: Arial, Helvetica, sans-serif;
+            padding : 5px 10px;
+            margin : 10px;
         }
 
         </style>
 	</head>
 	<body>
-		<button type="button" class="btn btn-primary bouton_pdf" id="download-button">Download as PDF</button>
-        
-        <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
+		<button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
         
         
-		<div id="invoice">
-			<div class="container">
-                
-                
-                <div class="section2">
-                    <p></p>
-                </div>
-                <div class="numero_facture">
-                    <p class="gras">Facture n° <span contenteditable="true"> {{etude.numero}}</span> <span id = "numero_mission"></span></p>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <p class="gris_clair">A l'attention de : </p>
-                    <br>
-                    <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
-                    <p><span class="gras" contenteditable="true" >{{client.titre_representant}} {{client.nom_representant}}</span></p> 
-                    <p><span  contenteditable="true" >{{client.rue}}</span></p> 
-                    <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
-                    <p><span contenteditable="true" >{{client.country}}</span></p> 
-                </div>
-        
-                <div class="info_PEP">
-                    <p id = "raison_sociale_JE" class="gras font16"></p>
-                    <p class="gris_clair font12">Association loi 1901, affiliée à la CNJE</p>
-                    <br>
-                    <p>6 et 8, avenue Blaise Pascal - Cité Descartes,</p>
-                    <p>Champs-sur-Marne</p>
-                    <p>77455 Marne-la-Vallée Cedex 2</p>
-                    <br>
-                    <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
-                    <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
-                    <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
-                    <p></p>
-                
-                </div>
-                <table class="table_montant">
-                    <thead>
-                        <tr>
-                            <th>Taux TVA</th>
-                            <th>Montant TVA</th>
-                            <th>Montant HT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td contenteditable="true">20,00%</td>
-                            <td contenteditable="true">{{montant_TVA}}</td>
-                            <td contenteditable="true">etude.montant_HT</td>
-                        </tr>
-                        <tr>
-                            
+        <div id = "invoice" class="container">
+            <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
+            
+            <div class="section2">
+                <p></p>
+            </div>
+            <div class="numero_facture">
+                <p class="gras">Facture n° <span contenteditable="true"> {{etude.numero}}</span> <span id = "numero_mission"></span></p>
+                <br>
+                <br>
+                <br>
+                <br>
+                <p class="gris_clair">A l'attention de : </p>
+                <br>
+                <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
+                <p><span class="gras" contenteditable="true" >{{client.titre_representant}} {{client.nom_representant}}</span></p> 
+                <p><span  contenteditable="true" >{{client.rue}}</span></p> 
+                <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
+                <p><span contenteditable="true" >{{client.country}}</span></p> 
+            </div>
+    
+            <div class="info_PEP">
+                <p id = "raison_sociale_JE" class="gras font16"></p>
+                <p class="gris_clair font12">Association loi 1901, affiliée à la CNJE</p>
+                <br>
+                <p>6 et 8, avenue Blaise Pascal - Cité Descartes,</p>
+                <p>Champs-sur-Marne</p>
+                <p>77455 Marne-la-Vallée Cedex 2</p>
+                <br>
+                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
+                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
+                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
+                <p></p>
+            
+            </div>
+            <table class="table_montant">
+                <thead>
+                    <tr>
+                        <th>Taux TVA</th>
+                        <th>Montant TVA</th>
+                        <th>Montant HT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td contenteditable="true">20,00%</td>
+                        <td contenteditable="true">{{montant_TVA}}</td>
+                        <td contenteditable="true">etude.montant_HT</td>
+                    </tr>
+                    <tr>
                         
-                            
-                        </tr>
-                    </tbody>
-                </table>
-                
-                
-                <div class="objet_facture">
-                    <p><span class ="gras">Objet :</span> <span > Facture d'acompte concernant l'étude</span> <span contenteditable="true"> {{etude.numero}} </span> <span >en référence à la convention d'étude {{etude.numero}}ce</span> </p>
-                </div>
-                <table class="table_prestation">
-                    <thead>
-                        <tr>
-                            <th class="align-left" >Désignation</th>
-                            <th class="align-right" >Montant HT</th>
-                        </tr>
-                    </thead>
-                    <tbody id = "table_prestation">
-                        
-                        
-                    </tbody>
-                </table>
-                <script>
                     
-                    const listeDonnees = [
-                        { phase: 'Phase 1 : {nom_phase_1}', pourcentage: 30, jours: 2, prix: 450 },
-                        { phase: 'Phase 2 : {nom_phase_2}', pourcentage: 30, jours: 2, prix: 450 },
-                        { phase: 'Phase 3 : {nom_phase_3}', pourcentage: 30, jours: 2, prix: 450 },
-                    ]
-                    const table_prestation = document.getElementById('table_prestation');
-                    for (let i = 0; i < listeDonnees.length; i++) {
-                        const row = document.createElement('tr');
-                
-                
-                        const cell1 = document.createElement('td');
-                        cell1.textContent = listeDonnees[i].phase;
-                        cell1.classList.add('align-left');
-                        cell1.setAttribute('contenteditable', 'true');
-                        row.appendChild(cell1);
                         
-                
-                        const cell2 = document.createElement('td');
-                        const montant = (listeDonnees[i].pourcentage / 100) * listeDonnees[i].jours * listeDonnees[i].prix;
-                        cell2.textContent = montant.toFixed(2); 
-                        cell2.classList.add('align-right');
-                        cell2.setAttribute('contenteditable', 'true');
-                        row.appendChild(cell2);
-        
-               
-                        table_prestation.appendChild(row);
-                    }
-                </script>
-                <table class="table_date">
-                    <tbody>
-                        <tr>
-                            <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                            <td class="align-right" contenteditable="true">{{etude.end}}</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
-                            <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
-                            
-                        </tr>
-                        <tr>
-                            <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
-                            <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
-                            <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="info_retard">
-                    <p class="gris_foncé">Aucun escompte n'est accordé pour paiement anticipé. En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
-                        sera appliqué des pénalités au taux de 3 fois le taux d'intérêt légal en vigueur. Il sera
-                        également appliqué une indemnité de recouvrement de 40 euros. Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
-                        complet des sommes dues. Règlement à la réception par chèque bancaire, postal ou virement uniquement.</p> 
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            <div class="objet_facture">
+                <p><span class ="gras">Objet :</span> <span > Facture d'acompte concernant l'étude</span> <span contenteditable="true"> {{etude.numero}} </span> <span >en référence à la convention d'étude {{etude.numero}}ce</span> </p>
+            </div>
+            <table class="table_prestation">
+                <thead>
+                    <tr>
+                        <th class="align-left" >Désignation</th>
+                        <th class="align-right" >Montant HT</th>
+                    </tr>
+                </thead>
+                <tbody id = "table_prestation">
                     
-                </div>
-                <table class="table_paiement">
-                    <thead>
-                        <tr>
-                            <th class="align-left">Modalités de paiement :</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="align-left">Pour les versements</td>
-                            <td class="align-left">RIB : 30003 04123 00050851687 30</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left gris_clair">merci d'indiquer votre nom</td>
-                            <td class="align-left">Domiciliation : SG CHAMPS MC DESCARTES (04123)</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left gris_clair italique">et numéro de facture</td>
-                            <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left"></td>
-                            <td class="align-left">BIC : SOGEFRPP</td>
-                        </tr>
-                        <br>
-                        <br>
-                        <tr>
-                            <td class="align-left"> Pour les chèques</td>
-                            <td class="align-left">A l'ordre de Ponts Etudes Projets</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="footer">
-                    <div class ="gras gris_clair">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
-                    <div class ="gris_clair">Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
-                    <div class="dotted-line gris_clair"></div>
-                    <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.representant}} {{etude.numero}}</span> <span contenteditable="true" class ="gras">Net à payer :</span> </p>
-                </div>
+                    
+                </tbody>
+            </table>
+            <script>
+                
+                const listeDonnees = [
+                    { phase: 'Phase 1 : {nom_phase_1}', pourcentage: 30, jours: 2, prix: 450 },
+                    { phase: 'Phase 2 : {nom_phase_2}', pourcentage: 30, jours: 2, prix: 450 },
+                    { phase: 'Phase 3 : {nom_phase_3}', pourcentage: 30, jours: 2, prix: 450 },
+                ]
+                const table_prestation = document.getElementById('table_prestation');
+                for (let i = 0; i < listeDonnees.length; i++) {
+                    const row = document.createElement('tr');
+            
+            
+                    const cell1 = document.createElement('td');
+                    cell1.textContent = listeDonnees[i].phase;
+                    cell1.classList.add('align-left');
+                    cell1.setAttribute('contenteditable', 'true');
+                    row.appendChild(cell1);
+                    
+            
+                    const cell2 = document.createElement('td');
+                    const montant = (listeDonnees[i].pourcentage / 100) * listeDonnees[i].jours * listeDonnees[i].prix;
+                    cell2.textContent = montant.toFixed(2); 
+                    cell2.classList.add('align-right');
+                    cell2.setAttribute('contenteditable', 'true');
+                    row.appendChild(cell2);
+    
+            
+                    table_prestation.appendChild(row);
+                }
+            </script>
+            <table class="table_date">
+                <tbody>
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
+                        
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="info_retard">
+                <p class="gris_foncé">Aucun escompte n'est accordé pour paiement anticipé. En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
+                    sera appliqué des pénalités au taux de 3 fois le taux d'intérêt légal en vigueur. Il sera
+                    également appliqué une indemnité de recouvrement de 40 euros. Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
+                    complet des sommes dues. Règlement à la réception par chèque bancaire, postal ou virement uniquement.</p> 
+                
+            </div>
+            <table class="table_paiement">
+                <thead>
+                    <tr>
+                        <th class="align-left">Modalités de paiement :</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="align-left">Pour les versements</td>
+                        <td class="align-left">RIB : 30003 04123 00050851687 30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gris_clair">merci d'indiquer votre nom</td>
+                        <td class="align-left">Domiciliation : SG CHAMPS MC DESCARTES (04123)</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gris_clair italique">et numéro de facture</td>
+                        <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left"></td>
+                        <td class="align-left">BIC : SOGEFRPP</td>
+                    </tr>
+                    <br>
+                    <br>
+                    <tr>
+                        <td class="align-left"> Pour les chèques</td>
+                        <td class="align-left">A l'ordre de Ponts Etudes Projets</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="footer">
+                <div class ="gras gris_clair">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
+                <div class ="gris_clair">Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
+                <div class="dotted-line gris_clair"></div>
+                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.representant}} {{etude.numero}}</span> <span contenteditable="true" class ="gras">Net à payer :</span> </p>
             </div>
         </div>
 
