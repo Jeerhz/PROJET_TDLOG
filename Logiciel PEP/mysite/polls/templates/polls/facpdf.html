@@ -24,15 +24,17 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            background-color: #5b5b5b;
         }
         .container {
             font-family: "Lucida Sans", sans-serif;
             width: 210mm; /* A4 width */
             height: 297mm; /* A4 height */
-            outline: 2px solid #000;
             box-sizing: border-box;
             position : relative;
             overflow:hidden;
+            background-color: #fff;
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.7);
         }
         .image_logo {
             position: absolute;
@@ -228,19 +230,35 @@
             color :rgb(255,255,255);
         }
         .bouton_pdf {
-            background-color: #4495f1;
-            border-radius: 3px;
+            background-color: #2c2c2c;
+            border-radius: 5px;
             color : #fff;
-            border-color: #1170dc;
+            border-color: #000;
             font-family: Arial, Helvetica, sans-serif;
             padding : 5px 10px;
-            margin : 10px;
+            cursor:pointer;
+        }
+
+        .bouton_pdf:hover {
+        /* Add additional hover effects here if needed */
+        /* Add the hover class for the shining effect */
+            background-color: #000000; /* Darker green color */
+        }
+
+        .page-wrapper{
+            width:100%;
+            height: 50px;
+            display : grid;
+            align-items: center;
+            justify-content: center;
         }
 
         </style>
 	</head>
 	<body>
-		<button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+        <div class="page-wrapper">
+            <button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+        </div>
         
         
         <div id = "invoice" class="container">
@@ -415,7 +433,7 @@
                 <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.representant}} {{etude.numero}}</span> <span contenteditable="true" class ="gras">Net à payer :</span> </p>
             </div>
         </div>
-
+        <div class="page-wrapper"></div>
 		<script>
 			const button = document.getElementById('download-button');
 
