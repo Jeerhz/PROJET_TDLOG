@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- html2pdf CDN link -->
+		<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    ></script>
     {% load static %}
-    <title>Document</title>
+    <title>Convention d'étude {{etude.numero}}ce</title>
     <style>
         body {
-            width: 297mm;
             font-family: "Quicksand";
             font-size: 14px;
-            border: 2px solid #000;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #5b5b5b;
            
         }
         .logo_background {
@@ -119,17 +129,11 @@
             grid-row: 1 / 3;
         }
 
-        .container {
-            width: 100%;
-            background-color: rgb(255, 255, 255);
-            
-        }
-
         .slide {
-            margin-top: 0px;
+            margin: 0px;
+            width: 297mm;
             height: 210mm;
             background-color: rgb(255, 255, 255);
-            border: 2px solid #000;
             overflow: hidden;
         }
 
@@ -297,9 +301,9 @@
         .wrapper_budget{
             height: 613.700787px;
             line-height: 20px;
-            margin-left : 80px; 
             margin-top: 0px; 
-            margin-right: 80px;
+            padding-left: 80px;
+            padding-right:80px;
             overflow: hidden;
         }
         .table_montant {
@@ -325,12 +329,39 @@
 			background: #ffffff;
             font-style: 900;
 		}
+
+        .bouton_pdf {
+            background-color: #5b5b5b;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            color : #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            padding : 5px 10px;
+            cursor:pointer;
+        }
+
+        .bouton_pdf:hover {
+        /* Add additional hover effects here if needed */
+        /* Add the hover class for the shining effect */
+            background-color: #000000; /* Darker green color */
+        }
+
+        .page-wrapper{
+            width:100%;
+            height: 60px;
+            display : grid;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
-    <div class="slide">
-        <div class="container">
-            
+    <div class="page-wrapper">
+        <button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+    </div>
+    <div id="conv-etude">
+        <div class="slide">
+                
             <div class = "header">
                 <img src="{% static 'polls/img/logo_background.png' %}" alt="Logo Junior" class="logo_background">
                 <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_page1">
@@ -346,7 +377,7 @@
                         <div class="centree font45 fonttaviraj  bleu_foncé" > Convention d’étude</div>
                         <div class="line"></div>
                         <br>
-                       
+                    
                         <div class="centree bleu_clair" contenteditable="true">REFERENCE DE L’ETUDE :  {{etude.numero}}</div>
                         <div class="centree bleu_clair" contenteditable="true">REFERENCE DU DOCUMENT :  {{etude.numero}}ce</div>
                         
@@ -382,12 +413,12 @@
                         <br>
                         <div class="centree fonttaviraj bleu_foncé gras">Ponts Etudes Projets</div>
                         <div class="centree bleu_foncé italique font10">Association loi 1901 affiliée à la Confédération Nationale des Junior-Entreprises</div>
-                      
+                    
                         <br>
                         <div class="centree bleu_foncé">6-8 avenue Blaise Pascal, Champs-sur-Marne, 77455 Marne-la-Vallée Cedex 2</div>
                         <div class="centree bleu_foncé">Tél. : 01 64 15 33 99 – Fax : 01 64 15 33 90 – pep@enpc.org – pep.enpc.org</div>
                     </div>
-              
+            
             </div>
         
             <div class="footer">
@@ -396,12 +427,10 @@
                 <div class="centree blanc font16"> Page 1 sur 5</div>
             </div>
         </div>
-    </div>
 
-    <div class="slide">
-            
-             
-        <div class="container">
+        <div class="slide">
+                
+
             <div class="header">
                 <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
                 <div class="reference_mission"> 
@@ -452,11 +481,8 @@
                 <div class="centree blanc font16"> Page 2 sur 5</div>
             </div>
         </div>
-    </div>
-    <div class="slide">
-            
-             
-        <div class="container">
+        <div class="slide">
+                
             <div class="header">
                 <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
                 <div class="reference_mission"> 
@@ -467,7 +493,7 @@
             </div>
             <div class="parentb">
                 <div class="div1b">
-                 
+                
                     <p class="font22 bleu_foncé"><strong>Qu’est-ce qu’une Junior-Entreprise ?</strong></p>
                     <p>Une Junior-Entreprise est une association qui met en relation des entreprises qui souhaitent faire réaliser des missions techniques ou stratégiques avec des étudiants désireux de mettre en application les enseignements théoriques qu’ils reçoivent. Véritable garantie de qualité et de sérieux, l’appartenance à la marque « Junior-Entreprise » est soumise au respect de normes exigeantes et à des contrôles réguliers de la Confédération Nationale des Junior-Entreprises.</p>
 
@@ -489,11 +515,8 @@
                 <div class="centree blanc font16"> Page 3 sur 5</div>
             </div>
         </div>
-    </div>
-    <div class="slide">
-            
-             
-        <div class="container">
+        <div class="slide">
+                
             <div class="header">
                 <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
                 <div class="reference_mission"> 
@@ -533,9 +556,7 @@
                 <div class="centree blanc font16"> Page 4 sur 5</div>
             </div>
         </div>
-    </div>
-    <div class="slide">
-        <div class="container">
+        <div class="slide">
             <div class="header">
                 <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
                 <div class="reference_mission"> 
@@ -607,8 +628,30 @@
                 <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
                 <div class="centree blanc font16"> Page 5 sur 5</div>
             </div>
+            
         </div>
-        
     </div>
+    <div class="page-wrapper"></div>
 </body>
+
+<script>
+    const button = document.getElementById('download-button');
+
+    function generatePDF() {
+        // Choose the element that your content will be rendered to.
+        const element = document.getElementById('conv-etude');
+        var opt = {
+        margin:       0,
+        filename:     'convention_etude.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        // Choose the element and save the PDF for your user.
+        html2pdf().from(element).set(opt).save();
+    }
+
+    button.addEventListener('click', generatePDF);
+</script>
+
 </html>
