@@ -15,4 +15,5 @@ urlpatterns = [
     path("messages/", views.messages, name="messages"),
     path("register/", views.register, name="register"),
     path("convention_etude/<int:iD>", views.convention_etude, name="convention_etude"),
+    path("charts/", views.charts, name="charts"),
 ]
