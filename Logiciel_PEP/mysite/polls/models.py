@@ -227,7 +227,8 @@ class Etude(models.Model):
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
-    
+    en_negociation = models.BooleanField(default = 1)
+
     def __str__(self):
         return self.titre
 

@@ -507,6 +507,10 @@
                             </div>
                         </div>
 
+                        <script>
+                            var monthlySumsData = [{% for value in monthly_sums %}{{ value }},{% endfor %}];
+                        </script>
+
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
