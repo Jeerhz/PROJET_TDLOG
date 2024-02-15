@@ -16,4 +16,8 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("convention_etude/<int:iD>", views.convention_etude, name="convention_etude"),
     path("charts/", views.charts, name="charts"),
+    path("blank_page/", views.blank_page, name="charts"),
+    path("organigramme/", views.organigramme, name="organigramme"),
+    path("je_detail/", views.je_detail, name='je_detail'),
+
 ]

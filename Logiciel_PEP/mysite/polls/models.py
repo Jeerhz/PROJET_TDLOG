@@ -187,6 +187,7 @@ class Member(AbstractUser):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, default=1)
     titre = models.CharField(max_length = 5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
+    photo = models.ImageField(storage=IMAGE_STORAGE, default= '/static/polls/img/undraw_profile.svg')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
