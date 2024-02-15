@@ -421,9 +421,15 @@
                                 </div>
                                 {% endfor %}                             
                             </dl>
+                            {% if is_message %}
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                            {% else %}
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary">Sauvegarder</button>
                             </div>
+                            {% endif %}
                         </form>
                         </div>
                     </div>
