@@ -275,6 +275,7 @@ def input(request, modelName, iD):
                     "iD": iD,
                     "liste_messages": liste_messages,
                     "message_count": message_count,
+                    "is_message": (modelName == "Message"),
                 }
             else:
                 try:
@@ -288,6 +289,7 @@ def input(request, modelName, iD):
                         "iD": iD,
                         "liste_messages": liste_messages,
                         "message_count": message_count,
+                        "is_message": (modelName == "Message"),
                     }
                 except:
                     context = {
