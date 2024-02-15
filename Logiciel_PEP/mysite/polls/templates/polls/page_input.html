@@ -381,6 +381,47 @@
 
                 </nav>
                 <!-- End of Topbar -->
+                
+
+                <!-- Main Content -->
+                <div class="container mt-3">
+                    <h2 class="panel-title text-center"> {{ title }} </h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>{{message}}</p>
+                            <form action="{% url 'input' modelName=modelName iD=iD %}" method="post">
+                            <dl class="dl-horizontal">
+                                {% csrf_token %}
+        
+                                {% for field in form %}
+                                 <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}                             
+                            </dl>
+                            {% if is_message %}
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                            {% else %}
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                            </div>
+                            {% endif %}
+                        </form>
+                        </div>
+                    </div>
+                </div>
+                <br>   
+                <!-- End Main Content -->
 
 
                 <!-- Footer -->
