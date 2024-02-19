@@ -14,6 +14,7 @@
     {% load static %}
     {% load format_duration %}
     <!-- Custom fonts for this template-->
+    
     <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
@@ -384,14 +385,16 @@
 
                 <!-- Begin Page Content -->
                 
-                <div class="container-fluid">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                            <h6 class="m-0 font-weight-bold text-primary">Détails de la Junior Entreprise</h6>
-                            <img src="{{ je.logo.url }}" alt="Logo JE" class="img-fluid" style="max-height: 50px;">
-                        </div>
-                        <div class="card-body">
-                            <ul class="nav nav-tabs" id="jeTab" role="tablist">
+                <!-- Début du contenu de la page -->
+                        <div class="container-fluid">
+                            <!-- Carte prenant toute la largeur -->
+                            <div class="card shadow mb-4 w-100">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="m-1 font-weight-bold text-primary">Détails de la Junior Entreprise</h5>
+                                <img src="{{ je.logo.url }}" alt="Logo JE" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                            <div class="card-body w-100">
+                                <ul class="nav nav-tabs" id="jeTab" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Général</a>
                                 </li>

@@ -386,7 +386,7 @@
                     <div class="container mt-4">
 
                         <!-- Boutons pour basculer entre les annuaires -->
-                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <ul class="nav nav-pills mb-3" style="background-color: #FFFFFF;" id="pills-tab" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiant</a>
                             </li>
@@ -401,18 +401,19 @@
                     
 
                         <!-- Contenu des onglets -->
-                        <div class="tab-content mt-2">
-                            <!-- Onglet Annuaire Étudiant -->
-                            <div class="tab-pane fade show active" id="pills-etudiant">
-                                <h2 class="mb-4">Annuaire Étudiant</h2>
-                                
-                        <!-- Barre de recherche -->
-                        <div class="input-group mb-3">
-                            <a class="btn btn-primary" href="{% url 'input' modelName='Student' iD=0 %}">Ajouter</a>
-                        </div>
+                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                        <!-- Onglet Annuaire Étudiant -->
+                        <div class="tab-pane fade show active" id="pills-etudiant">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h2 class="m-0 font-weight-bold text-primary">Annuaire</h2>
+                            </div>
+                            <!-- Barre de recherche -->
+                            <div class="input-group mb-3">
+                                <a class="btn btn-primary float-right" href="{% url 'input' modelName='Student' iD=0 %}">Ajouter</a>
+                            </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-borderless table-hover">
+                            <div class="table-responsive" style="background-color: #FFFFFF; border-radius: 8px;">
+                                <table class="table table-borderless table-hover" style="background-color: #FFFFFF; border-radius: 8px;">
                                         <thead>
                                             <tr>
                                                 <th>Prénom</th>
