@@ -19,5 +19,5 @@ urlpatterns = [
     path("blank_page/", views.blank_page, name="charts"),
     path("organigramme/", views.organigramme, name="organigramme"),
     path("je_detail/", views.je_detail, name='je_detail'),
-
+    path("search_suggestions/", views.search_suggestions, name='search_suggestions'),
 ]
