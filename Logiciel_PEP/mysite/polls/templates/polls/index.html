@@ -2,6 +2,10 @@
 <html lang="en">
 
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -31,6 +35,9 @@
             align-self: center;
             padding: 1rem;
         }
+
+        
+        
     </style>
 
 </head>
@@ -41,7 +48,7 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-light accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
             <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
@@ -387,7 +394,7 @@
 
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Accueil</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Tableau de bord</h1>
                         <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
                     </div>
@@ -563,49 +570,127 @@
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
+<div class="row">
 
-                        <!-- Content Column -->
-                        <div class="col-lg-6 mb-4">
+   <!-- Derniers Messages -->
+<div class="col-12 mb-4">
+    <!-- Card -->
+    <div class="card shadow h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Derniers Messages</h6>
+            <small>Plus récents</small>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
+                    <div class="d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-1">Sujet du Message 2</h5>
+                            <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
+                        </div>
+                        <p class="mb-0">Aperçu du contenu du message 2...</p>
+                    </div>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
+                    <div class="d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-1">Sujet du Message 2</h5>
+                            <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
+                        </div>
+                        <p class="mb-0">Aperçu du contenu du message 2...</p>
+                    </div>
+                </div>
+                
+            </li>
+        </ul>
+        <div class="card-footer text-right">
+            <a href="#" class="text-primary">Voir tous les messages</a>
+        </div>
+    </div>
+</div>
 
-                            <!-- Project Card Example -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h4 class="small font-weight-bold">Server Migration <span
-                                            class="float-right">20%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Sales Tracking <span
-                                            class="float-right">40%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Customer Database <span
-                                            class="float-right">60%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 60%"
-                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Payout Details <span
-                                            class="float-right">80%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Account Setup <span
-                                            class="float-right">Complete!</span></h4>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Notifications Importantes -->
+    <div class="col-12 mb-4">
+        <!-- Card -->
+        <div class="card shadow h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Notifications Importantes</h6>
+                <small>Urgent</small>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Notification importante 1: Lorem ipsum dolor sit amet...</li>
+                <li class="list-group-item">Notification importante 2: Consectetur adipiscing elit...</li>
+            </ul>
+            <div class="card-footer text-right">
+                <a href="#" class="text-primary">Voir toutes les notifications</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .table tbody tr td, .table thead tr th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table tbody tr td {
+            cursor: pointer;
+        }
+        .bg-info-agenda {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color:#bad7db!important
+        }
+        .table tbody tr td:hover .bg-info-agenda {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: none;
+        }
+    </style>
+
+
+<div class="container mt-5">
+    <h2 class="mb-4">Agenda de la semaine</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="agendaTable">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Heure / Jour</th>
+                    <th>Lundi</th>
+                    <th>Mardi</th>
+                    <th>Mercredi</th>
+                    <th>Jeudi</th>
+                    <th>Vendredi</th>
+                    <th>Samedi</th>
+                    <th>Dimanche</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>09h - 10h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>10h - 11h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>11h - 12h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                <tr><td>12h - 13h</td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td></tr>
+                <tr><td>13h - 14h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>15h - 16h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                <tr><td>16h - 17h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith></td><td></td><td></td></tr>
+                <tr><td>17h - 18h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>18h - 19h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                <tr><td>19h - 20h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <!-- Ajoutez d'autres tranches horaires selon vos besoins -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+</div>
 
                             <!-- Color System -->
                             <div class="row">
