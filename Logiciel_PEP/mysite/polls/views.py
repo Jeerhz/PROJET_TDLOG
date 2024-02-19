@@ -7,6 +7,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum
 from datetime import datetime
+from django.http import JsonResponse
+from django.db.models import Q
 
 from .models import (
     JE,
@@ -479,3 +481,27 @@ def charts(request):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+    
+def search_suggestions(request):
+    query = request.GET.get('query', '')
+    if query:
+        keywords = query.split()
+        suggestions_etude = Etude.objects.filter(je=request.user.je)
+        suggestions_client = Client.objects.filter(je=request.user.je)
+        suggestions_student = Student.objects.filter(je=request.user.je)
+        for keyword in keywords:
+            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
+            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword))
+            suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
+        count_client = suggestions_client.count()
+        count_student = suggestions_student.count()
+        suppression_etude_c=max(1, count_client)
+        suppression_etude_s=max(1, count_student)
+        suggestions_etude=suggestions_etude.order_by('-begin')[:5-suppression_etude_c-suppression_etude_s]
+        nombre_etude = suggestions_etude.count()
+        suggestions_client = suggestions_client[:5-nombre_etude-suppression_etude_s]
+        nombre_client = suggestions_client.count()
+        suggestions_student = suggestions_student[:5-nombre_etude-nombre_client]
+        return JsonResponse({'suggestions_etude': list(suggestions_etude.values_list('titre', 'id')), 'suggestions_client': list(suggestions_client.values_list('nom_societe', 'id')), 'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
+    else :
+        return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
