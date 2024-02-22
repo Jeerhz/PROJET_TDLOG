@@ -48,6 +48,27 @@
             display: block;
         }
         
+        .table tbody tr td, .table thead tr th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table tbody tr td {
+            cursor: pointer;
+        }
+        .bg-info-agenda {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color:#bad7db!important
+        }
+        .table tbody tr td:hover .bg-info-agenda {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: none;
+        }
         
     </style>
 
@@ -582,234 +603,210 @@
                     </div>
 
                     <!-- Content Row -->
-<div class="row">
+                    <div class="row">
 
-   <!-- Derniers Messages -->
-<div class="col-12 mb-4">
-    <!-- Card -->
-    <div class="card shadow h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Derniers Messages</h6>
-            <small>Plus récents</small>
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <div class="d-flex align-items-center">
-                    <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
-                    <div class="d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="mb-1">Sujet du Message 2</h5>
-                            <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
-                        </div>
-                        <p class="mb-0">Aperçu du contenu du message 2...</p>
-                    </div>
-                </div>
-            </li>
-            <li class="list-group-item">
-                <div class="d-flex align-items-center">
-                    <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
-                    <div class="d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="mb-1">Sujet du Message 2</h5>
-                            <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
-                        </div>
-                        <p class="mb-0">Aperçu du contenu du message 2...</p>
-                    </div>
-                </div>
-                
-            </li>
-        </ul>
-        <div class="card-footer text-right">
-            <a href="#" class="text-primary">Voir tous les messages</a>
-        </div>
-    </div>
-</div>
-
-    <!-- Notifications Importantes -->
-    <div class="col-12 mb-4">
-        <!-- Card -->
-        <div class="card shadow h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Notifications Importantes</h6>
-                <small>Urgent</small>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">Notification importante 1: Lorem ipsum dolor sit amet...</li>
-                <li class="list-group-item">Notification importante 2: Consectetur adipiscing elit...</li>
-            </ul>
-            <div class="card-footer text-right">
-                <a href="#" class="text-primary">Voir toutes les notifications</a>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .table tbody tr td, .table thead tr th {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .table tbody tr td {
-            cursor: pointer;
-        }
-        .bg-info-agenda {
-            max-width: 100px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            background-color:#bad7db!important
-        }
-        .table tbody tr td:hover .bg-info-agenda {
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            max-width: none;
-        }
-    </style>
-
-
-<div class="container mt-5">
-    <h2 class="mb-4">Agenda de la semaine</h2>
-    <div class="table-responsive">
-        <table class="table table-bordered" id="agendaTable">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Heure / Jour</th>
-                    <th>Lundi</th>
-                    <th>Mardi</th>
-                    <th>Mercredi</th>
-                    <th>Jeudi</th>
-                    <th>Vendredi</th>
-                    <th>Samedi</th>
-                    <th>Dimanche</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>09h - 10h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>10h - 11h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>11h - 12h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
-                <tr><td>12h - 13h</td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td></tr>
-                <tr><td>13h - 14h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>15h - 16h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
-                <tr><td>16h - 17h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith></td><td></td><td></td></tr>
-                <tr><td>17h - 18h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
-                <tr><td>18h - 19h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
-                <tr><td>19h - 20h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
-                <!-- Ajoutez d'autres tranches horaires selon vos besoins -->
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-</div>
-
-                            <!-- Color System -->
-                            <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-primary text-white shadow">
-                                        <div class="card-body">
-                                            Primary
-                                            <div class="text-white-50 small">#4e73df</div>
-                                        </div>
-                                    </div>
+                        <!-- Derniers Messages -->
+                        <div class="col-12 mb-4">
+                            <!-- Card -->
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">Derniers Messages</h6>
+                                    <small>Plus récents</small>
                                 </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-success text-white shadow">
-                                        <div class="card-body">
-                                            Success
-                                            <div class="text-white-50 small">#1cc88a</div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
+                                            <div class="d-flex flex-column flex-grow-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <h5 class="mb-1">Sujet du Message 2</h5>
+                                                    <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
+                                                </div>
+                                                <p class="mb-0">Aperçu du contenu du message 2...</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-info text-white shadow">
-                                        <div class="card-body">
-                                            Info
-                                            <div class="text-white-50 small">#36b9cc</div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{% static 'polls/img/undraw_profile_1.svg' %}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
+                                            <div class="d-flex flex-column flex-grow-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <h5 class="mb-1">Sujet du Message 2</h5>
+                                                    <p class="mb-1 text-muted"><small>De: expéditeur2@example.com</small></p>
+                                                </div>
+                                                <p class="mb-0">Aperçu du contenu du message 2...</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-warning text-white shadow">
-                                        <div class="card-body">
-                                            Warning
-                                            <div class="text-white-50 small">#f6c23e</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-danger text-white shadow">
-                                        <div class="card-body">
-                                            Danger
-                                            <div class="text-white-50 small">#e74a3b</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-secondary text-white shadow">
-                                        <div class="card-body">
-                                            Secondary
-                                            <div class="text-white-50 small">#858796</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-light text-black shadow">
-                                        <div class="card-body">
-                                            Light
-                                            <div class="text-black-50 small">#f8f9fc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-dark text-white shadow">
-                                        <div class="card-body">
-                                            Dark
-                                            <div class="text-white-50 small">#5a5c69</div>
-                                        </div>
-                                    </div>
+                                        
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-right">
+                                    <a href="#" class="text-primary">Voir tous les messages</a>
                                 </div>
                             </div>
-
                         </div>
+                    </div>
+                    
+                    <!-- Content Row -->
+                    <div class="row">
+                        <!-- Notifications Importantes -->
+                        <div class="col-12 mb-4">
+                            <!-- Card -->
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">Notifications Importantes</h6>
+                                    <small>Urgent</small>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Notification importante 1: Lorem ipsum dolor sit amet...</li>
+                                    <li class="list-group-item">Notification importante 2: Consectetur adipiscing elit...</li>
+                                </ul>
+                                <div class="card-footer text-right">
+                                    <a href="#" class="text-primary">Voir toutes les notifications</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Content Row -->
+                    <div class="row">
+                        <div class="container mt-5">
+                            <h2 class="mb-4">Agenda de la semaine</h2>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="agendaTable">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Heure / Jour</th>
+                                            <th>Lundi</th>
+                                            <th>Mardi</th>
+                                            <th>Mercredi</th>
+                                            <th>Jeudi</th>
+                                            <th>Vendredi</th>
+                                            <th>Samedi</th>
+                                            <th>Dimanche</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>09h - 10h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
+                                        <tr><td>10h - 11h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                                        <tr><td>11h - 12h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                                        <tr><td>12h - 13h</td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td></tr>
+                                        <tr><td>13h - 14h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                                        <tr><td>15h - 16h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                                        <tr><td>16h - 17h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith></td><td></td><td></td></tr>
+                                        <tr><td>17h - 18h</td><td></td><td></td><td class="bg-info-agenda">Réunion d'équipe</td><td></td><td></td><td></td><td></td></tr>
+                                        <tr><td>18h - 19h</td><td class="bg-info-agenda">Présentation projet</td><td></td><td></td><td></td><td></td><td></td><td class="bg-info-agenda">Rendez-vous pour voir si ca depassee et ca depasse comment</td></tr>
+                                        <tr><td>19h - 20h</td><td></td><td class="bg-info-agenda">Rendez-vous avec Dr. Smith</td><td></td><td></td><td></td><td></td><td></td></tr>
+                                        <!-- Ajoutez d'autres tranches horaires selon vos besoins -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color System -->
+                    <div class="row">
                         <div class="col-lg-6 mb-4">
-
-                            <!-- Illustrations -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-                                </div>
+                            <div class="card bg-primary text-white shadow">
                                 <div class="card-body">
-                                    <div class="text-center">
-                                        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                                            src="{% static 'polls/img/undraw_posting_photo.svg' %}" alt="...">
-                                    </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
+                                    Primary
+                                    <div class="text-white-50 small">#4e73df</div>
                                 </div>
                             </div>
-
-                            <!-- Approach -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
-                                </div>
-                            </div>
-
                         </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-success text-white shadow">
+                                <div class="card-body">
+                                    Success
+                                    <div class="text-white-50 small">#1cc88a</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-info text-white shadow">
+                                <div class="card-body">
+                                    Info
+                                    <div class="text-white-50 small">#36b9cc</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-warning text-white shadow">
+                                <div class="card-body">
+                                    Warning
+                                    <div class="text-white-50 small">#f6c23e</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-danger text-white shadow">
+                                <div class="card-body">
+                                    Danger
+                                    <div class="text-white-50 small">#e74a3b</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-secondary text-white shadow">
+                                <div class="card-body">
+                                    Secondary
+                                    <div class="text-white-50 small">#858796</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-light text-black shadow">
+                                <div class="card-body">
+                                    Light
+                                    <div class="text-black-50 small">#f8f9fc</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-dark text-white shadow">
+                                <div class="card-body">
+                                    Dark
+                                    <div class="text-white-50 small">#5a5c69</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+
+                        <!-- Illustrations -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
+                                        src="{% static 'polls/img/undraw_posting_photo.svg' %}" alt="...">
+                                </div>
+                                <p>Add some quality, svg illustrations to your project courtesy of <a
+                                        target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
+                                    constantly updated collection of beautiful svg images that you can use
+                                    completely free and without attribution!</p>
+                                <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
+                                    unDraw &rarr;</a>
+                            </div>
+                        </div>
+
+                        <!-- Approach -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
+                                    CSS bloat and poor page performance. Custom CSS classes are used to create
+                                    custom components and custom utility classes.</p>
+                                <p class="mb-0">Before working with this theme, you should become familiar with the
+                                    Bootstrap framework, especially the utility classes.</p>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -817,16 +814,15 @@
 
             </div>
             <!-- End of Main Content -->
-
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Ponts Etude Projets 2024</span>
-                    </div>
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Ponts Etude Projets 2024</span>
                 </div>
-            </footer>
-            <!-- End of Footer -->
+            </div>
+        </footer>
+        <!-- End of Footer -->
 
         </div>
         <!-- End of Content Wrapper -->
