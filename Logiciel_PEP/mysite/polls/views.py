@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.urls import reverse
@@ -61,29 +61,7 @@ def custom_login(request):
         )
         if user:
             login(request, user)
-            template = loader.get_template("polls/index.html")
-            liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).order_by("date")[0:3]
-            message_count = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).count()
-            return HttpResponse(
-                template.render(
-                    {"liste_messages": liste_messages, "message_count": message_count},
-                    request,
-                )
-            )
+            return redirect('index')
         else:
             error_message = "Nom d'utilisateur ou mot de passe incorrect."
             context = {"error_message": error_message}

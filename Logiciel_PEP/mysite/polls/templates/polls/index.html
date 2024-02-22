@@ -35,7 +35,18 @@
             align-self: center;
             padding: 1rem;
         }
-
+        /* Style for the suggestion results */
+        #suggestions-results {
+            position: absolute;
+            top: 50px; /* Adjust as needed */
+            left: 0;
+            right: 0;
+            z-index: 999;
+            display: none;
+        }
+        #suggestions-results.show {
+            display: block;
+        }
         
         
     </style>
