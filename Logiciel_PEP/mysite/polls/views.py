@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db.models import Sum
 from datetime import datetime
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from .models import (
     JE,
@@ -22,6 +22,8 @@ from .models import (
     AddMember,
     Message,
     AddMessage,
+    AssignationJEH,
+    Phase
 )
 
 
@@ -37,9 +39,8 @@ def index(request):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        user_je = request.user.je
-        chiffres_affaires = request.user.chiffres_affaires()
-        monthly_sums = calculate_monthly_sums(user_je)
+        chiffres_affaires = request.user.je.chiffres_affaires
+        monthly_sums = request.user.je.calculate_monthly_sums()
         template = loader.get_template("polls/index.html")
         context = {
             "monthly_sums": monthly_sums,
@@ -404,33 +405,10 @@ def convention_etude(request, iD):
     return HttpResponse(template.render(context, request))
 
 
-def calculate_monthly_sums(user_je):
-    september = 9
-    monthly_sums = []
-    month_ca = 0
-    res = []
-
-    for month in range(12):
-        current_month = (month + september) % 12
-        month_sum = (
-            Etude.objects.filter(je=user_je, begin__month=current_month).aggregate(
-                Sum("montant_HT")
-            )["montant_HT__sum"]
-            or 0.0
-        )
-        monthly_sums.append(month_sum)
-
-    for k in range(12):
-        month_ca += monthly_sums[k]
-        res.append(month_ca)
-
-    return res
-
-
 def charts(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        monthly_sums = calculate_monthly_sums(user_je)
+        monthly_sums = user_je.calculate_monthly_sums()
 
         template = loader.get_template("polls/charts.html")
         context = {
@@ -483,3 +461,54 @@ def search_suggestions(request):
         return JsonResponse({'suggestions_etude': list(suggestions_etude.values_list('titre', 'id')), 'suggestions_client': list(suggestions_client.values_list('nom_societe', 'id')), 'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
     else :
         return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
+    
+def search(request):
+    liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+    message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+    query = request.GET.get('search-input', '')
+    if query:
+        keywords = query.split()
+        resultats_etude = Etude.objects.filter(je=request.user.je)
+        resultats_client = Client.objects.filter(je=request.user.je)
+        resultats_student = Student.objects.filter(je=request.user.je)
+        liste_res_etude = []
+        liste_res_client = []
+        liste_res_student = []
+        combined_res_etude = Etude.objects.none()
+        combined_res_client = Client.objects.none()
+        combined_res_student = Student.objects.none()
+        for keyword in keywords:
+            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
+            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword)))
+            liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
+        for i in range(len(liste_res_etude)):
+            combined_res_etude |= liste_res_etude[i]
+            combined_res_client |= liste_res_client[i]
+            combined_res_student |= liste_res_student[i]
+        combined_res_etude = combined_res_etude.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
+        combined_res_client = combined_res_client.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
+        combined_res_student = combined_res_student.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
+        final_res_etude = combined_res_etude.all()
+        final_res_client = combined_res_client.all()
+        final_res_student = combined_res_student.all()
+        context = {"query":query, "res_etude":final_res_etude, "res_client":final_res_client, "res_student":final_res_student, "liste_messages":liste_messages, "message_count":message_count}
+        template = loader.get_template("polls/search_results.html")
+        return HttpResponse(template.render(context, request))
+    else:
+        context = {"query":query, "liste_messages":liste_messages, "message_count":message_count}
+        template = loader.get_template("polls/search_results.html")
+        return HttpResponse(template.render(context, request))
+
+
+
+
+        
+        

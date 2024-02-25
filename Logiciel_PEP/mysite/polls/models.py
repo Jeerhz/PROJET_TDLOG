@@ -52,6 +52,23 @@ class JE(models.Model):
         new_je.chiffres_affaires = 0.0
         return new_je
 
+    def calculate_monthly_sums(self):
+        september = 9
+        monthly_sums = []
+        month_ca = 0
+        res = []
+
+        for month in range(12):
+            current_month = (month + september) % 12
+            etudes = Etude.objects.filter(je=self, begin__month=current_month)
+            month_sum = sum(etude.montant_HT() for etude in etudes)
+            monthly_sums.append(month_sum)
+
+        for k in range(12):
+            month_ca += monthly_sums[k]
+            res.append(month_ca)
+
+        return res
 
 
 
@@ -208,9 +225,6 @@ class Member(AbstractUser):
 
     def get_title_details(self):
         return self.student.get_title_details()
-    
-    def chiffres_affaires(self):
-        return self.je.chiffres_affaires
 
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
@@ -223,8 +237,6 @@ class Etude(models.Model):
     begin = models.DateField()
     end = models.DateField()
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
-    nb_JEH = models.IntegerField()
-    montant_HT = models.FloatField()
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
@@ -262,6 +274,49 @@ class Etude(models.Model):
 
     def numero_AP(self, nom_doc):
         return self.numero+nom_doc
+    
+    def montant_HT(self):
+        phases = Phase.objects.filter(etude=self)
+        return sum(phase.nb_JEH_montant_HT()[1] for phase in phases)
+    
+class Phase(models.Model):
+    montant_JEH = models.FloatField()
+    nombre_JEH = models.IntegerField()
+    numero = models.IntegerField()
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE)
+
+    def nb_JEH_montant_HT(self):
+        assignations = AssignationJEH.objects.filter(phase=self)
+
+        # Calculate total nombre_JEH
+        total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
+
+        # Calculate total amount excluding tax (montant_HT)
+        montant_HT = total_nombre_JEH * self.montant_JEH
+        return total_nombre_JEH, montant_HT
+    
+    def __str__(self):
+        return f"Phase {self.numero}"
+    
+    def check_nb_JEH(self):
+        assignations = AssignationJEH.objects.filter(phase=self)
+
+        # Calculate total nombre_JEH
+        total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
+        return self.nombre_JEH==total_nombre_JEH
+    
+
+    
+
+    
+class AssignationJEH(models.Model):
+    eleve = models.OneToOneField(Student, on_delete=models.CASCADE)
+    pourcentage_retribution = models.FloatField()
+    nombre_JEH = models.IntegerField()
+    phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.phase.etude.__str__()+"___"+self.phase.__str__()+"___"+self.eleve.__str__()
 
 class Message(models.Model):
     contenu = models.TextField(max_length=5000)
