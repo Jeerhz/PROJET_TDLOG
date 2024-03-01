@@ -196,29 +196,6 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-def organigramme(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        template = loader.get_template("polls/blank.html")
-        context = {
-        }
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
-
-
-
 def details(request, modelName, iD):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
