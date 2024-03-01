@@ -20,5 +20,5 @@ urlpatterns = [
     path("organigramme/", views.organigramme, name="organigramme"),
     path("je_detail/", views.je_detail, name='je_detail'),
     path("search_suggestions/", views.search_suggestions, name='search_suggestions'),
-    path("page_detail_etude/<int:iD>", views.page_detail_etude, name='page_detail_etude'),
+    path("search/", views.search, name='search'),
 ]
