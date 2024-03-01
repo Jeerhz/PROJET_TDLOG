@@ -8,7 +8,7 @@ from polls.models import JE
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polls', '0002_alter_client_je_alter_etude_je_alter_member_je_and_more'),
+        ('polls', '0001_initial'),
     ]
 
     operations = [

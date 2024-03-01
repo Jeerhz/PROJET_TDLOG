@@ -89,7 +89,7 @@ default_je_data = {
 class Client(models.Model):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     nom_societe = models.CharField(max_length = 200)
-    
+
     raison_sociale = models.CharField(max_length = 150)
     rue = models.CharField(max_length = 300)
     ville = models.CharField(max_length = 100)
@@ -216,7 +216,15 @@ class Member(AbstractUser):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
 
+# alors en gros dans Etude tu veux 1) L'état de l'étude en négociation / Signé / En cours / Terminée  2) Les étapes d'avancement
+# de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
+# afficher le planning de l'étude
+
 class Etude(models.Model):
+    class Status(models.TextChoices):
+        EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
+        EN_COURS = 'EN_COURS', 'En cours'
+        TERMINEE = 'TERMINEE', 'Terminée'
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
@@ -228,7 +236,9 @@ class Etude(models.Model):
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
-    en_negociation = models.BooleanField(default = 1)
+    frais_dossier = models.FloatField(default = 0)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+                              
 
     def __str__(self):
         return self.titre
@@ -262,6 +272,32 @@ class Etude(models.Model):
 
     def numero_AP(self, nom_doc):
         return self.numero+nom_doc
+    
+class Phase(models.Model):
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
+    date_debut = models.DateField()
+    date_fin = models.DateField()
+    titre = models.CharField(max_length = 200)
+    nb_JEH = models.IntegerField()
+    frais_dossier= models.FloatField(default=0)
+    montant_HT_par_JEH = models.FloatField()
+    responsable = models.ForeignKey('Member', on_delete=models.SET_NULL, null=True, blank=True)
+    students = models.ManyToManyField('Student', blank=True)
+
+
+    def __str__(self):
+        return f"Phase de {self.date_debut} à {self.date_fin} : {self.description}"
+    
+    def save(self, *args, **kwargs):
+        if self._state.adding:  # Vérifie si l'instance est en cours de création
+            if not self.responsable:
+                self.responsable = self.etude.responsable
+            super(Phase, self).save(*args, **kwargs)
+            if not self.students.exists():
+                self.students.set(self.etude.students.all())
+        else:
+            super(Phase, self).save(*args, **kwargs)
+
 
 class Message(models.Model):
     contenu = models.TextField(max_length=5000)

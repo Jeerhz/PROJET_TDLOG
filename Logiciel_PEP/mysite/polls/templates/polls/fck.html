@@ -1,0 +1,43 @@
+ <!-- Card taking full width -->
+            {% if modelName == "Etude" %}
+                <div class="container mt-3">
+                    <h2 class="panel-title text-center"> {{etude.client.nom_societe}} - {{etude.titre}} - N°{{etude.numero}}</h2>
+                    <ul class="nav nav-pills mb-3" style="background-color: #FFFFFF;" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="pills-info_etude-tab" data-toggle="pill" href="#pills-info_etude" role="tab" aria-controls="pills-info_etude" aria-selected="true">info étude</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-facturation-tab" data-toggle="pill" href="#pills-facturation" role="tab" aria-controls="pills-facturation" aria-selected="false">facturation</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-documents-tab" data-toggle="pill" href="#pills-documents" role="tab" aria-controls="pills-documents" aria-selected="false">Documents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-intervenants-tab" data-toggle="pill" href="#pills-intervenants" role="tab" aria-controls="pills-intervenants" aria-selected="false">Intervenants</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-phases-tab" data-toggle="pill" href="#pills-phases" role="tab" aria-controls="pills-phases" aria-selected="false">Phases</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                        <div class="tab-pane fade show active" id="pills-info_etude" role="tabpanel" aria-labelledby="pills-info_etude-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="dl-horizontal">
+                                        <dt>suiveur :</dt>
+                                        <dd>{{etude.responsable}}</dd>
+                                        <dt>responsable qualité :</dt>
+                                        <dd>{{etude.responsable_qualite}}</dd>
+                                        <dt>nombre de JEHs :</dt>
+                                        <dd>{{etude.nb_JEH}}</dd>
+                                        <dt>montant JEHs :</dt>
+                                        <dd>{{etude.montant_JEH}} €</dd>
+                                        <dt>frais de dossier :</dt>
+                                        <dd>{{etude.frais_dossier}} €</dd>
+                                    </dl>
+                                    <!-- Intégrer ici les autres éléments comme le canvas pour le graphique, les objectifs, descriptions, etc. -->
+                                </div>
+                            </div>
+                            <!-- Inclure les boutons ou autres éléments de navigation si nécessaire -->
+                        </div>
+                        <!-- Répéter le processus pour les autres onglets (facturation, documents, intervenants, phases) en fonction des données disponibles -->

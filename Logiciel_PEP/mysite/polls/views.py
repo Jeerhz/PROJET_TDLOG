@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
@@ -12,6 +13,7 @@ from django.db.models import Q
 
 from .models import (
     JE,
+    Phase,
     Member,
     Student,
     Etude,
@@ -165,6 +167,34 @@ def blank_page(request):
     return HttpResponse(template.render(context, request))
 
 
+def page_detail_etude(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+
+        context ={"attribute_list": Etude.objects.filter(iD=1).get_display_dict(),
+                "title": 'nptq',
+                "iD": 1,
+                "liste_messages": liste_messages,
+                "message_count": message_count,}
+
+        template = loader.get_template("polls/page_detail_etude.html")
+        context = {
+        }
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def organigramme(request):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
@@ -177,13 +207,14 @@ def organigramme(request):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        template = loader.get_template("polls/organigramme.html")
+        template = loader.get_template("polls/blank.html")
         context = {
         }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
 
 
 
@@ -199,25 +230,46 @@ def details(request, modelName, iD):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        template = loader.get_template("polls/page_details.html")
+
         model = apps.get_model(app_label="polls", model_name=modelName)
         try:
             instance = model.objects.get(id=iD, je=request.user.je)
             if modelName == "Message":
                 instance.read = True
                 instance.save()
+                
+            phases = None
+            etude = None  # Initialisez `etude` à None par défaut
+            client = None
+            eleve = None
+            if modelName == "Etude":
+                phases = Phase.objects.filter(etude=instance)
+                etude = instance
+            if modelName == "Student":
+                eleve = instance
+            if modelName == "Client":
+                client = instance
+
             context = {
                 "attribute_list": instance.get_display_dict(),
                 "title": instance.get_title_details(),
-                "is_etude": (modelName == "Etude"),
-                "is_message": (modelName == "Message"),
                 "modelName": modelName,
                 "iD": iD,
                 "liste_messages": liste_messages,
                 "message_count": message_count,
             }
+            
+            # Ajoutez `l'instance` au contexte seulement si elle est définie
+            if etude is not None:
+                context["etude"] = etude
+                context["phases"] = phases
+            if client is not None:
+                context["client"] = client
+            if eleve is not None:
+                context["eleve"] = eleve
+
             template = loader.get_template("polls/page_details.html")
-        except:
+        except model.DoesNotExist:
             context = {
                 "error_message": "The selected object does not exist in the database.",
                 "liste_messages": liste_messages,
