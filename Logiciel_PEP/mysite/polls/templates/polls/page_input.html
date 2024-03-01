@@ -190,11 +190,11 @@
                     </button>
 
                     <!-- Topbar Search -->
-                    <form
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <form action="{% url 'search' %}"
+                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
                         <div class="input-group">
                             <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input">
+                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
                                     <i class="fas fa-search fa-sm"></i>
@@ -399,17 +399,38 @@
                 <!-- Main Content -->
                 <div class="container mt-3">
                     <h2 class="panel-title text-center"> {{ title }} </h2>
-                    <div class="row">
-                        <div class="col-md-6">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                        <div class="card shadow">
+                        <div class="card-body">
+                        
                             <p>{{message}}</p>
                             <form action="{% url 'input' modelName=modelName iD=iD %}" method="post">
                             <dl class="dl-horizontal">
                                 {% csrf_token %}
         
                                 {% for field in form %}
-                                 <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                    {{ field }}
+                                <div class="form-group row mb-3">
+                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                    <div class="col-sm-8 justify-content-center">
+                                    {% if field.field.widget.input_type == 'text' %}
+
+                                        <input type="text" class="form-control" id="{{ field.id_for_label }}" name="{{ field.html_name }}" value="{{ field.value }}">
+                                    {% elif field.field.widget.input_type == 'select' %}
+                                        <select class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                            {% for choice in field.field.choices %}
+                                                <option value="{{ choice.0 }}" {% if choice.0 == field.value %} selected {% endif %}>{{ choice.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% elif field.field.widget.input_type == 'select_multiple' %}
+                                        <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                            {% for choice in field.choices %}
+                                                <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% else %}
+                                        <textarea class="form-control" id="{{ field.id_for_label }}" name="{{ field.html_name }}" rows="4" cols="50"> {{ field.value }}</textarea><br>
+                                    {% endif %}
                                     {% if field.errors %}
                                         <div class="text-danger">
                                             {% for error in field.errors %}
@@ -417,6 +438,7 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
+                                    </div>
                                 </div>
                                 {% endfor %}                             
                             </dl>
@@ -430,6 +452,8 @@
                             </div>
                             {% endif %}
                         </form>
+                        </div>
+                        </div>
                         </div>
                     </div>
                 </div>
