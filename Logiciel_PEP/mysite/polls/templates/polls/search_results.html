@@ -43,6 +43,11 @@
         #suggestions-results.show {
             display: block;
         }
+
+        .card-body{
+            padding-top:0;
+            padding-bottom: 0;
+        }
     </style>
 
 </head>
@@ -398,7 +403,7 @@
 
                 <!-- Main Content -->
                 <div class="container mt-3">
-                    <h2 class="panel-title text-center"> Résultats de recherche pour "{{ query }}" </h2>
+                    <h2 class="panel-title text-center mb-5"> Résultats de recherche pour "{{ query }}" </h2>
                     <div class="row">
                         <!-- Derniers Messages -->
                         <div class="col-12 mb-4">
@@ -406,19 +411,12 @@
                             <div class="card shadow h-100">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h6 class="m-0 font-weight-bold text-primary">Etudes</h6>
-                                    <small>Plus récents</small>
+                                    <small>{{ res_etude|length }} résultats</small>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
+                                    <ul class="list-group list-group-flush" id="liste-etude">
                                         {% if res_etude %}
-                                            {% for etude in res_etude %}
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <i class="fa fa-file-contract"></i>
-                                                <span class="col-3">{{etude.titre}}</span>
-                                                <span class="col-3">{{etude.responsable}}</span>
-                                                <span class="col-3 text-end">{{etude.statut}}</span>                                       
-                                            </li>
-                                            {% endfor %}
+
                                         {% else %}
                                         <li class="list-group-item d-flex justify-content-between">
                                             <span class="col-3">Aucun résultat</span>                                      
@@ -428,7 +426,7 @@
                                 </div>
                                 
                                 <div class="card-footer text-right">
-                                    <a href="#" class="text-primary">Voir toutes les études</a>
+                                    <button class="btn text-primary" id="bouton-etude">Voir plus d'études</button>
                                 </div>
                             </div>
                         </div>
@@ -441,18 +439,12 @@
                             <div class="card shadow h-100">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h6 class="m-0 font-weight-bold text-primary">Clients</h6>
-                                    <small>Plus récents</small>
+                                    <small>{{ res_client|length }} résultats</small>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
+                                    <ul class="list-group list-group-flush" id="liste-client">
                                         {% if res_client %}
-                                            {% for client in res_client %}
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <i class="fa fa-user-tag"></i>
-                                                <span class="col-3">{{client.nom_societe}}</span>
-                                                <span class="col-3">{{client.nom_representant}}</span>                                   
-                                            </li>
-                                            {% endfor %}
+
                                         {% else %}
                                         <li class="list-group-item d-flex justify-content-between">
                                             <span class="col-3">Aucun résultat</span>                                      
@@ -462,7 +454,7 @@
                                 </div>
                                 
                                 <div class="card-footer text-right">
-                                    <a href="#" class="text-primary">Voir tous les clients</a>
+                                    <button class="btn text-primary" id="bouton-client">Voir plus de clients</button>
                                 </div>
                             </div>
                         </div>
@@ -475,19 +467,12 @@
                             <div class="card shadow h-100">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h6 class="m-0 font-weight-bold text-primary">Etudiants</h6>
-                                    <small>Plus récents</small>
+                                    <small>{{ res_student|length }} résultats</small>
                                 </div>
                                 <div class="card-body">
-                                    <ul class="list-group list-group-flush">
+                                    <ul class="list-group list-group-flush" id="liste-etudiant">
                                         {% if res_student %}
-                                            {% for eleve in res_student %}
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <i class="fa fa-user"></i>
-                                                <span class="col-3">{{eleve.first_name}}</span>
-                                                <span class="col-3">{{eleve.last_name}}</span>
-                                                <span class="col-3 text-end">{{eleve.promotion}}</span>                                       
-                                            </li>
-                                            {% endfor %}
+                                            
                                         {% else %}
                                         <li class="list-group-item d-flex justify-content-between">
                                             <span class="col-3">Aucun résultat</span>                                      
@@ -497,7 +482,7 @@
                                 </div>
                                 
                                 <div class="card-footer text-right">
-                                    <a href="#" class="text-primary">Voir tous les étudiants</a>
+                                    <button class="btn text-primary" id="bouton-etudiant">Voir plus d'étudiants</button>
                                 </div>
                             </div>
                         </div>
@@ -566,8 +551,41 @@
         var href_client = str.substring(0, str.length - 1);
         str = "{% url 'details' modelName='Student' iD=0 %}";
         var href_student = str.substring(0, str.length - 1);
+        var res_student_js = [];
+        {% for student in res_student %}
+            var obj = {
+                'first_name': "{{ student.first_name }}",
+                'last_name': "{{ student.last_name }}",
+                'promotion': "{{ student.promotion }}",
+                'url': "{% url 'details' modelName='Student' iD=student.id %}"
+            };
+            res_student_js.push(obj);
+        {% endfor %}
+        var res_etude_js = [];
+        {% for etude in res_etude %}
+            var obj = {
+                'titre': "{{ etude.titre }}",
+                'responsable': "{{ etude.responsable }}",
+                'statut': "{{ etude.statut }}",
+                'url': "{% url 'details' modelName='Etude' iD=etude.id %}"
+            };
+            res_etude_js.push(obj);
+        {% endfor %}
+        var res_client_js = [];
+        {% for client in res_client %}
+            var obj = {
+                'nom_societe': "{{ client.nom_societe }}",
+                'nom_representant': "{{ client.nom_representant }}",
+                'url': "{% url 'details' modelName='Client' iD=client.id %}"
+            };
+            res_client_js.push(obj);
+        {% endfor %}
+        var compteurEtudiant = 0;
+        var compteurEtude = 0;
+        var compteurClient = 0;
     </script>
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+    <script src="{% static 'polls/js/search-results.js' %}"></script>
 
 </body>
 
