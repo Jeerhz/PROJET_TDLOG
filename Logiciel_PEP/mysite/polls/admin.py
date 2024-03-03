@@ -12,3 +12,5 @@ admin.site.register(Message)
 admin.site.register(Phase)
 admin.site.register(AssignationJEH)
 
+
+
