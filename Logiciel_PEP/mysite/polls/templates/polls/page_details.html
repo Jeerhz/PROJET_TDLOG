@@ -43,7 +43,33 @@
         #suggestions-results.show {
             display: block;
         }
+
+        /* Personnalisation de l'accordéon */
+        .accordion-button {
+            font-family: "Nunito Sans", sans-serif; /* Exemple de police améliorée */
+            font-size: 16px; /* Taille de la police */
+            transition: background-color 0.3s ease; /* Animation de l'effet de surlignement */
+        }
+
+        /* Effet de surlignement lors du survol */
+        .accordion-button:not(.collapsed) {
+            background-color: #e7e7e7; /* Couleur lors du survol */
+        }
+
+        /* Rotation de l'icône chevron pour indiquer l'ouverture/fermeture */
+        .accordion-button::after {
+            /* Utilisation des icônes chevron de Bootstrap */
+            content: ""; /* On utilise les styles par défaut de Bootstrap */
+            transition: transform 0.3s ease; /* Animation fluide */
+        }
+
+        /* Quand l'accordéon est ouvert */
+        .accordion-button:not(.collapsed)::after {
+            transform: rotate(-180deg); /* Rotation de l'icône */
+        }
     </style>
+    
+    
 
 </head>
 
@@ -178,285 +204,711 @@
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
 
-            <!-- Main Content -->
-            <div id="content">
+            <!-- Begin Navbar -->
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
 
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
+                <!-- Topbar Search -->
+                <form action="{% url 'search' %}"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                            <div class="list-group" id="suggestions-results"></div>
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
                         </div>
-                    </form>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-success">
-                                            <i class="fas fa-donate text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas fa-exclamation-triangle text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Message Center
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{% static 'polls/img/undraw_profile.svg' %}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-                
-
-                <!-- Main Content -->
-                <div class="container mt-3">
-                    <h2 class="panel-title text-center"> {{ title }} </h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <dl class="dl-horizontal">
-                                {% for key, value in attribute_list.items %}
-                                    <dt> {{ key }} </dt>
-                                    <dd> {{ value }} </dd>
-                                {% endfor %}                               
-                            </dl>
-                            <div class="text-center">
-                                {% if is_etude %} <!-- Vérifiez si une étude est sélectionnée -->
-                                    <a class="btn btn-primary" href="{% url 'input' modelName=modelName iD=iD %}">Modifier la Mission</button>
-                                    <a class="btn btn-success" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
-                                    <a class="btn btn-secondary" target="_blank" href="{% url 'convention_etude' iD %}">Générer la CE</a>
-                                {% elif is_message %}
-                                    <a class="btn btn-info" href="{% url 'input' modelName=modelName iD=0 %}">Répondre</a>
-                                {% else %}
-                                    <a class="btn btn-info" href="{% url 'input' modelName=modelName iD=iD %}">Modifier les Informations</a>
-                                {% endif %}
-                            </div>
-                        </div>
+                        <div class="list-group" id="suggestions-results"></div>
                     </div>
+                </form>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+
+                    <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                    <li class="nav-item dropdown no-arrow d-sm-none">
+                        <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <!-- Dropdown - Messages -->
+                        <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                            aria-labelledby="searchDropdown">
+                            <form class="form-inline mr-auto w-100 navbar-search">
+                                <div class="input-group">
+                                    <input type="text" class="form-control bg-light border-0 small"
+                                        placeholder="Search for..." aria-label="Search"
+                                        aria-describedby="basic-addon2">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="fas fa-search fa-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </li>
+
+                    <!-- Nav Item - Alerts -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Alerts -->
+                            <span class="badge badge-danger badge-counter">3+</span>
+                        </a>
+                        <!-- Dropdown - Alerts -->
+                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="alertsDropdown">
+                            <h6 class="dropdown-header">
+                                Alertes
+                            </h6>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-primary">
+                                        <i class="fas fa-file-alt text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">December 12, 2019</div>
+                                    <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-success">
+                                        <i class="fas fa-donate text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">December 7, 2019</div>
+                                    $290.29 has been deposited into your account!
+                                </div>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-warning">
+                                        <i class="fas fa-exclamation-triangle text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">December 2, 2019</div>
+                                    Spending Alert: We've noticed unusually high spending for your account.
+                                </div>
+                            </a>
+                            <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                        </div>
+                    </li>
+
+                    <!-- Nav Item - Messages -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-envelope fa-fw"></i>
+                            <!-- Counter - Messages -->
+                            <span class="badge badge-danger badge-counter">{{message_count}}</span>
+                        </a>
+                        <!-- Dropdown - Messages -->
+                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="messagesDropdown">
+                            <h6 class="dropdown-header">
+                                Message Center
+                            </h6>
+                            {% if liste_messages.0 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
+                                <div class="dropdown-list-image mr-3">
+                                    <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
+                                        alt="...">
+                                    <div class="status-indicator bg-success"></div>
+                                </div>
+                                <div class="font-weight-bold">
+                                    <div class="text-truncate">{{liste_messages.0}}</div>
+                                    <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
+                                </div>
+                            </a>
+                            {% else %}
+                            <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
+                            {% endif %}
+
+                            {% if liste_messages.1 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
+                                <div class="dropdown-list-image mr-3">
+                                    <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
+                                        alt="...">
+                                    <div class="status-indicator"></div>
+                                </div>
+                                <div>
+                                    <div class="text-truncate">{{liste_messages.1}}</div>
+                                    <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
+                                </div>
+                            </a>
+                            {% endif %}
+
+                            {% if liste_messages.2 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
+                                <div class="dropdown-list-image mr-3">
+                                    <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
+                                        alt="...">
+                                    <div class="status-indicator bg-warning"></div>
+                                </div>
+                                <div>
+                                    <div class="text-truncate">{{liste_messages.2}}</div>
+                                    <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
+                                </div>
+                            </a>
+                            {% endif %}
+
+                            {% if liste_messages.3 %}
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
+                                <div class="dropdown-list-image mr-3">
+                                    <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
+                                        alt="...">
+                                    <div class="status-indicator bg-success"></div>
+                                </div>
+                                <div>
+                                    <div class="text-truncate">{{liste_messages.3}}</div>
+                                    <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
+                                </div>
+                            </a>
+                            {% endif %}
+                            <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
+                        </div>
+                    </li>
+
+                    <div class="topbar-divider d-none d-sm-block"></div>
+
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
+                            <img class="img-profile rounded-circle"
+                                src="{% static 'polls/img/undraw_profile.svg' %}">
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
+                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Profile
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Settings
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Activity Log
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <!-- End of Topbar -->
+
+            
+            <!-- Begin Main Content -->
+            <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
+                <!-- Card Shadow for Etude -->
+                {% if modelName == "Etude" %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 text-center">
+                        <h2>{{ etude.client.nom_societe }} - {{ etude.titre }} - N°{{ etude.numero }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Navigation Tabs -->
+                        <div class="btn-group d-flex mb-2" role="group">
+                            <a href="#general" class="btn btn-primary flex-grow-1 active" data-toggle="tab" id="general-tab" aria-controls="general" aria-selected="true">Général</a>
+                            <a href="#phases" class="btn btn-primary flex-grow-1" data-toggle="tab" id="phases-tab" aria-controls="phases" aria-selected="false">Phases</a>
+                            <a href="#documents" class="btn btn-primary flex-grow-1" data-toggle="tab" id="documents-tab" aria-controls="documents" aria-selected="false">Documents</a>
+                            <a href="#intervenants" class="btn btn-primary flex-grow-1" data-toggle="tab" id="intervenants-tab" aria-controls="intervenants" aria-selected="false">Intervenants</a>
+                            <a href="#facturation" class="btn btn-primary flex-grow-1" data-toggle="tab" id="facturation-tab" aria-controls="facturation" aria-selected="false">Facturation</a>
+                        </div>
+
+                        <!--Debut TabContent-->
+                        <div class="tab-content">
+                            <!-- Début Onglet Général -->
+                            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                                <!-- Responsable and Statut -->
+                                <div class="mt-3 d-flex justify-content-between">
+                                    <h4 style="padding-left: 30px;">Responsable: {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
+                                    <h4 class="mb-2" style="padding-right: 50px">
+                                        Statut: 
+                                        {% if etude.status == 'TERMINEE' %}
+                                            <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
+                                        {% else %}
+                                            <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
+                                        {% endif %}
+                                    </h4>
+                                </div>
+                                <!--Fin Responsable et statut-->
+
+                                <!-- Content Rows -->
+                                <div class="row mt-3">
+                                    <!-- Pie Chart -->
+                                    <div class="col-lg-5">
+                                        <div class="card shadow">
+                                            <div class="card-header">
+                                                <h6 class="text font-weight-bold primary center">Répartition des bénéfices</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-pie">
+                                                    <canvas id="myPieChart"></canvas>
+                                                </div>
+                                                <div class="text-center small">
+                                                    <span><i class="fas fa-circle text-primary"></i> Junior Entreprise</span>
+                                                    <span><i class="fas fa-circle text-success"></i> Élève</span>
+                                                    <span><i class="fas fa-circle text-info"></i> Administration</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Fin du Pie Chart -->
+                                
+                                    <!--Card avec les informations générales (à droite du PieChart) -->
+                                    <div class="col-lg-7 pt-4">
+                                        <div class="card shadow" >
+                                            <div class="card-body">
+                                                <div class="tab-content">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> {{ etude.begin }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> {{ etude.end }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH:</strong> {{ etude.nb_JEH }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant/ JEH:</strong> {{ etude.montant_HT }} €</li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier:</strong> {{ etude.frais_dossier }} €</li>
+                                                    </ul>
+                                                    <!-- Bouton Modifier -->
+                                                    <div class="text-right">
+                                                        <button type="button" class="btn btn-outline-secondary mt-3">Modifier</button> <!-- Bouton sobre -->
+                                                    </div>
+                                                    <!--Fin Bouton Modifier-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Fin de la Card avec les infos -->
+                                </div>
+                                <!-- Fin de la ligne avec Graphe et Card Infos -->
+
+                                <!-- Debut Ligne Description Accordeon -->
+                                <div class="row pt-4">
+                                    <div class="col-12">
+                                        <!-- Accordéon pour la description -->
+                                        <div class="accordion" id="accordionExample">
+                                            <div class="card shadow-sm">
+                                                <div class="card-header" id="headingOne">
+                                                    <h2 class="mb-0">
+                                                        <button class="btn btn-link btn-block text-center font-weight-bold" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                                            <div class="panel-title">
+                                                                Description de l'étude
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                </div>
+
+                                                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                    <div class="card-body">
+                                                        <div class="text-info">
+                                                            {{ etude.description }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Fin de l'accordéon Description-->
+                            </div>
+                            <!--Fin de l'Onglet Général -->
+                                
+                            <!-- Début de l'Onglet Phases -->
+                            <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab">
+                                {% if phases %}
+
+                                <!-- Début Planning avec graphe-->
+                                <div class="col-lg-13 mb-3">
+                                    <div class="card shadow">
+                                        <div class="card-header">
+                                            <h6 class="text font-weight-bold primary center">Planning de l'Etude: PROVISOIRE IL FAUDRA FAIRE MIEUX</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-bar">
+                                                <canvas id="ChartPhases"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Fin planning avec graphe-->
+                                
+
+                                <!--{% for phase in phases %} -->
+                                <div class="card mb-3">
+                                    <div class="col-12 mb-4">
+                                        <!-- Card -->
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <small>Phase 1</small>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ANALYSE DU BUSINESS ET DES DOCUMENTS EXISTANTS</th>
+                                                        <th>3 JEH à 300,00€ HT</th>
+                                                        <th>900,00€ HT</th>
+                                                    </tr>
+                                                </thead>
+                
+                                            </table>
+                                        </div>
+                                        <li class="nav-item">
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                                aria-expanded="true" aria-controls="intervenants_phase1">
+                                                <i class="bi bi-arrows-collapser"></i>
+                                                <span>Intervenants</span>
+                                                <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                                    <div class="bg-white py-2 collapse-inner rounded">
+                                                        <div class="bg-white py-2 collapse-inner rounded">
+                                                            <table class="table table-striped">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Intervenant</th>
+                                                                    <th scope="col">nombres de JEH</th>
+                                                                    <th scope="col">pourcentage</th>
+                                                                    <th scope="col">rétribution brute</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr>
+                                                                    <th scope="row">Antony FEORD</th>
+                                                                    <td>3</td>
+                                                                    <td>70%</td>
+                                                                    <td>200</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th scope="row">Edgar DUC</th>
+                                                                    <td>2</td>
+                                                                    <td>60%</td>
+                                                                    <td>100</td>
+                                                                </tr>
+                                                                
+                                                                </tbody>
+                                                            </table>
+                                                            <a class="btn btn-success">Ajouter un intervenant</a>
+                                                        </div>
+                                
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            
+                                        </li>
+                                    </div>  
+                                </div>
+                                <!-- {% endfor %} -->
+
+                                <div class="col-12 mb-4">
+                                    <!-- Card -->
+                                    <div class="card shadow h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <small>Phase 1</small>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ANALYSE DU BUSINESS ET DES DOCUMENTS EXISTANTS</th>
+                                                        <th>3 JEH à 300,00€ HT</th>
+                                                        <th>900,00€ HT</th>
+                                                    </tr>
+                                                </thead>
+                
+                                            </table>
+                                        </div>
+                                        <li class="nav-item">
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                                aria-expanded="true" aria-controls="intervenants_phase1">
+                                                <i class="bi bi-arrows-collapser"></i>
+                                                <span>Intervenants</span>
+                                            </a>
+                                            <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <div class="bg-white py-2 collapse-inner rounded">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                              <tr>
+                                                                <th scope="col">Intervenant</th>
+                                                                <th scope="col">nombres de JEH</th>
+                                                                <th scope="col">pourcentage</th>
+                                                                <th scope="col">rétribution brute</th>
+                                                              </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                              <tr>
+                                                                <th scope="row">Antony FEORD</th>
+                                                                <td>3</td>
+                                                                <td>70%</td>
+                                                                <td>200</td>
+                                                              </tr>
+                                                              <tr>
+                                                                <th scope="row">Edgar DUC</th>
+                                                                <td>2</td>
+                                                                <td>60%</td>
+                                                                <td>100</td>
+                                                              </tr>
+                                                              
+                                                            </tbody>
+                                                          </table>
+                                                        
+                                                    </div>
+                            
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </div>
+                                    <a class="btn btn-info">Ajouter un intervenant</a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!-- Fin de l'Onglet Phase-->  
+
+                            <!-- Début de l'Onglet Documents -->
+                            <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                                <div class="container mt-3">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Facture</h5>
+                                                    <p class="card-text">Préparez la facture pour cette étude.</p>
+                                                    <a href="{% url 'facture' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la Facture</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Convention d'Étude</h5>
+                                                    <p class="card-text">Préparez la convention d'étude pour cette étude.</p>
+                                                    <a href="{% url 'convention_etude' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Avenant CE</h5>
+                                                    <p class="card-text">Ajouter un avenant à la Convention d'Etude</p>
+                                                    <a href="#" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Fin de l'Onglet Documents -->
+
+                            <!-- Début de l'Onglet Intervenants -->
+                            <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
+                                <!-- Début Infos Entreprises -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        CLIENT: {{ etude.client.nom_societe }}
+                                    </div>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ etude.client.nom_societe }}</li>
+                                        <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ etude.client.raison_sociale }}</li>
+                                        <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ etude.client.rue }}</li>
+                                        <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ etude.client.ville }}</li>
+                                        <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ etude.client.code_postal }}</li>
+                                        <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ etude.client.country }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Titre du représentant:</strong> {{ etude.client.titre_representant_display }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom du représentant:</strong> {{ etude.client.nom_representant }}</li>
+                                        <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ etude.client.fonction_representant }}</li>                                        
+                                    </ul>
+                                </div>
+                                <!-- Fin Infos Entreprises -->
+
+                                <!-- Début Infos Élèves -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        ELEVES:
+                                    </div>
+                                    {% for student in etude.students.all %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ student.last_name }} {{ student.first_name }}</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ student.promotion }}</li>
+                                            <li class="list-group-item"><i class="fas fa-phone-alt mr-2"></i><strong>Numéro de Téléphone:</strong> {{ student.phone_number }}</li>
+                                            <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ student.mail }}</li>
+                                            <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ student.adress }}, {{ student.country }}</li>
+                                        </ul>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <!-- Fin Infos Élèves -->
+                            </div>
+                            <!-- Fin de l'Onglet Intervenants -->
+
+
+                            <!-- Debut de l'Onglet Facturation -->
+                            <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
+                                <!-- Début Infos Entreprises-->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        Facturation
+                                    </div>
+                                    <!-- Début de la table avec pourcentage de Facturation-->
+                                    <table class="table table-striped">
+                                        <thead>
+                                          <tr>
+                                            <th scope="col">Frais de dossier</th>
+                                            <th scope="col"></th>
+                                            <th scope="col"></th>
+                                            <th scope="col">100,00€</th>
+                                            <th scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
+                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
+                                              </div>
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <th scope="row">Phase 1</th>
+                                            <td>3 JEHs</td>
+                                            <td>300,00€</td>
+                                            <td>900,00€</td>
+                                            <td scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
+                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
+                                              </div>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Phase 2</th>
+                                            <td>4 JEHs</td>
+                                            <td>200,00€</td>
+                                            <td>800,00€</td>
+                                            <td scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
+                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
+                                              </div>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Total</th>
+                                            <td></td>
+                                            <td></td>
+                                            <td>1800,00€</td>
+                                            <td scope="col">
+                                                <div class="input-group input-group-sm" style="max-width: 100px; background-color: #FFFFFF;">
+                                                    30% 
+                                                </div>
+                                            </td>
+                                            
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                      <!-- Fin de la table-->
+
+                                    <a class="btn btn-primary" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
+                                </div>
+                                <!-- Fin de la card mb3 dans laquelle est contenue la page-->
+                            </div>
+                            <!-- Fin de l'Onglet Facturation-->
+                        </div>
+                        <!--Fin TabContent-->
+                    </div>
+                    <!-- Fin CardBody-->
                 </div>
-                <br>   
-                <!-- End Main Content -->
+                {% endif %}
+                <!-- Fin du if ModelName==Etude-->
+                <!-- Fin du CardShadow dans lequel est la page-->
+
+
+                {% if modelName == "Client" %}
+                <div class="tab-content">
+                    <div class="card shadow mb-4 w-100">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
+                        </div>
+                        <div class="card-body w-100">
+                            <!-- Détails spécifiques au client -->
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom Société:</strong> {{ client.nom_societe }}</li>
+                                <li class="list-group-item"><i class="fas fa-sitemap mr-2"></i><strong>Raison Sociale:</strong> {{ client.raison_sociale }}</li>
+                                <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse:</strong> {{ client.rue }}, {{ client.ville }}, {{ client.code_postal }}, {{ client.country }}</li>
+                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Représentant:</strong> {{ client.titre_representant }} {{ client.nom_representant }}, {{ client.fonction_representant }}</li>
+                            </ul>
+                        </div>      
+                    </div>
+                </div>          
+                {% endif %}
+                
+                {% if modelName == "Student" %}
+                <div class="card shadow mb-4 w-100">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="m-1 font-weight-bold text-primary">Détails Élève</h5>
+                    </div>
+                    <div class="card-body w-100">
+                        <!-- Détails spécifiques à l'élève -->
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
+                            <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
+                            <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
+                            <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
+                            <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
+                        </ul>
+                    </div>
+                </div>           
+                {% endif %}
+                <!-- End of Card Shadow Student -->
+
             </div>
+            <!-- End of Card Header-->
 
             <!-- Footer -->
-    <footer class="sticky-footer bg-white">
-        <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-                <span>Copyright &copy; Ponts Etude Projets 2024</span>
-            </div>
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Your Company 2024</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
         </div>
-    </footer>
-    <!-- End of Footer -->
-        </div>
-        
-                
-            <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+        <!-- End of Wrapper colomn -->
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+                </div>
             </div>
         </div>
     </div>
-
-</div>
 
 
 
@@ -473,6 +925,18 @@
     <!-- Core plugin JavaScript-->
     <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
+     <!-- Page level plugins -->
+     <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
+
+        
+    <!-- Page level custom scripts -->
+    <script src="{% static 'polls/js/demo/chart-area-demo.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-demo.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -485,6 +949,29 @@
         str = "{% url 'details' modelName='Student' iD=0 %}";
         var href_student = str.substring(0, str.length - 1);
     </script>
+
+    <!-- Script pour utiliser les boutons comme des liens-->
+    <script>
+        $(document).ready(function(){
+            // Gestionnaire de clic pour les boutons de navigation
+            $('.btn-group .btn').click(function(e){
+                // Prévenir le comportement par défaut du lien
+                e.preventDefault();
+        
+                // Obtenir l'ID de l'onglet cible
+                var target = $(this).attr('href');
+        
+                // Activer l'onglet cible
+                $('.tab-pane').removeClass('show active');
+                $(target).addClass('show active');
+        
+                // Marquer le bouton cliqué comme actif et retirer la classe 'active' des autres boutons
+                $('.btn-group .btn').removeClass('active'); // Retirer la classe 'active' de tous les boutons
+                $(this).addClass('active'); // Ajouter la classe 'active' uniquement au bouton cliqué
+            });
+        });
+        </script>
+
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
@@ -499,6 +986,7 @@
             alert("Fonction de génération de la facture à implémenter.");
         }
     </script>
+    
 
 </body>
 

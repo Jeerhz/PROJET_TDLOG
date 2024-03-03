@@ -52,23 +52,6 @@ class JE(models.Model):
         new_je.chiffres_affaires = 0.0
         return new_je
 
-    def calculate_monthly_sums(self):
-        september = 9
-        monthly_sums = []
-        month_ca = 0
-        res = []
-
-        for month in range(12):
-            current_month = (month + september) % 12
-            etudes = Etude.objects.filter(je=self, begin__month=current_month)
-            month_sum = sum(etude.montant_HT() for etude in etudes)
-            monthly_sums.append(month_sum)
-
-        for k in range(12):
-            month_ca += monthly_sums[k]
-            res.append(month_ca)
-
-        return res
 
 
 
@@ -81,7 +64,6 @@ class JESerializer(BaseSerializer):
 
 # Register the JESerializer for the 'JE' model
 MigrationWriter.register_serializer(models.Model, JESerializer)    
-    
 
 # To Provide default values directly without a database query
 default_je_data = {
@@ -106,7 +88,7 @@ default_je_data = {
 class Client(models.Model):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     nom_societe = models.CharField(max_length = 200)
-    
+
     raison_sociale = models.CharField(max_length = 150)
     rue = models.CharField(max_length = 300)
     ville = models.CharField(max_length = 100)
@@ -225,22 +207,37 @@ class Member(AbstractUser):
 
     def get_title_details(self):
         return self.student.get_title_details()
+    
+    def chiffres_affaires(self):
+        return self.je.chiffres_affaires
 
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
 
+# alors en gros dans Etude tu veux 1) L'état de l'étude en négociation / Signé / En cours / Terminée  2) Les étapes d'avancement
+# de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
+# afficher le planning de l'étude
+
 class Etude(models.Model):
+    class Status(models.TextChoices):
+        EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
+        EN_COURS = 'EN_COURS', 'En cours'
+        TERMINEE = 'TERMINEE', 'Terminée'
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
     begin = models.DateField()
     end = models.DateField()
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
+    nb_JEH = models.IntegerField()
+    montant_HT = models.FloatField()
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
-    en_negociation = models.BooleanField(default = 1)
+    frais_dossier = models.FloatField(default = 0)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+                              
 
     def __str__(self):
         return self.titre
@@ -275,40 +272,45 @@ class Etude(models.Model):
     def numero_AP(self, nom_doc):
         return self.numero+nom_doc
     
-    def montant_HT(self):
+    def calcul_montant_total_HT(self):
         phases = Phase.objects.filter(etude=self)
         return sum(phase.nb_JEH_montant_HT()[1] for phase in phases)
     
+
 class Phase(models.Model):
-    montant_JEH = models.FloatField()
-    nombre_JEH = models.IntegerField()
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
+    date_debut = models.DateField()
+    date_fin = models.DateField()
+    titre = models.CharField(max_length = 200)
+    nb_JEH = models.IntegerField()
+    frais_dossier= models.FloatField(default=0)
+    montant_HT_par_JEH = models.FloatField()
+    responsable = models.ForeignKey('Member', on_delete=models.SET_NULL, null=True, blank=True)
+    students = models.ManyToManyField('Student', blank=True)
     numero = models.IntegerField()
-    etude = models.ForeignKey(Etude, on_delete=models.CASCADE)
 
     def nb_JEH_montant_HT(self):
         assignations = AssignationJEH.objects.filter(phase=self)
-
         # Calculate total nombre_JEH
         total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
-
         # Calculate total amount excluding tax (montant_HT)
         montant_HT = total_nombre_JEH * self.montant_JEH
         return total_nombre_JEH, montant_HT
-    
+
     def __str__(self):
         return f"Phase {self.numero}"
     
-    def check_nb_JEH(self):
-        assignations = AssignationJEH.objects.filter(phase=self)
+    def save(self, *args, **kwargs):
+        if self._state.adding:  # Vérifie si l'instance est en cours de création
+            if not self.responsable:
+                self.responsable = self.etude.responsable
+            super(Phase, self).save(*args, **kwargs)
+            if not self.students.exists():
+                self.students.set(self.etude.students.all())
+        else:
+            super(Phase, self).save(*args, **kwargs)
+            
 
-        # Calculate total nombre_JEH
-        total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
-        return self.nombre_JEH==total_nombre_JEH
-    
-
-    
-
-    
 class AssignationJEH(models.Model):
     eleve = models.OneToOneField(Student, on_delete=models.CASCADE)
     pourcentage_retribution = models.FloatField()
@@ -317,6 +319,8 @@ class AssignationJEH(models.Model):
 
     def __str__(self):
         return self.phase.etude.__str__()+"___"+self.phase.__str__()+"___"+self.eleve.__str__()
+
+    
 
 class Message(models.Model):
     contenu = models.TextField(max_length=5000)
