@@ -6,10 +6,9 @@ from django.urls import reverse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 from datetime import datetime
 from django.http import JsonResponse
-from django.db.models import Q, Count
 
 from .models import (
     JE,
@@ -41,8 +40,9 @@ def index(request):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        chiffres_affaires = request.user.je.chiffres_affaires
-        monthly_sums = request.user.je.calculate_monthly_sums()
+        user_je = request.user.je
+        chiffres_affaires = request.user.chiffres_affaires()
+        monthly_sums = calculate_monthly_sums(user_je)
         template = loader.get_template("polls/index.html")
         context = {
             "monthly_sums": monthly_sums,
@@ -194,6 +194,29 @@ def page_detail_etude(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+def organigramme(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        template = loader.get_template("polls/blank.html")
+        context = {
+        }
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 
 
 def details(request, modelName, iD):
@@ -434,10 +457,33 @@ def convention_etude(request, iD):
     return HttpResponse(template.render(context, request))
 
 
+def calculate_monthly_sums(user_je):
+    september = 9
+    monthly_sums = []
+    month_ca = 0
+    res = []
+
+    for month in range(12):
+        current_month = (month + september) % 12
+        month_sum = (
+            Etude.objects.filter(je=user_je, begin__month=current_month).aggregate(
+                Sum("montant_HT")
+            )["montant_HT__sum"]
+            or 0.0
+        )
+        monthly_sums.append(month_sum)
+
+    for k in range(12):
+        month_ca += monthly_sums[k]
+        res.append(month_ca)
+
+    return res
+
+
 def charts(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        monthly_sums = user_je.calculate_monthly_sums()
+        monthly_sums = calculate_monthly_sums(user_je)
 
         template = loader.get_template("polls/charts.html")
         context = {
@@ -490,7 +536,8 @@ def search_suggestions(request):
         return JsonResponse({'suggestions_etude': list(suggestions_etude.values_list('titre', 'id')), 'suggestions_client': list(suggestions_client.values_list('nom_societe', 'id')), 'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
     else :
         return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
-    
+
+
 def search(request):
     liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -535,9 +582,3 @@ def search(request):
         context = {"query":query, "liste_messages":liste_messages, "message_count":message_count}
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
-
-
-
-
-        
-        
