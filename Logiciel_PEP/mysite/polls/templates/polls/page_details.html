@@ -467,9 +467,9 @@
                                                     <canvas id="myPieChart"></canvas>
                                                 </div>
                                                 <div class="text-center small">
-                                                    <span><i class="fas fa-circle text-primary"></i> Junior Entreprise</span>
-                                                    <span><i class="fas fa-circle text-success"></i> Élève</span>
-                                                    <span><i class="fas fa-circle text-info"></i> Administration</span>
+                                                    <span><i class="fas fa-circle text-primary"></i> Junior</span>
+                                                    <span><i class="fas fa-circle text-success"></i> Intervenants</span>
+                                                    <span><i class="fas fa-circle text-info"></i> Cotisations</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -722,40 +722,86 @@
                             <!-- Début de l'Onglet Intervenants -->
                             <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
                                 <!-- Début Infos Entreprises -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        CLIENT: {{ etude.client.nom_societe }}
-                                    </div>
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ etude.client.nom_societe }}</li>
-                                        <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ etude.client.raison_sociale }}</li>
-                                        <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ etude.client.rue }}</li>
-                                        <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ etude.client.ville }}</li>
-                                        <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ etude.client.code_postal }}</li>
-                                        <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ etude.client.country }}</li>
-                                        <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Titre du représentant:</strong> {{ etude.client.titre_representant_display }}</li>
-                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom du représentant:</strong> {{ etude.client.nom_representant }}</li>
-                                        <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ etude.client.fonction_representant }}</li>                                        
-                                    </ul>
-                                </div>
+                                
                                 <!-- Fin Infos Entreprises -->
 
                                 <!-- Début Infos Élèves -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        ELEVES:
+                                <div class="card shadow h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div>Antony Feord</div>
                                     </div>
-                                    {% for student in etude.students.all %}
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ student.last_name }} {{ student.first_name }}</h5>
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ student.promotion }}</li>
-                                            <li class="list-group-item"><i class="fas fa-phone-alt mr-2"></i><strong>Numéro de Téléphone:</strong> {{ student.phone_number }}</li>
-                                            <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ student.mail }}</li>
-                                            <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ student.adress }}, {{ student.country }}</li>
-                                        </ul>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>3 JEH à 300,00€ HT</th>
+                                                    <th><a class="btn btn-success">Générer le RdM</a></th>
+                                                    
+                                                </tr>
+                                            </thead>
+            
+                                        </table>
                                     </div>
-                                    {% endfor %}
+                                    <li class="nav-item">
+                                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                            aria-expanded="true" aria-controls="intervenants_phase1">
+                                            <i class="bi bi-arrows-collapser"></i>
+                                            <span>BV et avenants</span>
+                                            <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <div class="bg-white py-2 collapse-inner rounded">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                             
+                                                            </thead>
+                                                            <tbody>
+                                                              <tr>
+                                                                <th><div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                                                                    <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
+                                                                  </div></th>
+                                                                <th scope="row">Phase 1</th>
+                                                                <td>3</td>
+                                                                <td>70%</td>
+                                                                <td>200</td>
+                                                              </tr>
+                                                              <tr>
+                                                                <th>
+                                                                    <div class="form-check form-switch">
+                                                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+                                                                        <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
+                                                                    </div>
+                                                                    <script>
+                                                                        document.addEventListener("DOMContentLoaded", function () {
+                                                                            var checkbox = document.getElementById('flexSwitchCheckChecked');
+                                                                            var label = document.querySelector('label[for="flexSwitchCheckChecked"]');
+                                                                
+                                                                            label.addEventListener('click', function () {
+                                                                                checkbox.checked = !checkbox.checked;
+                                                                            });
+                                                                        });
+                                                                    </script>
+                                                                </th>
+                                                                
+                                                                
+                                                                <th scope="row">Phase 2</th>
+                                                                <td>2</td>
+                                                                <td>60%</td>
+                                                                <td>100</td>
+                                                              </tr>
+                                                              
+                                                            </tbody>
+                                                          </table>
+                                                          <div><a class="btn btn-success">Générer le BV</a></div>
+                                                          <a class="btn btn-success">Ajouter un avenant au RdM</a>
+    
+                                                    </div>
+                            
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                    </li>
                                 </div>
                                 <!-- Fin Infos Élèves -->
                             </div>
@@ -841,35 +887,228 @@
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
                         </div>
-                        <div class="card-body w-100">
-                            <!-- Détails spécifiques au client -->
+                        <div class="card mb-3">
+                            
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom Société:</strong> {{ client.nom_societe }}</li>
-                                <li class="list-group-item"><i class="fas fa-sitemap mr-2"></i><strong>Raison Sociale:</strong> {{ client.raison_sociale }}</li>
-                                <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse:</strong> {{ client.rue }}, {{ client.ville }}, {{ client.code_postal }}, {{ client.country }}</li>
-                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Représentant:</strong> {{ client.titre_representant }} {{ client.nom_representant }}, {{ client.fonction_representant }}</li>
+                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ client.nom_societe }}</li>
+                                <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ client.raison_sociale }}</li>
+                                <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }}</li>
+                                <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ client.ville }}</li>
+                                <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ client.code_postal }}</li>
+                                <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ client.country }}</li>
+                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Titre du représentant:</strong> {{ client.titre_representant_display }}</li>
+                                <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
+                                <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ client.fonction_representant }}</li>                                        
                             </ul>
-                        </div>      
+                        </div>     
                     </div>
                 </div>          
                 {% endif %}
                 
                 {% if modelName == "Student" %}
-                <div class="card shadow mb-4 w-100">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="m-1 font-weight-bold text-primary">Détails Élève</h5>
+                
+                <div class="container mt-3">
+                    <h2 class="panel-title text-center"> {{student.first_name}} {{student.last_name}} </h2>
+                    <ul class="nav nav-pills mb-3" style="background-color: #FFFFFF;" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="pills-info_etude-tab" data-toggle="pill" href="#pills-fiche_info" role="tab" aria-controls="pills-fiche_info" aria-selected="true">Fiche info</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-missions_réalisées-tab" data-toggle="pill" href="#pills-missions_réalisées" role="tab" aria-controls="pills-missions_réalisées" aria-selected="false">Missions réalisées</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-documents-tab" data-toggle="pill" href="#pills-documents" role="tab" aria-controls="pills-documents" aria-selected="false">Documents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-intervenants-tab" data-toggle="pill" href="#pills-intervenants" role="tab" aria-controls="pills-intervenants" aria-selected="false">Intervenants</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="false">Missions suivies</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                
+                        <!-- Onglet info_étude -->
+                        
+                        <div class="tab-pane fade show active" id="pills-fiche_info">
+                            <div class="card shadow mb-4 w-100">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                    <h5 class="m-1 font-weight-bold text-primary">Détails Élève</h5>
+                                </div>
+                                <div class="card-body w-100">
+                                    <!-- Détails spécifiques à l'élève -->
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
+                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
+                                        <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
+                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
+                                        <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Onglet Annuaire Études -->
+                        <div class="tab-pane fade" id="pills-missions_réalisées">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <small>23e41</small>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Cermics - réalisation d'un site</th>
+                                                <th>3 JEH à 300,00€ HT</th>
+                                                <th>900,00€ HT</th>
+                                            </tr>
+                                        </thead>
+        
+                                    </table>
+                                </div>
+                                <li class="nav-item">
+                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                        aria-expanded="true" aria-controls="intervenants_phase1">
+                                        <i class="bi bi-arrows-collapser"></i>
+                                        <span>Phases</span>
+                                    </a>
+                                    <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                        <div class="bg-white py-2 collapse-inner rounded">
+                                            <div class="bg-white py-2 collapse-inner rounded">
+                                                <table class="table table-striped">
+                                                    
+                                                    <tbody>
+                                                      <tr>
+                                                        <th scope="col">Phase 1</th>
+                                                        <th scope="col">nom de la phase 1</th>
+                                                        <th scope="col">3 JEHs à 300,00€</th>
+                                                        <th scope="col">900,00€</th>
+                                                      </tr>
+                                                      
+                                                    </tbody>
+                                                  </table>
+                                                
+                                            </div>
+                    
+                                        </div>
+                                    </div>
+                                </li>
+                            </div>
+    
+                            
+                        </div>
+                        <div class="tab-pane fade" id="pills-missions_suivies">
+                            <div> a</div>
+                            
+                                        
+                        </div>
+                        <div class="tab-pane fade" id="pills-intervenants">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>Antony Feord</div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>3 JEH à 300,00€ HT</th>
+                                                <th><a class="btn btn-success">Générer le RdM</a></th>
+                                                
+                                            </tr>
+                                        </thead>
+        
+                                    </table>
+                                </div>
+                                <li class="nav-item">
+                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                        aria-expanded="true" aria-controls="intervenants_phase1">
+                                        <i class="bi bi-arrows-collapser"></i>
+                                        <span>BV et avenants</span>
+                                        <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                            <div class="bg-white py-2 collapse-inner rounded">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                         
+                                                        </thead>
+                                                        <tbody>
+                                                          <tr>
+                                                            <th><div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                                                                <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
+                                                              </div></th>
+                                                            <th scope="row">Phase 1</th>
+                                                            <td>3</td>
+                                                            <td>70%</td>
+                                                            <td>200</td>
+                                                          </tr>
+                                                          <tr>
+                                                            <th>
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+                                                                    <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
+                                                                </div>
+                                                                <script>
+                                                                    document.addEventListener("DOMContentLoaded", function () {
+                                                                        var checkbox = document.getElementById('flexSwitchCheckChecked');
+                                                                        var label = document.querySelector('label[for="flexSwitchCheckChecked"]');
+                                                            
+                                                                        label.addEventListener('click', function () {
+                                                                            checkbox.checked = !checkbox.checked;
+                                                                        });
+                                                                    });
+                                                                </script>
+                                                            </th>
+                                                            
+                                                            
+                                                            <th scope="row">Phase 2</th>
+                                                            <td>2</td>
+                                                            <td>60%</td>
+                                                            <td>100</td>
+                                                          </tr>
+                                                          
+                                                        </tbody>
+                                                      </table>
+                                                      <div><a class="btn btn-success">Générer le BV</a></div>
+                                                      <a class="btn btn-success">Ajouter un avenant au RdM</a>
+
+                                                </div>
+                        
+                                            </div>
+                                        </div>
+                                    </a>
+                                    
+                                </li>
+                            </div>
+                            
+                        </div>
+                        <!-- Onglet Annuaire Client -->
+                        <div class="tab-pane fade" id="pills-documents">
+                            <div class="col-12 mb-4">
+                                <li class="nav-item">
+                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
+                                        aria-expanded="true" aria-controls="intervenants_phase1">
+                                        <i class="bi bi-arrows-collapser"></i>
+                                        <span>Rappel : mentions obligatoires d'une facture :</span>
+                                    </a>
+                                    <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                        <div class="bg-white py-2 collapse-inner rounded">
+                                            <div class="bg-white py-2 collapse-inner rounded">
+                                                <ul class="custom-list">
+                                                    <li>la date</li>
+                                                    <li>le cachet de l’entreprise</li>
+                                                    <li>le montant TTC, HT et la TVA</li>
+                                                    <li>la mention “Pour Ponts Etudes Projets”</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </div>
+                        </div>
+                        
+                        
                     </div>
-                    <div class="card-body w-100">
-                        <!-- Détails spécifiques à l'élève -->
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
-                            <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
-                            <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                            <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
-                            <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
-                        </ul>
-                    </div>
-                </div>           
+                </div>          
                 {% endif %}
                 <!-- End of Card Shadow Student -->
 
