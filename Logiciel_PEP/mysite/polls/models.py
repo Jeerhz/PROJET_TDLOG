@@ -288,10 +288,7 @@ class Phase(models.Model):
     date_fin = models.DateField()
     titre = models.CharField(max_length = 200)
     nb_JEH = models.IntegerField()
-    frais_dossier= models.FloatField(default=0)
     montant_HT_par_JEH = models.FloatField()
-    responsable = models.ForeignKey('Member', on_delete=models.SET_NULL, null=True, blank=True)
-    students = models.ManyToManyField('Student', blank=True)
     numero = models.IntegerField()
 
     def nb_JEH_montant_HT(self):
@@ -299,21 +296,17 @@ class Phase(models.Model):
         # Calculate total nombre_JEH
         total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
         # Calculate total amount excluding tax (montant_HT)
-        montant_HT = total_nombre_JEH * self.montant_JEH
+        montant_HT = total_nombre_JEH * self.montant_HT_par_JEH
         return total_nombre_JEH, montant_HT
 
     def __str__(self):
         return f"Phase {self.numero}"
     
     def save(self, *args, **kwargs):
-        if self._state.adding:  # Vérifie si l'instance est en cours de création
-            if not self.responsable:
-                self.responsable = self.etude.responsable
-            super(Phase, self).save(*args, **kwargs)
-            if not self.students.exists():
-                self.students.set(self.etude.students.all())
-        else:
-            super(Phase, self).save(*args, **kwargs)
+        super(Phase, self).save(*args, **kwargs)
+        etude = Etude.objects.get(id=kwargs['id_etude'])
+        self.numero = len(Phase.objects.filter(etude=etude))+1
+        self.etude = etude
             
 
 class AssignationJEH(models.Model):
@@ -507,6 +500,25 @@ class AddClient(forms.ModelForm):
         if commit:
             client.save()
         return client
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+    
+class AddPhase(forms.ModelForm):
+    class Meta:
+        model = Phase
+        exclude = ['etude', 'numero']
+    def __str__(self):
+        return "Information de la Phase"
+    def name(self):
+        return "AddPhase"
+    def save(self, commit=True, **kwargs):
+        phase = super(AddPhase, self).save(commit=False, etude=kwargs['id_etude'])
+        if commit:
+            phase.save()
+        return phase
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:

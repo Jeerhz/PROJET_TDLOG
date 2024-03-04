@@ -22,5 +22,6 @@ urlpatterns = [
     path("search/", views.search, name='search'),
     path("stat_KPI/", views.stat_KPI, name='stat_KPI'),
     path("messagerie/", views.messages, name='messagerie'),
+    path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
     
 ]

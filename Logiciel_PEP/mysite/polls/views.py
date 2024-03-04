@@ -24,7 +24,8 @@ from .models import (
     Message,
     AddMessage,
     AssignationJEH,
-    Phase
+    Phase,
+    AddPhase
 )
 
 
@@ -264,6 +265,7 @@ def details(request, modelName, iD):
             if etude is not None:
                 context["etude"] = etude
                 context["phases"] = phases
+                context["phase_form"] = AddPhase()
             if client is not None:
                 context["client"] = client
             if eleve is not None:
@@ -599,3 +601,18 @@ def search(request):
         context = {"query":query, "liste_messages":liste_messages, "message_count":message_count}
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
+    
+def ajouter_phase(request, id_etude):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddPhase(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_etude=id_etude)
+                dictionnary = {'success':True}
+            else:
+                dictionnary = {'success':False}
+            return JsonResponse(dictionnary)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
