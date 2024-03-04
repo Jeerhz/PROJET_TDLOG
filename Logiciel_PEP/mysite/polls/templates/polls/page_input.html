@@ -413,23 +413,16 @@
                                 <div class="form-group row mb-3">
                                 <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
                                     <div class="col-sm-8 justify-content-center">
-                                    {% if field.field.widget.input_type == 'text' %}
+                                    {% if field.field.widget.input_type == 'select_multiple' %}
 
-                                        <input type="text" class="form-control" id="{{ field.id_for_label }}" name="{{ field.html_name }}" value="{{ field.value }}">
-                                    {% elif field.field.widget.input_type == 'select' %}
-                                        <select class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
-                                            {% for choice in field.field.choices %}
-                                                <option value="{{ choice.0 }}" {% if choice.0 == field.value %} selected {% endif %}>{{ choice.1 }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    {% elif field.field.widget.input_type == 'select_multiple' %}
                                         <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
                                             {% for choice in field.choices %}
                                                 <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
                                             {% endfor %}
                                         </select>
+                        
                                     {% else %}
-                                        <textarea class="form-control" id="{{ field.id_for_label }}" name="{{ field.html_name }}" rows="4" cols="50"> {{ field.value }}</textarea><br>
+                                        {{ field }}
                                     {% endif %}
                                     {% if field.errors %}
                                         <div class="text-danger">

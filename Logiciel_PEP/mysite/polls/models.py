@@ -453,11 +453,17 @@ class AddStudent(forms.ModelForm):
             student.save()
         return student
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+    
 class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['je']
+        exclude = ['je', 'students']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -479,6 +485,14 @@ class AddEtude(forms.ModelForm):
             etude.save()
         return etude
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #self.fields['responsable'].widget = forms.TextInput(attrs={'class': 'form-control'})
+        #self.fields['client'].widget = forms.TextInput(attrs={'class': 'form-control'})
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+    
 class AddClient(forms.ModelForm):
     class Meta:
         model = Client
@@ -493,6 +507,11 @@ class AddClient(forms.ModelForm):
         if commit:
             client.save()
         return client
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
     
 
 
