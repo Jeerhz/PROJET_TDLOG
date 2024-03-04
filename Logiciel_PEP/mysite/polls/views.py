@@ -377,6 +377,10 @@ def facture(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
+
+
+
 def stat_KPI(request):
     if request.user.is_authenticated:
         try:

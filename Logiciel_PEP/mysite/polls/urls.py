@@ -22,4 +22,5 @@ urlpatterns = [
     path("search/", views.search, name='search'),
     path("stat_KPI/", views.stat_KPI, name='stat_KPI'),
     path("messagerie/", views.messages, name='messagerie'),
+    
 ]

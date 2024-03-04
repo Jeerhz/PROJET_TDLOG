@@ -237,6 +237,7 @@ class Etude(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+
                               
 
     def __str__(self):
@@ -274,7 +275,11 @@ class Etude(models.Model):
     
     def calcul_montant_total_HT(self):
         phases = Phase.objects.filter(etude=self)
-        return sum(phase.nb_JEH_montant_HT()[1] for phase in phases)
+        return sum(phase.montant_HT_par_JEH[1]*phase.nb_JEH[1] for phase in phases)
+    
+    def nombre_phases(self):
+        phases = Phase.objects.filter(etude=self)
+        return len(phases)
     
 
 class Phase(models.Model):
