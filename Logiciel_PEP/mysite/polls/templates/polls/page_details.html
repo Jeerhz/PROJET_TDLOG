@@ -534,7 +534,47 @@
                                 
                             <!-- Début de l'Onglet Phases -->
                             <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab">
-                                <a class="btn btn-success">ajouter une phase</a>
+                                <div class="col-md-8">
+                                    <div class="card shadow">
+                                    <div class="card-body">
+                                    
+                                        <form action="{% url 'ajouter_phase' id_etude=iD %}" method="post">
+                                        <dl class="dl-horizontal">
+                                            {% csrf_token %}
+                    
+                                            {% for field in phase_form %}
+                                            <div class="form-group row mb-3">
+                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                <div class="col-sm-8 justify-content-center">
+                                                {% if field.field.widget.input_type == 'select_multiple' %}
+            
+                                                    <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                                        {% for choice in field.choices %}
+                                                            <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                    
+                                                {% else %}
+                                                    {{ field }}
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in field.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}                             
+                                        </dl>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                        </div>
+                                    </form>
+                                    </div>
+                                    </div>
+                                </div>
                                 <br>
                                 {% if phases %}
 
