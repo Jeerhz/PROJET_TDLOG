@@ -608,11 +608,8 @@ def ajouter_phase(request, id_etude):
             fetchform = AddPhase(request.POST)
             if fetchform.is_valid():
                 fetchform.save(commit=True, id_etude=id_etude)
-                dictionnary = {'success':True}
-            else:
-                dictionnary = {'success':False}
-            return JsonResponse(dictionnary)
+        return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
-    return HttpResponse(template.render(context, request))
+        return HttpResponse(template.render(context, request))

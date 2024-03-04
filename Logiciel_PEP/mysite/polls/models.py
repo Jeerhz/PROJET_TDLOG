@@ -303,10 +303,11 @@ class Phase(models.Model):
         return f"Phase {self.numero}"
     
     def save(self, *args, **kwargs):
-        super(Phase, self).save(*args, **kwargs)
-        etude = Etude.objects.get(id=kwargs['id_etude'])
+        id_etude = kwargs.pop('id_etude')
+        etude = Etude.objects.get(id=id_etude)
         self.numero = len(Phase.objects.filter(etude=etude))+1
         self.etude = etude
+        super(Phase, self).save(*args, **kwargs)
             
 
 class AssignationJEH(models.Model):
@@ -515,9 +516,9 @@ class AddPhase(forms.ModelForm):
     def name(self):
         return "AddPhase"
     def save(self, commit=True, **kwargs):
-        phase = super(AddPhase, self).save(commit=False, etude=kwargs['id_etude'])
+        phase = super(AddPhase, self).save(commit=False)
         if commit:
-            phase.save()
+            phase.save(**kwargs)
         return phase
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
