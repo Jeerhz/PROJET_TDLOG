@@ -474,6 +474,17 @@ class AddEtude(forms.ModelForm):
             etude.save()
         return etude
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['responsable'].widget = forms.TextInput(attrs={'class': 'form-control'})
+        self.fields['client'].widget = forms.TextInput(attrs={'class': 'form-control'})
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = 'form-select'
+            else:
+                field.widget.attrs['class'] = 'form-control'
+    
 class AddClient(forms.ModelForm):
     class Meta:
         model = Client
