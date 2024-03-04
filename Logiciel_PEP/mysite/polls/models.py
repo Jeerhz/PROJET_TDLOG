@@ -448,6 +448,15 @@ class AddStudent(forms.ModelForm):
             student.save()
         return student
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = 'form-select'
+            else:
+                field.widget.attrs['class'] = 'form-control'
+    
 class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
@@ -499,6 +508,14 @@ class AddClient(forms.ModelForm):
         if commit:
             client.save()
         return client
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = 'form-select'
+            else:
+                field.widget.attrs['class'] = 'form-control'
     
 
 
