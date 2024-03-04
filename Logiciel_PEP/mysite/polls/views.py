@@ -377,6 +377,19 @@ def facture(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def stat_KPI(request):
+    if request.user.is_authenticated:
+        try:
+            
+            template = loader.get_template("polls/stat_KPI.html")
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 def messages(request):
     if request.user.is_authenticated:
