@@ -81,6 +81,68 @@
             text-overflow: clip;
             max-width: none;
         }
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            padding: .75rem 1.25rem;
+            position: relative;
+            border-top-left-radius: .35rem;
+            border-top-right-radius: .35rem;
+            font-weight: bold;
+        }
+
+        .tableau_mission {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: .35rem;
+            overflow: hidden;
+            margin-bottom: 30px; /* Espacement entre les tableaux */
+        }
+
+        .table {
+            margin-bottom: 0; /* Élimine l'espacement par défaut en bas de la table */
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Centrage des tableaux */
+        .table-responsive {
+            display: table;
+            margin: auto;
+        }
+
+        .table-yellow tr {
+            background-color: #fff3cd; /* Une teinte légère de jaune */
+        }
+
+        .my-custom-table tbody tr {
+            background-color: #ffecd1; /* Lignes en couleur orange clair pour une meilleure lisibilité */
+            border-color: white; /* Bordures blanches entre les lignes */
+        }
+
+        .my-custom-table tr:hover {
+            background-color: #ffdfb3; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+
+        .table-hover tbody tr:hover th,
+        .table-hover tbody tr:hover td {
+            border-color: white; /* Garde les bordures blanches au survol */
+        }
+
+        .my-custom-table-green tbody tr {
+            background-color: #e6f9e9; /* Teinte de vert clair pour une meilleure lisibilité */
+        }
+
+        .my-custom-table-green tbody tr:hover {
+            background-color: #d1f2d8; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+
+
         
     </style>
 
@@ -109,50 +171,40 @@
             </li>
             
             <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading" >
-                <a href="{% url 'annuaire' %}">ANNUAIRES</a>
-            </div>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-chart-area "></i>
-                    <span>Études</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Étudiants</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span> Clients</span></a>
-            </li>
             
-            <!-- Divider -->
-            <hr class="sidebar-divider">
 
             <!-- Heading -->
             <div class="sidebar-heading">
                 Informations
             </div>
+
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    <i class="fas fa-fw fa-chart-area" ></i>
-                    <span>Configuration</span></a>
+                <a class="nav-link" href="{% url 'annuaire' %}">
+                    <i class="fas fa-book-open" ></i>
+                    <span>Annuaire</span></a>
             </li>
+
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'stat_KPI' %}">
                     <i class="fas fa-fw fa-chart-area"></i>
-                    <span>stat/KPI</span></a>
+                    <span>Stat/KPI</span></a>
             </li>
+
             <li class="nav-item">
                 <a class="nav-link" href="#">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Factures et BVs</span></a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'je_detail' %}">
+                    <i class="fas fa-fw fa-cog" ></i>
+                    <span>Ma Junior Entreprise</span></a>
+            </li>
+            
+
             <hr class="sidebar-divider">
+
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
                     aria-expanded="true" aria-controls="pageconnexion">
@@ -186,12 +238,7 @@
             <!-- Heading -->
             
 
-            <!-- Nav Item - Utilities Collapse Menu -->
-            
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            
+                        
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -211,7 +258,7 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -401,223 +448,175 @@
 
                 </nav>
                 <!-- End of Topbar -->
-                <div class="row">
 
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Chiffre d'affaire (Annuel)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ chiffre_affaires }}</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Begin Page Content -->
+                
+                <div class="card-header mt-3">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary">Signaler un problème</button>
                     </div>
-
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Earnings (Annual)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
-                                        </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                
+                            <!-- Earnings (Annual) -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100">
+                                    <div class="card-body">
                                         <div class="row no-gutters align-items-center">
-                                            <div class="col-auto">
-                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Chiffre d'affaire (Annuel)</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
                                             </div>
-                                            <div class="col">
-                                                <div class="progress progress-sm mr-2">
-                                                    <div class="progress-bar bg-info" role="progressbar"
-                                                        style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                        aria-valuemax="100"></div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Mission termininée (Annuel) -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-primary shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    Missions terminées</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> 76</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Missions en cours -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Missions en cours</div>
+                                                <div class="row no-gutters align-items-center">
+                                                    <div class="col-auto">
+                                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">6</div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Pending Requests Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Pending Requests</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+            
+                            <!-- Pending Requests -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-warning shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Missions en négociation</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Begin Page Content -->
+                    
+
+                
+
                 <div class="container-fluid">
-                    <div class="card-header">
-                        ÉTUDES
-                    </div>
-                        <div class="card shadow">
-                        <!-- Page Heading -->
-                        <br>
-                        <br>
-                        
-                        <div class="card mb-3 tableau_mission ">
-                            <div class="card-header"> 
-                                <strong>Études en cours</strong>
-                            </div>
-                            <!-- Début de la table avec pourcentage de Facturation-->
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Étude</th>
-                                        <th scope="col">Suiveur</th>
-                                        <th scope="col">Intervenants</th>
-                                        <th scope="col">Budget HT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                    <th scope="row">1</th>
-                                    <td>Mark</td>
-                                    <td>Otto</td>
-                                    <td>@mdo</td>
-                                    </tr>
-                                    <tr>
-                                    <th scope="row">2</th>
-                                    <td>Jacob</td>
-                                    <td>Thornton</td>
-                                    <td>@fat</td>
-                                    </tr>
-                                    <tr>
-                                    <th scope="row">3</th>
-                                    <td>Larry</td>
-                                    <td>the Bird</td>
-                                    <td>@twitter</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <br>
-                        <br>
-                        <div class="card mb-3 tableau_mission">
-                            <div class="card-header">
-                                Études en discussion
-                            </div>
-                            <!-- Début de la table avec pourcentage de Facturation-->
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Étude</th>
-                                        <th scope="col">Suiveur</th>
-                                        <th scope="col">Intervenants</th>
-                                        <th scope="col">Budget HT</th>
-                                      </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                      <th scope="row">1</th>
-                                      <td>Mark</td>
-                                      <td>Otto</td>
-                                      <td>@mdo</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">2</th>
-                                      <td>Jacob</td>
-                                      <td>Thornton</td>
-                                      <td>@fat</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">3</th>
-                                      <td>Larry</td>
-                                      <td>the Bird</td>
-                                      <td>@twitter</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <br>
-                        <br>
-                        <div class="card mb-3 tableau_mission">
-                            <div class="card-header">
-                                <strong>Études terminnées</strong>
-                            </div>
-                            <!-- Début de la table avec pourcentage de Facturation-->
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Étude</th>
-                                        <th scope="col">Suiveur</th>
-                                        <th scope="col">Intervenants</th>
-                                        <th scope="col">Budget HT</th>
-                                      </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                      <th scope="row">1</th>
-                                      <td>Mark</td>
-                                      <td>Otto</td>
-                                      <td>@mdo</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">2</th>
-                                      <td>Jacob</td>
-                                      <td>Thornton</td>
-                                      <td>@fat</td>
-                                    </tr>
-                                    <tr>
-                                      <th scope="row">3</th>
-                                      <td>Larry</td>
-                                      <td>the Bird</td>
-                                      <td>@twitter</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <div class="row">
+                        <div class="col-12 ml-4">
+                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études récentes</h2>
                         </div>
                     </div>
-                        
-                    
-                    
-                    
-                           
-                </div>
-                <!-- /.container-fluid -->
+                    <div class="card mb-4 ml-4 mr-3 shadow">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center">
+                                <thead style="background-color: #ffffff;">
+                                    <tr>
+                                        <th scope="col" style="width: 3%;">Numéro</th>
+                                        <th scope="col">Titre</th>
+                                        <th scope="col">Client</th>
+                                        <th scope="col" style="width: 10%;">Période</th>
+                                        <th scope="col">Suiveur</th>
+                                        <th scope="col">Budget HT</th>
+                                        <th scope="col" style="width: 5%;">Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Ligne pour "Études en cours" -->
+                                    <tr style="background-color: #fff3cda1;">
+                                        <th class="align-middle" scope="row">1</th>
+                                        <td class="align-middle">Site UEFA</td>
+                                        <td class="align-middle">LE CERMICS&CO</td>
+                                        <td class="align-middle">01/01/23 - 30/06/23</td>
+                                        <td class="align-middle">
+                                            <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Mark
+                                        </td>
+                                        <td class="align-middle">€10,000</td>
+                                        <td class="align-middle" style="background-color: #ffda6b;">En cours</td>
+                                    </tr>
+                
+                                    <!-- Ligne pour "Études en discussion" -->
+                                    <tr style="background-color: #ffe5d0d6;">
+                                        <th class="align-middle" scope="row">4</th>
+                                        <td class="align-middle">2e Site UEFA</td>
+                                        <td class="align-middle">LE CERMICS&CO</td>
+                                        <td class="align-middle">01/01/23 - 30/06/23</td>
+                                        <td class="align-middle">
+                                            <img src="/static/polls/img/undraw_profile_2.svg" alt="Profile de Anna" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Anna
+                                        </td>
+                                        <td class="align-middle">€25,000</td>
+                                        <td class="align-middle" style="background-color: #ffa559;">En discussion</td>
+                                    </tr>
 
+                                    <!-- Ligne pour "Études en discussion" -->
+                                    <tr style="background-color: #ffe5d0d6;">
+                                        <th class="align-middle" scope="row">5</th>
+                                        <td class="align-middle">Site UEFA</td>
+                                        <td class="align-middle">LE CERMICS&CO</td>
+                                        <td class="align-middle">01/01/23 - 30/06/23</td>
+                                        <td class="align-middle">
+                                            <img src="/static/polls/img/undraw_profile_2.svg" alt="Profile de Anna" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Anna
+                                        </td>
+                                        <td class="align-middle">€25,000</td>
+                                        <td class="align-middle" style="background-color: #ffa559;">En discussion</td>
+                                    </tr>
+                
+                                    <!-- Ligne pour "Études terminées" -->
+                                    <tr style="background-color: #d4eddabd;">
+                                        <th class="align-middle" scope="row">6</th>
+                                        <td class="align-middle">Site UEFA</td>
+                                        <td class="align-middle">LE CERMICS&CO</td>
+                                        <td class="align-middle">01/01/23 - 30/06/23</td>
+                                        <td class="align-middle">
+                                            <img src="/static/polls/img/undraw_profile_3.svg" alt="Profile de Gregor" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Gregor
+                                        </td>
+                                        <td class="align-middle">€35,000</td>
+                                        <td class="align-middle" style="background-color: #69ee8899;">Terminée</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>                
+            <!-- /.container-fluid -->
             </div>
             <!-- End of Main Content -->
         <!-- Footer -->
@@ -673,6 +672,9 @@
 
     <!-- Page level plugins -->
     <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
 
     <!-- Page level custom scripts -->
     <script src="{% static 'polls/js/demo/chart-area-demo.js' %}"></script>
