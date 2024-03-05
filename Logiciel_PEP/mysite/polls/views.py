@@ -24,7 +24,8 @@ from .models import (
     Message,
     AddMessage,
     AssignationJEH,
-    Phase
+    Phase,
+    AddPhase
 )
 
 
@@ -265,6 +266,7 @@ def details(request, modelName, iD):
             if etude is not None:
                 context["etude"] = etude
                 context["phases"] = phases
+                context["phase_form"] = AddPhase()
             if client is not None:
                 context["client"] = client
             if eleve is not None:
@@ -377,6 +379,10 @@ def facture(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+
+
 
 def stat_KPI(request):
     if request.user.is_authenticated:
@@ -609,4 +615,16 @@ def search(request):
     else:
         context = {"query":query, "liste_messages":liste_messages, "message_count":message_count}
         template = loader.get_template("polls/search_results.html")
+        return HttpResponse(template.render(context, request))
+    
+def ajouter_phase(request, id_etude):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddPhase(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_etude=id_etude)
+        return redirect('details', modelName='Etude', iD=id_etude)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
         return HttpResponse(template.render(context, request))

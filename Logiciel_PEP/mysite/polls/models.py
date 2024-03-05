@@ -237,6 +237,7 @@ class Etude(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+
                               
 
     def __str__(self):
@@ -274,7 +275,11 @@ class Etude(models.Model):
     
     def calcul_montant_total_HT(self):
         phases = Phase.objects.filter(etude=self)
-        return sum(phase.nb_JEH_montant_HT()[1] for phase in phases)
+        return sum(phase.montant_HT_par_JEH[1]*phase.nb_JEH[1] for phase in phases)
+    
+    def nombre_phases(self):
+        phases = Phase.objects.filter(etude=self)
+        return len(phases)
     
 
 class Phase(models.Model):
@@ -283,10 +288,7 @@ class Phase(models.Model):
     date_fin = models.DateField()
     titre = models.CharField(max_length = 200)
     nb_JEH = models.IntegerField()
-    frais_dossier= models.FloatField(default=0)
     montant_HT_par_JEH = models.FloatField()
-    responsable = models.ForeignKey('Member', on_delete=models.SET_NULL, null=True, blank=True)
-    students = models.ManyToManyField('Student', blank=True)
     numero = models.IntegerField()
 
     def nb_JEH_montant_HT(self):
@@ -294,21 +296,18 @@ class Phase(models.Model):
         # Calculate total nombre_JEH
         total_nombre_JEH = sum(assignation.nombre_JEH for assignation in assignations)
         # Calculate total amount excluding tax (montant_HT)
-        montant_HT = total_nombre_JEH * self.montant_JEH
+        montant_HT = total_nombre_JEH * self.montant_HT_par_JEH
         return total_nombre_JEH, montant_HT
 
     def __str__(self):
         return f"Phase {self.numero}"
     
     def save(self, *args, **kwargs):
-        if self._state.adding:  # Vérifie si l'instance est en cours de création
-            if not self.responsable:
-                self.responsable = self.etude.responsable
-            super(Phase, self).save(*args, **kwargs)
-            if not self.students.exists():
-                self.students.set(self.etude.students.all())
-        else:
-            super(Phase, self).save(*args, **kwargs)
+        id_etude = kwargs.pop('id_etude')
+        etude = Etude.objects.get(id=id_etude)
+        self.numero = len(Phase.objects.filter(etude=etude))+1
+        self.etude = etude
+        super(Phase, self).save(*args, **kwargs)
             
 
 class AssignationJEH(models.Model):
@@ -502,6 +501,25 @@ class AddClient(forms.ModelForm):
         if commit:
             client.save()
         return client
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+    
+class AddPhase(forms.ModelForm):
+    class Meta:
+        model = Phase
+        exclude = ['etude', 'numero']
+    def __str__(self):
+        return "Information de la Phase"
+    def name(self):
+        return "AddPhase"
+    def save(self, commit=True, **kwargs):
+        phase = super(AddPhase, self).save(commit=False)
+        if commit:
+            phase.save(**kwargs)
+        return phase
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:

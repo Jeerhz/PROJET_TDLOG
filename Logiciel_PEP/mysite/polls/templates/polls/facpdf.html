@@ -257,7 +257,7 @@
 	</head>
 	<body>
         <div class="page-wrapper">
-            <button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+            <button type="button" class=" bouton_pdf" id="download-button">Télécharger</button>
         </div>
         
         
@@ -307,8 +307,14 @@
                 <tbody>
                     <tr>
                         <td contenteditable="true">20,00%</td>
-                        <td contenteditable="true">{{montant_TVA}}</td>
-                        <td contenteditable="true">etude.montant_HT</td>
+                        <td contenteditable="true" id="montant_TVA">{{montant_TVA}}</td>
+                        <td contenteditable="true" id="montant_HT">{{etude.montant_HT}}</td>
+                        <script>
+                            var montantHTElement = document.getElementById('montant_HT');
+                            var montantTVAElement = document.getElementById('montant_TVA');
+                            var montantTVA = parseFloat(montantHTElement.textContent) * 0.2;
+                            montantTVAElement.textContent = montantTVA;
+                        </script>
                     </tr>
                     <tr>
                         
@@ -329,13 +335,47 @@
                         <th class="align-right" >Montant HT</th>
                     </tr>
                 </thead>
-                <tbody id = "table_prestation">
+                <tbody>
+                    
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nombre_phases}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left"><span class="gras">{{etude.phases}}</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nombre_phases}}</td>
+                    </tr>
                     
                     
                 </tbody>
             </table>
+            
+            <table class="table_date">
+                <tbody>
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
+                        
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                </tbody>
+            </table>
             <script>
-                
+                 
                 const listeDonnees = [
                     { phase: 'Phase 1 : {nom_phase_1}', pourcentage: 30, jours: 2, prix: 450 },
                     { phase: 'Phase 2 : {nom_phase_2}', pourcentage: 30, jours: 2, prix: 450 },
