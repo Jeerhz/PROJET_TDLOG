@@ -57,9 +57,9 @@ function ajouterClient() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById("bouton-etudiant").addEventListener("click", ajouterEtudiant());
-    document.getElementById("bouton-etude").addEventListener("click", ajouterEtude());
-    document.getElementById("bouton-client").addEventListener("click", ajouterClient());
+    document.getElementById("bouton-etudiant").addEventListener("click", ajouterEtudiant);
+    document.getElementById("bouton-etude").addEventListener("click", ajouterEtude);
+    document.getElementById("bouton-client").addEventListener("click", ajouterClient);
     ajouterEtudiant();
     ajouterEtude();
     ajouterClient();
