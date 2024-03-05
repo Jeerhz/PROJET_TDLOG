@@ -383,6 +383,20 @@ def facture(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def ndf(request):
+    if request.user.is_authenticated:
+        try:
+            
+            template = loader.get_template("polls/ndf.html")
+            context={}
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 
@@ -634,7 +648,7 @@ def ajouter_phase(request, id_etude):
     
 def BV(request, id_etude):
     if request.user.is_authenticated:
-        chemin_absolu = os.path.join(settings.STATIC_ROOT, "BV_test.xlsx")
+        chemin_absolu = os.path.join("polls\static\polls\BV_test.xlsx")
         classeur = openpyxl.load_workbook(chemin_absolu)
 
         # Sélectionner la feuille de calcul
