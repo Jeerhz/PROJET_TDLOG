@@ -22,6 +22,8 @@ function ajouterEtude() {
         // Récupérer le conteneur
         var container = document.getElementById("liste-etude");
         var wholecontent = container.innerHTML;
+        console.log(compteurEtude);
+        console.log(Math.min(compteurEtude+5, res_etude_js.length));
         // Ajouter les éléments à partir de la liste récupérée depuis Django
         res_etude_js.slice(compteurEtude, Math.min(compteurEtude+5, res_etude_js.length)).forEach(function(etude) {
             wholecontent += '<a href="'+etude['url']+'" class="list-group-item list-group-item-action d-flex justify-content-between">'
