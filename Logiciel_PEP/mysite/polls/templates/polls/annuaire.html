@@ -415,65 +415,69 @@
                     
 
                         <!-- Contenu des onglets -->
-                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                    <div class="tab-content mt-2">
                         <!-- Onglet Annuaire Étudiant -->
-                        <div class="tab-pane fade show active" id="pills-etudiant">
+                        <div class="tab-pane fade show active shadow" id="pills-etudiant">
+                            <div class="card">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h2 class="m-0 font-weight-bold text-primary">Annuaire</h2>
+                                <i class="fas fa-user"></i>
+                                <h2 class="m-0 font-weight-bold text-primary">Etudiants</h2>
+                                <!-- Barre de recherche -->
+                                <a class="btn btn-primary float-right" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                             </div>
-                            <!-- Barre de recherche -->
-                            <div class="input-group mb-3">
-                                <a class="btn btn-primary float-right" href="{% url 'input' modelName='Student' iD=0 %}">Ajouter</a>
                             </div>
-
-                            <div class="table-responsive" style="background-color: #FFFFFF; border-radius: 8px;">
-                                <table class="table table-borderless table-hover" style="background-color: #FFFFFF; border-radius: 8px;">
-                                        <thead>
+                            
+                            <div class="table-responsive" style="background-color: #FFFFFF;">
+                                <table class="table table-borderless table-hover">
+                                        <thead class="thead-dark">
                                             <tr>
-                                                <th>Prénom</th>
-                                                <th>Nom</th>
-                                                <th>Promotion</th>
+                                                <th class="text-center">Prénom</th>
+                                                <th class="text-center">Nom</th>
+                                                <th class="text-center">Promotion</th>
                                             </tr>
                                         </thead>
                                         <tbody id="etudiantTableBody">
                                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                             {% for student in student_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
-                                                <td> {{ student.first_name }} </td>
-                                                <td> {{ student.last_name }} </td>
-                                                <td> {{ student.promotion }} </td>
+                                                <td class="text-center"> {{ student.first_name }} </td>
+                                                <td class="text-center"> {{ student.last_name }} </td>
+                                                <td class="text-center"> {{ student.promotion }} </td>
 
                                             </tr>
                                             {% endfor %}
                                         </tbody>
-                                    </table>
+                                </table>
+                            </div>
+                            
+                        </div>
+                
+                        <!-- Onglet Annuaire Client -->
+                        <div class="tab-pane fade shadow" id="pills-client">
+                            <div class="card">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <i class="fas fa-user-tag"></i>
+                                    <h2 class="m-0 font-weight-bold text-primary">Clients</h2>
+                                    <!-- Barre de recherche -->
+                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                                 </div>
                             </div>
-                
-                            <!-- Onglet Annuaire Client -->
-                            <div class="tab-pane fade" id="pills-client">
-                                <h2 class="mb-4">Annuaire Client</h2>
-
-                            <!-- Barre de recherche -->
-                        <div class="input-group mb-3">
-                            <a class="btn btn-primary" href="{% url 'input' modelName='Client' iD=0 %}">Ajouter</a>
-                        </div>
-                                <div class="table-responsive">
+                                <div class="table-responsive" style="background-color: #FFFFFF;">
                                     <table class="table table-borderless table-hover">
-                                        <thead>
+                                        <thead class="thead-dark">
                                             <tr>
-                                                <th>Nom de société </th>
-                                                <th> Représentant </th>
-                                                <th>Pays</th>
+                                                <th class="text-center">Nom de société </th>
+                                                <th class="text-center"> Représentant </th>
+                                                <th class="text-center">Pays</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
-                                                <td> {{ client.nom_societe }} </td>
-                                                <td> {{ client.nom_representant }}</td>
-                                                <td> {{ client.country }} </td>
+                                                <td class="text-center"> {{ client.nom_societe }} </td>
+                                                <td class="text-center"> {{ client.nom_representant }}</td>
+                                                <td class="text-center"> {{ client.country }} </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -482,43 +486,44 @@
                             </div>
 
                             <!-- Onglet Annuaire Études -->
-                        <div class="tab-pane fade" id="pills-etudes">
-                            <h2 class="mb-4">Listes Etudes</h2>
-                            
-                    <!-- Barre de recherche -->
-                    <div class="input-group mb-3">
-                        <a class="btn btn-primary" href="{% url 'input' modelName='Etude' iD=0 %}">Ajouter</a>
-                    </div>
+                        <div class="tab-pane fade shadow" id="pills-etudes">
+                            <div class="card">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <i class="fas fa-file"></i>
+                                    <h2 class="m-0 font-weight-bold text-primary">Etudes</h2>
+                                    <!-- Barre de recherche -->
+                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                </div>
+                            </div>
 
-                            <div class="table-responsive">
+                            <div class="table-responsive" style="background-color: #FFFFFF;">
                                 <table class="table table-borderless table-hover">
-                                    <thead>
+                                    <thead class="thead-dark">
                                         <tr>
-                                            <th>Titre</th>
-                                            <th>Client</th>
-                                            <th>Debut</th>
-                                            <th>Fin</th>
-                                            <th>Responsable</th>
+                                            <th class="text-center">Titre</th>
+                                            <th class="text-center">Client</th>
+                                            <th class="text-center">Debut</th>
+                                            <th class="text-center">Fin</th>
+                                            <th class="text-center">Responsable</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody">
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id %}&quot;">
-                                                <td> {{ etude.titre }} </td>
-                                                <td> {{ etude.client }} </td>
-                                                <td> {{ etude.begin }} </td>
-                                                <td> {{ etude.end }} </td>
-                                                <td> {{ etude.responsable }} </td>
+                                                <td class="text-center"> {{ etude.titre }} </td>
+                                                <td class="text-center"> {{ etude.client }} </td>
+                                                <td class="text-center"> {{ etude.begin }} </td>
+                                                <td class="text-center"> {{ etude.end }} </td>
+                                                <td class="text-center"> {{ etude.responsable }} </td>
                                             </tr>
                                             {% endfor %}
-                                            </tbody>
-                                            </table>
+                                    </tbody>
+                                </table>
                             </div>
-                    </div>
-                        
-                </div>   
-            </div> 
+                        </div> 
+                    </div>   
+                    </div> 
             
             
         </div>      
