@@ -50,6 +50,7 @@ def index(request):
             "message_count": message_count,
             "chiffre_affaires": chiffres_affaires,
         }
+
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -379,12 +380,26 @@ def facture(request, iD):
 
 def stat_KPI(request):
     if request.user.is_authenticated:
-        try:
-            
-            template = loader.get_template("polls/stat_KPI.html")
-        except:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Erreur dans l'identification de la mission."}
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        user_je = request.user.je
+        chiffres_affaires = request.user.chiffres_affaires()
+        monthly_sums = calculate_monthly_sums(user_je)
+        template = loader.get_template("polls/stat_KPI.html")
+        context = {
+            "monthly_sums": monthly_sums,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "chiffre_affaires": chiffres_affaires,
+        }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
