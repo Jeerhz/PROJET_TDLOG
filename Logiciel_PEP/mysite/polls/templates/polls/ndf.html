@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    ></script>
+    <title>NDF </title>
+    <style>
+        .page {
+            /*margin-top: 0px;*/
+            height: 297mm;
+            background-color: rgb(255, 255, 255);
+            overflow: hidden;
+        }
+        
+        .body {
+            line-height: 1.1;
+            font-size: 12px;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #5b5b5b;
+        }
+        .image_logo {
+            width: 300px;
+            height: auto;
+            margin-top: 4%;  
+            margin-left: 7%;
+
+        }
+        .container{
+            font-family: "Lucida Sans", sans-serif;
+            width: 210mm; /* A4 width */
+            height: 297mm; /* A4 height */
+            box-sizing: border-box;
+            position : relative;
+            overflow:hidden;
+            background-color: #fff;
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.7);
+            
+        }
+       
+        .header {
+            width: 210mm;
+            height: 50mm;
+            margin: 0px;
+            text-align: center;
+            font-weight: bold;  
+            color: #1f3753;
+            font-size: 28px;         
+        }
+
+
+        .footer {
+            height: 47mm;
+            font-size: 12.5px;
+            line-height: 8px;
+            text-align: center;
+            margin-top: 10px;
+            color: #1f3753;
+            font-family: 'Calibri', sans-serif;
+        
+        }
+        
+        .wrapper {
+            font-family: 'Calibri', sans-serif;
+            width: 80%;
+            height: 200mm;
+            margin-top: 10px;
+            margin-left: 10%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            grid-column-gap: 0px;
+            grid-row-gap: 0px;
+        }
+
+        .titre { grid-area: 1 / 1 / 2 / 6; line-height: 10px; font-weight: bold; font-size: 15px; margin-bottom: 20px;}
+        .montant{grid-area: 2 / 1 / 3 / 6; font-size: 15px; margin-bottom: 20px;}
+        .mentions { grid-area: 3 / 1 / 4 / 6;line-height: 23px; font-size: 13.5px; margin-bottom: 30px;}
+        .signatures { grid-area: 4 / 1 / 5 / 6; font-size: 15px; font-weight: bold;}
+
+        .table_montant {
+			border:1px solid #1f3753;
+			border-collapse:collapse;
+			padding:9px;
+            width:100%;
+            color:#1f3753 ;
+
+            table-layout: fixed;
+		}
+		
+		.table_montant td {
+			border:2px solid #1f3753;
+			text-align:left;
+			padding:9px;
+			background: #ffffff;
+			color: #1f3753;
+		}
+
+        .table_signatures {
+			border:2px solid #313030;
+			border-collapse:collapse;
+			padding:9px;
+            width:100%;
+            
+
+
+            table-layout: fixed;
+           
+		}
+		
+		.table_signatures td {
+			border:2px solid #313030;
+			text-align:left;
+			padding:9px;
+			background: #ffffff;
+			color: #313030;
+		}
+
+        .line {
+            border-top: 0.5px solid  #1f3753; 
+            width: 80%; 
+            margin-left: 10%;
+            color: #1f3753;
+            margin-top: 18px;
+        }
+        .indentation_50{
+            margin-left: 50px;
+        }
+        .italique{
+            font-style: italic; 
+        }
+        .gras{
+            font-weight: bold;
+        }
+        .font18{
+            font-size: 15px;
+        }
+        .bouton_pdf {
+            background-color: #5b5b5b;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            color : #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            padding : 5px 10px;
+            cursor:pointer;
+        }
+
+        .bouton_pdf:hover {
+        /* Add additional hover effects here if needed */
+        /* Add the hover class for the shining effect */
+            background-color: #000000; /* Darker green color */
+        }
+
+        .page-wrapper{
+            width:100%;
+            height: 60px;
+            display : grid;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+    </div>
+    <div class="container" >
+        <div class="page" id ="ndf">
+            <div class="header">
+                <div class="image_logo">
+                    <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo">
+                </div>
+                <br>
+                <div>NOTE DE FRAIS</div>
+                <div class="line"></div>
+            </div>
+    
+            <div class="wrapper">
+                <div class="titre"> 
+                    <p>NOM : <span contenteditable="true">{{student.last_name}}</span></p>
+                    <p>Prénom : <span contenteditable="true">{{student.first_name}}</span></p>
+                    <p>Date : <span contenteditable="true">06/05/2023</span> </p>
+                    <p>Motif : <span contenteditable="true">train trajet AGP</span> </p>
+    
+    
+    
+                </div>
+                <div class="montant"> 
+                    <table class="table_montant">
+                        <tbody>
+                            <tr>
+                                <td>Montant TTC</td>
+                                <td contenteditable="true"> 11,60€</td>
+                                
+                            </tr>
+                            <tr>
+                                <td> Montant HT</td>
+                                <td contenteditable="true"> 11,60€</td>
+                            </tr>
+                            <tr>
+                                <td>Taux TVA</td>
+                                <td contenteditable="true"> 11,60€</td>
+                                
+                            </tr>
+                            <tr>
+                                <td>Montant TVA</td>
+                                <td contenteditable="true"> 11,60€</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mentions"> 
+                    <div class="italique"><span class="gras">Rappel : </span>Une facture ne peut être prise en compte que si les mentions suivantes sont clairement lisibles :</div>
+                    <div class="indentation_50 italique">-    la date</div>
+                    <div class="indentation_50 italique">-    le cachet de l’entreprise</div>
+                    <div class="indentation_50 italique">-    le montant TTC, HT et la TVA</div>
+                    <div class="indentation_50 italique">-    la mention “Pour Ponts Etudes Projets”</div>
+                    <div class="italique">Ne pas oublier de joindre les justificatifs (factures) avec les notes de frais. Le remboursement se fera
+    par chèque déposé dans le casier, ou par virement si un RIB est joint à cette note de frais.</div>
+                    <br>
+                
+               
+                    <div class="gras font18">Date : <span contenteditable="true">02/01/2024</span></div>
+                   
+                    <br>
+                    
+    
+    
+    
+    
+    
+    
+    
+                </div>
+                <div class="signatures"> 
+                    <table class="table_signatures">
+                        <tbody>
+                            <tr>
+                                <td>Signature du trésorier<br><br><br><br><br><br><br></td>
+                                <td>Signature du secrétaire général<br><br><br><br><br><br><br></td>
+                                <td>Signature du président<br><br><br><br><br><br><br></td>
+           
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+            <div class="footer">
+                <p>Ponts Etudes Projets</p>
+                <p>Junior-Entreprise de l’Ecole des Ponts ParisTech</p>
+                <p>Association loi 1901 - Affiliée à la Confédération Nationale des Juniors-Entreprises</p>
+                <p>6 et 8 avenue Blaise Pascal - Champs-Sur-Marne - 77455 Marne-La-Vallée Cedex 2</p>
+                <p>Tél : 01 64 15 33 99 - Fax : 01 64 15 33 90 - https://junior-pep.fr</p>
+            </div>
+        
+        </div>
+
+        </div>
+    </div>
+   
+    <div class="page-wrapper"></div>
+	<script>
+        const button = document.getElementById('download-button');
+
+        function generatePDF() {
+            // Choose the element that your content will be rendered to.
+            const element = document.getElementById('ndf');
+            // Choose the element and save the PDF for your user.
+            html2pdf().from(element).save();
+        }
+
+        button.addEventListener('click', generatePDF);
+    </script>
+</body>
+</html>

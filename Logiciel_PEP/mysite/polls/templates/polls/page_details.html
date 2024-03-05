@@ -182,10 +182,8 @@
 
             <!-- Main Content -->
             <div id="content">
-
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
@@ -657,7 +655,7 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Avenant CE</h5>
                                                     <p class="card-text">Ajouter un avenant à la Convention d'Etude</p>
-                                                    <a href="#" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                    <a href="#" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -739,7 +737,7 @@
                                                               
                                                             </tbody>
                                                           </table>
-                                                          <div><a href="{% url 'BV' id_etude=iD %}" class="btn btn-success">Générer le BV</a></div>
+                                                          <div><a class="btn btn-success">Générer le BV</a></div>
                                                           <a class="btn btn-success">Ajouter un avenant au RdM</a>
     
                                                     </div>
@@ -1028,10 +1026,12 @@
                             </div>
                             
                         </div>
-                        <!-- Onglet Annuaire Client -->
+                        <!-- Onglet Documents -->
                         <div class="tab-pane fade" id="pills-documents">
                             <div class="col-12 mb-4">
-                                <li class="nav-item">
+                                <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
+
+                                <div class="nav-item">
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
                                         aria-expanded="true" aria-controls="intervenants_phase1">
                                         <i class="bi bi-arrows-collapser"></i>
@@ -1049,7 +1049,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </li>
+                                </div>
                             </div>
                         </div>
                         
@@ -1060,6 +1060,8 @@
 
             </div>
             <!-- End of Card Header-->
+        </div>
+        <!-- end of div content-->
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white" style="margin-top: auto;">
@@ -1074,7 +1076,7 @@
         </div>
         <!-- End of Wrapper colomn -->
     </div>
-    <!-- End of Page Wrapper -->
+    <!-- End of Page Wrapper column -->
 
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

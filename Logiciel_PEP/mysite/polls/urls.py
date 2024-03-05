@@ -24,5 +24,7 @@ urlpatterns = [
     path("messagerie/", views.messages, name='messagerie'),
     path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
     path("BV/<int:id_etude>", views.BV, name='BV'),
+    path("ndf/", views.ndf, name="ndf"),
+    
     
 ]
