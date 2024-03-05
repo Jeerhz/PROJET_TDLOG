@@ -1,4 +1,6 @@
 import json
+import os
+import openpyxl
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
@@ -8,7 +10,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 from datetime import datetime
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
+from django.conf import settings
 
 from .models import (
     JE,
@@ -624,6 +627,25 @@ def ajouter_phase(request, id_etude):
             if fetchform.is_valid():
                 fetchform.save(commit=True, id_etude=id_etude)
         return redirect('details', modelName='Etude', iD=id_etude)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    
+def BV(request, id_etude):
+    if request.user.is_authenticated:
+        chemin_absolu = os.path.join(settings.STATIC_ROOT, "BV_test.xlsx")
+        classeur = openpyxl.load_workbook(chemin_absolu)
+
+        # Sélectionner la feuille de calcul
+        # feuille = classeur.active
+
+        # Modifier la cellule G4
+        # feuille['C13'] = "23e42"
+
+        # Sauvegarder les modifications dans le fichier Excel
+        # classeur.save(chemin_absolu)
+        return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
