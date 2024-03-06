@@ -491,25 +491,22 @@
                             <!-- Début de l'Onglet Phases -->
                             <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab">
                                 {% if phases %}
-                                
 
-                                <!--{% for phase in phases %} -->
+                                {% for phase in phases %}
                                 <div class="card mb-3">
                                     <div class="col-12 mb-4">
                                         <!-- Card -->
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <small>Phase 2</small>
+                                            <small>Phase {{phase.numero}}</small>
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>ANALYSE DU BUSINESS ET DES DOCUMENTS EXISTANTS</th>
-                                                        <th>{{etude.client}} JEH à 300,00€ HT</th>
-                                                        <th>900,00€ HT</th>
+                                                        <th>{{phase.titre}}</th>
+                                                        <th>{{phase.nb_JEH}} JEH à {{phase.montant_HT_par_JEH}} €</th>
                                                     </tr>
-                                                </thead>
-                
+                                                </thead>                
                                             </table>
                                         </div>
                                         <div class="nav-item">
@@ -524,25 +521,24 @@
                                                                 <thead>
                                                                 <tr>
                                                                     <th scope="col">Intervenant</th>
-                                                                    <th scope="col">nombres de JEH</th>
-                                                                    <th scope="col">pourcentage</th>
-                                                                    <th scope="col">rétribution brute</th>
+                                                                    <th scope="col">Nombre de JEH</th>
+                                                                    <th scope="col">Pourcentage de rétribution</th>
+                                                                    <th scope="col">Rétribution brute</th>
                                                                 </tr>
                                                                 </thead>
                                                                 <tbody>
+                                                                {% if phase.li_eleves %}  <!-- On gere le cas où aucun élève n'est assigné -->
+                                                                {% for assignation_JEH in phase.get_assignations_JEH %}
                                                                 <tr>
-                                                                    <th scope="row">Antony FEORD</th>
-                                                                    <td>3</td>
-                                                                    <td>70%</td>
-                                                                    <td>200</td>
+                                                                    <th scope="row">{{assignation_JEH.eleve.first_name}} {{assignation_JEH.last_name}}</th>
+                                                                    <td>{{assignation_JEH.nombre_JEH}}</td>
+                                                                    <td>{{assignation_JEH.pourcentage_retribution}}</td>
+                                                                    <td>{{assignation_JEH.retribution_brute_totale}} €</td>
                                                                 </tr>
-                                                                <tr>
-                                                                    <th scope="row">Edgar DUC</th>
-                                                                    <td>2</td>
-                                                                    <td>60%</td>
-                                                                    <td>100</td>
-                                                                </tr>
-                                                                
+                                                                {% endfor %}
+                                                                {% else %}
+                                                                <p>Aucun Intervenant n'est enregistré</p>
+                                                                {% endif %}                                  
                                                                 </tbody>
                                                             </table>
                                                             <a class="btn btn-success">Ajouter un intervenant</a>
@@ -555,7 +551,7 @@
                                         </div>
                                     </div>  
                                 </div>
-                                <!-- {% endfor %} -->       
+                                {% endfor %}    
                                 <!-- Début Planning avec graphe-->
                                   
                                 <div class="col-lg-13 mb-3">
