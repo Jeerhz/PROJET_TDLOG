@@ -249,7 +249,7 @@ def details(request, modelName, iD):
             client = None
             eleve = None
             if modelName == "Etude":
-                phases = Phase.objects.filter(etude=instance)
+                phases = Phase.objects.filter(etude=instance).order_by('date_debut')
                 etude = instance
             if modelName == "Student":
                 eleve = instance
@@ -270,6 +270,7 @@ def details(request, modelName, iD):
                 context["etude"] = etude
                 context["phases"] = phases
                 context["phase_form"] = AddPhase()
+
             if client is not None:
                 context["client"] = client
             if eleve is not None:

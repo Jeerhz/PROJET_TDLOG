@@ -298,7 +298,6 @@ class Phase(models.Model):
         # Calculate total amount excluding tax (montant_HT)
         montant_HT = total_nombre_JEH * self.montant_HT_par_JEH
         return total_nombre_JEH, montant_HT
-
     def __str__(self):
         return f"Phase {self.numero}"
     
@@ -308,16 +307,27 @@ class Phase(models.Model):
         self.numero = len(Phase.objects.filter(etude=etude))+1
         self.etude = etude
         super(Phase, self).save(*args, **kwargs)
-            
+
+    def li_eleves(self):
+        assignations = AssignationJEH.objects.filter(phase=self)
+        eleves = [assignation.eleve for assignation in assignations]
+        return eleves
+    
+    def get_assignations_JEH(self):
+        assignations_JEH = AssignationJEH.objects.filter(phase=self)
+        return assignations_JEH
 
 class AssignationJEH(models.Model):
     eleve = models.OneToOneField(Student, on_delete=models.CASCADE)
-    pourcentage_retribution = models.FloatField()
+    pourcentage_retribution = models.FloatField()  #en pourcentage
     nombre_JEH = models.IntegerField()
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.phase.etude.__str__()+"___"+self.phase.__str__()+"___"+self.eleve.__str__()
+    
+    def retribution_brute_totale(self):
+        return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
 
     
 
