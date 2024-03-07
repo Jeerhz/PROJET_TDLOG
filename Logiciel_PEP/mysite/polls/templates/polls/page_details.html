@@ -541,7 +541,47 @@
                                                                 {% endif %}                                  
                                                                 </tbody>
                                                             </table>
-                                                            <a class="btn btn-success">Ajouter un intervenant</a>
+                                                            
+                                                            <!-- Bouton pour déclencher le formulaire -->
+                                                            <a class="btn btn-success" data-toggle="modal" data-target="#formAssignationJEHModal">Ajouter une Assignation JEH</a>
+
+                                                            <!-- Formulaire Ajout Intervenant -->
+                                                            <div class="modal fade" id="formAssignationJEHModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title" id="modalLabel">Ajouter un intervenant</h5>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <form action="{% url 'ajouter_assignation_jeh' id_etude=iD %}" method="post">
+                                                                            <div class="modal-body">
+                                                                                {% csrf_token %}
+                                                                                {% for field in intervenant_form %}
+                                                                                <div class="form-group">
+                                                                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                                                    {{ field }}
+                                                                                    {% if field.errors %}
+                                                                                        <div class="text-danger">
+                                                                                            {% for error in field.errors %}
+                                                                                                {{ error }}
+                                                                                            {% endfor %}
+                                                                                        </div>
+                                                                                    {% endif %}
+                                                                                </div>
+                                                                                {% endfor %}
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Fin de la colonne du formulaire ajout-intervenant -->
+
                                                         </div>
                                 
                                                     </div>
@@ -618,6 +658,9 @@
                                     </div>
                                     </div>
                                 </div>
+
+                             
+
                             </div>
                             
                             <!-- Fin de l'Onglet Phase-->  
