@@ -517,6 +517,7 @@ class AddClient(forms.ModelForm):
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
     
+    
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
@@ -535,6 +536,22 @@ class AddPhase(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+
+class AddIntervenant(forms.ModelForm):
+    class Meta:
+        model = AssignationJEH
+        fields = ['eleve', 'pourcentage_retribution', 'nombre_JEH', 'phase']
+
+    def __init__(self, *args, **kwargs):
+        super(AddIntervenant, self).__init__(*args, **kwargs)
+        self.fields['eleve'].queryset = Student.objects.all()
+        self.fields['phase'].queryset = Phase.objects.all()
+        self.fields['eleve'].widget.attrs.update({'class': 'form-control'})
+        self.fields['pourcentage_retribution'].widget.attrs.update({'class': 'form-control', 'type': 'number', 'step': '0.01'})
+        self.fields['nombre_JEH'].widget.attrs.update({'class': 'form-control', 'type': 'number'})
+        self.fields['phase'].widget.attrs.update({'class': 'form-control'})
+
     
 
 

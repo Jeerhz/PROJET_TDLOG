@@ -28,7 +28,8 @@ from .models import (
     AddMessage,
     AssignationJEH,
     Phase,
-    AddPhase
+    AddPhase,
+    AddIntervenant,
 )
 
 
@@ -270,6 +271,7 @@ def details(request, modelName, iD):
                 context["etude"] = etude
                 context["phases"] = phases
                 context["phase_form"] = AddPhase()
+                context["intervenant_form"] = AddIntervenant()
 
             if client is not None:
                 context["client"] = client
@@ -661,6 +663,18 @@ def BV(request, id_etude):
         # Sauvegarder les modifications dans le fichier Excel
         # classeur.save(chemin_absolu)
         return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    
+def ajouter_assignation_jeh(request, id_etude):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddIntervenant(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_etude=id_etude)
+        return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
