@@ -318,7 +318,7 @@ class Phase(models.Model):
         return assignations_JEH
 
 class AssignationJEH(models.Model):
-    eleve = models.OneToOneField(Student, on_delete=models.CASCADE)
+    eleve = models.ForeignKey(Student, on_delete=models.CASCADE)
     pourcentage_retribution = models.FloatField()  #en pourcentage
     nombre_JEH = models.IntegerField()
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
@@ -328,6 +328,14 @@ class AssignationJEH(models.Model):
     
     def retribution_brute_totale(self):
         return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
+    
+    def save(self, *args, **kwargs):
+        id_etude = kwargs.pop('id_etude')
+        numero_phase = kwargs.pop('numero_phase')
+        etude = Etude.objects.get(id=id_etude)
+        phase = Phase.objects.get(etude=etude, numero=numero_phase)
+        self.phase = phase
+        super(AssignationJEH, self).save(*args, **kwargs)
 
     
 
@@ -541,19 +549,21 @@ class AddPhase(forms.ModelForm):
 class AddIntervenant(forms.ModelForm):
     class Meta:
         model = AssignationJEH
-        fields = ['eleve', 'pourcentage_retribution', 'nombre_JEH', 'phase']
-
+        exclude = ['phase']
+    def __str__(self):
+        return "Information de l'AssignationJEH"
+    def name(self):
+        return "AddIntervenant"
+    def save(self, commit=True, **kwargs):
+        assignation_jeh = super(AddIntervenant, self).save(commit=False)
+        if commit:
+            assignation_jeh.save(**kwargs)
+        return assignation_jeh
     def __init__(self, *args, **kwargs):
-        super(AddIntervenant, self).__init__(*args, **kwargs)
-        self.fields['eleve'].queryset = Student.objects.all()
-        self.fields['phase'].queryset = Phase.objects.all()
-        self.fields['eleve'].widget.attrs.update({'class': 'form-control'})
-        self.fields['pourcentage_retribution'].widget.attrs.update({'class': 'form-control', 'type': 'number', 'step': '0.01'})
-        self.fields['nombre_JEH'].widget.attrs.update({'class': 'form-control', 'type': 'number'})
-        self.fields['phase'].widget.attrs.update({'class': 'form-control'})
-
-    
-
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
 
 
     

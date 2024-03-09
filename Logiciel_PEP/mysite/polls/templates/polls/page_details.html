@@ -497,97 +497,89 @@
                                     <div class="col-12 mb-4">
                                         <!-- Card -->
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <small>Phase {{phase.numero}}</small>
+                                            <small>Phase {{ phase.numero }}</small>
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>{{phase.titre}}</th>
-                                                        <th>{{phase.nb_JEH}} JEH à {{phase.montant_HT_par_JEH}} €</th>
+                                                        <th>{{ phase.titre }}</th>
+                                                        <th>{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} €</th>
                                                     </tr>
                                                 </thead>                
                                             </table>
                                         </div>
                                         <div class="nav-item">
-                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
-                                                aria-expanded="true" aria-controls="intervenants_phase1">
-                                                <i class="bi bi-arrows-collapser"></i>
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.numero }}"
+                                                aria-expanded="true" aria-controls="intervenants_phase{{ phase.numero }}">
+                                                <i class="bi bi-arrows-collapse"></i>
                                                 <span>Intervenants</span>
-                                                <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
-                                                    <div class="bg-white py-2 collapse-inner rounded">
-                                                        <div class="bg-white py-2 collapse-inner rounded">
-                                                            <table class="table table-striped">
-                                                                <thead>
-                                                                <tr>
-                                                                    <th scope="col">Intervenant</th>
-                                                                    <th scope="col">Nombre de JEH</th>
-                                                                    <th scope="col">Pourcentage de rétribution</th>
-                                                                    <th scope="col">Rétribution brute</th>
-                                                                </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                {% if phase.li_eleves %}  <!-- On gere le cas où aucun élève n'est assigné -->
+                                            </a>
+                                            <div id="intervenants_phase{{ phase.numero }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Intervenant</th>
+                                                                <th scope="col">Nombre de JEH</th>
+                                                                <th scope="col">Pourcentage de rétribution</th>
+                                                                <th scope="col">Rétribution brute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if phase.li_eleves %}
                                                                 {% for assignation_JEH in phase.get_assignations_JEH %}
                                                                 <tr>
-                                                                    <th scope="row">{{assignation_JEH.eleve.first_name}} {{assignation_JEH.last_name}}</th>
-                                                                    <td>{{assignation_JEH.nombre_JEH}}</td>
-                                                                    <td>{{assignation_JEH.pourcentage_retribution}}</td>
-                                                                    <td>{{assignation_JEH.retribution_brute_totale}} €</td>
+                                                                    <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                    <td>{{ assignation_JEH.nombre_JEH }}</td>
+                                                                    <td>{{ assignation_JEH.pourcentage_retribution }}</td>
+                                                                    <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
                                                                 </tr>
                                                                 {% endfor %}
-                                                                {% else %}
+                                                            {% else %}
                                                                 <p>Aucun Intervenant n'est enregistré</p>
-                                                                {% endif %}                                  
-                                                                </tbody>
-                                                            </table>
-                                                            
-                                                            <!-- Bouton pour déclencher le formulaire -->
-                                                            <a class="btn btn-success" data-toggle="modal" data-target="#formAssignationJEHModal">Ajouter une Assignation JEH</a>
-
-                                                            <!-- Formulaire Ajout Intervenant -->
-                                                            <div class="modal fade" id="formAssignationJEHModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-                                                                <div class="modal-dialog" role="document">
-                                                                    <div class="modal-content">
-                                                                        <div class="modal-header">
-                                                                            <h5 class="modal-title" id="modalLabel">Ajouter un intervenant</h5>
-                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                                                                <span aria-hidden="true">&times;</span>
-                                                                            </button>
-                                                                        </div>
-                                                                        <form action="{% url 'ajouter_assignation_jeh' id_etude=iD %}" method="post">
-                                                                            <div class="modal-body">
-                                                                                {% csrf_token %}
-                                                                                {% for field in intervenant_form %}
-                                                                                <div class="form-group">
-                                                                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                                                                    {{ field }}
-                                                                                    {% if field.errors %}
-                                                                                        <div class="text-danger">
-                                                                                            {% for error in field.errors %}
-                                                                                                {{ error }}
-                                                                                            {% endfor %}
-                                                                                        </div>
-                                                                                    {% endif %}
-                                                                                </div>
-                                                                                {% endfor %}
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                                                                            </div>
-                                                                        </form>
-                                                                    </div>
+                                                            {% endif %}                                  
+                                                        </tbody>
+                                                    </table>
+                                                    
+                                                    <!-- Bouton et formulaire pour ajouter une assignation JEH -->
+                                                    <a class="btn btn-primary" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}">Ajouter une Assignation JEH</a>
+                                                    <div class="modal fade" id="formAssignationJEHModal{{ phase.numero }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ phase.numero }}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="modalLabel{{ phase.numero }}">Ajouter un intervenant</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
                                                                 </div>
+                                                                <form action="{% url 'ajouter_assignation_jeh' id_etude=iD numero_phase=phase.numero %}" method="post">
+                                                                    <div class="modal-body">
+                                                                        {% csrf_token %}
+                                                                        {% for field in intervenant_form %}
+                                                                        <div class="form-group">
+                                                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                                            {{ field }}
+                                                                            {% if field.errors %}
+                                                                                <div class="text-danger">
+                                                                                    {% for error in field.errors %}
+                                                                                        {{ error }}
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                    </div>
+                                                                </form>
                                                             </div>
-                                                            <!-- Fin de la colonne du formulaire ajout-intervenant -->
-
                                                         </div>
-                                
                                                     </div>
                                                 </div>
-                                            </a>
-                                            
+                                            </div>
                                         </div>
                                     </div>  
                                 </div>
