@@ -651,7 +651,7 @@ def ajouter_phase(request, id_etude):
     
 def BV(request, id_etude):
     if request.user.is_authenticated:
-        chemin_absolu = os.path.join("polls\static\polls\BV_test.xlsx")
+        chemin_absolu = os.path.join("polls\\static\\polls\\BV_test.xlsx")
         classeur = openpyxl.load_workbook(chemin_absolu)
 
         # Sélectionner la feuille de calcul
@@ -668,12 +668,12 @@ def BV(request, id_etude):
         context = {}
         return HttpResponse(template.render(context, request))
     
-def ajouter_assignation_jeh(request, id_etude):
+def ajouter_assignation_jeh(request, id_etude, numero_phase):
     if request.user.is_authenticated:
         if request.method == 'POST':
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
-                fetchform.save(commit=True, id_etude=id_etude)
+                fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
