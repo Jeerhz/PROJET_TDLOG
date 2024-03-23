@@ -298,7 +298,6 @@ class Phase(models.Model):
         # Calculate total amount excluding tax (montant_HT)
         montant_HT = total_nombre_JEH * self.montant_HT_par_JEH
         return total_nombre_JEH, montant_HT
-
     def __str__(self):
         return f"Phase {self.numero}"
     
@@ -308,16 +307,35 @@ class Phase(models.Model):
         self.numero = len(Phase.objects.filter(etude=etude))+1
         self.etude = etude
         super(Phase, self).save(*args, **kwargs)
-            
+
+    def li_eleves(self):
+        assignations = AssignationJEH.objects.filter(phase=self)
+        eleves = [assignation.eleve for assignation in assignations]
+        return eleves
+    
+    def get_assignations_JEH(self):
+        assignations_JEH = AssignationJEH.objects.filter(phase=self)
+        return assignations_JEH
 
 class AssignationJEH(models.Model):
-    eleve = models.OneToOneField(Student, on_delete=models.CASCADE)
-    pourcentage_retribution = models.FloatField()
+    eleve = models.ForeignKey(Student, on_delete=models.CASCADE)
+    pourcentage_retribution = models.FloatField()  #en pourcentage
     nombre_JEH = models.IntegerField()
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.phase.etude.__str__()+"___"+self.phase.__str__()+"___"+self.eleve.__str__()
+    
+    def retribution_brute_totale(self):
+        return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
+    
+    def save(self, *args, **kwargs):
+        id_etude = kwargs.pop('id_etude')
+        numero_phase = kwargs.pop('numero_phase')
+        etude = Etude.objects.get(id=id_etude)
+        phase = Phase.objects.get(etude=etude, numero=numero_phase)
+        self.phase = phase
+        super(AssignationJEH, self).save(*args, **kwargs)
 
     
 
@@ -507,6 +525,7 @@ class AddClient(forms.ModelForm):
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
     
+    
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
@@ -525,8 +544,26 @@ class AddPhase(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
-    
 
+
+class AddIntervenant(forms.ModelForm):
+    class Meta:
+        model = AssignationJEH
+        exclude = ['phase']
+    def __str__(self):
+        return "Information de l'AssignationJEH"
+    def name(self):
+        return "AddIntervenant"
+    def save(self, commit=True, **kwargs):
+        assignation_jeh = super(AddIntervenant, self).save(commit=False)
+        if commit:
+            assignation_jeh.save(**kwargs)
+        return assignation_jeh
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
 
 
     

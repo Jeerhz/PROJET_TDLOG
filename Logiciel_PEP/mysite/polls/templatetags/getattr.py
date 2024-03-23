@@ -18,3 +18,7 @@ def getattr (obj, args):
          return  obj.__dict__.get(attribute, default)
     except:
         return default
+    
+@register.filter(name='get_assignation_JEH')
+def get_assignation_JEH(phase, eleve):
+    return phase.get_assignation_JEH(eleve)
