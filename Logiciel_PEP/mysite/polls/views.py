@@ -1,6 +1,6 @@
 import json
 import os
-import openpyxl
+from openpyxl import load_workbook
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
@@ -635,7 +635,7 @@ def ajouter_phase(request, id_etude):
 def BV(request, id_etude):
     if request.user.is_authenticated:
         chemin_absolu = os.path.join(settings.STATIC_ROOT, "BV_test.xlsx")
-        classeur = openpyxl.load_workbook(chemin_absolu)
+        classeur = load_workbook(chemin_absolu)
 
         # Sélectionner la feuille de calcul
         # feuille = classeur.active
