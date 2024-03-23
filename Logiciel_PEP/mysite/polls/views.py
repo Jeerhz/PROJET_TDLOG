@@ -28,7 +28,8 @@ from .models import (
     AddMessage,
     AssignationJEH,
     Phase,
-    AddPhase
+    AddPhase,
+    AddIntervenant,
 )
 
 
@@ -249,7 +250,7 @@ def details(request, modelName, iD):
             client = None
             eleve = None
             if modelName == "Etude":
-                phases = Phase.objects.filter(etude=instance)
+                phases = Phase.objects.filter(etude=instance).order_by('date_debut')
                 etude = instance
             if modelName == "Student":
                 eleve = instance
@@ -270,6 +271,8 @@ def details(request, modelName, iD):
                 context["etude"] = etude
                 context["phases"] = phases
                 context["phase_form"] = AddPhase()
+                context["intervenant_form"] = AddIntervenant()
+
             if client is not None:
                 context["client"] = client
             if eleve is not None:
@@ -375,6 +378,20 @@ def facture(request, iD):
             client = instance.client
             context = {"etude": instance, "client": client}
             template = loader.get_template("polls/facpdf.html")
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def ndf(request):
+    if request.user.is_authenticated:
+        try:
+            
+            template = loader.get_template("polls/ndf.html")
+            context={}
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -634,8 +651,8 @@ def ajouter_phase(request, id_etude):
     
 def BV(request, id_etude):
     if request.user.is_authenticated:
-        chemin_absolu = os.path.join(settings.STATIC_ROOT, "BV_test.xlsx")
-        classeur = load_workbook(chemin_absolu)
+        chemin_absolu = os.path.join("polls\\static\\polls\\BV_test.xlsx")
+        classeur = openpyxl.load_workbook(chemin_absolu)
 
         # Sélectionner la feuille de calcul
         # feuille = classeur.active
@@ -646,6 +663,18 @@ def BV(request, id_etude):
         # Sauvegarder les modifications dans le fichier Excel
         # classeur.save(chemin_absolu)
         return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    
+def ajouter_assignation_jeh(request, id_etude, numero_phase):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddIntervenant(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
+        return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}

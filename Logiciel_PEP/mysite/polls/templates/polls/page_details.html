@@ -182,10 +182,8 @@
 
             <!-- Main Content -->
             <div id="content">
-
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
@@ -493,71 +491,99 @@
                             <!-- Début de l'Onglet Phases -->
                             <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab">
                                 {% if phases %}
-                                
 
                                 {% for phase in phases %}
                                 <div class="card mb-3">
                                     <div class="col-12 mb-4">
                                         <!-- Card -->
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <small>Phase {{phase.numero}}</small>
+                                            <small>Phase {{ phase.numero }}</small>
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>ANALYSE DU BUSINESS ET DES DOCUMENTS EXISTANTS</th>
-                                                        <th>{{etude.client}} JEH à 300,00€ HT</th>
-                                                        <th>900,00€ HT</th>
+                                                        <th>{{ phase.titre }}</th>
+                                                        <th>{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} €</th>
                                                     </tr>
-                                                </thead>
-                
+                                                </thead>                
                                             </table>
                                         </div>
                                         <div class="nav-item">
-                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
-                                                aria-expanded="true" aria-controls="intervenants_phase1">
-                                                <i class="bi bi-arrows-collapser"></i>
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.numero }}"
+                                                aria-expanded="true" aria-controls="intervenants_phase{{ phase.numero }}">
+                                                <i class="bi bi-arrows-collapse"></i>
                                                 <span>Intervenants</span>
-                                                <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
-                                                    <div class="bg-white py-2 collapse-inner rounded">
-                                                        <div class="bg-white py-2 collapse-inner rounded">
-                                                            <table class="table table-striped">
-                                                                <thead>
+                                            </a>
+                                            <div id="intervenants_phase{{ phase.numero }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Intervenant</th>
+                                                                <th scope="col">Nombre de JEH</th>
+                                                                <th scope="col">Pourcentage de rétribution</th>
+                                                                <th scope="col">Rétribution brute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if phase.li_eleves %}
+                                                                {% for assignation_JEH in phase.get_assignations_JEH %}
                                                                 <tr>
-                                                                    <th scope="col">Intervenant</th>
-                                                                    <th scope="col">nombres de JEH</th>
-                                                                    <th scope="col">pourcentage</th>
-                                                                    <th scope="col">rétribution brute</th>
+                                                                    <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                    <td>{{ assignation_JEH.nombre_JEH }}</td>
+                                                                    <td>{{ assignation_JEH.pourcentage_retribution }}</td>
+                                                                    <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
                                                                 </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                <tr>
-                                                                    <th scope="row">Antony FEORD</th>
-                                                                    <td>3</td>
-                                                                    <td>70%</td>
-                                                                    <td>200</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <th scope="row">Edgar DUC</th>
-                                                                    <td>2</td>
-                                                                    <td>60%</td>
-                                                                    <td>100</td>
-                                                                </tr>
-                                                                
-                                                                </tbody>
-                                                            </table>
-                                                            <a class="btn btn-success">Ajouter un intervenant</a>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                <p>Aucun Intervenant n'est enregistré</p>
+                                                            {% endif %}                                  
+                                                        </tbody>
+                                                    </table>
+                                                    
+                                                    <!-- Bouton et formulaire pour ajouter une assignation JEH -->
+                                                    <a class="btn btn-primary" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}">Ajouter une Assignation JEH</a>
+                                                    <div class="modal fade" id="formAssignationJEHModal{{ phase.numero }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ phase.numero }}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="modalLabel{{ phase.numero }}">Ajouter un intervenant</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form action="{% url 'ajouter_assignation_jeh' id_etude=iD numero_phase=phase.numero %}" method="post">
+                                                                    <div class="modal-body">
+                                                                        {% csrf_token %}
+                                                                        {% for field in intervenant_form %}
+                                                                        <div class="form-group">
+                                                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                                            {{ field }}
+                                                                            {% if field.errors %}
+                                                                                <div class="text-danger">
+                                                                                    {% for error in field.errors %}
+                                                                                        {{ error }}
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
                                                         </div>
-                                
                                                     </div>
                                                 </div>
-                                            </a>
-                                            
+                                            </div>
                                         </div>
                                     </div>  
                                 </div>
-                                {% endfor %}      
+                                {% endfor %}    
                                 <!-- Début Planning avec graphe-->
                                   
                                 <div class="col-lg-13 mb-3">
@@ -624,6 +650,9 @@
                                     </div>
                                     </div>
                                 </div>
+
+                             
+
                             </div>
                             
                             <!-- Fin de l'Onglet Phase-->  
@@ -657,7 +686,7 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Avenant CE</h5>
                                                     <p class="card-text">Ajouter un avenant à la Convention d'Etude</p>
-                                                    <a href="#" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                    <a href="#" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -1028,10 +1057,12 @@
                             </div>
                             
                         </div>
-                        <!-- Onglet Annuaire Client -->
+                        <!-- Onglet Documents -->
                         <div class="tab-pane fade" id="pills-documents">
                             <div class="col-12 mb-4">
-                                <li class="nav-item">
+                                <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
+
+                                <div class="nav-item">
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
                                         aria-expanded="true" aria-controls="intervenants_phase1">
                                         <i class="bi bi-arrows-collapser"></i>
@@ -1049,7 +1080,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </li>
+                                </div>
                             </div>
                         </div>
                         
@@ -1060,6 +1091,8 @@
 
             </div>
             <!-- End of Card Header-->
+        </div>
+        <!-- end of div content-->
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white" style="margin-top: auto;">
@@ -1074,7 +1107,7 @@
         </div>
         <!-- End of Wrapper colomn -->
     </div>
-    <!-- End of Page Wrapper -->
+    <!-- End of Page Wrapper column -->
 
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
