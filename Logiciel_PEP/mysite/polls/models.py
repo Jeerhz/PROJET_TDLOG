@@ -121,10 +121,10 @@ class Student(models.Model):
     first_name = models.CharField(max_length = 200)
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
-    phone_number = models.CharField(max_length=200, blank=True)
-    adress = models.CharField(max_length = 300)
-    country = models.CharField(max_length = 100)
-    promotion = models.CharField(max_length = 200, blank=True)
+    phone_number = models.CharField(max_length=200, blank=True, null=True)
+    adress = models.CharField(max_length = 300, null=True)
+    country = models.CharField(max_length = 100, null=True)
+    promotion = models.CharField(max_length = 200, blank=True, null=True)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
 
     def __str__(self):
@@ -237,6 +237,9 @@ class Etude(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+    id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
+    date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
+    date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
 
                               
 
@@ -256,9 +259,12 @@ class Etude(models.Model):
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
         # For example, you can check if the value matches the regex pattern
-        if self.begin > self.end:
+        if self.id_url is None:
+            self.id_url = uuid.uuid4()
+        if self.begin and self.end and self.begin > self.end:
             raise ValueError('Begin must be set before end.')
-
+        if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
+            raise ValueError('Begin must be set before end.')
         super().save(*args, **kwargs)
     
     def createForm(**kwargs):
@@ -337,6 +343,13 @@ class AssignationJEH(models.Model):
         self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
 
+class Candidature(models.Model):
+    eleve = models.ForeignKey(Student, on_delete=models.CASCADE)
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE)
+    motivation = models.TextField(max_length=5000)
+    def __str__(self):
+        return self.eleve.__str__()+" | "+self.etude.__str__()
+    
     
 
 class Message(models.Model):
@@ -475,7 +488,7 @@ class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['je', 'students']
+        exclude = ['je', 'students', 'id_url']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -484,9 +497,16 @@ class AddEtude(forms.ModelForm):
         cleaned_data = super().clean()
         begin = cleaned_data.get('begin')
         end = cleaned_data.get('end')
+        ddr = cleaned_data.get('date_debut_recrutement')
+        dfr = cleaned_data.get('date_fin_recrutement')
 
         # Vérifiez que la start_date est antérieure à end_date
         if begin and end and begin > end:
+            self.add_error('end', 'Start date must be before the end date.')
+            raise ValidationError(_('Start date must be before the end date.'))
+        
+        if ddr and dfr and ddr > dfr:
+            self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
             raise ValidationError(_('Start date must be before the end date.'))
 
         return cleaned_data
@@ -564,6 +584,37 @@ class AddIntervenant(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+class Recrutement(forms.Form):
+    prenom = forms.CharField(max_length = 50)
+    nom = forms.CharField(max_length = 50)
+    email = forms.EmailField(max_length = 100)
+    motivation = forms.CharField(max_length = 5000, widget=forms.Textarea)
+    def __str__(self):
+        return "Formulaire de candidature"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+    def save(self, commit=True, **kwargs):
+        etude = kwargs['etude']
+        try :
+            student = Student.objects.get(first_name=self.prenom,
+                          last_name=self.nom,
+                          mail=self.email)
+            etude.students.add(student)
+            candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
+            Candidature.save()
+        except:
+            student = Student(first_name=self.prenom,
+                            last_name=self.nom,
+                            mail=self.email,
+                            je=etude.je)
+            student.save()
+            etude.students.add(student)
+            candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
+            Candidature.save()
 
 
     

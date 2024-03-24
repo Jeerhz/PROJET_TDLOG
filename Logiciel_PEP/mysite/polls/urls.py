@@ -26,6 +26,6 @@ urlpatterns = [
     path("ajouter_assignation_jeh/<int:id_etude>/<int:numero_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
     path("BV/<int:id_etude>", views.BV, name='BV'),
     path("ndf/", views.ndf, name="ndf"),
-    
+    path("recrutement/<str:id_url>", views.recrutement, name="recrutement")
     
 ]

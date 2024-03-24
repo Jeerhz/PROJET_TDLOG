@@ -1,5 +1,6 @@
 import json
 import os
+from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -30,6 +31,7 @@ from .models import (
     Phase,
     AddPhase,
     AddIntervenant,
+    Recrutement,
 )
 
 
@@ -678,4 +680,30 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
     else:
         template = loader.get_template("polls/login.html")
         context = {}
+        return HttpResponse(template.render(context, request))
+    
+def recrutement(request, id_url): # Controler les dates
+    if (request.method=='GET'):
+        try :
+            uuid_url = UUID(id_url)
+            etude = Etude.objects.get(id_url=uuid_url)
+            if (etude.date_fin_recrutement.is_blank() or etude.date_debut_recrutement.is_blank() or timezone.now()<etude.date_debut_recrutement or timezone.now()>etude.date_fin_recrutement()):
+                raise ValueError('')
+            context = {'etude':etude, 'form':Recrutement()}
+            template = loader.get_template("polls/recrutement.html")
+        except :
+            context = {'error_message': "Cette page n'est associée à aucune mission, ou vous tentez d'y accéder hors période de recrutement."}
+            template = loader.get_template("polls/recrutement_fail.html")
+        return HttpResponse(template.render(context, request))
+    else:
+        try :
+            uuid_url = UUID(id_url)
+            etude = Etude.objects.get(id_url=uuid_url)
+            recrutement = Recrutement(request.POST)
+            recrutement.save(etude=etude)
+            context = {}
+            template = loader.get_template("polls/recrutement_succes.html")
+        except :
+            context = {'error_message': "Votre candidature n'a pas pu aboutir."}
+            template = loader.get_template("polls/recrutement_fail.html")
         return HttpResponse(template.render(context, request))
