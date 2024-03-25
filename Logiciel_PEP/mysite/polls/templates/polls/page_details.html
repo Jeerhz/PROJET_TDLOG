@@ -67,6 +67,10 @@
         .accordion-button:not(.collapsed)::after {
             transform: rotate(-180deg); /* Rotation de l'icône */
         }
+
+        .full-width {
+            width:100%;
+        }
     </style>
     
     
@@ -447,6 +451,31 @@
                                                     <!-- Bouton Modifier -->
                                                     <div class="text-right">
                                                         <button type="button" class="btn btn-outline-secondary mt-3">Modifier</button> <!-- Bouton sobre -->
+                                                    </div>
+                                                    <!--Fin Bouton Modifier-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="card shadow" >
+                                            <div class="card-header">
+                                                <i class="fas fa-envelope"></i>
+                                                <strong>Recrutement</strong>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> {{ etude.date_debut_recrutement }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> {{ etude.date_fin_recrutement }}</li>
+                                                    </ul>
+                                                    <!-- Bouton Modifier -->
+                                                    <div class="row justify-content-between">
+                                                        <div class="col-auto">
+                                                            <a href="{% url 'recrutement' id_url=etude.id_url %}" type="button" class="btn btn-outline-secondary mt-3">Accéder au formulaire</a> <!-- Bouton sobre -->
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <button type="button" class="btn btn-outline-secondary mt-3">Modifier</button>
+                                                        </div>
                                                     </div>
                                                     <!--Fin Bouton Modifier-->
                                                 </div>
