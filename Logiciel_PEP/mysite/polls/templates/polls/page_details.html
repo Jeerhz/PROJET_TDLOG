@@ -539,12 +539,12 @@
                                             </table>
                                         </div>
                                         <div class="nav-item">
-                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.numero }}"
-                                                aria-expanded="true" aria-controls="intervenants_phase{{ phase.numero }}">
-                                                <i class="bi bi-arrows-collapse"></i>
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
+                                                aria-expanded="true" aria-controls="intervenants_phase{{ phase.id }}">
+                                                <i class="fas fa-caret-down"></i>
                                                 <span>Intervenants</span>
                                             </a>
-                                            <div id="intervenants_phase{{ phase.numero }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
+                                            <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
                                                 <div class="bg-white py-2 collapse-inner rounded">
                                                     <table class="table table-striped">
                                                         <thead>
@@ -566,7 +566,12 @@
                                                                 </tr>
                                                                 {% endfor %}
                                                             {% else %}
-                                                                <p>Aucun Intervenant n'est enregistré</p>
+                                                            <tr>
+                                                                <td>Aucun</td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                            </tr>
                                                             {% endif %}                                  
                                                         </tbody>
                                                     </table>
@@ -731,15 +736,16 @@
                                 <!-- Fin Infos Entreprises -->
 
                                 <!-- Début Infos Élèves -->
+                                {% for eleve in etude.students.all %}
                                 <div class="card shadow h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <div>Antony Feord</div>
+                                        <div>{{eleve}}</div>
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-bordered table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>3 JEH à 300,00€ HT</th>
+                                                    <th>{{eleve|JEH:etude}}</th>
                                                     <th><a class="btn btn-success">Générer le RdM</a></th>
                                                     
                                                 </tr>
@@ -747,54 +753,45 @@
             
                                         </table>
                                     </div>
-                                    <li class="nav-item">
-                                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
-                                            aria-expanded="true" aria-controls="intervenants_phase1">
-                                            <i class="bi bi-arrows-collapser"></i>
+                                    <div class="nav-item">
+                                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenant_{{eleve.id}}"
+                                            aria-expanded="true" aria-controls="intervenant_{{eleve.id}}">
+                                            <i class="fas fa-caret-down"></i>
                                             <span>BV et avenants</span>
-                                            <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
+                                            <div id="intervenant_{{eleve.id}}" class="collapse" aria-labelledby="intervenant_{{eleve.id}}" data-parent="#accordionSidebar">
                                                 <div class="bg-white py-2 collapse-inner rounded">
                                                     <div class="bg-white py-2 collapse-inner rounded">
                                                         <table class="table table-striped">
                                                             <thead>
-                                                             
+                                                                <th>Selectionner</th>
+                                                                <th>Phase</th>
+                                                                <th>Nombre JEH</th>
+                                                                <th>Pourcentage</th>
+                                                                <th>Montant</th>
                                                             </thead>
                                                             <tbody>
+                                                                {% if eleve|assignation:etude %}
+                                                                {% for assignation in eleve|assignation:etude %}
                                                               <tr>
                                                                 <th><div class="form-check form-switch">
                                                                     <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
                                                                     <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
                                                                   </div></th>
-                                                                <th scope="row">Phase 1</th>
-                                                                <td>3</td>
-                                                                <td>70%</td>
-                                                                <td>200</td>
+                                                                <th scope="row">{{assignation.phase.numero}}</th>
+                                                                <td>{{assignation.nombre_JEH}}</td>
+                                                                <td>{{assignation.pourcentage_retribution}}%</td>
+                                                                <td>{{assignation.retribution_brute_totale}}</td>
                                                               </tr>
-                                                              <tr>
-                                                                <th>
-                                                                    <div class="form-check form-switch">
-                                                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
-                                                                        <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
-                                                                    </div>
-                                                                    <script>
-                                                                        document.addEventListener("DOMContentLoaded", function () {
-                                                                            var checkbox = document.getElementById('flexSwitchCheckChecked');
-                                                                            var label = document.querySelector('label[for="flexSwitchCheckChecked"]');
-                                                                
-                                                                            label.addEventListener('click', function () {
-                                                                                checkbox.checked = !checkbox.checked;
-                                                                            });
-                                                                        });
-                                                                    </script>
-                                                                </th>
-                                                                
-                                                                
-                                                                <th scope="row">Phase 2</th>
-                                                                <td>2</td>
-                                                                <td>60%</td>
-                                                                <td>100</td>
-                                                              </tr>
-                                                              
+                                                                {% endfor %}
+                                                                {% else %}
+                                                                <tr>
+                                                                    <td>Aucun</td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                  </tr>
+                                                                {% endif %}
                                                             </tbody>
                                                           </table>
                                                           <div><a href="{% url 'BV' id_etude=iD %}" class="btn btn-success">Générer le BV</a></div>
@@ -806,9 +803,11 @@
                                             </div>
                                         </a>
                                         
-                                    </li>
+                                    </div>
                                 </div>
                                 <!-- Fin Infos Élèves -->
+                                <br>
+                                {% endfor %}
                             </div>
                             <!-- Fin de l'Onglet Intervenants -->
 
@@ -1233,7 +1232,16 @@
             alert("Fonction de génération de la facture à implémenter.");
         }
     </script>
-    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var checkbox = document.getElementById('flexSwitchCheckChecked');
+            var label = document.querySelector('label[for="flexSwitchCheckChecked"]');
+
+            label.addEventListener('click', function () {
+                checkbox.checked = !checkbox.checked;
+            });
+        });
+    </script>
 
 </body>
 
