@@ -50,12 +50,14 @@ def index(request):
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
         monthly_sums = calculate_monthly_sums(user_je)
+        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-begin')[:5]
         template = loader.get_template("polls/index.html")
         context = {
             "monthly_sums": monthly_sums,
             "liste_messages": liste_messages,
             "message_count": message_count,
             "chiffre_affaires": chiffres_affaires,
+            "etudes_recentes":etudes_recentes,
         }
 
     else:

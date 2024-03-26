@@ -560,57 +560,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Ligne pour "Études en cours" -->
-                                    <tr style="background-color: #fff3cda1;">
-                                        <th class="align-middle" scope="row">1</th>
-                                        <td class="align-middle">Site UEFA</td>
-                                        <td class="align-middle">LE CERMICS&CO</td>
-                                        <td class="align-middle">01/01/23 - 30/06/23</td>
+                                    {% for etude in etudes_recentes %}
+                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" data-href="{% url 'details' modelName='Etude' iD=etude.id %}" id="etude_row_{{etude.id}}" class="etude_row">
+                                        <th class="align-middle" scope="row">{{etude.numero}}</th>
+                                        <td class="align-middle">{{etude.titre}}</td>
+                                        <td class="align-middle">{{etude.client}}</td>
+                                        <td class="align-middle">{{etude.begin}} - {{etude.end}}</td>
                                         <td class="align-middle">
-                                            <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Mark
+                                            <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{etude.responsable}}
                                         </td>
-                                        <td class="align-middle">€10,000</td>
-                                        <td class="align-middle" style="background-color: #ffda6b;">En cours</td>
-                                    </tr>
-                
-                                    <!-- Ligne pour "Études en discussion" -->
-                                    <tr style="background-color: #ffe5d0d6;">
-                                        <th class="align-middle" scope="row">4</th>
-                                        <td class="align-middle">2e Site UEFA</td>
-                                        <td class="align-middle">LE CERMICS&CO</td>
-                                        <td class="align-middle">01/01/23 - 30/06/23</td>
-                                        <td class="align-middle">
-                                            <img src="/static/polls/img/undraw_profile_2.svg" alt="Profile de Anna" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Anna
-                                        </td>
-                                        <td class="align-middle">€25,000</td>
-                                        <td class="align-middle" style="background-color: #ffa559;">En discussion</td>
+                                        <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        <td class="align-middle" style="{% if etude.status == 'EN_COURS' %} background-color: #ffda6b; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffa559; {% else %} background-color: ##69ee8899; {% endif %}">{{etude.status}}</td>
                                     </tr>
 
-                                    <!-- Ligne pour "Études en discussion" -->
-                                    <tr style="background-color: #ffe5d0d6;">
-                                        <th class="align-middle" scope="row">5</th>
-                                        <td class="align-middle">Site UEFA</td>
-                                        <td class="align-middle">LE CERMICS&CO</td>
-                                        <td class="align-middle">01/01/23 - 30/06/23</td>
-                                        <td class="align-middle">
-                                            <img src="/static/polls/img/undraw_profile_2.svg" alt="Profile de Anna" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Anna
-                                        </td>
-                                        <td class="align-middle">€25,000</td>
-                                        <td class="align-middle" style="background-color: #ffa559;">En discussion</td>
-                                    </tr>
-                
-                                    <!-- Ligne pour "Études terminées" -->
-                                    <tr style="background-color: #d4eddabd;">
-                                        <th class="align-middle" scope="row">6</th>
-                                        <td class="align-middle">Site UEFA</td>
-                                        <td class="align-middle">LE CERMICS&CO</td>
-                                        <td class="align-middle">01/01/23 - 30/06/23</td>
-                                        <td class="align-middle">
-                                            <img src="/static/polls/img/undraw_profile_3.svg" alt="Profile de Gregor" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">Gregor
-                                        </td>
-                                        <td class="align-middle">€35,000</td>
-                                        <td class="align-middle" style="background-color: #69ee8899;">Terminée</td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -681,6 +644,17 @@
     <script src="{% static 'polls/js/demo/chart-pie-demo.js' %}"></script>
     <!-- 2 scripts spécifiques aux suggestions de recherche -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var rows = document.querySelectorAll(".etude_row");
+            rows.forEach(function(row) {
+                row.addEventListener("click", function() {
+                    var href = row.getAttribute("data-href");
+                    window.location.href = href;
+                });
+            });
+        });
+    </script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";
