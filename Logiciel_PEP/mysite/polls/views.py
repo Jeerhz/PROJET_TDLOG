@@ -709,3 +709,19 @@ def recrutement(request, id_url): # Controler les dates
             context = {'error_message': "Votre candidature n'a pas pu aboutir."}
             template = loader.get_template("polls/recrutement_fail.html")
         return HttpResponse(template.render(context, request))
+
+def modifier_recrutement_etude(request, iD):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                etude = Etude.objects.get(id=iD)
+                etude.date_debut_recrutement = datetime.strptime(request.POST['debut'], '%d/%m/%Y').date()
+                etude.date_fin_recrutement = datetime.strptime(request.POST['fin'], '%d/%m/%Y').date()
+                etude.save()
+                return JsonResponse({'success':True, 'debut':etude.date_debut_recrutement, 'fin':etude.date_fin_recrutement})
+            except:
+                return JsonResponse({'success':False})
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
