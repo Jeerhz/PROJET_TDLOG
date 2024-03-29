@@ -11,6 +11,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.files.storage import FileSystemStorage
 from django.db.migrations.serializer import BaseSerializer
 from django.db.migrations.writer import MigrationWriter
+from django.db.models import Sum
+
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
 
@@ -240,9 +242,8 @@ class Etude(models.Model):
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
-
-                              
-
+    #nb_factures = models.IntegerField(default = 2)
+    
     def __str__(self):
         return self.titre
 
@@ -256,15 +257,29 @@ class Etude(models.Model):
     def get_title_details(self):
         return "Détails de la mission"
     
+    def actualiser_montant_total_HT(self):
+        phases = Phase.objects.filter(etude=self)
+        total_montant_HT = sum(phase.montant_HT for phase in phases)
+        self.montant_HT=total_montant_HT
+    def actualiser_nb_JEH(self):
+        phases = Phase.objects.filter(etude=self)
+        total_JEH = sum(phase.nb_JEH for phase in phases)
+        self.nb_JEH=total_JEH
+    
+    
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
         # For example, you can check if the value matches the regex pattern
+        
         if self.id_url is None:
             self.id_url = uuid.uuid4()
         if self.begin and self.end and self.begin > self.end:
             raise ValueError('Begin must be set before end.')
         if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
             raise ValueError('Begin must be set before end.')
+        
+        self.numero = Etude.objects.count() + 1
+        
         super().save(*args, **kwargs)
     
     def createForm(**kwargs):
@@ -279,14 +294,37 @@ class Etude(models.Model):
     def numero_AP(self, nom_doc):
         return self.numero+nom_doc
     
-    def calcul_montant_total_HT(self):
-        phases = Phase.objects.filter(etude=self)
-        return sum(phase.montant_HT_par_JEH[1]*phase.nb_JEH[1] for phase in phases)
     
     def nombre_phases(self):
         phases = Phase.objects.filter(etude=self)
         return len(phases)
-    
+
+class Facture(models.Model):
+    class Status(models.TextChoices):
+        ACOMPTE =  "facture d'acompte"
+        INTERMEDIAIRE = 'facture intermédiare'
+        SOLDE = 'facture de solde'
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name='factures')
+    facturé = models.BooleanField(default=False)
+    pourcentage_JEH = models.FloatField(default=30)
+    pourcentage_frais = models.FloatField(default=30)
+    type_facture = models.CharField(max_length=30, choices=Status.choices, default=Status.SOLDE)
+    numero_facture = models.IntegerField(default=5) 
+    fac_JEH = models.FloatField(default=0)  # Added field for montant_JEH
+    fac_frais=models.FloatField(default=0)
+    montant_HT=models.FloatField(default=30)
+    def actualiser_montant_JEH_facture(self):
+        self.fact_JEH = self.etude.montant_HT * (self.pourcentage_JEH / 100)
+    def save(self, *args, **kwargs):
+        id_etude = kwargs.pop('id_etude')
+        etude = Etude.objects.get(id=id_etude)
+        self.etude = etude
+        self.fac_JEH = self.etude.montant_HT * (self.pourcentage_JEH / 100)
+        self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
+        self.numero_facture = len(Facture.objects.filter(etude=etude))+1
+        self.montant_HT=self.etude.montant_HT * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
+        super(Facture, self).save(*args, **kwargs)
+
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
@@ -296,6 +334,7 @@ class Phase(models.Model):
     nb_JEH = models.IntegerField()
     montant_HT_par_JEH = models.FloatField()
     numero = models.IntegerField()
+    montant_HT=models.FloatField()
 
     def nb_JEH_montant_HT(self):
         assignations = AssignationJEH.objects.filter(phase=self)
@@ -306,14 +345,22 @@ class Phase(models.Model):
         return total_nombre_JEH, montant_HT
     def __str__(self):
         return f"Phase {self.numero}"
+    def calcul_mt_HT(self):
+        return self.nb_JEH * self.montant_HT_par_JEH
     
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
-        self.numero = len(Phase.objects.filter(etude=etude))+1
+        #etude=self.etude()
         self.etude = etude
-        super(Phase, self).save(*args, **kwargs)
+        self.montant_HT = self.calcul_mt_HT()
+        self.etude.actualiser_montant_total_HT()
 
+        super(Phase, self).save(*args, **kwargs)
+        self.etude.actualiser_montant_total_HT()
+        self.etude.actualiser_nb_JEH()
+        etude.save(update_fields=['montant_HT','nb_JEH'])
+        
     def li_eleves(self):
         assignations = AssignationJEH.objects.filter(phase=self)
         eleves = [assignation.eleve for assignation in assignations]
@@ -488,7 +535,7 @@ class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['je', 'students', 'id_url']
+        exclude = ['numero','je', 'students', 'id_url']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -549,7 +596,7 @@ class AddClient(forms.ModelForm):
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
-        exclude = ['etude', 'numero']
+        exclude = ['etude','montant_HT','begin','end']
     def __str__(self):
         return "Information de la Phase"
     def name(self):
@@ -565,6 +612,26 @@ class AddPhase(forms.ModelForm):
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
 
+class AddFacture(forms.ModelForm):
+    class Meta:
+        model = Facture
+        exclude = ['etude','facturé','numero_facture','fac_frais','fac_JEH']
+    def __str__(self):
+        return "Information de la Facture"
+    def name(self):
+        return "AddFacture"
+    def save(self, commit=True, **kwargs):
+        facture = super(AddFacture, self).save(commit=False)
+        if commit:
+            facture.save(**kwargs)
+        return facture
+    
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
 
 class AddIntervenant(forms.ModelForm):
     class Meta:

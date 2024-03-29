@@ -32,6 +32,8 @@ from .models import (
     AddPhase,
     AddIntervenant,
     Recrutement,
+    Facture,
+    AddFacture,
 )
 
 
@@ -250,11 +252,13 @@ def details(request, modelName, iD):
                 instance.save()
                 
             phases = None
+            factures = None
             etude = None  # Initialisez `etude` à None par défaut
             client = None
             eleve = None
             if modelName == "Etude":
                 phases = Phase.objects.filter(etude=instance).order_by('date_debut')
+                factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
                 etude = instance
             if modelName == "Student":
                 eleve = instance
@@ -274,7 +278,9 @@ def details(request, modelName, iD):
             if etude is not None:
                 context["etude"] = etude
                 context["phases"] = phases
+                context["factures"] = factures
                 context["phase_form"] = AddPhase()
+                context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
 
             if client is not None:
@@ -377,10 +383,10 @@ def input(request, modelName, iD):
 def facture(request, iD):
     if request.user.is_authenticated:
         try:
-            instance = Etude.objects.get(id=iD)
-
-            client = instance.client
-            context = {"etude": instance, "client": client}
+            facture = Facture.objects.get(id=iD)
+            etude= facture.etude
+            client = etude.client
+            context = {"facture": facture,"etude": etude, "client": client}
             template = loader.get_template("polls/facpdf.html")
         except:
             template = loader.get_template("polls/page_error.html")
@@ -388,6 +394,22 @@ def facture(request, iD):
     else:
         template = loader.get_template("polls/login.html")
         context = {}
+    return HttpResponse(template.render(context, request))
+
+def update_facture(request,iD):
+    if request.method == 'POST':
+        facture_id = request.POST.get('facture_id')
+        try:
+            instance = Etude.objects.get(id=iD)
+            facture = Facture.objects.get(id=facture_id)
+            facture.facturé = True
+            client = instance.client
+            facture.save()
+            context = {"etude": instance, "client": client}
+            template = loader.get_template("polls/facpdf.html")
+        except Facture.DoesNotExist:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "facture n'existe pas."}
     return HttpResponse(template.render(context, request))
 
 def ndf(request):
@@ -645,6 +667,20 @@ def ajouter_phase(request, id_etude):
     if request.user.is_authenticated:
         if request.method == 'POST':
             fetchform = AddPhase(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_etude=id_etude)
+        return redirect('details', modelName='Etude', iD=id_etude)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
+
+
+def ajouter_facture(request, id_etude):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddFacture(request.POST)
             if fetchform.is_valid():
                 fetchform.save(commit=True, id_etude=id_etude)
         return redirect('details', modelName='Etude', iD=id_etude)

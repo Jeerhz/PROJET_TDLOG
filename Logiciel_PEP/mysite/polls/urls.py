@@ -28,5 +28,8 @@ urlpatterns = [
     path("ndf/", views.ndf, name="ndf"),
     path("recrutement/<str:id_url>", views.recrutement, name="recrutement"),
     path("modifier_recrutement_etude/<int:iD>", views.modifier_recrutement_etude, name="modifier_recrutement_etude"),
+    path("ajouter_facture/<int:id_etude>", views.ajouter_facture, name='ajouter_facture'),
+    
+
     
 ]
