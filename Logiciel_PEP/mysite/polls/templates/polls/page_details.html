@@ -532,7 +532,108 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- début Ajouter Facture -->
+                            
+                                <div class="col-mb-3">
+                                    <div class="card shadow">
+                                        <form action="{% url 'ajouter_facture' id_etude=iD %}" method="post">
+                                            <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
+                                                <i class="fas fa-plus"></i>
+                                                <strong>Facturation</strong>
+                                            </div>
+                                            <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
+                                                <div class="card-body">
+                                                
+                                                    <dl class="dl-horizontal">
+                                                        {% csrf_token %}
+                                
+                                                        {% for field in facture_form %}
+                                                        <div class="form-group row mb-3">
+                                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                            {% if field.field.widget.input_type == 'select_multiple' %}
+                        
+                                                                <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                                                    {% for choice in field.choices %}
+                                                                        <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                
+                                                            {% else %}
+                                                                {{ field }}
+                                                            {% endif %}
+                                                            {% if field.errors %}
+                                                                <div class="text-danger">
+                                                                    {% for error in field.errors %}
+                                                                        {{ error }}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}                             
+                                                    </dl>
+                                                </div>
+                                            <div class="card-footer text-center">
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                               <!-- fin Ajouter Facture -->
+                                
+                                {% if factures %}
+
+                                
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        {{ facture.type_facture }}
+                                    </div>
+                                    <!-- Début de la table avec pourcentage de Facturation-->
+                                    
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Dénomination</th>
+                                                {% for facture in factures %}
+                                                <th scope="col"> {{facture.type_facture}} </th>
+                                                {% endfor %}    
+                                            </tr>
+                                            </thead>
+                                        <tbody>
+                                          <tr>
+                                            <th scope="row">Sommes à verser (HT)</th>
+                                            {% for facture in factures %}
+                                            <td scope="col"> {{facture.fac_frais}} </td>
+                                            {% endfor %}   
+                                            
+                                          </tr>
+                                          <tr>
+                                            
+                                            <th scope="row">Sommes à verser (TTC) à titre indicatif</th>
+                                            
+                                            {% for facture in factures %}
+                                            <td scope="col"> {{facture.fac_JEH}} </td>
+                                            {% endfor %}
+                                            
+                                          </tr>
+                                          
+                                        </tbody>
+                                    </table>
+                                      <!-- Fin de la table-->
+                                    
+                                    
+                                </div>                                        
+                                
+                                
+                                
+                                {%else%}
+                                
+                                {% endif %}
+                                
                                 <!--Fin de l'accordéon Description-->
+                                </div>
                             </div>
                             <!--Fin de l'Onglet Général -->
                                 
@@ -553,6 +654,7 @@
                                                     <tr>
                                                         <th>{{ phase.titre }}</th>
                                                         <th>{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} €</th>
+                                                        <th> {{ phase.montant_HT }} €</th>
                                                     </tr>
                                                 </thead>                
                                             </table>
@@ -830,67 +932,115 @@
                             </div>
                             <!-- Fin de l'Onglet Intervenants -->
 
-
                             <!-- Debut de l'Onglet Facturation -->
                             <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
-                                <!-- Début Infos Entreprises-->
-                                <div class="card mb-3">
+                                <!-- début Ajouter Facture -->
+                            
+                                <div class="card mb-3">  <!-- Début Infos Entreprises-->
                                     <div class="card-header">
-                                        Facturation
+                                        Déjà facturé
                                     </div>
                                     <!-- Début de la table avec pourcentage de Facturation-->
                                     <table class="table table-striped">
                                         <thead>
                                           <tr>
-                                            <th scope="col">Frais de dossier</th>
                                             <th scope="col"></th>
-                                            <th scope="col"></th>
-                                            <th scope="col">100,00€</th>
-                                            <th scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
-                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
-                                              </div>
-                                            </th>
-                                          </tr>
+                                            <th scope="col">% JEH</th>
+                                            <th scope="col">% frais</th>
+                                            <th scope="col">facturé</th>
+                                            <th scope="col">imprimer la facture</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                          <tr>
-                                            <th scope="row">Phase 1</th>
-                                            <td>3 JEHs</td>
-                                            <td>300,00€</td>
+                                        <tr>
+                                            <th scope="row">acompte</th>
+                                            <td>30%</td>
+                                            <td>30%</td>
                                             <td>900,00€</td>
-                                            <td scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
-                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
-                                              </div>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th scope="row">Phase 2</th>
-                                            <td>4 JEHs</td>
-                                            <td>200,00€</td>
+                                            <td>FA-24002</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">intermèdiare</th>
+                                            <td>20%</td>
+                                            <td>20%</td>
                                             <td>800,00€</td>
-                                            <td scope="col"><div class="input-group input-group-sm" style="max-width: 100px;">
-                                                <input type="text" class="form-control" style="background-color: #FFFFFF;" placeholder="% fact." aria-label="Percentage" aria-describedby="basic-addon2">
-                                              </div>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th scope="row">Total</th>
-                                            <td></td>
-                                            <td></td>
-                                            <td>1800,00€</td>
-                                            <td scope="col">
-                                                <div class="input-group input-group-sm" style="max-width: 100px; background-color: #FFFFFF;">
-                                                    30% 
-                                                </div>
-                                            </td>
+                                            <td>FA-24005</td>
                                             
-                                          </tr>
+                                        </tr>
                                         </tbody>
-                                      </table>
-                                      <!-- Fin de la table-->
+                                    </table>
+                                </div>  
+                               <!-- fin Ajouter Facture -->
+                                
+                                <!-- facture créé dans longlet général qui n'ont pas encoré été générés-->
+                                {% if factures %}
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        Facture à établir
+                                    </div>
+                                    {% for facture in factures %}
+                                   
+                                    <div class="card mb-3">
+                                        
+                                        <!-- Début de la table avec pourcentage de Facturation-->
+                                        
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">{{ facture.type_facture }}</th>
+                                                    <th scope="col"> montant </th>
+                                                    <th scope="col">%</th>
+                                                    <th scope="col">facturé</th>
+                                                    
+                                                </tr>
+                                                </thead>
+                                            <tbody>
+                                                {% if phases %}
+                                                {% for phase in phases %}
+                                              <tr>
+                                                <th scope="row">Phase {{ phase.numero }}</th>
+                                                <td>{{phase.montant_HT}}€ ({{ phase.nb_JEH }} JEH)</td>
+                                                <td> {{ facture.pourcentage_JEH }} </td>
+                                                <td> {{ facture.fac_JEH }}€ </td>
+                                                
+                                              </tr>
+                                                {% endfor %} 
+                                                {% endif %} 
+                                              
+                                              <tr>
+                                                <td scope="col">Frais de dossier</td>
+                                                <td scope="col">{{etude.frais_dossier}}€</td>
+                                                <td scope="col">{{facture.pourcentage_frais}}</td>
+                                                <td scope="col">{{facture.fac_frais}}€</td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">Total</th>
+                                                <td></td>
+                                                <td></td>
+                                                <td>{{facture.montant_HT}}€</td>
+                                                
+                                                
+                                              </tr>
+                                            </tbody>
+                                        </table>
+                                          <!-- Fin de la table-->
+                                        <a class="btn btn-primary" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
+                                        
+                                    </div>
+                                                                        
+                                <br>
+                                {% endfor %}    
+                                
 
-                                    <a class="btn btn-primary" target="_blank" href="{% url 'facture' iD %}">Générer la Facture</a>
                                 </div>
+                                
+                                
+                                {%else%}
+                                Aucune facture
+                                {% endif %}
+                                                        
+                                
                                 <!-- Fin de la card mb3 dans laquelle est contenue la page-->
                             </div>
                             <!-- Fin de l'Onglet Facturation-->
