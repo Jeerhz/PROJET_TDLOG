@@ -141,7 +141,9 @@
         .my-custom-table-green tbody tr:hover {
             background-color: #d1f2d8; /* Un peu plus foncé lors du survol pour un effet interactif */
         }
-
+        ::placeholder {
+      color: #c4c4c4; /* Adjust color as needed */
+    }
 
         
     </style>
@@ -550,28 +552,41 @@
                             <table class="table table-hover text-center">
                                 <thead style="background-color: #ffffff;">
                                     <tr>
+                                        <th scope="col" style="width: 5%;"></th>
                                         <th scope="col" style="width: 3%;">Numéro</th>
                                         <th scope="col">Titre</th>
                                         <th scope="col">Client</th>
-                                        <th scope="col" style="width: 10%;">Période</th>
                                         <th scope="col">Suiveur</th>
                                         <th scope="col">Budget HT</th>
-                                        <th scope="col" style="width: 5%;">Statut</th>
+                                        <th scope="col">Remarque</th>
+                                        <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for etude in etudes_recentes %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" data-href="{% url 'details' modelName='Etude' iD=etude.id %}" id="etude_row_{{etude.id}}" class="etude_row">
-                                        <th class="align-middle" scope="row">{{etude.numero}}</th>
+                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 30px; height: 30px;"></img></td>
+                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
                                         <td class="align-middle">{{etude.titre}}</td>
                                         <td class="align-middle">{{etude.client}}</td>
-                                        <td class="align-middle">{{etude.begin}} - {{etude.end}}</td>
                                         <td class="align-middle">
                                             <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{etude.responsable}}
                                         </td>
                                         <td class="align-middle">{{etude.montant_HT}}€</td>
-                                        <td class="align-middle" style="{% if etude.status == 'EN_COURS' %} background-color: #ffda6b; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffa559; {% else %} background-color: ##69ee8899; {% endif %}">{{etude.status}}</td>
+                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
+                                        <td class="align-middle etude_row" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-forward" style="color:#333;"></i></td>
                                     </tr>
+                                    <tr class="collapse" id="sec_table_{{etude.id}}">
+                                        <td colspan="7">
+                                          <table class="table table-bordered">
+                                            <tbody>
+                                              <tr>
+                                                <td>Age: 30</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </td>
+                                      </tr>
 
                                     {% endfor %}
                                 </tbody>
@@ -622,7 +637,7 @@
             </div>
         </div>
     </div>
-
+    {% csrf_token %}
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -651,6 +666,61 @@
             });
         });
     </script>
+    <script>
+        // Function to send AJAX request to Django
+        function saveContent(elem) {
+          var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          var content = elem.innerText;
+          var url = elem.dataset.url;
+          
+          // AJAX request using fetch API
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ content: content }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.success){
+                    alert("The modification was taken into account.");
+                }
+                else{
+                    alert("The modification wasn't taken into account.");
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            // Event listener to detect when user clicks outside the div
+            var allEditableDiv = document.getElementsByClassName('editableDiv');
+            var arrayEditDiv = Array.from(allEditableDiv);
+            var arrayDivContent = [];
+            arrayEditDiv.forEach(elem => {
+                arrayDivContent.push(elem.textContent);
+            });
+
+            window.addEventListener('click', function(event) {
+                if (!event.target.closest('.editableDiv')) {
+                    arrayEditDiv.forEach((elem, index) => {
+                        if(elem.textContent !== arrayDivContent[index]){
+                            saveContent(elem);
+                            arrayDivContent[index] = elem.textContent;
+                        }
+                    })
+                }
+            });
+        });
+      </script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";

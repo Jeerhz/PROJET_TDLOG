@@ -242,6 +242,7 @@ class Etude(models.Model):
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
+    remarque = models.TextField(blank=True, null=True, default="")
     #nb_factures = models.IntegerField(default = 2)
     
     def __str__(self):
@@ -265,6 +266,9 @@ class Etude(models.Model):
         phases = Phase.objects.filter(etude=self)
         total_JEH = sum(phase.nb_JEH for phase in phases)
         self.nb_JEH=total_JEH
+
+    def liste_doc(self):
+        return []
     
     
     def save(self, *args, **kwargs):
@@ -277,8 +281,8 @@ class Etude(models.Model):
             raise ValueError('Begin must be set before end.')
         if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
             raise ValueError('Begin must be set before end.')
-        
-        self.numero = Etude.objects.count() + 1
+        if self.numero is None:
+            self.numero = Etude.objects.count() + 1
         
         super().save(*args, **kwargs)
     
@@ -535,7 +539,7 @@ class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['numero','je', 'students', 'id_url']
+        exclude = ['numero','je', 'students', 'id_url', 'remarque']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -672,7 +676,7 @@ class Recrutement(forms.Form):
                           mail=self.email)
             etude.students.add(student)
             candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
-            Candidature.save()
+            candidature.save()
         except:
             student = Student(first_name=self.prenom,
                             last_name=self.nom,
@@ -681,7 +685,7 @@ class Recrutement(forms.Form):
             student.save()
             etude.students.add(student)
             candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
-            Candidature.save()
+            candidature.save()
 
 
     
