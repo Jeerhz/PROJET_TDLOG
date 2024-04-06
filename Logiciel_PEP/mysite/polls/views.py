@@ -761,3 +761,22 @@ def modifier_recrutement_etude(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+    
+def remarque_etude(request, iD):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                raw_data = request.body
+                data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
+                content = data.get('content', '')
+                etude = Etude.objects.get(id=iD)
+                etude.remarque = content
+                print("Texte de la remarque : ",etude.remarque)
+                etude.save()
+                return JsonResponse({'success':True})
+            except:
+                return JsonResponse({'success':False})
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
