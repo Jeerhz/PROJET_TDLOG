@@ -1,5 +1,8 @@
 import json
 import os
+from docxtpl import DocxTemplate
+
+from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect
@@ -776,6 +779,33 @@ def remarque_etude(request, iD):
                 return JsonResponse({'success':True})
             except:
                 return JsonResponse({'success':False})
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
+
+def word_template(request):
+    if request.user.is_authenticated:
+        # Load the template
+        template = DocxTemplate("polls\\templates\\polls\\template.docx")
+
+        # Prepare context
+        context = {'name': "Edgar Duc"}
+
+        # Render the document
+        template.render(context)
+
+        # Create a temporary in-memory file
+        output = BytesIO()
+        template.save(output)
+        output.seek(0)
+
+        # Return the filled document as a FileResponse
+        filename = "filled_template.docx"
+        response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
     else:
         template = loader.get_template("polls/login.html")
         context = {}
