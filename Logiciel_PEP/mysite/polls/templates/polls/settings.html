@@ -37,6 +37,12 @@
             padding: 1rem;
         }
 
+        .tableau_mission{
+            width: 1100px;
+            overflow-x: scroll;
+            align-self: center;
+
+        }
         /* Style for the suggestion results */
         #suggestions-results {
             position: absolute;
@@ -49,7 +55,97 @@
         #suggestions-results.show {
             display: block;
         }
-       
+        .black-text {
+            color: black;
+        }
+
+        
+        .table tbody tr td, .table thead tr th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* 
+        .table tbody tr td {
+            cursor: pointer;
+        } */
+        
+        .bg-info-agenda {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color:#bad7db!important
+        }
+        .table tbody tr td:hover .bg-info-agenda {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: none;
+        }
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            padding: .75rem 1.25rem;
+            position: relative;
+            border-top-left-radius: .35rem;
+            border-top-right-radius: .35rem;
+            font-weight: bold;
+        }
+
+        .tableau_mission {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: .35rem;
+            overflow: hidden;
+            margin-bottom: 30px; /* Espacement entre les tableaux */
+        }
+
+        .table {
+            margin-bottom: 0; /* Élimine l'espacement par défaut en bas de la table */
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Centrage des tableaux */
+        .table-responsive {
+            display: table;
+            margin: auto;
+        }
+
+        .table-yellow tr {
+            background-color: #fff3cd; /* Une teinte légère de jaune */
+        }
+
+        .my-custom-table tbody tr {
+            background-color: #ffecd1; /* Lignes en couleur orange clair pour une meilleure lisibilité */
+            border-color: white; /* Bordures blanches entre les lignes */
+        }
+
+        .my-custom-table tr:hover {
+            background-color: #ffdfb3; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+
+        .table-hover tbody tr:hover th,
+        .table-hover tbody tr:hover td {
+            border-color: white; /* Garde les bordures blanches au survol */
+        }
+
+        .my-custom-table-green tbody tr {
+            background-color: #e6f9e9; /* Teinte de vert clair pour une meilleure lisibilité */
+        }
+
+        .my-custom-table-green tbody tr:hover {
+            background-color: #d1f2d8; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+        ::placeholder {
+      color: #c4c4c4; /* Adjust color as needed */
+    }
 
         
     </style>
@@ -74,7 +170,7 @@
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
                 <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user"></i>
+                    <i class="fas fa-fw fa-house-user black-text"></i>
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -356,140 +452,138 @@
 
                 </nav>
                 <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                    
+
                 
 
-                <!-- Main Content -->
-                <div class="container mt-3">
-                    <h2 class="panel-title text-center mb-5"> Résultats de recherche pour "{{ query }}" </h2>
+                <div class="container-fluid">
+                    
                     <div class="row">
-                        <!-- Derniers Messages -->
-                        <div class="col-12 mb-4">
-                            <!-- Card -->
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Etudes</h6>
-                                    <small>{{ res_etude|length }} résultats</small>
+                        <div class="col-12 ml-4">
+                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Paramètres</h2>
+                        </div>
+                        <ul class="nav nav-pills mb-3 ml-4" style="background-color: #f8f9fc;" id="pills-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-info_etude-tab" data-toggle="pill" href="#pills-general" role="tab" aria-controls="pills-general" aria-selected="true">Général</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-missions_réalisées-tab" data-toggle="pill" href="#pills-notifications" role="tab" aria-controls="pills-notifications" aria-selected="false">Notifications</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                        <div class="tab-pane fade show active" id="pills-general">
+                            <div class="card shadow mb-4 w-100">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                    <h5 class="m-1 font-weight-bold text-primary">Général</h5>
                                 </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush" id="liste-etude">
-                                        {% if res_etude %}
-
-                                        {% else %}
-                                        <li class="list-group-item d-flex justify-content-between">
-                                            <span class="col-3">Aucun résultat</span>                                      
-                                        </li>
-                                        {% endif %}
+                                <div class="card-body w-100">
+                                    <!-- Détails spécifiques à l'élève -->
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><i class="fas fa-venus-mars mr-2"></i><strong>Titre:</strong> {{ user.titre }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ user.student }}</li>
+                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ user.email }}</li>
+                                        <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Photo:</strong> <img class="img-profile rounded-circle" style="width:40px; height:40px;" src="{{user.photo.url}}"></li>
                                     </ul>
                                 </div>
-                                
-                                <div class="card-footer text-right">
-                                    <button class="btn text-primary" id="bouton-etude">Voir plus d'études</button>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-notifications">
+                            <div class="card shadow mb-4 w-100">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                    <h5 class="m-1 font-weight-bold text-primary">Notifications</h5>
+                                </div>
+                                <div class="card-body w-100">
+                                    <!-- Détails spécifiques à l'élève -->
+                                    <div class="container">
+                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Réception:</strong></h5>
+                                        <div class="card border-left-primary pt-3 pb-3">
+                                            <div class="text-center">
+                                                <span><strong>Email:</strong> {{ user.email }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <br>
+                                    <div class="container">
+                                        <h5><i class="fas fa-file mr-2"></i><strong>Emission de documents:</strong></h5>
+                                        <div class="card border-left-secondary">
+                                            <ul class="list-group list-group-flush">
+
+                                                <li class="list-group-item">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck1">
+                                                        <label class="custom-control-label" for="customCheck1"><strong>BV</strong></label>
+                                                        </div>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck2">
+                                                        <label class="custom-control-label" for="customCheck2"><strong>CE</strong></label>
+                                                        </div>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck3">
+                                                        <label class="custom-control-label" for="customCheck3"><strong>Facture</strong></label>
+                                                        </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        
+                                        
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <!-- Derniers Messages -->
-                        <div class="col-12 mb-4">
-                            <!-- Card -->
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Clients</h6>
-                                    <small>{{ res_client|length }} résultats</small>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush" id="liste-client">
-                                        {% if res_client %}
-
-                                        {% else %}
-                                        <li class="list-group-item d-flex justify-content-between">
-                                            <span class="col-3">Aucun résultat</span>                                      
-                                        </li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                                
-                                <div class="card-footer text-right">
-                                    <button class="btn text-primary" id="bouton-client">Voir plus de clients</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Derniers Messages -->
-                        <div class="col-12 mb-4">
-                            <!-- Card -->
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Etudiants</h6>
-                                    <small>{{ res_student|length }} résultats</small>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush" id="liste-etudiant">
-                                        {% if res_student %}
-                                            
-                                        {% else %}
-                                        <li class="list-group-item d-flex justify-content-between">
-                                            <span class="col-3">Aucun résultat</span>                                      
-                                        </li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                                
-                                <div class="card-footer text-right">
-                                    <button class="btn text-primary" id="bouton-etudiant">Voir plus d'étudiants</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                </div>                
+            <!-- /.container-fluid -->
+            </div>
+            <!-- End of Main Content -->
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Ponts Etudes Projets 2024</span>
                 </div>
-                <br>   
-                <!-- End Main Content -->
             </div>
+        </footer>
+        <!-- End of Footer -->
 
-            <!-- Footer -->
-    <footer class="sticky-footer bg-white">
-        <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-                <span>Copyright &copy; Ponts Etude Projets 2024</span>
-            </div>
         </div>
-    </footer>
-    <!-- End of Footer -->
-        </div>
-        
-                
-            <!-- Logout Modal-->
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+                </div>
             </div>
         </div>
     </div>
-
-</div>
-
-
-
-
-
-
-
-
-
+    {% csrf_token %}
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -499,7 +593,15 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- Page level plugins -->
+    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+    <!-- 2 scripts spécifiques aux suggestions de recherche -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";
@@ -508,41 +610,8 @@
         var href_client = str.substring(0, str.length - 1);
         str = "{% url 'details' modelName='Student' iD=0 %}";
         var href_student = str.substring(0, str.length - 1);
-        var res_student_js = [];
-        {% for student in res_student %}
-            var obj = {
-                'first_name': "{{ student.first_name }}",
-                'last_name': "{{ student.last_name }}",
-                'promotion': "{{ student.promotion }}",
-                'url': "{% url 'details' modelName='Student' iD=student.id %}"
-            };
-            res_student_js.push(obj);
-        {% endfor %}
-        var res_etude_js = [];
-        {% for etude in res_etude %}
-            var obj = {
-                'titre': "{{ etude.titre }}",
-                'responsable': "{{ etude.responsable }}",
-                'statut': "{{ etude.statut }}",
-                'url': "{% url 'details' modelName='Etude' iD=etude.id %}"
-            };
-            res_etude_js.push(obj);
-        {% endfor %}
-        var res_client_js = [];
-        {% for client in res_client %}
-            var obj = {
-                'nom_societe': "{{ client.nom_societe }}",
-                'nom_representant': "{{ client.nom_representant }}",
-                'url': "{% url 'details' modelName='Client' iD=client.id %}"
-            };
-            res_client_js.push(obj);
-        {% endfor %}
-        var compteurEtudiant = 0;
-        var compteurEtude = 0;
-        var compteurClient = 0;
     </script>
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
-    <script src="{% static 'polls/js/search-results.js' %}"></script>
 
 </body>
 

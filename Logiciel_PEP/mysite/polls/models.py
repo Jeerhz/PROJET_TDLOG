@@ -12,6 +12,8 @@ from django.core.files.storage import FileSystemStorage
 from django.db.migrations.serializer import BaseSerializer
 from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum
+from django.core.mail import send_mail, get_connection
+from django.conf import settings
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
@@ -435,6 +437,29 @@ class Message(models.Model):
     def get_title_details(self):
         return "Détails du message"
 
+class Notification(models.Model):
+    utilisateur = models.ManyToManyField(Member, blank=True)
+    description = models.CharField(max_length=500)
+    date_effet = models.DateField()
+    date_echeance = models.DateField()
+    def active(self):
+        return (self.date_effet <= timezone.now() and timezone.now() <= self.date_echeance)
+    def __str__(self):
+        return self.description
+    def send(self):
+        users = self.utilisateur.all()
+        for user in users:
+            if user.setting :
+                email_host = settings.EMAIL_HOST
+                email_port = settings.EMAIL_PORT
+                email_username = settings.EMAIL_USERNAME
+                email_password = settings.EMAIL_PASSWORD
+                connection = get_connection(host=email_host, port=email_port, username=email_username,
+                    password=email_password,
+                    use_tls=True,)
+                send_mail("Notification SYLEX", self.description, "titoduc1905@gmail.com", [user.email], 
+                        fail_silently=False, 
+                        connection=connection)
 
 class AddMessage(forms.ModelForm):
     class Meta:

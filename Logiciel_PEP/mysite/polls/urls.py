@@ -31,5 +31,6 @@ urlpatterns = [
     path("ajouter_facture/<int:id_etude>", views.ajouter_facture, name='ajouter_facture'),
     path("remarque_etude/<int:iD>", views.remarque_etude, name="remarque_etude"),
     path("word_template/", views.word_template, name="word_template"),
+    path("settings/", views.settings, name="settings"),
     
 ]

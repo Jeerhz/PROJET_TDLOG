@@ -6,6 +6,7 @@ from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect
+from django.core.mail import send_mail, get_connection
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.urls import reverse
@@ -787,8 +788,9 @@ def remarque_etude(request, iD):
 
 def word_template(request):
     if request.user.is_authenticated:
+        send_custom_email("Test mail Django", "Ce mail a été envoyé à partir d'une vue Django", "titoduc1905@gmail.com", "titoduc1905@gmail.com", "qrorvjgmtunxthpg", ["edgar.duc@eleves.enpc.fr"], host="smtp.gmail.com", port=587)
         # Load the template
-        template = DocxTemplate("polls\\templates\\polls\\template.docx")
+        template = DocxTemplate("polls\\templates\\polls\\23e05_Convention_Etude.docx")
 
         # Prepare context
         context = {'name': "Edgar Duc"}
@@ -810,3 +812,40 @@ def word_template(request):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+
+
+def send_custom_email(subject, message, from_email, username, password, recipient_list, host=None, port=None):
+    # Override default email settings if provided
+    email_host = host if host else settings.EMAIL_HOST
+    email_port = port if port else settings.EMAIL_PORT
+    connection = get_connection(host=email_host, port=email_port, username=username,
+        password=password,
+        use_tls=True,)
+    send_mail(subject, message, from_email, recipient_list, 
+              fail_silently=False, 
+              connection=connection)
+
+def settings(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        
+        template = loader.get_template("polls/settings.html")
+        context = {
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "user": request.user,
+        }
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
