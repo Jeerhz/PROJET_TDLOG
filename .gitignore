@@ -1,1 +1,24 @@
 .venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+*.cache
+db.sqlite3
+
+# Secret key file and environment variables
+.env
+
+# VS Code directory
+.vscode/
+
+# PyCharm directory
+.idea/
+
+# Ignore all log files and temporary files.
+*.log
+*.tmp
+*.temp
