@@ -50,7 +50,7 @@ CSRF_COOKIE_SECURE = True
 
 X_FRAME_OPTIONS = 'DENY'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', 'www.sylex-software.com', 'sylex_software.com']
 
 AUTH_USER_MODEL = "polls.Member"
 
@@ -80,7 +80,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "CsrfViewMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "csp.middleware.CSPMiddleware",
 ]
