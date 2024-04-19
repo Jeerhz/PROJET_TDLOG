@@ -52,6 +52,8 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Application definition
 
+AUTH_USER_MODEL = config('AUTH_USER_MODEL')
+
 INSTALLED_APPS = [
     "polls.apps.PollsConfig",
     "django.contrib.admin",
