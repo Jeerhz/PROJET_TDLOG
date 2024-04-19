@@ -14,15 +14,11 @@ from pathlib import Path
 from decouple import config
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Flag de mode debug
+# Security settings fetched from environment variables
 DEBUG = config('DEBUG', default=False, cast=bool)
-
-# Clé secrète
 SECRET_KEY = config('SECRET_KEY')
-
 
 # Email settings
 EMAIL_HOST = config('EMAIL_HOST')
@@ -31,28 +27,21 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
 
-# Sécurité
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 86400
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# Security settings
+SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=86400, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=86400, cast=int)
+SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
+X_FRAME_OPTIONS = config('X_FRAME_OPTIONS', default='DENY')
 
+ALLOWED_HOSTS = config('ALLOWED_HOSTS')
 
-#AWS
-DEFAULT_FILE_STORAGE="storages.backends.s3boto3.S3Boto3Storage"
-
-
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_AGE = 86400
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = True
-
-X_FRAME_OPTIONS = 'DENY'
-
-ALLOWED_HOSTS = ['localhost', 'www.sylex-software.com', 'sylex_software.com']
-
-AUTH_USER_MODEL = "polls.Member"
+AUTH_USER_MODEL = config('AUTH_USER_MODEL')
 
 # Application definition
 
