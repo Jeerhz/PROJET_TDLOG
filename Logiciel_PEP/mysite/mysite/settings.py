@@ -20,6 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = config('DEBUG', default=False, cast=bool)
 SECRET_KEY = config('SECRET_KEY')
 
+ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
+
 # Email settings
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', cast=int)
@@ -38,10 +40,6 @@ SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=86400, cast=int)
 SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
 X_FRAME_OPTIONS = config('X_FRAME_OPTIONS', default='DENY')
-
-ALLOWED_HOSTS = config('ALLOWED_HOSTS')
-
-AUTH_USER_MODEL = config('AUTH_USER_MODEL')
 
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID') 
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
