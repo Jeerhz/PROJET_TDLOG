@@ -14,7 +14,7 @@ from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum
 
 
-#IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img") STOCKAGE LOCAL DES IMAGES
+IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img") #STOCKAGE LOCAL DES IMAGES
 
     
 class JE(models.Model):
@@ -29,8 +29,8 @@ class JE(models.Model):
     IBAN = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     BIC = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     check_order = models.CharField(max_length=50)
-#   logo = models.ImageField(storage=IMAGE_STORAGE) local
-    logo = models.ImageField(upload_to='polls/', null=True, blank=True) # S3 par défaut
+    logo = models.ImageField(storage=IMAGE_STORAGE)
+    #logo = models.ImageField(upload_to='polls/', null=True, blank=True) # S3 par défaut
     chiffres_affaires = models.FloatField(default=0.0, validators=[MinValueValidator(0)])
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
 
@@ -51,7 +51,7 @@ class JE(models.Model):
         new_je.IBAN = "FR000000000000000000000"
         new_je.BIC = "0000000000000000000000"
         new_je.check_order = "ORDRE_CHEQUE"
-        new_je.logo = None
+        new_je.logo = "/static/polls/img/bdc.png"
         new_je.chiffres_affaires = 0.0
         return new_je
 
@@ -61,8 +61,6 @@ class JE(models.Model):
 class JESerializer(BaseSerializer):
     def serialize(self):
         # Customize the serialization logic for the 'JE' model
-        # You may use self.value to access the 'JE' instance being serialized
-        # Return a string representation of the 'JE' instance and any required imports
         return "JE.objects.get(pk={})".format(repr(self.value.pk)), {"from polls.models import JE"}
 
 # Register the JESerializer for the 'JE' model
@@ -191,12 +189,12 @@ class CustomUserManager(BaseUserManager):
 
 class Member(AbstractUser):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
-    je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)  # Rendre 'je' optionnel au niveau du modèle
+    je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
     titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
-    #photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') local
-    photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
+    photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
+    #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

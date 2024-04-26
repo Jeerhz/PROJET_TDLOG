@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>BIBI JR</title>
+
+    {% load static %}
+    {% load format_duration %}
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
+
+    <style>
+        
+        /* Style for JE logo */
+        .my-custom-logo {
+            max-width: 80%;
+            aspect-ratio: 10/8;
+            justify-content: center;
+            align-self: center;
+            padding: 1rem;
+        }
+
+        .tableau_mission{
+            width: 1100px;
+            overflow-x: scroll;
+            align-self: center;
+
+        }
+        /* Style for the suggestion results */
+        #suggestions-results {
+            position: absolute;
+            top: 50px; /* Adjust as needed */
+            left: 0;
+            right: 0;
+            z-index: 999;
+            display: none;
+        }
+        #suggestions-results.show {
+            display: block;
+        }
+        .black-text {
+            color: black;
+        }
+
+        
+        .table tbody tr td, .table thead tr th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table tbody tr td {
+            cursor: pointer;
+        }
+        .bg-info-agenda {
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color:#bad7db!important
+        }
+        .table tbody tr td:hover .bg-info-agenda {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: none;
+        }
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            padding: .75rem 1.25rem;
+            position: relative;
+            border-top-left-radius: .35rem;
+            border-top-right-radius: .35rem;
+            font-weight: bold;
+        }
+
+        .tableau_mission {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: .35rem;
+            overflow: hidden;
+            margin-bottom: 30px; /* Espacement entre les tableaux */
+        }
+
+        .table {
+            margin-bottom: 0; /* Élimine l'espacement par défaut en bas de la table */
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Centrage des tableaux */
+        .table-responsive {
+            display: table;
+            margin: auto;
+        }
+
+        .table-yellow tr {
+            background-color: #fff3cd; /* Une teinte légère de jaune */
+        }
+
+        .my-custom-table tbody tr {
+            background-color: #ffecd1; /* Lignes en couleur orange clair pour une meilleure lisibilité */
+            border-color: white; /* Bordures blanches entre les lignes */
+        }
+
+        .my-custom-table tr:hover {
+            background-color: #ffdfb3; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+
+        .table-hover tbody tr:hover th,
+        .table-hover tbody tr:hover td {
+            border-color: white; /* Garde les bordures blanches au survol */
+        }
+
+        .my-custom-table-green tbody tr {
+            background-color: #e6f9e9; /* Teinte de vert clair pour une meilleure lisibilité */
+        }
+
+        .my-custom-table-green tbody tr:hover {
+            background-color: #d1f2d8; /* Un peu plus foncé lors du survol pour un effet interactif */
+        }
+        ::placeholder {
+      color: #c4c4c4; /* Adjust color as needed */
+    }
+
+        
+    </style>
+
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <!-- Sidebar - Brand -->
+            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
+            
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-md-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url 'index' %}">
+                    <i class="fas fa-fw fa-house-user black-text"></i>
+                    <span>ACCUEIL</span></a>
+            </li>
+            
+            <hr class="sidebar-divider">
+            
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Informations
+            </div>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'annuaire' %}">
+                    <i class="fas fa-book-open" ></i>
+                    <span>Annuaire</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'stat_KPI' %}">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Stat/KPI</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Factures et BVs</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'je_detail' %}">
+                    <i class="fas fa-fw fa-cog" ></i>
+                    <span>Ma Junior Entreprise</span></a>
+            </li>
+            
+
+            <hr class="sidebar-divider">
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
+                    aria-expanded="true" aria-controls="pageconnexion">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Connexion</span>
+                </a>
+                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
+                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
+                        <a class="collapse-item" href="#">Mot de passe oublié</a>
+                        
+                        
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
+                    aria-expanded="true" aria-controls="pageautres">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Autres</span>
+                </a>
+                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
+                        
+                        <a class="collapse-item" >Notifications</a>    
+                    </div>
+                </div>
+            </li>
+            <!-- Heading -->
+            
+
+                        
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Search -->
+                    <form action="{% url 'search' %}"
+                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                            <div class="list-group" id="suggestions-results"></div>
+                        </div>
+                    </form>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                        <li class="nav-item dropdown no-arrow d-sm-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-search fa-fw"></i>
+                            </a>
+                            <!-- Dropdown - Messages -->
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                aria-labelledby="searchDropdown">
+                                <form class="form-inline mr-auto w-100 navbar-search">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light border-0 small"
+                                            placeholder="Search for..." aria-label="Search"
+                                            aria-describedby="basic-addon2">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button">
+                                                <i class="fas fa-search fa-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+
+                        <!-- Nav Item - Alerts -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <!-- Counter - Alerts -->
+                                <span class="badge badge-danger badge-counter">1</span>
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="alertsDropdown">
+                                <h6 class="dropdown-header">
+                                    Notifications
+                                </h6>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-file-alt text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">5 mars 2024</div>
+                                        <span class="font-weight-bold">L'ESSEC ont-ils besoin d'un bar notifications?</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item text-center small text-gray-500" href="#">Tout montrer</a>
+                            </div>
+                        </li>
+
+                        <!-- Nav Item - Messages -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-envelope fa-fw"></i>
+                                <!-- Counter - Messages -->
+                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
+                            </a>
+                            <!-- Dropdown - Messages -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="messagesDropdown">
+                                <h6 class="dropdown-header">
+                                    Messagerie
+                                </h6>
+                                {% if liste_messages.0 %}
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
+                                    <div class="dropdown-list-image mr-3">
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
+                                            alt="...">
+                                        <div class="status-indicator bg-success"></div>
+                                    </div>
+                                    <div class="font-weight-bold">
+                                        <div class="text-truncate">{{liste_messages.0}}</div>
+                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
+                                    </div>
+                                </a>
+                                {% else %}
+                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
+                                {% endif %}
+
+                                {% if liste_messages.1 %}
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
+                                    <div class="dropdown-list-image mr-3">
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
+                                            alt="...">
+                                        <div class="status-indicator"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-truncate">{{liste_messages.1}}</div>
+                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
+                                    </div>
+                                </a>
+                                {% endif %}
+
+                                {% if liste_messages.2 %}
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
+                                    <div class="dropdown-list-image mr-3">
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
+                                            alt="...">
+                                        <div class="status-indicator bg-warning"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-truncate">{{liste_messages.2}}</div>
+                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
+                                    </div>
+                                </a>
+                                {% endif %}
+
+                                {% if liste_messages.3 %}
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
+                                    <div class="dropdown-list-image mr-3">
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
+                                            alt="...">
+                                        <div class="status-indicator bg-success"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-truncate">{{liste_messages.3}}</div>
+                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
+                                    </div>
+                                </a>
+                                {% endif %}
+                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
+                            </div>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
+                                <img class="img-profile rounded-circle"
+                                    src="{% static 'polls/img/undraw_profile.svg' %}">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Profile
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Settings
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Activity Log
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                
+                <div class="card-header mt-3">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary">Signaler un problème</button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                
+                            <!-- Earnings (Annual) -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Chiffre d'affaire (Annuel)</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Mission termininée (Annuel) -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-primary shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    Missions terminées</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> 76</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Missions en cours -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Missions en cours</div>
+                                                <div class="row no-gutters align-items-center">
+                                                    <div class="col-auto">
+                                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">6</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Pending Requests -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-warning shadow h-100">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Missions en négociation</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    
+
+                
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 ml-4">
+                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études récentes</h2>
+                        </div>
+                    </div>
+                    <div class="card mb-4 ml-4 mr-3 shadow">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center">
+                                <thead style="background-color: #ffffff;">
+                                    <tr>
+                                        <th scope="col" style="width: 5%;"></th>
+                                        <th scope="col" style="width: 3%;">Numéro</th>
+                                        <th scope="col">Titre</th>
+                                        <th scope="col">Client</th>
+                                        <th scope="col">Suiveur</th>
+                                        <th scope="col">Budget HT</th>
+                                        <th scope="col">Remarque</th>
+                                        <th scope="col" style="width: 5%;">Global</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for etude in etudes_recentes %}
+                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 30px; height: 30px;"></img></td>
+                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
+                                        <td class="align-middle">{{etude.titre}}</td>
+                                        <td class="align-middle">{{etude.client}}</td>
+                                        <td class="align-middle">
+                                            <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{etude.responsable}}
+                                        </td>
+                                        <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
+                                        <td class="align-middle etude_row" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-forward" style="color:#333;"></i></td>
+                                    </tr>
+                                    <tr class="collapse" id="sec_table_{{etude.id}}">
+                                        <td colspan="7">
+                                          <table class="table table-bordered">
+                                            <tbody>
+                                              <tr>
+                                                <td>Age: 30</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </td>
+                                      </tr>
+
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>                
+            <!-- /.container-fluid -->
+            </div>
+            <!-- End of Main Content -->
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Ponts Etudes Projets 2024</span>
+                </div>
+            </div>
+        </footer>
+        <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% csrf_token %}
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- Page level plugins -->
+    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+    <!-- 2 scripts spécifiques aux suggestions de recherche -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var rows = document.querySelectorAll(".etude_row");
+            rows.forEach(function(row) {
+                row.addEventListener("click", function() {
+                    var href = row.getAttribute("data-href");
+                    window.location.href = href;
+                });
+            });
+        });
+    </script>
+    <script>
+        // Function to send AJAX request to Django
+        function saveContent(elem) {
+          var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          var content = elem.innerText;
+          var url = elem.dataset.url;
+          
+          // AJAX request using fetch API
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ content: content }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.success){
+                    alert("The modification was taken into account.");
+                }
+                else{
+                    alert("The modification wasn't taken into account.");
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error.message);
+            });
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            // Event listener to detect when user clicks outside the div
+            var allEditableDiv = document.getElementsByClassName('editableDiv');
+            var arrayEditDiv = Array.from(allEditableDiv);
+            var arrayDivContent = [];
+            arrayEditDiv.forEach(elem => {
+                arrayDivContent.push(elem.textContent);
+            });
+
+            window.addEventListener('click', function(event) {
+                if (!event.target.closest('.editableDiv')) {
+                    arrayEditDiv.forEach((elem, index) => {
+                        if(elem.textContent !== arrayDivContent[index]){
+                            saveContent(elem);
+                            arrayDivContent[index] = elem.textContent;
+                        }
+                    })
+                }
+            });
+        });
+      </script>
+    <script type="text/javascript">
+        var url_suggestions = '{% url "search_suggestions" %}';
+        let str = "{% url 'details' modelName='Etude' iD=0 %}";
+        var href_etude = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Client' iD=0 %}";
+        var href_client = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Student' iD=0 %}";
+        var href_student = str.substring(0, str.length - 1);
+    </script>
+    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+
+</body>
+
+</html>

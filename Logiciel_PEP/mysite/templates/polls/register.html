@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>SB Admin 2 - Register</title>
+
+    {% load static %}
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
+                            </div>
+                            <form class="user" method="post" action="{% url 'register' %}">
+                                {% csrf_token %}
+                                {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>Erreur de formulaire:</strong>
+                                    <ul>
+                                        {% for error in form.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        {{ form.first_name.label_tag }}
+                                        {{ form.first_name }}
+                                        {{ form.first_name.errors }}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        {{ form.last_name.label_tag }}
+                                        {{ form.last_name }}
+                                        {{ form.last_name.errors }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    {{ form.titre.label_tag }}
+                                    {{ form.titre }}
+                                    {{ form.titre.errors }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.mail.label_tag }}
+                                    {{ form.mail }}
+                                    {{ form.mail.errors }}
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        {{ form.password.label_tag }}
+                                        {{ form.password }}
+                                        {{ form.password.errors }}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        {{ form.password_confirmation.label_tag }}
+                                        {{ form.password_confirmation }}
+                                        {{ form.password_confirmation.errors }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    {{ form.phone_number.label_tag }}
+                                    {{ form.phone_number }}
+                                    {{ form.phone_number.errors }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.adress.label_tag }}
+                                    {{ form.adress }}
+                                    {{ form.adress.errors }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.country.label_tag }}
+                                    {{ form.country }}
+                                    {{ form.country.errors }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.promotion.label_tag }}
+                                    {{ form.promotion }}
+                                    {{ form.promotion.errors }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.identifiant_je.label_tag }}
+                                    {{ form.identifiant_je }}
+                                    {{ form.identifiant_je.errors }}
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-user btn-block">
+                                    Register Account
+                                </button>
+                            </form>
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" href="#">Forgot Password?</a>
+                            </div>
+                            <div class="text-center">
+                                <a class="small" href="{% url 'custom_login' %}">Already have an account? Login!</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
+
+</body>
+
+</html>

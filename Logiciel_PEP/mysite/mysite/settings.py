@@ -11,48 +11,25 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
-import os
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security settings fetched from environment variables
-DEBUG = config('DEBUG', default=False, cast=bool)
-SECRET_KEY = config('SECRET_KEY')
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# Email settings
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = "django-insecure-&p-+mlztai==j1=dnvmpmtvqg5$v!=4u13ha%&rra+f76j=!^^"
 
-# Security settings
-SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
-SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
-SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=86400, cast=int)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
-SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
-SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=86400, cast=int)
-SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-X_FRAME_OPTIONS = config('X_FRAME_OPTIONS', default='DENY')
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID') 
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_SIGNATURE_VERSION = config('AWS_S3_SIGNATURE_VERSION')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
-AWS_S3_FILE_OVERWRITE = config('AWS_S3_FILE_OVERWRITE')
-AWS_DEFAULT_ACL = None
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+ALLOWED_HOSTS = []
+
+AUTH_USER_MODEL = "polls.Member"
 
 # Application definition
-
-AUTH_USER_MODEL = config('AUTH_USER_MODEL')
 
 INSTALLED_APPS = [
     "polls.apps.PollsConfig",
@@ -62,13 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "whitenoise.runserver_nostatic",
-    "csp",
-    "rest_framework",
-    "drf_yasg",
-    "storages",
 ]
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -78,28 +49,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "csp.middleware.CSPMiddleware",
 ]
-
-
-CSP_DEFAULT_SRC = ("'none'",)  # Aucune source par défaut
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdn.jsdelivr.net",)  # Permet les scripts du même domaine et inline
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com",)  # Permet les styles du même domaine et inline
-CSP_IMG_SRC = ("'self'", 'data:')  # Permet les images du même domaine et inline
-CSP_CONNECT_SRC = ("'self'", "https://api.exemple.com",)  # Permet les connexions AJAX au même domaine
-CSP_FONT_SRC = (
-    "'self'", 
-    "https://fonts.gstatic.com",
-)
-
 
 ROOT_URLCONF = "mysite.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -112,23 +69,20 @@ TEMPLATES = [
     },
 ]
 
-
-
 WSGI_APPLICATION = "mysite.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Configuration de la base de données
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', cast=int),
+        'NAME': 'db_sylex',
+        'USER': 'postgres',
+        'PASSWORD': 'bensalem',
+        'HOST': 'localhost',  
+        'PORT': '5433',
     }
 }
 
@@ -155,29 +109,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-# Internationalization settings
-LANGUAGE_CODE = config('LANGUAGE_CODE', default='en-us')
-TIME_ZONE = config('TIME_ZONE', default='UTC')
-USE_I18N = config('USE_I18N', default=True, cast=bool)
-USE_TZ = config('USE_TZ', default=True, cast=bool)
+LANGUAGE_CODE = "en-us"
+
+TIME_ZONE = "UTC"
+
+USE_I18N = True
+
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-#https://docs.djangoproject.com/en/4.2/howto/static-files/
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-
-# Configuration pour les fichiers statiques (CSS, JavaScript, images utilisées dans les templates)
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
-MEDIA_URLS ='/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Ajout de la configuration pour sécuriser les fichiers téléchargés (uploads)
-#FILE_UPLOAD_PERMISSIONS = 0o640
-#FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750
-
-
-
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
