@@ -4,10 +4,10 @@ Bienvenue dans ce guide pour initialiser le projet avec une base de données Pos
 
 1) PostgreSQL
 
-   --> Installer PostgreSQL sur sa machine
-   --> Vous pouvez suivre les 4 premières minutes de cette video : https://www.youtube.com/watch?v=unFGJhIvHU4&t=358s
-   --> Dans la vidéo il installe donc PostgreSQL sur sa machine puis importe le package psycho jsp quoi dans l'environnement virtuel
-   --> Ensuite il ouvre pgAdmin4 qui est le browser pour accéder aux différentes database. Il suffit alors de créer une nouvelle database via click droit sur 'Databases' puis click gauche sur 'Create Database'
+   a) Installer PostgreSQL sur sa machine
+   b) Vous pouvez suivre les 4 premières minutes de cette video : https://www.youtube.com/watch?v=unFGJhIvHU4&t=358s
+   c) Dans la vidéo il installe donc PostgreSQL sur sa machine puis importe le package psycho jsp quoi dans l'environnement virtuel
+   d) Ensuite il ouvre pgAdmin4 qui est le browser pour accéder aux différentes database. Il suffit alors de créer une nouvelle database via click droit sur 'Databases' puis click gauche sur 'Create Database'
    --> Lui prend le temps de créer un User mais vous pouvez sauter cette étape
 
  2) Django
