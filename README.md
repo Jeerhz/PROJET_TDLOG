@@ -1,38 +1,52 @@
-# REINITIALISATION DE LA BASE DE DONNES
+# Réinitialisation de la Base de Données
 
-Bienvenue dans ce guide pour initialiser le projet avec une base de données PostgreSQL. Les principales modifications résident dans la réparation dans models: j'ai enlevé les valeurs par défauts pour student par exemple. J'ai aussi enlevé la nécessité d'être lié à une je pour être un Member parce que Member comprend les superusers (nous). En fait il est nécessaire de spécifier une JE pour créer un Member tout de même parce que le champ est obligatoire lorsqu'on remplit le form.
+Bienvenue dans ce guide détaillé pour initialiser votre projet avec une base de données PostgreSQL. Ce document vous guidera à travers l'installation de PostgreSQL, la configuration de Django pour l'utiliser, la création d'instances et la connexion à votre application.
 
-1) PostgreSQL
+## Modification des Modèles
+Les modifications principales incluent la suppression des valeurs par défaut et l'ajustement des exigences pour les associations à des structures (comme les JE). Par exemple, bien que le champ JE reste obligatoire pour la création d'un membre, nous avons retiré certaines restrictions pour faciliter la gestion des superutilisateurs.
 
-   a) Installer PostgreSQL sur sa machine
-   b) Vous pouvez suivre les 4 premières minutes de cette video : https://www.youtube.com/watch?v=unFGJhIvHU4&t=358s
-   c) Dans la vidéo il installe donc PostgreSQL sur sa machine puis importe le package psycho jsp quoi dans l'environnement virtuel
-   d) Ensuite il ouvre pgAdmin4 qui est le browser pour accéder aux différentes database. Il suffit alors de créer une nouvelle database via click droit sur 'Databases' puis click gauche sur 'Create Database'
-   --> Lui prend le temps de créer un User mais vous pouvez sauter cette étape
+## Installation de PostgreSQL
 
- 2) Django
-    --> Toujours dans la même video, il vous montre quoi ajouter dans settings: i.e un truc comme ça:
-    
-    DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylex',
-        'USER': 'postgres',
-        'PASSWORD': 'bensalem',
-        'HOST': 'localhost',  
-        'PORT': '5433',
-    }
-}
+1. **Installer PostgreSQL** :
+   - Téléchargez et installez PostgreSQL sur votre machine.
+   - Suivez les premières étapes d'installation comme indiqué dans [cette vidéo](https://www.youtube.com/watch?v=unFGJhIvHU4&t=358s) (jusqu'à la minute 4).
 
-  --> A cette étape, vous devriez être en mesure de faire un makemigrations puis un migrate, faites le
+2. **Configuration avec pgAdmin4** :
+   - Lancez pgAdmin4 et créez une nouvelle base de données :
+     - Faites un clic droit sur 'Databases', puis cliquez sur 'Create Database'.
+   - La vidéo suggère de créer un utilisateur mais vous pouvez omettre cette étape.
 
-3) Création d'instance
+## Configuration de Django
 
-  --> Maintenant comme si on avait un nouveau client, il faut créer une instance pour cette JE pour permettre aux membres de s'inscrire et de travailler
-  --> Pour se faire on accède au shell via python manage.py shell et on entre les commandes suivantes
-  --> from polls.models import JE
-  -->
-  def default():
+1. **Paramétrage de la base de données** :
+   Ajoutez la configuration suivante dans vos `settings` de Django :
+
+   ```python
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'db_sylex',
+           'USER': 'postgres',
+           'PASSWORD': 'bensalem',
+           'HOST': 'localhost',
+           'PORT': '5432',
+       }
+   }
+   ```
+   
+## Migration des modèles
+- Exécutez `makemigrations` puis `migrate` pour appliquer les changements de modèle à la base de données.
+
+## Création d'une Instance
+
+### Création d'une nouvelle JE
+- Accédez au shell Django via `python manage.py shell`.
+- Exécutez les commandes suivantes pour créer une nouvelle JE :
+
+```python
+from polls.models import JE
+
+def default():
     new_je = JE()
     new_je.nom = "PEP"
     new_je.raison_sociale = "Junior-Entreprise des Ponts"
@@ -50,13 +64,19 @@ Bienvenue dans ce guide pour initialiser le projet avec une base de données Pos
     new_je.save()
 
 default()
---> On peut vérifier que notre JE est bien crée en tapant : JE.objects.all()
+```
 
-4) Connexion
-   --> Finalement, il ne vous reste qu'à vous connecter
-   --> Allez dans polls/login et entrez vos informations*
-   --> Pour trouver l'id de la JE vous devez allez dans pgAdmin4 et consulter directement la table je. Copier l'identifiant, collez le dans le form et supprimez les guillemets
+# Guide d'utilisation de l'Application
 
-Voilà vous devriez être sur la page et prêt à travailler
-Si soucis vous pouvez toujours m'appeler même si je viens de tester la manip et que cela marche de mon côté.
- 
+## Connexion à l'Application
+### Accès au système
+
+#### Connexion:
+Rendez-vous sur [polls/login](url_de_votre_application) et entrez vos informations de connexion.
+
+#### Récupération de l'ID de la JE:
+Consultez la table correspondante via pgAdmin4.
+Copiez l'identifiant de la JE.
+Insérez-le dans le formulaire de connexion, en vous assurant de supprimer les guillemets.
+
+En suivant ces instructions, vous devriez être capable de configurer et d'utiliser votre application. Si vous rencontrez des problèmes, n'hésitez pas à me contacter.
