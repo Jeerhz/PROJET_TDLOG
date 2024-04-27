@@ -17,6 +17,7 @@ from django.conf import settings
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
+DOC_STORAGE = FileSystemStorage(location="/media")
 
     
 class JE(models.Model):
@@ -102,6 +103,7 @@ class Client(models.Model):
     nom_representant = models.CharField(max_length = 100)
     fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
+    logo = models.ImageField(storage=IMAGE_STORAGE, upload_to=IMAGE_STORAGE)
 
     def __str__(self):
         return self.nom_societe
@@ -223,6 +225,9 @@ class Member(AbstractUser):
 # de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
 # afficher le planning de l'étude
 
+class Responsable(models.Model):
+    membre = models.ForeignKey(Member, on_delete=models.CASCADE)
+
 class Etude(models.Model):
     class Status(models.TextChoices):
         EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
@@ -231,11 +236,10 @@ class Etude(models.Model):
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
-    begin = models.DateField()
-    end = models.DateField()
-    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, default = 1)
-    nb_JEH = models.IntegerField()
-    montant_HT = models.FloatField()
+    debut = models.DateField(required=False, blank=True)
+    duree_semaine = models.IntegerField()
+    responsable = models.ManyToManyField(Responsable, required=False, blank=True)
+    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
@@ -259,27 +263,30 @@ class Etude(models.Model):
 
     def get_title_details(self):
         return "Détails de la mission"
-    
-    def actualiser_montant_total_HT(self):
-        phases = Phase.objects.filter(etude=self)
-        total_montant_HT = sum(phase.montant_HT for phase in phases)
-        self.montant_HT=total_montant_HT
-    def actualiser_nb_JEH(self):
-        phases = Phase.objects.filter(etude=self)
-        total_JEH = sum(phase.nb_JEH for phase in phases)
-        self.nb_JEH=total_JEH
 
     def liste_doc(self):
         return []
     
+    def fin(self):
+        return self.debut+datetime.timedelta(weeks=self.duree_semaine)
     
+    def nb_JEH(self):
+        phases = Phase.objects.filter(etude=self)
+        total_JEH = sum(phase.nb_JEH for phase in phases)
+        return total_JEH
+    
+    def montant_HT(self):
+        phases = Phase.objects.filter(etude=self)
+        total_montant_HT = sum(phase.montant_HT for phase in phases)
+        return total_montant_HT
+
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
         # For example, you can check if the value matches the regex pattern
         
         if self.id_url is None:
             self.id_url = uuid.uuid4()
-        if self.begin and self.end and self.begin > self.end:
+        if self.duree_semaine < 0:
             raise ValueError('Begin must be set before end.')
         if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
             raise ValueError('Begin must be set before end.')
@@ -316,20 +323,60 @@ class Facture(models.Model):
     pourcentage_frais = models.FloatField(default=30)
     type_facture = models.CharField(max_length=30, choices=Status.choices, default=Status.SOLDE)
     numero_facture = models.IntegerField(default=5) 
-    fac_JEH = models.FloatField(default=0)  # Added field for montant_JEH
     fac_frais=models.FloatField(default=0)
     montant_HT=models.FloatField(default=30)
-    def actualiser_montant_JEH_facture(self):
-        self.fact_JEH = self.etude.montant_HT * (self.pourcentage_JEH / 100)
+    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    def fac_JEH(self):
+        return self.etude.montant_HT * (self.pourcentage_JEH / 100)
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
-        self.fac_JEH = self.etude.montant_HT * (self.pourcentage_JEH / 100)
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         self.numero_facture = len(Facture.objects.filter(etude=etude))+1
         self.montant_HT=self.etude.montant_HT * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         super(Facture, self).save(*args, **kwargs)
+
+
+class Devis(models.Model):
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="devis")
+    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    numero = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        if (self.numero is None):
+            self.numero = len(self.etude.devis.all())+1
+        super(Devis, self).save(*args, **kwargs)
+
+class ConventionEtude(models.Model):
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_etude")
+    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    numero = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        if (self.numero is None):
+            self.numero = len(self.etude.conventions_etude.all())+1
+        super(ConventionEtude, self).save(*args, **kwargs)
+
+class ConventionCadre(models.Model):
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_cadre")
+    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    numero = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        if (self.numero is None):
+            self.numero = len(self.etude.conventions_cadre.all())+1
+        super(ConventionCadre, self).save(*args, **kwargs)
+
+class BonCommande(models.Model):
+    convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
+    numero = models.IntegerField()
+    fichier = fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+
+    def save(self, *args, **kwargs):
+        if (self.numero is None):
+            self.numero = len(self.convention_cadre.bons_commande.all())+1
+        super(BonCommande, self).save(*args, **kwargs)
 
 
 class Phase(models.Model):
@@ -337,10 +384,10 @@ class Phase(models.Model):
     date_debut = models.DateField()
     date_fin = models.DateField()
     titre = models.CharField(max_length = 200)
+    description = models.TextField(max_length = 5000, required=False, blank=True)
     nb_JEH = models.IntegerField()
     montant_HT_par_JEH = models.FloatField()
     numero = models.IntegerField()
-    montant_HT=models.FloatField()
 
     def nb_JEH_montant_HT(self):
         assignations = AssignationJEH.objects.filter(phase=self)
@@ -359,13 +406,8 @@ class Phase(models.Model):
         etude = Etude.objects.get(id=id_etude)
         #etude=self.etude()
         self.etude = etude
-        self.montant_HT = self.calcul_mt_HT()
-        self.etude.actualiser_montant_total_HT()
 
         super(Phase, self).save(*args, **kwargs)
-        self.etude.actualiser_montant_total_HT()
-        self.etude.actualiser_nb_JEH()
-        etude.save(update_fields=['montant_HT','nb_JEH'])
         
     def li_eleves(self):
         assignations = AssignationJEH.objects.filter(phase=self)
