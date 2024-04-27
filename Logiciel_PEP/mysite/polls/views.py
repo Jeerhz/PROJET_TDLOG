@@ -54,9 +54,9 @@ def index(request):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
         user_je = request.user.je
-        chiffres_affaires = request.user.chiffres_affaires()
+        chiffres_affaires = request.user.chiffres_affaires
         monthly_sums = calculate_monthly_sums(user_je)
-        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-begin')[:5]
+        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')[:5]
         template = loader.get_template("polls/index.html")
         context = {
             "monthly_sums": monthly_sums,
@@ -549,13 +549,11 @@ def calculate_monthly_sums(user_je):
 
     for month in range(12):
         current_month = (month + september) % 12
-        month_sum = (
-            Etude.objects.filter(je=user_je, begin__month=current_month).aggregate(
-                Sum("montant_HT")
-            )["montant_HT__sum"]
-            or 0.0
-        )
-        monthly_sums.append(month_sum)
+        etudes = Etude.objects.filter(je=user_je, debut__month=current_month)
+
+        # Calculate the sum of montant_HT for these objects using Python
+        total_montant_HT = sum(etude.montant_HT for etude in etudes)
+        monthly_sums.append(total_montant_HT)
 
     for k in range(12):
         month_ca += monthly_sums[k]

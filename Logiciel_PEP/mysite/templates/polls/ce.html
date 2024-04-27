@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- html2pdf CDN link -->
+		<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    ></script>
+    {% load static %}
+    <title>Convention d'étude {{etude.numero}}ce</title>
+    <style>
+        body {
+            font-family: "Quicksand";
+            font-size: 14px;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #5b5b5b;
+           
+        }
+        .logo_background {
+            
+            grid-column: 1 ;
+            grid-row: 1;
+            width: 1000px;
+            height: auto;
+            margin-top: 0px; 
+            margin-left: 16mm;
+            margin-right: 2000mm;
+            margin-bottom: 100mm;    
+        }
+        .image_logo_page1 {
+            grid-column: 1 ;
+            grid-row: 1;
+            width: 400px;
+            height: auto;
+            margin-top: 30px; 
+            margin-left: 80px      
+        }
+        .logo_PEP_client{
+            grid-column: 1 ;
+            grid-row: 1;
+            width: 120px;
+            height: auto;
+            margin-top: 30px; 
+            margin-left: 70px;
+            margin-right: 30px 
+        }
+        .logo_client{
+            grid-column: 1 ;
+            grid-row: 1;
+            width: 130px;
+            height: auto;
+            margin-top: 30px; 
+            margin-left: 80px 
+    
+        }
+        .image_logo_page2 {
+            /*grid-column: 1 ;
+            grid-row: 1;*/
+            width: 297mm;
+            height: auto;
+            margin-top: 88px; 
+            margin-left: 0px      
+        }
+        .image_logo_autre {
+            grid-column: 1 ;
+            grid-row: 1;
+            width: 300px;
+            height: auto;
+            margin-top: 30px; 
+            margin-left: 80px      
+        }
+        .footer {
+            width: 100%;
+            height: 70px;
+            background-color: #303854;
+        }
+        .header {
+            width: 100%;
+            height: 110px;
+            background-color: rgb(255, 255, 255);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            grid-auto-rows: minmax(100px, auto);
+            margin-top: 0px;
+            font-size: 10px;
+            color:#1f3753;
+        }
+        .centree{
+            text-align: center;
+        }
+        .adroite{
+            text-align: right;
+        }
+        .agauche{
+            text-align: left;
+        }
+
+
+        .footer .copyright {
+            width: 150px;
+            margin: 0 auto;
+        }
+
+        .wrapper {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            height: (493.700787+110)px;
+            grid-auto-rows: minma100px, auto;
+            background-color: rgb(255, 255, 255);
+        }
+        
+        .one {
+            grid-column: 1 / 3;
+            grid-row: 1;
+        }
+
+        .two {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+        }
+
+        .slide {
+            margin: 0px;
+            width: 297mm;
+            height: 210mm;
+            background-color: rgb(255, 255, 255);
+            overflow: hidden;
+        }
+
+        .parent {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);     
+            height: 613.700787px;
+            overflow: hidden;
+            grid-column-gap: 12px;
+            grid-row-gap: 6px;
+        }   
+
+        .div1 { grid-area: 1 / 1 / 2 / 5; }
+        .div2 { grid-area: 2 / 1 / 3 / 2; }
+        .div3 { grid-area: 2 / 2 / 3 / 3; line-height: 25px; margin-right: 15px; margin-left: 0px;}
+        .div4 { grid-area: 2 / 3 / 3 / 4; line-height: 25px; margin-left:  15px;}
+        .div5 { grid-area: 2 / 4 / 3 / 5; }
+        .div6 { grid-area: 3 / 1 / 4 / 5; margin-bottom: 100px}
+        
+       
+        .parentb {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr;
+            height: 613.700787px;
+            overflow: hidden;
+            grid-column-gap: 12px;
+            grid-row-gap: 6px;
+        }
+
+        .div1b { grid-area: 1 / 1 / 2 / 3;line-height: 20px; margin-left : 80px; margin-top: 30px; margin-right: 571.26px;}
+        .div2b { grid-area: 1 / 2 / 2 / 3; line-height: 20px;  margin-top: 30px; margin-right: 80px; margin-left: 10px;} 
+
+        .parent_pages_suivantes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr;
+            height: 613.700787px;
+            overflow: hidden;
+            grid-column-gap: 12px;
+            grid-row-gap: 6px;
+        }
+        .div1_p2 { grid-area: 1 / 1 / 2 / 2;line-height: 20px; margin-left : 80px; margin-top: 30px; margin-right: 15px; }
+        .div2_p2 { grid-area: 1 / 2 / 2 / 3; line-height: 20px;  margin-top: 30px; margin-right: 80px; margin-left: 15px;}
+        .div3_p2 { grid-area: 2 / 1 / 3 / 3; line-height: 20px;  margin-top: 0px; margin-right: 0px; margin-left: 0px; width: 297mm;height: auto; margin-top: 0px;  margin-left: 0px      }
+
+        .a{
+            line-height: 24px;
+            display: block;
+        }
+        
+
+        .line {
+            border-top: 3px solid  #1f3753; /* Line color */
+            width: 80%; /* Full width */
+            margin-left: 10%;
+            color: #1f3753;
+        }
+        .line2 {
+            border-top: 0.5px solid #1f3753; /* Line color */
+            margin-top: 10px;
+            margin-bottom: 7px;
+            width: 100%; /* Full width */
+            
+        }
+
+        .reference_mission{
+            margin-left: 250px;
+            text-align: right;
+            width: 100%;
+            line-height: 10px;
+            margin-top: 30px;
+        }
+        .table_sommaire {
+            margin-left: 15px;
+            width: 80%;
+            line-height: 24px;
+            display: inline-block;
+            margin-bottom: 0px;
+            padding: 0px;
+
+        }
+
+        .italique {
+            font-style: italic; 
+        }       
+        .gras {
+            font-weight: bold;
+        }
+
+        .bleu_foncé {
+            color: #1f3753; 
+        }
+        .bleu_clair {
+            color:#5697e2;
+        }
+        .font16 {
+            font-size: 16px;
+        }
+        .font22 {
+            font-size: 22px;
+        }
+        .font10 {
+            font-size: 10px;
+        }
+        .font45 {
+            font-size: 45px;
+        }
+        .blanc{
+            color: rgb(255, 255, 255)
+        }
+        
+        .fonttaviraj {
+            font-family: "Taviraj";
+        }
+
+        .titre_JE {
+            margin-left: 50px; /* Optional: Add some space between the text */
+        }
+
+        .arrow {
+            border: solid black;
+            border-width: 0 3px 3px 0;
+            display: inline-block;
+            padding: 3px;
+            transform: rotate(-45deg);
+            -webkit-transform: rotate(-45deg);
+            margin-right: 15px;
+        }
+        .indentation_50{
+            margin-left: 50px;
+        }
+        .indentation_25{
+            margin-left: 25px;
+        }
+        .espace_mot span {
+            margin-right: 500px; /* Adjust the value as needed */
+        }
+        .table_budget {
+			border:1px solid #1f3753;
+			border-collapse:collapse;
+			padding:5px;
+            width: 100%;
+            margin-top: 50px; 
+            margin-bottom: 0px;
+		}
+		.table_budget th {
+			border:1px solid #1f3753;
+			padding:5px;
+			background: #1f3753;
+			color: #f0f0f0;
+        }
+		.table_budget td {
+			border:1px solid #1f3753;
+			text-align:center;
+			padding:5px;
+			background: #ffffff;
+			color: #313030;
+            
+		}
+        .background_bleufonce{
+            background: #1f3753;
+        }
+        .wrapper_budget{
+            height: 613.7px;
+            line-height: 20px;
+            margin-top: 0px; 
+            padding-left: 80px;
+            padding-right:80px;
+            overflow: hidden;
+        }
+        .table_montant {
+			border:1px solid #b3adad;
+			border-collapse:collapse;
+			padding:5px;
+            width: 100%;
+            margin-top: 50px;
+            color: #1f3753; 
+            font-weight: 900;
+            
+		}
+		.table_montant th {
+			border:1px solid #b3adad;
+			padding:5px;
+            font-weight: 900;
+			
+		}
+		.table_montant td {
+			border:1px solid #b3adad;
+			text-align:center;
+			padding:5px;
+			background: #ffffff;
+            font-style: 900;
+		}
+
+        .bouton_pdf {
+            background-color: #5b5b5b;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            color : #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            padding : 5px 10px;
+            cursor:pointer;
+        }
+
+        .bouton_pdf:hover {
+        /* Add additional hover effects here if needed */
+        /* Add the hover class for the shining effect */
+            background-color: #000000; /* Darker green color */
+        }
+
+        .page-wrapper{
+            width:100%;
+            height: 60px;
+            display : grid;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .conv-etude{
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <button type="button" class=" bouton_pdf" id="download-button">Download as PDF</button>
+    </div>
+    <div id="conv-etude" class="conv-etude">
+        <div class="slide">
+                
+            <div class = "header">
+                <img src="{% static 'polls/img/logo_background.png' %}" alt="Logo Junior" class="logo_background">
+                <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_page1">
+                
+        
+            </div>
+            <div class="parent">
+                    <div class="div1">  
+                        <div class="centree bleu_clair font16" contenteditable="true">{{etude.titre}}</div>
+                        <br>
+                        <br>
+                        <div class="line"></div>
+                        <div class="centree font45 fonttaviraj  bleu_foncé" > Convention d’étude</div>
+                        <div class="line"></div>
+                        <br>
+                    
+                        <div class="centree bleu_clair" contenteditable="true">REFERENCE DE L’ETUDE :  {{etude.numero}}</div>
+                        <div class="centree bleu_clair" contenteditable="true">REFERENCE DU DOCUMENT :  {{etude.numero}}ce</div>
+                        
+                    </div>
+                    <div class="div2">
+                        <img src="{% static 'polls/img/logo_PEP_client.png' %}" alt="Logo Junior" class="logo_PEP_client">
+                    </div>
+                    <div class="div3">
+                        <br>
+                        
+                        <div contenteditable="true" class="adroite bleu_foncé">Responsable {{client.nom_societe}}</div>
+                        <div class="line2"></div>
+                        <div contenteditable="true" class="adroite">{{client.titre_representant}} {{client.nom_representant}}</div>
+                        <div contenteditable="true"  class="adroite italique" >{{client.fonction_representant}}</div>
+                        
+                    </div>
+                    <div class="div4">
+                        <br>
+                        <div class="agauche bleu_foncé">Responsable PEP</div>
+                        
+                        <div class="line2"></div>
+                        <div contenteditable="true" class="agauche italique"> {{etude.responsable.titre}} {{etude.responsable}}</div>
+                        <div  contenteditable="true" class="agauche">Chef de projet</div>
+                        
+                        
+
+                    </div>
+                    <div class="div5">
+                        <img src="{% static 'polls/img/logo_PEP_client.png' %}" alt="Logo Junior" class="logo_PEP_client">
+                    </div>
+                    <div class="div6"> 
+                        <br>
+                        <br>
+                        <div class="centree fonttaviraj bleu_foncé gras">Ponts Etudes Projets</div>
+                        <div class="centree bleu_foncé italique font10">Association loi 1901 affiliée à la Confédération Nationale des Junior-Entreprises</div>
+                    
+                        <br>
+                        <div class="centree bleu_foncé">6-8 avenue Blaise Pascal, Champs-sur-Marne, 77455 Marne-la-Vallée Cedex 2</div>
+                        <div class="centree bleu_foncé">Tél. : 01 64 15 33 99 – Fax : 01 64 15 33 90 – pep@enpc.org – pep.enpc.org</div>
+                    </div>
+            
+            </div>
+        
+            <div class="footer">
+                <br>
+                <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
+                <div class="centree blanc font16"> Page 1 sur 5</div>
+            </div>
+        </div>
+
+        <div class="slide">
+                
+
+            <div class="header">
+                <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
+                <div class="reference_mission"> 
+                    <p contenteditable="true"> RÉFÉRENCE : {{etude.numero}}ce </p>
+                    <p contenteditable="true"> SOPRA STERIA {{client.nom_société}} </p>
+                    <p contenteditable="true"> {{etude.numero}} ce ▪  {{mission.titre}} </p>
+                </div>
+            </div>
+            <div class="parent_pages_suivantes">
+                <div class="div1_p2">
+                    <div class="fonttaviraj font22 bleu_foncé">Sommaire</div>
+                    <div class="line2"></div>
+                    
+                    
+                    
+                    
+                    <div class="a">Vos contacts à Ponts Études Projets p. 2</div>
+                    <div class="a">Présentation de Ponts Études Projets p. 3</div>
+                    <div class="a">Description de l’entreprise cliente p. 4</div>
+                    <div class="a">Budget p.5 </div>
+                    
+                    
+                </div>
+                <div class="div2_p2">
+                    <div class="fonttaviraj font22 bleu_foncé">Vos contacts à Ponts Études Projets</div>
+                    <div class="line2"></div>
+                    <div class="a gras" contenteditable="true"><span class="arrow"></span >{{etude.responsable.titre}} {{etude.responsable.nom}} </div>
+                    <div class="indentation_25 italique"> Chef de projet</div>
+                    <div class="indentation_50" contenteditable="true"> {{etude.responsable.numero}}</div>
+                    <div class="indentation_50" contenteditable="true"> {{etude.responsable.mail}}</div>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="a gras" contenteditable="true"><span class="arrow"></span >M. Hippolyte GIRAUD </div>
+                    <div class="indentation_25 italique" contenteditable="true"> Responsable qualité</div>
+                    <div class="indentation_50" contenteditable="true"> 0000000000</div>
+                    <div class="indentation_50" contenteditable="true"> qualité@juniior-pep.fr</div>
+                    
+                </div>
+                <div class="div3_p2">
+                    <img src="{% static 'polls/img/photo_mandat25.png' %}" alt="Logo Junior" class ="div2_p3 image_logo_page2">
+                </div>
+            </div>
+        
+            <div class="footer">
+                <br>
+                <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
+                <div class="centree blanc font16"> Page 2 sur 5</div>
+            </div>
+        </div>
+        <div class="slide">
+                
+            <div class="header">
+                <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
+                <div class="reference_mission"> 
+                    <p contenteditable="true"> RÉFÉRENCE : {{etude.numero}}ce </p>
+                    <p contenteditable="true"> SOPRA STERIA {{client.nom_société}} </p>
+                    <p contenteditable="true"> {{etude.numero}} ce ▪  {{mission.titre}} </p>
+                </div>
+            </div>
+            <div class="parentb">
+                <div class="div1b">
+                
+                    <p class="font22 bleu_foncé"><strong>Qu’est-ce qu’une Junior-Entreprise ?</strong></p>
+                    <p>Une Junior-Entreprise est une association qui met en relation des entreprises qui souhaitent faire réaliser des missions techniques ou stratégiques avec des étudiants désireux de mettre en application les enseignements théoriques qu’ils reçoivent. Véritable garantie de qualité et de sérieux, l’appartenance à la marque « Junior-Entreprise » est soumise au respect de normes exigeantes et à des contrôles réguliers de la Confédération Nationale des Junior-Entreprises.</p>
+
+                    <p class="font22 bleu_foncé"><strong>Ponts Études Projets</strong></p>
+                    <p>Depuis 1978, Ponts Études Projets est la Junior-Entreprise de l’Ecole Nationale des Ponts et Chaussées. Gérée par une équipe de 15 étudiants de l’Ecole, elle accompagne les réalisateurs d’études, qui sont exclusivement des élèves de l’École des Ponts ParisTech, qu’ils soient en formation d’ingénieur, mastère spécialisé ou encore en application de l’Ecole polytechnique. Forte de son expérience et du sérieux de ses étudiants, l’association a mis en place des procédures rigoureuses de suivi d’étude, vous garantissant un résultat le plus proche possible de vos attentes.</p>    
+                </div>
+                <div class="div2b">
+                    <p class="font22 bleu_foncé"><strong>L’École des Ponts ParisTech</strong></p>
+                    <p>Fondée en 1747, l’École des Ponts ParisTech, plus connue sous le nom d’École nationale des ponts et chaussées, est la plus ancienne école d’ingénieurs du monde. Elle forme depuis sa création des ingénieurs, chercheurs et chefs d’entreprise qui ont marqué leur époque par leur talent et leur créativité.</p>
+                    <p>L’Ecole, qui reste la référence française dans ses domaines historiques (Construction, Environnement, Transports, Finance...) est aujourd’hui très diversifiée : ses six départements d’enseignement couvrent un large spectre, des mathématiques à l’industrie. Elle est chaque année classée parmi les meilleures Grandes Écoles de France. Membre fondateur du réseau ParisTech, elle bénéficie d'un rayonnement qui dépasse largement les frontières européennes, et est illustré par de nombreux accords internationaux. Depuis 1997, l’École des Ponts est située au cœur de la Cité Descartes, à Marne-la-Vallée, aux côtés de l’Université Paris-Est. Futur cluster du Grand Paris, ce campus moderne et attrayant abrite un grand nombre de laboratoires de Recherche, et assure aux étudiants un cadre de vie particulièrement agréable, à 20 minutes du centre de Paris.</p>
+
+
+                </div>
+            </div>
+        
+            <div class="footer">
+                <br>
+                <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
+                <div class="centree blanc font16"> Page 3 sur 5</div>
+            </div>
+        </div>
+        <div class="slide">
+                
+            <div class="header">
+                <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
+                <div class="reference_mission"> 
+                    <p contenteditable="true"> RÉFÉRENCE : {{etude.numero}}ce </p>
+                    <p contenteditable="true"> SOPRA STERIA {{client.nom_société}} </p>
+                    <p contenteditable="true"> {{etude.numero}} ce ▪  {{mission.titre}} </p>
+                </div>
+            </div>
+            <div class="parentb">
+                <div class="div1b">
+                    <p class="font22 bleu_foncé"><strong>Description de l’entreprise cliente</strong></p>
+                    <div class="line2"></div>
+                    <p contenteditable="true">Ponts Etudes Projets est une association d’élèves de l'Ecole des Ponts Paristech, rattachée au mouvement Junior Entreprise depuis plus 40 ans. Nos domaines de compétences variés, découlant de l’enseignement d’excellence de notre école, nous permettent d’accompagner petites et grandes entreprises dans la réalisation de leur projets.</p>
+                    <p class="font22 bleu_foncé"><strong>Contexte de l’étude</strong></p>
+                    <div class="line2"></div>
+                    <p contenteditable="true">Le groupe s’est engagé à produire un logiciel à destination des Juniors Entreprises (JE) pour les aider à suivre et traiter leurs missions. A terme, celui-ci doit pouvoir remplacer le logiciel Siaje utilisé par la Ponts Études Projet (PEP) et d’autres JE. En effet, son coût nous semblait excessif par rapport aux fonctionnalités qu’il proposait. Antony Feord, membre de la PEP, a soulevé un nombre importants de problématiques liées au logiciel Siaje. Nous convenons d’y répondre en construisant une application moderne et beaucoup plus ergonomique. </p>
+
+                </div>
+                <div class="div2b">
+                    <p class="font22 bleu_foncé"><strong>Objectifs de l’étude</strong></p>
+                    <div class="line2"></div>
+                    <p contenteditable="true">Dans ce but nous avons cherché à nous familiariser avec le développement de sites web et la manipulation de base de données. Notre objectif principal est la création d’un site web comprenant :</p>
+                    <ul>
+                        <li contenteditable="true">une page d’accueil affichant des informations générales comme le chiffre d’affaire de l’année en cours ainsi qu’un aperçu des missions en cours. La page permettra d’être re-dirigé vers d’autres pages plus spécifiques</li>
+                        <li contenteditable="true">une page d’annuaires permettant de retrouver un étudiant, une entreprise ou bien une étude précise présent dans notre base de données.</li>
+                        <li contenteditable="true">une page pour créer une nouvelle mission</li>
+                    </ul>
+                    <p class="font22 bleu_foncé"><strong>Cahier des Charges</strong></p>
+                    <div class="line2"></div>
+                    <p contenteditable="true">Le site devra être plus aéré et plus facile d’utilisation que le logiciel Siaje ; nous souhaitons effectivement afficher un design plus épuré et plus coloré. D’autres fonctionnalités pourront être implémentées après la date du projet, mais cela ne constitue pas une urgence.</p>
+
+                </div>
+            </div>
+        
+            <div class="footer">
+                <br>
+                <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
+                <div class="centree blanc font16"> Page 4 sur 5</div>
+            </div>
+        </div>
+        <div class="slide">
+            <div class="header">
+                <img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre">
+                <div class="reference_mission"> 
+                    <p contenteditable="true"> RÉFÉRENCE : {{etude.numero}}ce </p>
+                    <p contenteditable="true"> SOPRA STERIA {{client.nom_société}} </p>
+                    <p contenteditable="true"> {{etude.numero}} ce ▪  {{mission.titre}} </p>
+                </div>
+            </div>
+            <div class = "wrapper_budget">
+                <p class="font22 bleu_foncé"><strong>Budget</strong></p>
+                    <div class="line2"></div>
+                <table class="table_budget">
+                    <thead>
+                        <tr>
+                            <th>Phases</th>
+                            <th>JEH</th>
+                            <th>Prix H.T. / JEH</th>
+                            <th>Total H.T.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td contenteditable="true">&nbsp;Phase 1 - {nom_phase1}</td>
+                            <td contenteditable="true">&nbsp;{{etude.nb_JEH}}</td>
+                            <td contenteditable="true">&nbsp;{montant_JEH_1}</td>
+                            <td contenteditable="true">{{etude.montant_HT}}&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">Phase 2 - {nom_phase2}&nbsp;</td>
+                            <td contenteditable="true">&nbsp;{{etude.nb_JEH}}</td>
+                            <td contenteditable="true">&nbsp;{montant_JEH_2}</td>
+                            <td contenteditable="true">&nbsp;{{etude.montant_HT}}</td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">&nbsp;Phase 3 - {nom_phase3}</td>
+                            <td contenteditable="true">&nbsp;{{etude.nb_JEH}}</td>
+                            <td contenteditable="true">&nbsp;montant HT/PHASE</td>
+                            <td contenteditable="true">{{etude.montant_HT}}&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">Phase 4 - {nom_phase4}&nbsp;</td>
+                            <td contenteditable="true">&nbsp;{{etude.nb_JEH}}</td>
+                            <td contenteditable="true">&nbsp;{montant_JEH_2}</td>
+                            <td contenteditable="true">&nbsp;{{etude.montant_HT}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table_montant">
+                    <thead>
+                        <tr>
+                            <th >Total H.T.</th>
+                            <th contenteditable="true">{total_HT}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td >TVA (20 %)&nbsp;</td>
+                            <td contenteditable="true">{total_TVA}&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td >Total T.T.C.&nbsp;</td>
+                            <td contenteditable="true">{total_TTC}&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer">
+                <br>
+                <div class="centree blanc"> Ponts-Études Projets – Tous droits de reproduction réservés - 2023</div>
+                <div class="centree blanc font16"> Page 5 sur 5</div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="page-wrapper"></div>
+</body>
+
+<script>
+    const button = document.getElementById('download-button');
+
+    function generatePDF() {
+        // Choose the element that your content will be rendered to.
+        const element = document.getElementById('conv-etude');
+        var opt = {
+        margin:       0,
+        filename:     'convention_etude.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        // Choose the element and save the PDF for your user.
+        html2pdf().from(element).set(opt).save();
+    }
+
+    button.addEventListener('click', generatePDF);
+</script>
+
+</html>

@@ -63,8 +63,6 @@ class JE(models.Model):
 class JESerializer(BaseSerializer):
     def serialize(self):
         # Customize the serialization logic for the 'JE' model
-        # You may use self.value to access the 'JE' instance being serialized
-        # Return a string representation of the 'JE' instance and any required imports
         return "JE.objects.get(pk={})".format(repr(self.value.pk)), {"from polls.models import JE"}
 
 # Register the JESerializer for the 'JE' model
@@ -102,7 +100,7 @@ class Client(models.Model):
     titre_representant = models.CharField(max_length = 5, choices=TITRE_CHOIX)
     nom_representant = models.CharField(max_length = 100)
     fonction_representant = models.CharField(max_length = 100)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
+    je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(storage=IMAGE_STORAGE, upload_to=IMAGE_STORAGE)
 
     def __str__(self):
@@ -131,7 +129,7 @@ class Student(models.Model):
     adress = models.CharField(max_length = 300, null=True)
     country = models.CharField(max_length = 100, null=True)
     promotion = models.CharField(max_length = 200, blank=True, null=True)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.first_name+' '+self.last_name
@@ -168,31 +166,38 @@ class Student(models.Model):
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password, je=None, student=None, titre=None, **extra_fields):
+    def create_user(self, email, password=None, je=None, student=None, titre=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
-        if not password:
-            raise ValueError('The password field must be set.')
+        if 'is_superuser' not in extra_fields or not extra_fields.get('is_superuser', False):
+            if not je:
+                raise ValueError('The JE association is required for regular users')
+        
         email = self.normalize_email(email)
-        user = self.model(email=email, je=je, student=student, titre=titre)
-        user.set_password(password)
+        user = self.model(email=email, je=je, student=student, titre=titre, **extra_fields)
+        
+        if password:
+            user.set_password(password)
+        
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password, username, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-
+        
+        # Note: 'je' n'est pas nécessaire pour un superutilisateur.
         return self.create_user(email, password, **extra_fields)
 
 
 class Member(AbstractUser):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, default=1)
-    titre = models.CharField(max_length = 5, choices=TITRE_CHOIX)
+    je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
+    student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
+    titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
-    photo = models.ImageField(storage=IMAGE_STORAGE, default= '/static/polls/img/undraw_profile.svg')
+    photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
+    #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
@@ -236,13 +241,13 @@ class Etude(models.Model):
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
-    debut = models.DateField(required=False, blank=True)
+    debut = models.DateField(blank=True)
     duree_semaine = models.IntegerField()
-    responsable = models.ManyToManyField(Responsable, required=False, blank=True)
+    responsable = models.ManyToManyField(Responsable, blank=True)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default = JE(**default_je_data))
+    je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
@@ -384,7 +389,7 @@ class Phase(models.Model):
     date_debut = models.DateField()
     date_fin = models.DateField()
     titre = models.CharField(max_length = 200)
-    description = models.TextField(max_length = 5000, required=False, blank=True)
+    description = models.TextField(max_length = 5000, blank=True)
     nb_JEH = models.IntegerField()
     montant_HT_par_JEH = models.FloatField()
     numero = models.IntegerField()
@@ -452,7 +457,7 @@ class Message(models.Model):
     date = models.DateTimeField()
     expediteur = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="expediteur")
     destinataire = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="destinataire")
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default=JE(**default_je_data))
+    je = models.ForeignKey(JE, on_delete=models.CASCADE)
     read = models.BooleanField(default = False)
 
     def __str__(self):
@@ -553,12 +558,16 @@ class AddMember(forms.Form):
         if password and password_confirmation and password != password_confirmation:
             self.add_error('password', "Passwords do not match.")
             raise forms.ValidationError("Passwords do not match.", code="password")
+        identifiant_je = cleaned_data.get('identifiant_je')
         try:
-            id = uuid.UUID(cleaned_data.get('identifiant_je'))
+            id = uuid.UUID(identifiant_je)
             JE.objects.get(id=id)
-        except:
+        except JE.DoesNotExist:
             self.add_error('identifiant_je', "This JE identifier does not exist.")
-            raise forms.ValidationError("This JE identifier does not exist.", code="JE")
+            raise ValidationError("This JE identifier does not exist.", code="JE")
+        except ValueError:
+            self.add_error('identifiant_je', "Invalid UUID format.")
+            raise ValidationError("Invalid UUID format.", code="invalid_uuid")
 
     def save(self, commit=True, **kwargs):
         # Create and save a new Student object using the form data

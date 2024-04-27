@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organigramme d'entreprise</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.4.0/joint.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    #chart {
+        width: 100%;
+        height: 600px;
+    }
+</style>
+</head>
+<body>
+
+<div id="chart"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jointjs/3.4.0/joint.min.js"></script>
+<script>
+    var graph = new joint.dia.Graph();
+
+    var paper = new joint.dia.Paper({
+        el: document.getElementById('chart'),
+        width: '100%',
+        height: 600,
+        model: graph,
+        gridSize: 1
+    });
+
+    var rect1 = new joint.shapes.standard.Rectangle({
+        position: { x: 300, y: 50 },
+        size: { width: 200, height: 50 },
+        attrs: {
+            rect: { fill: '#3498db', 'stroke-width': 2, stroke: 'black' },
+            text: { text: 'PDG', fill: 'white', 'font-size': 18, 'font-weight': 'bold' }
+        }
+    });
+
+    var rect2 = new joint.shapes.standard.Rectangle({
+        position: { x: 200, y: 150 },
+        size: { width: 200, height: 50 },
+        attrs: {
+            rect: { fill: '#2ecc71', 'stroke-width': 2, stroke: 'black' },
+            text: { text: 'Manager', fill: 'white', 'font-size': 18, 'font-weight': 'bold' }
+        }
+    });
+
+    var rect3 = new joint.shapes.standard.Rectangle({
+        position: { x: 400, y: 150 },
+        size: { width: 200, height: 50 },
+        attrs: {
+            rect: { fill: '#e74c3c', 'stroke-width': 2, stroke: 'black' },
+            text: { text: 'Directeur', fill: 'white', 'font-size': 18, 'font-weight': 'bold' }
+        }
+    });
+
+    var rect4 = new joint.shapes.standard.Rectangle({
+        position: { x: 100, y: 250 },
+        size: { width: 200, height: 50 },
+        attrs: {
+            rect: { fill: '#f39c12', 'stroke-width': 2, stroke: 'black' },
+            text: { text: 'Employé', fill: 'white', 'font-size': 18, 'font-weight': 'bold' }
+        }
+    });
+
+    var rect5 = new joint.shapes.standard.Rectangle({
+        position: { x: 300, y: 250 },
+        size: { width: 200, height: 50 },
+        attrs: {
+            rect: { fill: '#9b59b6', 'stroke-width': 2, stroke: 'black' },
+            text: { text: 'Employé', fill: 'white', 'font-size': 18, 'font-weight': 'bold' }
+        }
+    });
+
+    var link1 = new joint.shapes.standard.Link({
+        source: { id: rect1.id },
+        target: { id: rect2.id }
+    });
+
+    var link2 = new joint.shapes.standard.Link({
+        source: { id: rect1.id },
+        target: { id: rect3.id }
+    });
+
+    var link3 = new joint.shapes.standard.Link({
+        source: { id: rect2.id },
+        target: { id: rect4.id }
+    });
+
+    var link4 = new joint.shapes.standard.Link({
+        source: { id: rect2.id },
+        target: { id: rect5.id }
+    });
+
+    graph.addCells([rect1, rect2, rect3, rect4, rect5, link1, link2, link3, link4]);
+</script>
+
+</body>
+</html>

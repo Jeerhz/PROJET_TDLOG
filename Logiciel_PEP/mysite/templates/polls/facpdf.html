@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        {% load static %}
+		<title>Facture {{etude.numero}}</title>
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1"
+		/>
+		<!-- html2pdf CDN link -->
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+			integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer"
+		></script>
+        <style>
+            body {
+            line-height: 1.1;
+            font-size: 12px;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #5b5b5b;
+        }
+        .container {
+            font-family: "Lucida Sans", sans-serif;
+            width: 210mm; /* A4 width */
+            height: 297mm; /* A4 height */
+            box-sizing: border-box;
+            position : relative;
+            overflow:hidden;
+            background-color: #fff;
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.7);
+        }
+        .image_logo {
+            position: absolute;
+            width: 120px;
+            height: auto;
+            top: 5%; 
+            left: 10%;            
+        }
+        .info_PEP {
+            position: absolute;
+            top: 15%; 
+            left: 7%;
+            font-size: 14px;
+            line-height: 2px;
+        }
+        .numero_facture {
+            position: absolute;
+            top: 5%; 
+            left: 55%;  
+            font-size: 15px;
+            line-height: 6px;
+        }
+        .objet_facture {
+            display: inline-block;
+            position: absolute;
+            top: 35%;
+            left: 7%; /* Distance from the left side */
+            right: 7%; 
+            background-color: #7771716b; /* Grey background color */
+            border: 0px;
+            padding: 10px;
+            height: auto;
+            width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
+            display: inline; 
+            text-align: center;
+        }
+        
+        .table_prestation {
+            position: absolute;
+            top: 42%;
+            right: 7%;
+            width: 86%;
+            border-collapse: collapse;
+            /*margin: 20px 10px 20px 10px;*/
+            /*line-height: 8px;*/
+
+        }
+        .table_prestation th,.table_prestation td {
+            border: 0px solid #ddd;
+            padding: 3px;
+            font-size: 11px;
+            
+        }
+        .table_prestation th {
+            color: #ffffff;
+            font-weight: bold;
+            background-color: #000000;
+        }
+        .table_prestation td {
+            color: #000000;
+            font-weight: normal;
+        }
+        
+        .table_montant {
+            position: absolute;
+            top: 55%;
+            right: 7%;
+            width: 35%;
+            border-collapse: collapse;
+            border: 0px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .table_montant th,.table_montant td {
+            border: 0px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            font-size: 10px;
+            
+        }
+        .table_montant th {
+            color: #ffffff;
+            font-weight: bold;
+            background-color: #000000;
+        }
+
+        
+        .table_montant td {
+            color: #000000;
+            font-weight: normal;
+        }
+
+        .table_date {
+            position: absolute;
+            top: 55%;
+            left: 7%;
+            width: 43%;
+            border-collapse: collapse;
+            padding: 4px;
+            font-size: 12px;
+
+        }
+        .table_date th {
+            color: #000000;
+            background-color: #ffffff;
+        }
+        .table_date td {
+            color: #000000;
+            font-weight: normal;
+        }
+
+        .info_retard {
+            position: absolute;
+            top: 64%; 
+            left: 7%;
+            width: 43%;
+            font-size: 11px;
+            line-height: 13px;
+            margin: 0px;
+        }
+
+        .table_paiement {
+            position: absolute;
+            top: 78%;
+            left: 7%;
+            width: 55%;
+            border-collapse: collapse;
+
+        }
+        .table_paiement th {
+            font-size: 10px;
+            font-weight: bold;
+            background-color: #ffffff;
+        }
+        .table_paiement td {
+            font-size: 10px;
+            font-weight: normal;
+        }
+        
+       
+        .footer {
+            display: inline-block;
+            position: absolute;
+            bottom: 0%;
+            left: 0%; /* Distance from the left side */
+            right: 0%; 
+            background-color: rgb(255,255,255); /* Grey background color */
+            border: 0px;
+            padding-bottom: 2%;
+            height: auto;
+            width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
+            display: inline; 
+            text-align: center;
+            line-height: 15px;
+        }
+        .dotted-line {
+            /*position: absolute;
+            top: 96%;*/
+            height: 1px; /* Adjust the height as needed */
+            background-image: repeating-linear-gradient(to right, #000, #000 4px, transparent 4px, transparent 10px);
+        }
+
+
+        .align-right {
+            text-align: right; 
+        }
+        .align-left {
+            text-align: left;
+        }
+
+        .italique {
+            font-style: italic; 
+        }       
+        .gras {
+            font-weight: bold;
+        }
+
+        .gris_clair {
+            color: #62616195; 
+        }
+        .gris_foncé {
+            color:#454444;
+        }
+        .font16 {
+            font-size: 16px;
+        }
+        .font12 {
+            font-size: 12px;
+        }
+        .blanc{
+            color :rgb(255,255,255);
+        }
+        .bouton_pdf {
+            background-color: #5b5b5b;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            color : #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            padding : 5px 10px;
+            cursor:pointer;
+        }
+
+        .bouton_pdf:hover {
+        /* Add additional hover effects here if needed */
+        /* Add the hover class for the shining effect */
+            background-color: #000000; /* Darker green color */
+        }
+
+        .page-wrapper{
+            width:100%;
+            height: 60px;
+            display : grid;
+            align-items: center;
+            justify-content: center;
+        }
+
+        </style>
+	</head>
+	<body>
+        <div class="page-wrapper">
+            <button type="button" class=" bouton_pdf" id="download-button">Télécharger</button>
+        </div>
+        
+        
+        <div id = "invoice" class="container">
+            <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
+            
+            <div class="section2">
+                <p></p>
+            </div>
+            <div class="numero_facture">
+                <p class="gras">Facture n° <span contenteditable="true"> {{facture.numero_facture}}</span> <span id = "numero_mission"></span></p>
+                <br>
+                <br>
+                <br>
+                <br>
+                <p class="gris_clair">A l'attention de : </p>
+                <br>
+                <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
+                <p><span class="gras" contenteditable="true" >{{client.titre_representant}} {{client.nom_representant}}</span></p> 
+                <p><span  contenteditable="true" >{{client.rue}}</span></p> 
+                <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
+                <p><span contenteditable="true" >{{client.country}}</span></p> 
+            </div>
+    
+            <div class="info_PEP">
+                <p id = "raison_sociale_JE" class="gras font16"></p>
+                <p class="gris_clair font12">Association loi 1901, affiliée à la CNJE</p>
+                <br>
+                <p>6 et 8, avenue Blaise Pascal - Cité Descartes,</p>
+                <p>Champs-sur-Marne</p>
+                <p>77455 Marne-la-Vallée Cedex 2</p>
+                <br>
+                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
+                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
+                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
+                <p></p>
+            
+            </div>
+            <table class="table_montant">
+                <thead>
+                    <tr>
+                        <th>Taux TVA</th>
+                        <th>Montant TVA</th>
+                        <th>Montant HT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td contenteditable="true">20,00%</td>
+                        <td contenteditable="true" id="montant_TVA">{{montant_TVA}}</td>
+                        <td contenteditable="true" id="montant_HT">{{etude.montant_HT}}</td>
+                        <script>
+                            var montantHTElement = document.getElementById('montant_HT');
+                            var montantTVAElement = document.getElementById('montant_TVA');
+                            var montantTVA = parseFloat(montantHTElement.textContent) * 0.2;
+                            montantTVAElement.textContent = montantTVA;
+                        </script>
+                    </tr>
+                    <tr>
+                        
+                    
+                        
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            <div class="objet_facture">
+                <p><span class ="gras">Objet :</span> <span > Facture d'acompte concernant l'étude</span> <span contenteditable="true"> {{etude.numero}} </span> <span >en référence à la convention d'étude {{etude.numero}}ce</span> </p>
+            </div>
+            <table class="table_prestation">
+                <thead>
+                    <tr>
+                        <th class="align-left" >Désignation</th>
+                        <th class="align-right" >Montant HT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left"><span class="gras">{{etude.montant_HT}}</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                    
+                    
+                </tbody>
+            </table>
+            
+            <table class="table_date">
+                <tbody>
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
+                        
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <script>
+                 
+                const listeDonnees = [
+                    { phase: 'Phase 1 : {nom_phase_1}', pourcentage: 30, jours: 2, prix: 450 },
+                    { phase: 'Phase 2 : {nom_phase_2}', pourcentage: 30, jours: 2, prix: 450 },
+                    { phase: 'Phase 3 : {nom_phase_3}', pourcentage: 30, jours: 2, prix: 450 },
+                ]
+                const table_prestation = document.getElementById('table_prestation');
+                for (let i = 0; i < listeDonnees.length; i++) {
+                    const row = document.createElement('tr');
+            
+            
+                    const cell1 = document.createElement('td');
+                    cell1.textContent = listeDonnees[i].phase;
+                    cell1.classList.add('align-left');
+                    cell1.setAttribute('contenteditable', 'true');
+                    row.appendChild(cell1);
+                    
+            
+                    const cell2 = document.createElement('td');
+                    const montant = (listeDonnees[i].pourcentage / 100) * listeDonnees[i].jours * listeDonnees[i].prix;
+                    cell2.textContent = montant.toFixed(2); 
+                    cell2.classList.add('align-right');
+                    cell2.setAttribute('contenteditable', 'true');
+                    row.appendChild(cell2);
+    
+            
+                    table_prestation.appendChild(row);
+                }
+            </script>
+            <table class="table_date">
+                <tbody>
+                    <tr>
+                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
+                        
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
+                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="info_retard">
+                <p class="gris_foncé">Aucun escompte n'est accordé pour paiement anticipé. En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
+                    sera appliqué des pénalités au taux de 3 fois le taux d'intérêt légal en vigueur. Il sera
+                    également appliqué une indemnité de recouvrement de 40 euros. Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
+                    complet des sommes dues. Règlement à la réception par chèque bancaire, postal ou virement uniquement.</p> 
+                
+            </div>
+            <table class="table_paiement">
+                <thead>
+                    <tr>
+                        <th class="align-left">Modalités de paiement :</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="align-left">Pour les versements</td>
+                        <td class="align-left">RIB : 30003 04123 00050851687 30</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gris_clair">merci d'indiquer votre nom</td>
+                        <td class="align-left">Domiciliation : SG CHAMPS MC DESCARTES (04123)</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left gris_clair italique">et numéro de facture</td>
+                        <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
+                    </tr>
+                    <tr>
+                        <td class="align-left"></td>
+                        <td class="align-left">BIC : SOGEFRPP</td>
+                    </tr>
+                    <br>
+                    <br>
+                    <tr>
+                        <td class="align-left"> Pour les chèques</td>
+                        <td class="align-left">A l'ordre de Ponts Etudes Projets</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="footer">
+                <div class ="gras gris_clair">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
+                <div class ="gris_clair">Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
+                <div class="dotted-line gris_clair"></div>
+                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.representant}} {{etude.numero}}</span> <span contenteditable="true" class ="gras">Net à payer :</span> </p>
+            </div>
+        </div>
+        <div class="page-wrapper"></div>
+		<script>
+			const button = document.getElementById('download-button');
+
+			function generatePDF() {
+				// Choose the element that your content will be rendered to.
+				const element = document.getElementById('invoice');
+				// Choose the element and save the PDF for your user.
+				html2pdf().from(element).save();
+			}
+
+			button.addEventListener('click', generatePDF);
+		</script>
+	</body>
+</html>
