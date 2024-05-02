@@ -11,13 +11,13 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.files.storage import FileSystemStorage
 from django.db.migrations.serializer import BaseSerializer
 from django.db.migrations.writer import MigrationWriter
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.conf import settings
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
-DOC_STORAGE = FileSystemStorage(location="/media")
+DOC_STORAGE = "polls/"
 
     
 class JE(models.Model):
@@ -101,7 +101,7 @@ class Client(models.Model):
     nom_representant = models.CharField(max_length = 100)
     fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    logo = models.ImageField(storage=IMAGE_STORAGE, upload_to=IMAGE_STORAGE)
+    logo = models.ImageField(upload_to=DOC_STORAGE)
 
     def __str__(self):
         return self.nom_societe
@@ -260,7 +260,7 @@ class Etude(models.Model):
         return self.titre
 
     def get_display_dict(self):
-        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.begin, 'Fin':self.end, 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH, 'Montant HT':self.montant_HT}
+        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.debut, 'Fin':self.fin(), 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH(), 'Montant HT':self.montant_HT()}
         liste_etudiants = self.students.all()
         for index in range(len(liste_etudiants)) :
             intermediary_dict['Etudiant '+str(index+1)] = liste_etudiants[index].__str__()
@@ -319,9 +319,9 @@ class Etude(models.Model):
 
 class Facture(models.Model):
     class Status(models.TextChoices):
-        ACOMPTE =  "facture d'acompte"
-        INTERMEDIAIRE = 'facture intermédiare'
-        SOLDE = 'facture de solde'
+        ACOMPTE =  "Facture d'acompte"
+        INTERMEDIAIRE = 'Facture intermédiaire'
+        SOLDE = 'Facture de solde'
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name='factures')
     facturé = models.BooleanField(default=False)
     pourcentage_JEH = models.FloatField(default=30)
@@ -332,14 +332,14 @@ class Facture(models.Model):
     montant_HT=models.FloatField(default=30)
     fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
     def fac_JEH(self):
-        return self.etude.montant_HT * (self.pourcentage_JEH / 100)
+        return self.etude.montant_HT() * (self.pourcentage_JEH / 100)
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         self.numero_facture = len(Facture.objects.filter(etude=etude))+1
-        self.montant_HT=self.etude.montant_HT * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
+        self.montant_HT=self.etude.montant_HT() * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         super(Facture, self).save(*args, **kwargs)
 
 
@@ -545,6 +545,7 @@ class AddMember(forms.Form):
     country = forms.CharField(max_length=100)
     promotion = forms.CharField(max_length=200, required=False)
     identifiant_je = forms.CharField(max_length = 50)
+    photo = forms.ImageField(required=False)
     def __str__(self):
         return "Ajouter un membre"
     def name(self):
@@ -584,6 +585,8 @@ class AddMember(forms.Form):
         )
         student.save()
         new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
+        if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
+            new_member.photo = self.cleaned_data['photo']
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member
@@ -622,15 +625,14 @@ class AddEtude(forms.ModelForm):
         return "AddEtude"
     def clean(self):
         cleaned_data = super().clean()
-        begin = cleaned_data.get('begin')
-        end = cleaned_data.get('end')
+        duree = cleaned_data.get('duree_semaine')
         ddr = cleaned_data.get('date_debut_recrutement')
         dfr = cleaned_data.get('date_fin_recrutement')
 
         # Vérifiez que la start_date est antérieure à end_date
-        if begin and end and begin > end:
-            self.add_error('end', 'Start date must be before the end date.')
-            raise ValidationError(_('Start date must be before the end date.'))
+        if duree<0:
+            self.add_error('duree_semaine', 'La durée doit être un entier positif.')
+            raise ValidationError(_('La durée doit être un entier positif.'))
         
         if ddr and dfr and ddr > dfr:
             self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
@@ -638,8 +640,13 @@ class AddEtude(forms.ModelForm):
 
         return cleaned_data
     def save(self, commit=True, **kwargs):
+        max_numero = Etude.objects.aggregate(max_numero=Max('numero'))['max_numero']
+        if max_numero is None:
+            max_numero=0
         etude = super(AddEtude, self).save(commit=False)
         etude.je = kwargs['expediteur'].je
+        if etude.numero is None :
+            etude.numero = max_numero+1
         if commit:
             etude.save()
         return etude
@@ -695,7 +702,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais','fac_JEH']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier']
     def __str__(self):
         return "Information de la Facture"
     def name(self):

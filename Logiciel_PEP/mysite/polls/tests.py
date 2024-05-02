@@ -1,8 +1,4 @@
 from django.test import TestCase
-<<<<<<< HEAD
-
-# Create your tests here.
-=======
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from .models import MyModel
@@ -29,4 +25,3 @@ class FileUploadTest(TestCase):
         
         self.assertIn('ContentType', response)
         self.assertEqual(response['ContentType'], 'text/plain')
->>>>>>> refs/remotes/origin/main

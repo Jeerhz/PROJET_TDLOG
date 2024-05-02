@@ -552,7 +552,7 @@ def calculate_monthly_sums(user_je):
         etudes = Etude.objects.filter(je=user_je, debut__month=current_month)
 
         # Calculate the sum of montant_HT for these objects using Python
-        total_montant_HT = sum(etude.montant_HT for etude in etudes)
+        total_montant_HT = sum(etude.montant_HT() for etude in etudes)
         monthly_sums.append(total_montant_HT)
 
     for k in range(12):
