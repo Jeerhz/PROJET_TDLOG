@@ -148,6 +148,12 @@ class Student(models.Model):
 
     def modifyForm(instance):
         return AddStudent(instance=instance)
+    
+    def nb_candidatures(self):
+        return Candidature.objects.filter(eleve=self).count()
+    
+    def nb_etudes_realisees(self):
+        return self.etude_set.count()
 
     def default():
     # Create a JE instance with the provided default values
@@ -238,6 +244,9 @@ class Etude(models.Model):
         EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
         EN_COURS = 'EN_COURS', 'En cours'
         TERMINEE = 'TERMINEE', 'Terminée'
+    class TypeConvention(models.TextChoices):
+        CADRE = "Convention cadre"
+        ETUDE = "Convention d'étude"
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
@@ -250,6 +259,7 @@ class Etude(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
+    type_convention = models.CharField(choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
@@ -316,6 +326,42 @@ class Etude(models.Model):
     def nombre_phases(self):
         phases = Phase.objects.filter(etude=self)
         return len(phases)
+    
+    def ce_editable(self):
+        return (len(self.responsable.all()) > 0 and (self.resp_qualite is not None))
+    
+    def convention_edited(self):
+        if self.type_convention == "Convention d'étude":     
+            return ConventionEtude.objects.filter(etude=self).exists()
+        elif self.type_convention == "Convention cadre":
+            return ConventionCadre.objects.filter(etude=self).exists()
+        else:
+            return False
+        
+    def convention(self):
+        if self.type_convention == "Convention d'étude": 
+            conventions = ConventionEtude.objects.filter(etude=self)
+        elif self.type_convention == "Convention cadre":
+            conventions = ConventionCadre.objects.filter(etude=self)
+        else:
+            return None
+        if conventions.exists():
+            return conventions[0]
+        else:
+            return None
+        
+    def devis_editable(self):
+        return (len(self.responsable.all()) > 0 and (self.resp_qualite is not None))
+    
+    def devis_edited(self):
+        return Devis.objects.filter(etude=self).exists()
+    
+    def devis(self):
+        devis = Devis.objects.filter(etude=self)
+        if(devis.exists()):
+            return devis[0]
+        else:
+            None
 
 class Facture(models.Model):
     class Status(models.TextChoices):
@@ -353,25 +399,28 @@ class Devis(models.Model):
             self.numero = len(self.etude.devis.all())+1
         super(Devis, self).save(*args, **kwargs)
 
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero}D"
+
 class ConventionEtude(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_etude")
     fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
-    numero = models.IntegerField()
 
-    def save(self, *args, **kwargs):
-        if (self.numero is None):
-            self.numero = len(self.etude.conventions_etude.all())+1
-        super(ConventionEtude, self).save(*args, **kwargs)
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero}CE"
 
 class ConventionCadre(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_cadre")
     fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
-    numero = models.IntegerField()
 
-    def save(self, *args, **kwargs):
-        if (self.numero is None):
-            self.numero = len(self.etude.conventions_cadre.all())+1
-        super(ConventionCadre, self).save(*args, **kwargs)
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero}CC"
 
 class BonCommande(models.Model):
     convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
@@ -445,7 +494,7 @@ class AssignationJEH(models.Model):
 
 class Candidature(models.Model):
     eleve = models.ForeignKey(Student, on_delete=models.CASCADE)
-    etude = models.ForeignKey(Etude, on_delete=models.CASCADE)
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name="candidatures")
     motivation = models.TextField(max_length=5000)
     def __str__(self):
         return self.eleve.__str__()+" | "+self.etude.__str__()

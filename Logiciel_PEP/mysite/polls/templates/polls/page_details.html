@@ -380,6 +380,11 @@
             
             <!-- Begin Main Content -->
             <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
+                <div class="alert alert-info alert-dismissible fade show" style="display: none;" role="alert" id="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
                 <!-- Card Shadow for Etude -->
                 {% if modelName == "Etude" %}
                 <div class="card shadow mb-4">
@@ -394,6 +399,7 @@
                             <a href="#documents" class="btn btn-primary flex-grow-1" data-toggle="tab" id="documents-tab" aria-controls="documents" aria-selected="false">Documents</a>
                             <a href="#intervenants" class="btn btn-primary flex-grow-1" data-toggle="tab" id="intervenants-tab" aria-controls="intervenants" aria-selected="false">Intervenants</a>
                             <a href="#facturation" class="btn btn-primary flex-grow-1" data-toggle="tab" id="facturation-tab" aria-controls="facturation" aria-selected="false">Facturation</a>
+                            <a href="#recrutement" class="btn btn-primary flex-grow-1" data-toggle="tab" id="recrutement-tab" aria-controls="recrutement" aria-selected="false">Recrutement</a>
                         </div>
 
                         <!--Debut TabContent-->
@@ -828,9 +834,27 @@
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">Convention d'Étude</h5>
-                                                    <p class="card-text">Préparez la convention d'étude pour cette étude.</p>
-                                                    <a href="{% url 'convention_etude' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                    {% if etude.type_convention == "Convention d'étude" %}
+                                                        <h5 class="card-title">Convention d'Étude</h5>
+                                                        
+                                                        {% if etude.convention_edited %}
+                                                        <a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">Télécharger la convention</a>
+                                                        {% else %}
+                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention d'étude pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
+                                                        {% endif %}
+                                                        <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                    {% elif etude.type_convention == "Convention cadre" %}
+                                                        <h5 class="card-title">Convention Cadre</h5>
+                                                            
+                                                        {% if etude.convention_edited %}
+                                                        <a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">Télécharger la convention</a>
+                                                        {% else %}
+                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
+                                                        {% endif %}
+                                                        <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
+                                                    {% else %}
+                                                        <p class="card-text text-danger">Veuillez définir un type de convention</p>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -845,6 +869,20 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Devis</h5>
+                                                    
+                                                    {% if etude.convention_edited %}
+                                                    <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis</a>
+                                                    {% else %}
+                                                    <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
+                                                    {% endif %}
+                                                    <a href="{% url 'editer_devis' iD %}" onclick="generer(event)" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
+                                                </div>
+                                            </div>
+                                        </div>    
                                     </div>
                                 </div>
                             </div>
@@ -1012,6 +1050,47 @@
                                 
                             </div>
                             <!-- Fin de l'Onglet Facturation-->
+                            
+                            <!-- Début de l'onglet recrutement -->
+                            <div class="tab-pane fade" id="recrutement" role="tabpanel" aria-labelledby="recrutement-tab">
+                                <div class="content mt-3 mb-4">
+                                    <div class="card shadow">
+                                        <div class="card-header">
+                                                <h5 class="card-title"><i class="fas fa-paper-plane mr-2"></i>Liste des candidats</h5>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if etude.candidatures.exists %}
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <td>Nom</td>
+                                                        <td>Promotion</td>
+                                                        <td>Candidatures précédentes</td>
+                                                        <td>Missions réalisées</td>
+                                                        <td>Consulter</td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for candidature in etude.candidatures.all %}
+                                                    <tr>
+                                                        <td>{{candidature.eleve}}</td>
+                                                        <td>{% if candidature.eleve.promotion %}{{candidature.eleve.promotion}}{% endif %}</td>
+                                                        <td>{{candidature.eleve.nb_candidatures}}</td>
+                                                        <td>{{candidature.eleve.nb_etudes_realisees}}</td>
+                                                        <td></td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                            {% else %}
+                                            <p class="col-12 text-center m-4">Aucune candidature</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Fin de l'onglet recrutement -->
+
                         </div>
                         <!--Fin TabContent-->
                     </div>
@@ -1382,6 +1461,26 @@
     </script>
     -->
     <script>
+        function showAlert(message) {
+            alert_div = document.getElementById("alert");
+            alert_div.style.display= "none";
+            alert_div.textContent = message;
+            alert_div.style.display = "block";
+        }
+        function generer(event) {
+                event.preventDefault(); // Prevent the default action (i.e., navigation)
+                url = event.target.getAttribute("href");
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the JSON response data
+                        showAlert(data.message)
+                    })
+                    .catch(error => {
+                        // Handle any errors
+                        showAlert("La communication avec le serveur a échoué.")
+                    });
+            }
         document.addEventListener("DOMContentLoaded", function () {
             var modifier_general = document.getElementById('modifier-recrutement');
             var general_info = document.getElementById('recrutement-info');
@@ -1418,14 +1517,14 @@
                     // Handle JSON response
                     if (data.success) {
                         // Show success message or perform any action
-                        alert('Modification successful!');
+                        showAlert('Modification successful!');
                         document.getElementById('date-debut').textContent = data.debut;
                         document.getElementById('date-fin').textContent = data.fin;
                         general_info.classList.toggle('d-none');
                         general_form.classList.toggle('d-none');
                     } else {
                         // Show error message or perform any action
-                        alert('Modification failed!');
+                        showAlert('Modification failed!');
                     }
                 })
                 .catch(error => {
