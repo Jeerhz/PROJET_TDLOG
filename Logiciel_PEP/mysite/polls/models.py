@@ -89,9 +89,25 @@ default_je_data = {
 
 
 class Client(models.Model):
+    class Type(models.TextChoices):
+        GRANDE_ENTREPRISE = 'GRANDE_ENTREPRISE', 'Grande entreprise'
+        SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur public'
+        START_UP_ET_TPE = 'START_UP_ET_TPE', 'Start-up et TPE'
+        PME = 'PME', 'Petite et moyenne entreprise'
+        ETI = 'ETI', 'Entreprise de taille intermédiaire'
+        ASSOCIATION = 'ASSOCIATION', 'Association' 
+    class Secteur(models.TextChoices):
+        INDUSTRIE = 'INDUSTRIE', 'Industrie'
+        DISTRIBUTION = 'DISTRIBUTION', 'Distribution'
+        SECTEUR_PUBLIC = 'SECTEUR PUBLIC', 'Secteur Public'
+        CONSEIL = 'CONSEIL', 'Conseil'
+        TRANSPORT = 'TRANSPORT', 'Transport'
+        NUMERIQUE = 'NUMERIQUE', 'Numerique'
+        BTP = 'BTP', 'BTP'
+        AUTRE = 'AUTRE', 'Autre'
+
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     nom_societe = models.CharField(max_length = 200)
-
     raison_sociale = models.CharField(max_length = 150)
     rue = models.CharField(max_length = 300)
     ville = models.CharField(max_length = 100)
@@ -102,6 +118,20 @@ class Client(models.Model):
     fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to=DOC_STORAGE)
+    secteur = models.CharField(
+        max_length=20,
+        choices=Secteur.choices,
+        default=Secteur.SECTEUR_PUBLIC,
+        help_text="Sélectionnez le secteur d'activité du client."
+    )
+    _type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+        default=Type.SECTEUR_PUBLIC,
+        help_text="Sélectionnez le type d'entreprise."
+    )
+
+
 
     def __str__(self):
         return self.nom_societe
@@ -122,6 +152,14 @@ class Client(models.Model):
         return AddClient(instance=instance)  
     
 class Student(models.Model):
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        AUTRE = 'AUTRE', 'Autre'
     first_name = models.CharField(max_length = 200)
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
@@ -129,13 +167,14 @@ class Student(models.Model):
     adress = models.CharField(max_length = 300, null=True)
     country = models.CharField(max_length = 100, null=True)
     promotion = models.CharField(max_length = 200, blank=True, null=True)
+    departement = models.CharField(max_length=20, choices=Departement.choices, default=Departement.AUTRE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.first_name+' '+self.last_name
     
     def get_display_dict(self):
-        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion}
+        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion, "Departement":self.departement}
 
     def get_title_details(self):
         return "Détails de l'étudiant"
@@ -230,8 +269,6 @@ class Member(AbstractUser):
 # de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
 # afficher le planning de l'étude
 
-class Responsable(models.Model):
-    membre = models.ForeignKey(Member, on_delete=models.CASCADE)
 
 class Etude(models.Model):
     class Status(models.TextChoices):
@@ -243,9 +280,9 @@ class Etude(models.Model):
     description = models.TextField(max_length=500, blank=True)
     debut = models.DateField(blank=True)
     duree_semaine = models.IntegerField()
-    responsable = models.ManyToManyField(Responsable, blank=True)
-    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE)
-    students = models.ManyToManyField(Student, blank=True)
+    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
+    responsable = models.ForeignKey(Member, on_delete=models.CASCADE,null=True, blank=True, related_name="responsable_etudes")
+    #liste des étudiants via méthodes get_li_students
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default = 0)
@@ -261,10 +298,14 @@ class Etude(models.Model):
 
     def get_display_dict(self):
         intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.debut, 'Fin':self.fin(), 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH(), 'Montant HT':self.montant_HT()}
-        liste_etudiants = self.students.all()
-        for index in range(len(liste_etudiants)) :
-            intermediary_dict['Etudiant '+str(index+1)] = liste_etudiants[index].__str__()
         return intermediary_dict
+    
+    def get_li_students(self):
+        phases = Phase.objects.filter(etude=self)
+        student_set = set()
+        for phase in phases:
+            student_set.update(phase.li_eleves())
+        return student_set
 
     def get_title_details(self):
         return "Détails de la mission"
@@ -282,7 +323,7 @@ class Etude(models.Model):
     
     def montant_HT(self):
         phases = Phase.objects.filter(etude=self)
-        total_montant_HT = sum(phase.montant_HT for phase in phases)
+        total_montant_HT = sum(phase.montant_HT_par_JEH for phase in phases)
         return total_montant_HT
 
     def save(self, *args, **kwargs):
@@ -401,8 +442,10 @@ class Phase(models.Model):
         # Calculate total amount excluding tax (montant_HT)
         montant_HT = total_nombre_JEH * self.montant_HT_par_JEH
         return total_nombre_JEH, montant_HT
+    
     def __str__(self):
         return f"Phase {self.numero}"
+    
     def calcul_mt_HT(self):
         return self.nb_JEH * self.montant_HT_par_JEH
     
@@ -416,12 +459,20 @@ class Phase(models.Model):
         
     def li_eleves(self):
         assignations = AssignationJEH.objects.filter(phase=self)
-        eleves = [assignation.eleve for assignation in assignations]
+        eleves = {assignation.eleve for assignation in assignations}
         return eleves
+    
+    def get_montant_HT(self, eleve):
+        res=0
+        assignations_JEH = AssignationJEH.objects.filter(phase=self, eleve=eleve)
+        for assignation_JEH in assignations_JEH:
+            res += assignation_JEH.nombre_JEH * self.montant_HT_par_JEH
+        return res
     
     def get_assignations_JEH(self):
         assignations_JEH = AssignationJEH.objects.filter(phase=self)
         return assignations_JEH
+    
 
 class AssignationJEH(models.Model):
     eleve = models.ForeignKey(Student, on_delete=models.CASCADE)

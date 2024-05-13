@@ -81,10 +81,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_sylex',
-        'USER': 'edgar_admin',
-        'PASSWORD': '/Tito1905',
+        'USER': 'postgres',
+        'PASSWORD': 'bensalem',
         'HOST': 'localhost',  
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 

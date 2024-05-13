@@ -424,7 +424,7 @@
                                             </div>
                                             <div class="card-body">
                                                 <div class="chart-pie">
-                                                    <canvas id="myPieChart"></canvas>
+                                                    <canvas id="PieChartEtude"></canvas>
                                                 </div>
                                                 <div class="text-center small">
                                                     <span><i class="fas fa-circle text-primary"></i> Junior</span>
@@ -857,7 +857,7 @@
                                 <!-- Fin Infos Entreprises -->
 
                                 <!-- Début Infos Élèves -->
-                                {% for eleve in etude.students.all %}
+                                {% for eleve in intervenants %}
                                 <div class="card shadow h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <div>{{eleve}}</div>
@@ -1033,12 +1033,12 @@
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ client.nom_societe }}</li>
                                 <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ client.raison_sociale }}</li>
+                                <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité:</strong> {{ client.secteur }}</li>
                                 <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }}</li>
                                 <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ client.ville }}</li>
                                 <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ client.code_postal }}</li>
                                 <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ client.country }}</li>
-                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Titre du représentant:</strong> {{ client.titre_representant_display }}</li>
-                                <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
+                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
                                 <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ client.fonction_representant }}</li>                                        
                             </ul>
                         </div>     
@@ -1082,8 +1082,9 @@
                                         <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
                                         <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
                                         <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
+                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}
                                         <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
+                                        <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Departement:</strong> {{ eleve.departement }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1314,7 +1315,7 @@
         
     <!-- Page level custom scripts -->
     <script src="{% static 'polls/js/demo/chart-area-demo.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-pie-demo.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-etude.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
