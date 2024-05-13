@@ -572,7 +572,7 @@
                                         <td class="align-middle">{{etude.titre}}</td>
                                         <td class="align-middle">{{etude.client}}</td>
                                         <td class="align-middle">
-                                            <img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{etude.responsable}}
+                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
                                         </td>
                                         <td class="align-middle">{{etude.montant_HT}}€</td>
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
@@ -582,9 +582,34 @@
                                         <td colspan="8">
                                           <table class="table table-bordered">
                                             <tbody>
+                                            {% if etude.convention_edited%}
                                               <tr>
-                                                <td>Age: 30</td>
+                                                <td>{{etude.type_convention}}</td>
+                                                <td>{% if etude.type_convention|escape == "Convention d'étude"|escape %}<a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% else %}<a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% endif %}</td>
                                               </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td>Convention</td>
+                                                <td><i class="fas fa-ban">Non édité</i></td>
+                                              </tr>
+                                            {% endif %}
+                                            {% if etude.devis_edited%}
+                                              <tr>
+                                                <td>Devis</td>
+                                                <td><a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">{{etude.devis.fichier}}</a></td>
+                                              </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td>Devis</td>
+                                                <td><i class="fas fa-ban">Non édité</i></td>
+                                              </tr>
+                                            {% endif %}
+                                            {% for facture in etude.factures.all %}
+                                            <tr>
+                                                <td>{{ facture.type_facture }}</td>
+                                                <td>{% if facture.fichier %}<a href="{% url 'telecharger_document' modelName='Facture' iD=facture.id %}">{{facture.fichier}}</a>{% else %}<i class="fas fa-ban">Non édité</i>{% endif %}</td>
+                                              </tr>
+                                            {% endfor %}
                                             </tbody>
                                           </table>
                                         </td>

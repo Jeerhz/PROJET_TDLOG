@@ -18,6 +18,7 @@ from django.db.models import Sum, Count, Q
 from datetime import datetime
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
+from django.core.files.base import ContentFile
 
 from .models import (
     JE,
@@ -39,6 +40,9 @@ from .models import (
     Recrutement,
     Facture,
     AddFacture,
+    ConventionEtude,
+    ConventionCadre,
+    Devis,
 )
 
 
@@ -621,17 +625,112 @@ def register(request):
     return HttpResponse(template.render(context, request))
 
 
-def convention_etude(request, iD):
+def editer_convention(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
-
+            if not instance.ce_editable():
+                raise ValueError("Informations manquantes pour l'édition de la CE.")
             client = instance.client
-            context = {"etude": instance, "client": client}
-            template = loader.get_template("polls/ce.html")
+            if instance.type_convention == "Convention d'étude":
+                model = ConventionEtude
+                template = DocxTemplate("polls\\templates\\polls\\Convention_Etude.docx")
+            elif instance.type_convention == "Convention cadre":
+                model = ConventionCadre
+                template = DocxTemplate("polls\\templates\\polls\\Convention_Cadre.docx")
+            else:
+                raise ValueError("Type de convention non défini.")
+            ce = model(etude=instance)
+            ce.save()
+            responsable = instance.responsable.all()[0]
+            context = {"etude": instance, "client": client, "ce":ce, "responsable":responsable}
+            # Load the template
+
+            # Render the document
+            template.render(context)
+
+
+            # Create a temporary in-memory file
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"Convention_Etude_{ce.__str__()}.docx"
+            ce.fichier.save(filename, ContentFile(output.read()))
+            ce.save()
+
+            # Return the filled document as a FileResponse
+
+            return JsonResponse({"message":"The document has been created and saved successfully."})
+        except ValueError as ve:
+            return JsonResponse({"message":str(ve)})
+        except :
+            return JsonResponse({"message":"Un problème a été détecté dans la base de données."})
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    
+def editer_devis(request, iD):
+    if request.user.is_authenticated:
+        try:
+            instance = Etude.objects.get(id=iD)
+            if not instance.devis_editable():
+                raise ValueError("Informations manquantes pour l'édition de la CE.")
+            client = instance.client
+            devis = Devis(etude=instance)
+            devis.save()
+            template = DocxTemplate("polls\\templates\\polls\\Devis_V2.docx")
+            responsable = instance.responsable.all()[0]
+            context = {"etude": instance, "client": client, "devis":devis, "responsable":responsable}
+            # Load the template
+
+            # Render the document
+            template.render(context)
+
+
+            # Create a temporary in-memory file
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"Devis_{devis.__str__()}.docx"
+            devis.fichier.save(filename, ContentFile(output.read()))
+            devis.save()
+
+            # Return the filled document as a FileResponse
+
+            return JsonResponse({"message":"The document has been created and saved successfully."})
+        except ValueError as ve:
+            return JsonResponse({"message":str(ve)})
+        except :
+            return JsonResponse({"message":"Un problème a été détecté dans la base de données."})
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    
+def telecharger_document(request, modelName, iD):
+    if request.user.is_authenticated:
+        try:
+            model = apps.get_model(app_label="polls", model_name=modelName)
+            document = model.objects.get(id=iD)
+
+            # Save the "fichier" field of the CE
+            filename = f"{document.__str__()}.docx"
+
+            # Return the filled document as a FileResponse
+            response = FileResponse(document.fichier, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
         except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Erreur dans l'identification de la mission."}
+            context = {"error_message": "Le document n'a pas pu être transmis."}
+
     else:
         template = loader.get_template("polls/login.html")
         context = {}

@@ -14,7 +14,6 @@ urlpatterns = [
     path("facture/<int:iD>", views.facture, name="facture"),
     path("messages/", views.messages, name="messages"),
     path("register/", views.register, name="register"),
-    path("convention_etude/<int:iD>", views.convention_etude, name="convention_etude"),
     path("charts/", views.charts, name="charts"),
     path("blank_page/", views.blank_page, name="charts"),
     path("je_detail/", views.je_detail, name='je_detail'),
@@ -32,5 +31,7 @@ urlpatterns = [
     path("remarque_etude/<int:iD>", views.remarque_etude, name="remarque_etude"),
     path("word_template/", views.word_template, name="word_template"),
     path("settings/", views.settings, name="settings"),
-    
+    path("telecharger_document/<str:modelName>/<int:iD>", views.telecharger_document, name="telecharger_document"),
+    path("editer_convention/<int:iD>", views.editer_convention, name="editer_convention"),
+    path("editer_devis/<int:iD>", views.editer_devis, name="editer_devis"),
 ]
