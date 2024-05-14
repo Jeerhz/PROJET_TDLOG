@@ -91,7 +91,7 @@ default_je_data = {
 class Client(models.Model):
     class Type(models.TextChoices):
         GRANDE_ENTREPRISE = 'GRANDE_ENTREPRISE', 'Grande entreprise'
-        SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur public'
+        SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur Public'
         START_UP_ET_TPE = 'START_UP_ET_TPE', 'Start-up et TPE'
         PME = 'PME', 'Petite et moyenne entreprise'
         ETI = 'ETI', 'Entreprise de taille intermédiaire'
@@ -99,7 +99,7 @@ class Client(models.Model):
     class Secteur(models.TextChoices):
         INDUSTRIE = 'INDUSTRIE', 'Industrie'
         DISTRIBUTION = 'DISTRIBUTION', 'Distribution'
-        SECTEUR_PUBLIC = 'SECTEUR PUBLIC', 'Secteur Public'
+        SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur Public'
         CONSEIL = 'CONSEIL', 'Conseil'
         TRANSPORT = 'TRANSPORT', 'Transport'
         NUMERIQUE = 'NUMERIQUE', 'Numerique'
@@ -333,7 +333,7 @@ class Etude(models.Model):
     
     def montant_HT(self):
         phases = Phase.objects.filter(etude=self)
-        total_montant_HT = sum(phase.montant_HT_par_JEH for phase in phases)
+        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases)
         return total_montant_HT
 
     def save(self, *args, **kwargs):
@@ -369,7 +369,9 @@ class Etude(models.Model):
         return len(phases)
     
     def ce_editable(self):
-        return (len(self.responsable.all()) > 0 and (self.resp_qualite is not None))
+        has_responsable = self.responsable is not None
+        has_qualite = self.resp_qualite is not None
+        return has_responsable and has_qualite
     
     def convention_edited(self):
         if self.type_convention == "Convention d'étude":     
@@ -392,7 +394,9 @@ class Etude(models.Model):
             return None
         
     def devis_editable(self):
-        return (len(self.responsable.all()) > 0 and (self.resp_qualite is not None))
+        has_responsable = self.responsable is not None
+        has_qualite = self.resp_qualite is not None
+        return has_responsable and has_qualite
     
     def devis_edited(self):
         return Devis.objects.filter(etude=self).exists()

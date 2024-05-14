@@ -596,7 +596,11 @@
                                             {% if etude.devis_edited%}
                                               <tr>
                                                 <td>Devis</td>
-                                                <td><a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">{{etude.devis.fichier}}</a></td>
+                                                {% if etude.devis.id %}
+                                                <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis {{etude.devis.fichier}}</a>
+                                                {% else %}
+                                                <p class="card-text">Informations manquantes pour générer le devis.</p>
+                                                {% endif %}
                                               </tr>
                                             {% else %}
                                             <tr>

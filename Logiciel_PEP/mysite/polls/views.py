@@ -1087,3 +1087,27 @@ def settings(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+
+
+
+
+
+
+
+def convention_etude(request, iD):
+    if request.user.is_authenticated:
+        try:
+            instance = Etude.objects.get(id=iD)
+
+            client = instance.client
+            context = {"etude": instance, "client": client}
+            template = loader.get_template("polls/ce.html")
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
