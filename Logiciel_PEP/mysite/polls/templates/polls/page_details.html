@@ -389,7 +389,7 @@
                 {% if modelName == "Etude" %}
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 text-center">
-                        <h2>{{ etude.client.nom_societe }} - {{ etude.titre }} - N°{{ etude.numero }}</h2>
+                        <h2>{{ etude.client.nom_societe }} - {{ etude.titre }} - N°{{ etude.id }}</h2>
                     </div>
                     <div class="card-body">
                         <!-- Navigation Tabs -->
@@ -430,7 +430,7 @@
                                             </div>
                                             <div class="card-body">
                                                 <div class="chart-pie">
-                                                    <canvas id="myPieChart"></canvas>
+                                                    <canvas id="PieChartEtude"></canvas>
                                                 </div>
                                                 <div class="text-center small">
                                                     <span><i class="fas fa-circle text-primary"></i> Junior</span>
@@ -837,12 +837,14 @@
                                                     {% if etude.type_convention == "Convention d'étude" %}
                                                         <h5 class="card-title">Convention d'Étude</h5>
                                                         
-                                                        {% if etude.convention_edited %}
+                                                        <!-- {% if etude.convention_edited %}
                                                         <a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">Télécharger la convention</a>
                                                         {% else %}
                                                         <p class="card-text">{% if etude.ce_editable %}Préparez la convention d'étude pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
-                                                        {% endif %}
-                                                        <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                        {% endif %} -->
+                                                        <!-- <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a> -->
+                                                        <p class="card-text">Générer la Convention d'Etude.</p>
+                                                        <a href="{% url 'convention_etude' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la CE</a>
                                                     {% elif etude.type_convention == "Convention cadre" %}
                                                         <h5 class="card-title">Convention Cadre</h5>
                                                             
@@ -875,7 +877,11 @@
                                                     <h5 class="card-title">Devis</h5>
                                                     
                                                     {% if etude.convention_edited %}
+                                                    {% if etude.devis.id %}
                                                     <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis</a>
+                                                    {% else %}
+                                                    <p class="card-text">Informations manquantes pour générer le devis.</p>
+                                                    {% endif %}                                                    
                                                     {% else %}
                                                     <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
                                                     {% endif %}
@@ -895,7 +901,7 @@
                                 <!-- Fin Infos Entreprises -->
 
                                 <!-- Début Infos Élèves -->
-                                {% for eleve in etude.students.all %}
+                                {% for eleve in intervenants %}
                                 <div class="card shadow h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <div>{{eleve}}</div>
@@ -1112,12 +1118,12 @@
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ client.nom_societe }}</li>
                                 <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ client.raison_sociale }}</li>
+                                <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité:</strong> {{ client.secteur }}</li>
                                 <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }}</li>
                                 <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ client.ville }}</li>
                                 <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ client.code_postal }}</li>
                                 <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ client.country }}</li>
-                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Titre du représentant:</strong> {{ client.titre_representant_display }}</li>
-                                <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
+                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
                                 <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ client.fonction_representant }}</li>                                        
                             </ul>
                         </div>     
@@ -1161,8 +1167,9 @@
                                         <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
                                         <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
                                         <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
+                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}
                                         <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
+                                        <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Departement:</strong> {{ eleve.departement }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1393,7 +1400,7 @@
         
     <!-- Page level custom scripts -->
     <script src="{% static 'polls/js/demo/chart-area-demo.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-pie-demo.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-etude.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

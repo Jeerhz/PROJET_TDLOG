@@ -462,18 +462,16 @@
                                             <th class="text-center">Titre</th>
                                             <th class="text-center">Client</th>
                                             <th class="text-center">Debut</th>
-                                            <th class="text-center">Fin</th>
                                             <th class="text-center">Responsable</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody">
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                         {% for etude in etude_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id %}&quot;">
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
                                                 <td class="text-center"> {{ etude.titre }} </td>
                                                 <td class="text-center"> {{ etude.client }} </td>
-                                                <td class="text-center"> {{ etude.begin }} </td>
-                                                <td class="text-center"> {{ etude.end }} </td>
+                                                <td class="text-center"> {{ etude.debut }} </td>
                                                 <td class="text-center"> {{ etude.responsable }} </td>
                                             </tr>
                                             {% endfor %}

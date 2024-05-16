@@ -26,6 +26,13 @@ def assignation(eleve, etude):
 @register.filter(name='JEH')
 def JEH(eleve, etude):
     queryset = AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude)
-    nb_total_JEH = queryset.aggregate(total_sum=Sum('nombre_JEH'))['total_sum']
-    montant_total = sum(obj.retribution_brute_totale for obj in queryset)
-    return str(nb_total_JEH)+" JEH pour un montant de "+str(montant_total)+"€ HT"
+    nb_total_JEH = queryset.aggregate(total_sum=Sum('nombre_JEH'))['total_sum'] or 0
+
+    # Calculate the total monetary amount manually using the model's method
+    montant_total = sum(assignment.retribution_brute_totale() for assignment in queryset)
+
+    return f"{nb_total_JEH} JEH pour un montant de {montant_total:.2f}€ HT"
+
+@register.filter(name='get_item')
+def get_item(dictionary, key):
+    return dictionary.get(key)

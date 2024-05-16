@@ -1,5 +1,6 @@
 import json
 import os
+import openpyxl
 from docxtpl import DocxTemplate
 
 from io import BytesIO
@@ -58,15 +59,21 @@ def index(request):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
         user_je = request.user.je
-        chiffres_affaires = request.user.chiffres_affaires
         monthly_sums = calculate_monthly_sums(user_je)
+        chiffre_affaire = monthly_sums[-1]
         etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')[:5]
+        nombre_mission_terminee = Etude.objects.filter(je=user_je, status='TERMINEE').count()
+        nombre_mission_en_cours = Etude.objects.filter(je=user_je, status='EN_COURS').count()
+        nombre_mission_en_negociation = Etude.objects.filter(je=user_je, status='EN_NEGOCIATION').count()
         template = loader.get_template("polls/index.html")
         context = {
+            "nombre_mission_en_cours": nombre_mission_en_cours,
+            "nombre_mission_terminee": nombre_mission_terminee,
+            "nombre_mission_en_negociation": nombre_mission_en_negociation,
             "monthly_sums": monthly_sums,
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "chiffre_affaires": chiffres_affaires,
+            "chiffre_affaire": chiffre_affaire,
             "etudes_recentes":etudes_recentes,
         }
 
@@ -262,12 +269,14 @@ def details(request, modelName, iD):
             phases = None
             factures = None
             etude = None  # Initialisez `etude` à None par défaut
+            intervenants = None
             client = None
             eleve = None
             if modelName == "Etude":
+                etude = instance
                 phases = Phase.objects.filter(etude=instance).order_by('date_debut')
                 factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
-                etude = instance
+                intervenants = etude.get_li_students()
             if modelName == "Student":
                 eleve = instance
             if modelName == "Client":
@@ -287,6 +296,7 @@ def details(request, modelName, iD):
                 context["etude"] = etude
                 context["phases"] = phases
                 context["factures"] = factures
+                context["intervenants"] = intervenants
                 context["phase_form"] = AddPhase()
                 context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
@@ -453,8 +463,95 @@ def stat_KPI(request):
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
         monthly_sums = calculate_monthly_sums(user_je)
+        chiffre_affaire_total = monthly_sums[-1]
+        chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
+        chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
+        chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
+        nombre_eleve = Student.objects.filter(je=user_je).count()
+        nombre_client = Client.objects.filter(je=user_je).count()
+        nombre_etude = Etude.objects.filter(je=user_je).count()
+
+        dictionnaire_CA_par_dept = {
+            'IMI': chiffre_affaire_par_departement[0],
+            'GCC': chiffre_affaire_par_departement[1],
+            'GMM': chiffre_affaire_par_departement[2],
+            'SEGF': chiffre_affaire_par_departement[3],
+            'VET': chiffre_affaire_par_departement[4],
+            '1A': chiffre_affaire_par_departement[5],
+            'AUTRE': chiffre_affaire_par_departement[6],
+        }
+
+        dictionnaire_CA_par_secteur = {
+            'INDUSTRIE': chiffre_affaire_par_secteur[0],
+            'DISTRIBUTION': chiffre_affaire_par_secteur[1],
+            'SECTEUR_PUBLIC': chiffre_affaire_par_secteur[2],
+            'CONSEIL': chiffre_affaire_par_secteur[3],
+            'TRANSPORT': chiffre_affaire_par_secteur[4],
+            'NUMERIQUE': chiffre_affaire_par_secteur[5],
+            'BTP': chiffre_affaire_par_secteur[6],
+            'AUTRE': chiffre_affaire_par_secteur[7],
+        }
+
+        dictionnaire_CA_par_type = {
+            'GRANDE_ENTREPRISE': chiffre_affaire_par_type[0],
+            'SECTEUR_PUBLIC': chiffre_affaire_par_type[1],
+            'START_UP_ET_TPE': chiffre_affaire_par_type[2],
+            'PME': chiffre_affaire_par_type[3],
+            'ETI': chiffre_affaire_par_type[4],
+            'ASSOCIATION': chiffre_affaire_par_type[5],
+        }
+        
+        # Définition des couleurs pour chaque département
+        departements_colors = {
+            'IMI': '#FF6633',
+            'GCC': '#FFB399',
+            'GMM': '#FF33FF',
+            'SEGF': '#FFFF99',
+            'VET': '#00B3E6',
+            '1A': '#E6B333',
+            'AUTRE': '#3366E6',
+        }
+
+        # Définition des couleurs pour chaque secteur
+        secteurs_colors = {
+            'INDUSTRIE': '#0071C5',
+            'DISTRIBUTION': '#FFD700',
+            'SECTEUR_PUBLIC': '#DC143C',
+            'CONSEIL': '#008B8B',
+            'TRANSPORT': '#B8860B',
+            'NUMERIQUE': '#4682B4',
+            'BTP': '#DAA520',
+            'AUTRE': '#808080',
+        }
+
+        types_colors = {
+            'GRANDE_ENTREPRISE': '#4A90E2',  # Bleu lumineux
+            'SECTEUR_PUBLIC': '#D0021B',     # Rouge vif
+            'START_UP_ET_TPE': '#7B8D8E',    # Gris ardoise
+            'PME': '#F5A623',                # Orange safran
+            'ETI': '#8B572A',                # Brun cuir
+            'ASSOCIATION': '#50E3C2',        # Turquoise clair
+        }
+
+        pourcentage_par_departement = {dept: ca / (chiffre_affaire_total + 1e-12) * 100 for dept, ca in dictionnaire_CA_par_dept.items()}
+        pourcentage_par_secteur = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_secteur.items()}
+        pourcentage_par_type = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_type.items()}
+
         template = loader.get_template("polls/stat_KPI.html")
         context = {
+            "nombre_eleve": nombre_eleve,
+            "nombre_client": nombre_client,
+            "nombre_etude": nombre_etude,
+            "secteurs_colors": secteurs_colors,
+            "pourcentage_par_secteur": pourcentage_par_secteur,
+            "chiffre_affaire_par_secteur": chiffre_affaire_par_secteur,
+            "departements_colors": departements_colors,
+            "types_colors": types_colors,
+            "pourcentage_par_type": pourcentage_par_type,
+            "pourcentage_par_departement": pourcentage_par_departement,
+            "chiffre_affaire_total": chiffre_affaire_total,
+            "chiffre_affaire_par_departement": chiffre_affaire_par_departement,
+            "chiffre_affaire_par_type": chiffre_affaire_par_type,
             "monthly_sums": monthly_sums,
             "liste_messages": liste_messages,
             "message_count": message_count,
@@ -640,6 +737,8 @@ def telecharger_document(request, modelName, iD):
     return HttpResponse(template.render(context, request))
 
 
+#---- FONCTIONS POUR STATISTIQUES ------------
+
 def calculate_monthly_sums(user_je):
     september = 9
     monthly_sums = []
@@ -650,16 +749,58 @@ def calculate_monthly_sums(user_je):
         current_month = (month + september) % 12
         etudes = Etude.objects.filter(je=user_je, debut__month=current_month)
 
-        # Calculate the sum of montant_HT for these objects using Python
         total_montant_HT = sum(etude.montant_HT() for etude in etudes)
         monthly_sums.append(total_montant_HT)
 
     for k in range(12):
         month_ca += monthly_sums[k]
         res.append(month_ca)
-
     return res
 
+
+
+def calculate_chiffre_affaire_par_departement(user_je):
+    revenues = [0]*7
+    department_index = {"IMI":0, "GCC":1, "GMM":2, "SEGF":3, "VET":4, "1A":5, "AUTRE":6}
+    studies = Etude.objects.filter(je=user_je)
+    
+    for study in studies:
+        if study.montant_HT() > 0:
+            phases = Phase.objects.filter(etude=study)
+            students = study.get_li_students()
+            
+            for student in students:
+                for phase in phases:
+                    revenues[department_index[student.departement]] += phase.get_montant_HT(student)
+
+    return revenues
+
+def calculate_chiffre_affaire_par_type(user_je):
+    revenues = [0]*6
+    type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
+    studies = Etude.objects.filter(je=user_je)
+    for study in studies:
+        montant_HT = study.montant_HT()
+        if montant_HT > 0: 
+            revenues[type_index[study.client._type]] += montant_HT
+    return revenues
+
+
+def calculate_chiffre_affaire_par_secteur(user_je):
+    revenues = [0]*8
+    secteur_index = {'INDUSTRIE':0, 'DISTRIBUTION':1, 'SECTEUR_PUBLIC':2, 'CONSEIL':3, 'TRANSPORT':4, 'NUMERIQUE':5, 'BTP':6, 'AUTRE':7}
+    studies = Etude.objects.filter(je=user_je)
+    for study in studies:
+        montant_HT = study.montant_HT()
+        if montant_HT > 0:
+            revenues[secteur_index[study.client.secteur]] += montant_HT
+    return revenues
+
+
+
+
+
+#-----------------------
 
 def charts(request):
     if request.user.is_authenticated:
@@ -942,6 +1083,30 @@ def settings(request):
             "user": request.user,
         }
 
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+
+
+
+
+
+
+
+def convention_etude(request, iD):
+    if request.user.is_authenticated:
+        try:
+            instance = Etude.objects.get(id=iD)
+
+            client = instance.client
+            context = {"etude": instance, "client": client}
+            template = loader.get_template("polls/ce.html")
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
