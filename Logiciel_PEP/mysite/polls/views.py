@@ -702,14 +702,14 @@ def search_suggestions(request):
         suggestions_client = Client.objects.filter(je=request.user.je)
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
-            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
+            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__membre__student__first_name__icontains=keyword) | Q(responsable__membre__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
             suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword))
             suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
         count_client = suggestions_client.count()
         count_student = suggestions_student.count()
         suppression_etude_c=max(1, count_client)
         suppression_etude_s=max(1, count_student)
-        suggestions_etude=suggestions_etude.order_by('-begin')[:5-suppression_etude_c-suppression_etude_s]
+        suggestions_etude=suggestions_etude.order_by('-debut')[:5-suppression_etude_c-suppression_etude_s]
         nombre_etude = suggestions_etude.count()
         suggestions_client = suggestions_client[:5-nombre_etude-suppression_etude_s]
         nombre_client = suggestions_client.count()
@@ -743,7 +743,7 @@ def search(request):
         combined_res_client = Client.objects.none()
         combined_res_student = Student.objects.none()
         for keyword in keywords:
-            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
+            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__membre__student__first_name__icontains=keyword) | Q(responsable__membre__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
             liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword)))
             liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
         for i in range(len(liste_res_etude)):
