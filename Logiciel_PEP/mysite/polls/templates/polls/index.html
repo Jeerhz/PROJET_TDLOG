@@ -613,7 +613,7 @@
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ec_{{etude.id}}">
-                                        <td colspan="8">
+                                        <td colspan="{{user.parametres.nombre_colonnes}}">
                                           <table class="table table-bordered">
                                             <tbody>
                                             {% if etude.convention_edited%}
@@ -734,7 +734,7 @@
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                        <td colspan="8">
+                                        <td colspan="{{user.parametres.nombre_colonnes}}">
                                         <table class="table table-bordered">
                                             <tbody>
                                             {% if etude.convention_edited%}

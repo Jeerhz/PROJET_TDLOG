@@ -294,6 +294,15 @@ class ParametresUtilisateur(models.Model):
     def __str__(self):
         return "Paramètres "+self.membre.__str__()
     
+    def nombre_colonnes(self):
+        boolean_fields = [field for field in self._meta.fields if isinstance(field, models.BooleanField)]
+        count = 0
+        for boolean_field in boolean_fields:
+            field_name = boolean_field.name
+            if getattr(self, field_name):
+                count += 1
+        return count
+    
 
         
 
