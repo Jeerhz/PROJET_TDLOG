@@ -270,11 +270,32 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
+        if self.parametres is None:
+            param = ParametresUtilisateur(membre=self)
+            param.save()
 
 # alors en gros dans Etude tu veux 1) L'état de l'étude en négociation / Signé / En cours / Terminée  2) Les étapes d'avancement
 # de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
 # afficher le planning de l'étude
 
+class ParametresUtilisateur(models.Model):
+    membre = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="parametres")
+    param_statut_etude_ec = models.BooleanField(default=True, verbose_name="En cours")
+    param_statut_etude_ed = models.BooleanField(default=False, verbose_name="En discussion")
+    param_statut_etude_t = models.BooleanField(default=False, verbose_name="Terminée")
+    param_col_etude_numero = models.BooleanField(default=True, verbose_name="Numéro")
+    param_col_etude_titre = models.BooleanField(default=True, verbose_name="Titre")
+    param_col_etude_client = models.BooleanField(default=True, verbose_name="Client")
+    param_col_etude_responsable = models.BooleanField(default=True, verbose_name="Responsable")
+    param_col_etude_montant_HT = models.BooleanField(default=False, verbose_name="Montant HT")
+    param_col_etude_remarque = models.BooleanField(default=True, verbose_name="Remarque")
+    param_col_etude_avancement = models.BooleanField(default=True, verbose_name="Avancement")
+
+    def __str__(self):
+        return "Paramètres "+self.membre.__str__()
+    
+
+        
 
 class Etude(models.Model):
     class Status(models.TextChoices):
@@ -347,7 +368,12 @@ class Etude(models.Model):
         if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
             raise ValueError('Begin must be set before end.')
         if self.numero is None:
-            self.numero = Etude.objects.count() + 1
+            tous_numeros = Etude.objects.values_list("numero")
+            if(len(tous_numeros==0)):
+                maximum = 0
+            else:
+                maximum = max(tous_numeros)
+            self.numero = maximum + 1
         
         super().save(*args, **kwargs)
     
@@ -407,6 +433,16 @@ class Etude(models.Model):
             return devis[0]
         else:
             None
+
+    def progress_percentage(self):
+        total_duration = self.duree_semaine * 7
+        if total_duration>0:
+            progress = (timezone.now().date() - self.debut).days
+            progress_percentage = (progress/total_duration)*100
+            progress_percentage = int(max(min(100, progress_percentage), 0))
+        else :
+            progress_percentage = 0
+        return progress_percentage
 
 class Facture(models.Model):
     class Status(models.TextChoices):
@@ -722,7 +758,7 @@ class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['numero','je', 'students', 'id_url', 'remarque']
+        exclude = ['numero','je', 'id_url', 'remarque']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
@@ -842,6 +878,22 @@ class AddIntervenant(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+class SetParametresUtilisateur(forms.ModelForm):
+    class Meta:
+        model = ParametresUtilisateur
+        exclude = ['membre']
+    def statut_etude(self):
+        return ['param_statut_etude_ec', 'param_statut_etude_ed', 'param_statut_etude_t']
+        
+    def col_etude(self):
+        return ['param_col_etude_numero', 'param_col_etude_titre', 'param_col_etude_client', 'param_col_etude_responsable', 'param_col_etude_montant_HT', 'param_col_etude_avancement']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'custom-control-input'
+
 
 class Recrutement(forms.Form):
     prenom = forms.CharField(max_length = 50)

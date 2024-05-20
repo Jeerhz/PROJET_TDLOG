@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import JE, Client, Etude, Student, Member, Message, Phase, AssignationJEH, Candidature, Facture, Notification, Devis, BonCommande, ConventionCadre, ConventionEtude
+from .models import JE, Client, Etude, Student, Member, Message, Phase, AssignationJEH, Candidature, Facture, Notification, Devis, BonCommande, ConventionCadre, ConventionEtude, ParametresUtilisateur
 
 admin.site.register(JE)
 
@@ -18,6 +18,7 @@ admin.site.register(ConventionCadre)
 admin.site.register(ConventionEtude)
 admin.site.register(BonCommande)
 admin.site.register(Devis)
+admin.site.register(ParametresUtilisateur)
 
 
 

@@ -43,6 +43,8 @@ from .models import (
     ConventionEtude,
     ConventionCadre,
     Devis,
+    SetParametresUtilisateur,
+    ParametresUtilisateur,
 )
 
 
@@ -64,7 +66,9 @@ def index(request):
         etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')[:5]
         nombre_mission_terminee = Etude.objects.filter(je=user_je, status='TERMINEE').count()
         nombre_mission_en_cours = Etude.objects.filter(je=user_je, status='EN_COURS').count()
-        nombre_mission_en_negociation = Etude.objects.filter(je=user_je, status='EN_NEGOCIATION').count()
+        etudes_en_discussion = Etude.objects.filter(je=user_je, status='EN_NEGOCIATION')
+        nombre_mission_en_negociation = etudes_en_discussion.count()
+        etudes_en_discussion = etudes_en_discussion.order_by('-debut')[:5]
         template = loader.get_template("polls/index.html")
         context = {
             "nombre_mission_en_cours": nombre_mission_en_cours,
@@ -75,6 +79,7 @@ def index(request):
             "message_count": message_count,
             "chiffre_affaire": chiffre_affaire,
             "etudes_recentes":etudes_recentes,
+            "etudes_en_discussion":etudes_en_discussion,
         }
 
     else:
@@ -843,7 +848,7 @@ def search_suggestions(request):
         suggestions_client = Client.objects.filter(je=request.user.je)
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
-            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__membre__student__first_name__icontains=keyword) | Q(responsable__membre__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
+            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
             suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword))
             suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
         count_client = suggestions_client.count()
@@ -884,7 +889,7 @@ def search(request):
         combined_res_client = Client.objects.none()
         combined_res_student = Student.objects.none()
         for keyword in keywords:
-            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__membre__student__first_name__icontains=keyword) | Q(responsable__membre__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
+            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
             liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword)))
             liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
         for i in range(len(liste_res_etude)):
@@ -1077,21 +1082,38 @@ def settings(request):
         ).count()
         
         template = loader.get_template("polls/settings.html")
-        context = {
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "user": request.user,
-        }
-
+        if request.method == 'GET':
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "user": request.user,
+                "form_param": SetParametresUtilisateur(instance=request.user.parametres)
+            }
+        else :
+            try:
+                fetchform = request.POST
+                param = SetParametresUtilisateur(fetchform, instance=request.user.parametres)
+                param.save()
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "user": request.user,
+                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
+                    "alert_message":"Modifications enregistrées!"
+                }
+            except:
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "user": request.user,
+                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
+                    "alert_message":"La modification n'a pas aboutie!"
+                }
+        return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
-
-
-
-
 
 
 

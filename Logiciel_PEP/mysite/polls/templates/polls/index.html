@@ -541,8 +541,8 @@
                 </div>
                     
 
-                
-
+                {% if user.parametres.param_statut_etude_ec %}
+                <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-12 ml-4">
@@ -555,30 +555,64 @@
                                 <thead style="background-color: #ffffff;">
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
+                                        {% if user.parametres.param_col_etude_numero %}
                                         <th scope="col" style="width: 3%;">Numéro</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_titre %}
                                         <th scope="col">Titre</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
                                         <th scope="col">Budget HT</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_avancement %}
+                                        <th scope="col">Avancement</th>
+                                        {% endif%}
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for etude in etudes_recentes %}
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                        {% if user.parametres.param_col_etude_numero %}
                                         <td class="align-middle"><strong>{{etude.numero}}</strong></td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_titre %}
                                         <td class="align-middle">{{etude.titre}}</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle">
                                             {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
                                         </td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
                                         <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_avancement %}
+                                        <td class="align-middle">
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ etude.progress_percentage }}%;" aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ etude.progress_percentage }}%</div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
-                                    <tr class="collapse" id="sec_table_{{etude.id}}">
+                                    <tr class="collapse" id="sec_table_ec_{{etude.id}}">
                                         <td colspan="8">
                                           <table class="table table-bordered">
                                             <tbody>
@@ -590,7 +624,7 @@
                                             {% else %}
                                             <tr>
                                                 <td>Convention</td>
-                                                <td><i class="fas fa-ban">Non édité</i></td>
+                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
                                               </tr>
                                             {% endif %}
                                             {% if etude.devis_edited%}
@@ -605,7 +639,7 @@
                                             {% else %}
                                             <tr>
                                                 <td>Devis</td>
-                                                <td><i class="fas fa-ban">Non édité</i></td>
+                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
                                               </tr>
                                             {% endif %}
                                             {% for facture in etude.factures.all %}
@@ -618,14 +652,136 @@
                                           </table>
                                         </td>
                                       </tr>
+    
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>               
+                <!-- /.container-fluid -->
+                {% endif %}
+
+                {% if user.parametres.param_statut_etude_ed %}
+                <!-- Beginning of container-fluid -->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 ml-4">
+                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
+                        </div>
+                    </div>
+                    <div class="card mb-4 ml-4 mr-3 shadow">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center">
+                                <thead style="background-color: #ffffff;">
+                                    <tr>
+                                        <th scope="col" style="width: 5%;"></th>
+                                        {% if user.parametres.param_col_etude_numero %}
+                                        <th scope="col" style="width: 3%;">Numéro</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_titre %}
+                                        <th scope="col">Titre</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_client %}
+                                        <th scope="col">Client</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_responsable %}
+                                        <th scope="col">Suiveur</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <th scope="col">Budget HT</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_remarque %}
+                                        <th scope="col">Remarque</th>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_avancement %}
+                                        <th scope="col">Avancement</th>
+                                        {% endif%}
+                                        <th scope="col" style="width: 5%;">Global</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for etude in etudes_en_discussion %}
+                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                        {% if user.parametres.param_col_etude_numero %}
+                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_titre %}
+                                        <td class="align-middle">{{etude.titre}}</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_client %}
+                                        <td class="align-middle">{{etude.client}}</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_responsable %}
+                                        <td class="align-middle">
+                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
+                                        </td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_remarque %}
+                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
+                                        {% endif %}
+                                        {% if user.parametres.param_col_etude_avancement %}
+                                        <td class="align-middle">
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ etude.progress_percentage }}%;" aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ etude.progress_percentage }}%</div>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
+                                    </tr>
+                                    <tr class="collapse" id="sec_table_ed_{{etude.id}}">
+                                        <td colspan="8">
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                            {% if etude.convention_edited%}
+                                            <tr>
+                                                <td>{{etude.type_convention}}</td>
+                                                <td>{% if etude.type_convention|escape == "Convention d'étude"|escape %}<a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% else %}<a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% endif %}</td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td>Convention</td>
+                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if etude.devis_edited%}
+                                            <tr>
+                                                <td>Devis</td>
+                                                {% if etude.devis.id %}
+                                                <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis {{etude.devis.fichier}}</a>
+                                                {% else %}
+                                                <p class="card-text">Informations manquantes pour générer le devis.</p>
+                                                {% endif %}
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td>Devis</td>
+                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
+                                            </tr>
+                                            {% endif %}
+                                            {% for facture in etude.factures.all %}
+                                            <tr>
+                                                <td>{{ facture.type_facture }}</td>
+                                                <td>{% if facture.fichier %}<a href="{% url 'telecharger_document' modelName='Facture' iD=facture.id %}">{{facture.fichier}}</a>{% else %}<i class="fas fa-ban">Non édité</i>{% endif %}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        </td>
+                                    </tr>
 
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>                
-            <!-- /.container-fluid -->
+                </div>     
+                <!-- End of container-fluid -->
+                {% endif %}
             </div>
             <!-- End of Main Content -->
         <!-- Footer -->
