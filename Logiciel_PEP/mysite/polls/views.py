@@ -374,9 +374,9 @@ def input(request, modelName, iD):
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
-            model = apps.get_model(app_label="polls", model_name=modelName)
-            fetchform = model.retrieveForm(request.POST)
-            if fetchform.is_valid():
+                model = apps.get_model(app_label="polls", model_name=modelName)
+                fetchform = model.retrieveForm(request.POST)
+            #if fetchform.is_valid():
                 fetchform.save(commit=True, expediteur=request.user)
                 context = {
                     "form": fetchform,
@@ -387,7 +387,7 @@ def input(request, modelName, iD):
                     "liste_messages": liste_messages,
                     "message_count": message_count,
                 }
-            else:
+            #else:
                 context = {
                     "form": fetchform,
                     "title": str(fetchform),
@@ -634,8 +634,6 @@ def editer_convention(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
-            if not instance.ce_editable():
-                raise ValueError("Informations manquantes pour l'édition de la CE.")
             client = instance.client
             if instance.type_convention == "Convention d'étude":
                 model = ConventionEtude
@@ -645,9 +643,13 @@ def editer_convention(request, iD):
                 template = DocxTemplate("polls\\templates\\polls\\Convention_Cadre.docx")
             else:
                 raise ValueError("Type de convention non défini.")
-            ce = model(etude=instance)
-            ce.save()
-            responsable = instance.responsable.all()[0]
+            if instance.convention_edited() :
+                ce = instance.convention()
+            else :
+                ce = model(etude=instance)
+                ce.save()
+
+            responsable = instance.responsable
             context = {"etude": instance, "client": client, "ce":ce, "responsable":responsable}
             # Load the template
 
@@ -662,34 +664,34 @@ def editer_convention(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"Convention_Etude_{ce.__str__()}.docx"
-            ce.fichier.save(filename, ContentFile(output.read()))
-            ce.save()
-
-            # Return the filled document as a FileResponse
-
-            return JsonResponse({"message":"The document has been created and saved successfully."})
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
         except ValueError as ve:
-            return JsonResponse({"message":str(ve)})
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
         except :
-            return JsonResponse({"message":"Un problème a été détecté dans la base de données."})
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
 
     else:
         template = loader.get_template("polls/login.html")
         context = {}
-        return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request))
     
 def editer_devis(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
-            if not instance.devis_editable():
-                raise ValueError("Informations manquantes pour l'édition de la CE.")
             client = instance.client
-            devis = Devis(etude=instance)
-            devis.save()
             template = DocxTemplate("polls\\templates\\polls\\Devis_V2.docx")
-            responsable = instance.responsable.all()[0]
-            context = {"etude": instance, "client": client, "devis":devis, "responsable":responsable}
+            if instance.devis_edited() :
+                devis = instance.devis
+            else :
+                devis = Devis(etude=instance)
+                devis.save()
+            responsable = instance.responsable
+            context = {"etude": instance, "client": client, "responsable":responsable}
             # Load the template
 
             # Render the document
@@ -703,38 +705,12 @@ def editer_devis(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"Devis_{devis.__str__()}.docx"
-            devis.fichier.save(filename, ContentFile(output.read()))
-            devis.save()
-
-            # Return the filled document as a FileResponse
-
-            return JsonResponse({"message":"The document has been created and saved successfully."})
-        except ValueError as ve:
-            return JsonResponse({"message":str(ve)})
-        except :
-            return JsonResponse({"message":"Un problème a été détecté dans la base de données."})
-
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
-    
-def telecharger_document(request, modelName, iD):
-    if request.user.is_authenticated:
-        try:
-            model = apps.get_model(app_label="polls", model_name=modelName)
-            document = model.objects.get(id=iD)
-
-            # Save the "fichier" field of the CE
-            filename = f"{document.__str__()}.docx"
-
-            # Return the filled document as a FileResponse
-            response = FileResponse(document.fichier, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except:
+        except :
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Le document n'a pas pu être transmis."}
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
 
     else:
         template = loader.get_template("polls/login.html")

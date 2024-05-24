@@ -404,7 +404,7 @@
                         <div class="card-body">
                         
                             <p>{{message}}</p>
-                            <form action="{% url 'input' modelName=modelName iD=iD %}" method="post">
+                            <form action="{% url 'input' modelName=modelName iD=iD %}" method="post" enctype="multipart/form-data">
                             <dl class="dl-horizontal">
                                 {% csrf_token %}
         

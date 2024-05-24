@@ -117,7 +117,7 @@ class Client(models.Model):
     nom_representant = models.CharField(max_length = 100)
     fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    logo = models.ImageField(upload_to=DOC_STORAGE)
+    logo = models.ImageField(upload_to=DOC_STORAGE, default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     secteur = models.CharField(
         max_length=20,
         choices=Secteur.choices,
@@ -434,14 +434,8 @@ class Etude(models.Model):
         return has_responsable and has_qualite
     
     def devis_edited(self):
-        return Devis.objects.filter(etude=self).exists()
-    
-    def devis(self):
-        devis = Devis.objects.filter(etude=self)
-        if(devis.exists()):
-            return devis[0]
-        else:
-            None
+        return self.devis.exists()
+
 
     def progress_percentage(self):
         total_duration = self.duree_semaine * 7
@@ -466,7 +460,7 @@ class Facture(models.Model):
     numero_facture = models.IntegerField(default=5) 
     fac_frais=models.FloatField(default=0)
     montant_HT=models.FloatField(default=30)
-    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    remarque = models.TextField(blank=True, null=True)
     def fac_JEH(self):
         return self.etude.montant_HT() * (self.pourcentage_JEH / 100)
     def save(self, *args, **kwargs):
@@ -474,15 +468,17 @@ class Facture(models.Model):
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
-        self.numero_facture = len(Facture.objects.filter(etude=etude))+1
+        num_fac = len(Facture.objects.filter(etude=etude))+1
+        self.numero_facture = self.etude.numero*100+num_fac
         self.montant_HT=self.etude.montant_HT() * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         super(Facture, self).save(*args, **kwargs)
 
 
 class Devis(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="devis")
-    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
     numero = models.IntegerField()
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if (self.numero is None):
@@ -493,33 +489,44 @@ class Devis(models.Model):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}D"
+    
+    def signe(self):
+        return (self.date_signature is not None)
 
 class ConventionEtude(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_etude")
-    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}CE"
+    
+    def signe(self):
+        return (self.date_signature is not None)
 
 class ConventionCadre(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_cadre")
-    fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}CC"
+    
+    def signe(self):
+        return (self.date_signature is not None)
 
 class BonCommande(models.Model):
     convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
     numero = models.IntegerField()
-    fichier = fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    remarque = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if (self.numero is None):
-            self.numero = len(self.convention_cadre.bons_commande.all())+1
+            self.numero = self.convention_cadre.etude.numero*100 + len(self.convention_cadre.bons_commande.all())+1
         super(BonCommande, self).save(*args, **kwargs)
 
 
@@ -851,7 +858,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'remarque']
     def __str__(self):
         return "Information de la Facture"
     def name(self):

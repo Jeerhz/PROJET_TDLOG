@@ -837,23 +837,21 @@
                                                     {% if etude.type_convention == "Convention d'étude" %}
                                                         <h5 class="card-title">Convention d'Étude</h5>
                                                         
-                                                        <!-- {% if etude.convention_edited %}
-                                                        <a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">Télécharger la convention</a>
+                                                        {% if etude.convention_edited %}
+                                                        <p class="card-text">{% if etude.convention.date_signature %}La convention a été signée le {{ etude.convention.date_signature }}.{% else %}Une convention a déjà été éditée pour cette étude.{% endif %}</p>
                                                         {% else %}
-                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention d'étude pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
-                                                        {% endif %} -->
-                                                        <!-- <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a> -->
-                                                        <p class="card-text">Générer la Convention d'Etude.</p>
-                                                        <a href="{% url 'convention_etude' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
+                                                        {% endif %}
+                                                        <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a>
                                                     {% elif etude.type_convention == "Convention cadre" %}
                                                         <h5 class="card-title">Convention Cadre</h5>
                                                             
                                                         {% if etude.convention_edited %}
-                                                        <a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">Télécharger la convention</a>
+                                                        <p class="card-text">{% if etude.convention.date_signature %}La convention a été signée le {{ etude.convention.date_signature }}.{% else %}Une convention cadre a déjà été éditée pour cette étude.{% endif %}</p>
                                                         {% else %}
                                                         <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                         {% endif %}
-                                                        <a href="{% url 'editer_convention' iD %}" onclick="generer(event)" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
+                                                        <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
                                                     {% else %}
                                                         <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                     {% endif %}
@@ -876,16 +874,12 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Devis</h5>
                                                     
-                                                    {% if etude.convention_edited %}
-                                                    {% if etude.devis.id %}
-                                                    <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis</a>
-                                                    {% else %}
-                                                    <p class="card-text">Informations manquantes pour générer le devis.</p>
-                                                    {% endif %}                                                    
-                                                    {% else %}
+                                                    {% if etude.devis_edited %}                                                      
+                                                    <p class="card-text">{% if etude.devis.date_signature %}Le devis a été signé le {{etude.devis.date_signature}}.{% else %}Un devis a déjà été édité pour cette étude.{% endif %}</p>
+                                                    {% else %}                                                    
                                                     <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
                                                     {% endif %}
-                                                    <a href="{% url 'editer_devis' iD %}" onclick="generer(event)" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-primary disabled{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
+                                                    <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
                                                 </div>
                                             </div>
                                         </div>    

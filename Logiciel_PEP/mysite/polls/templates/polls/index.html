@@ -614,42 +614,27 @@
                                     </tr>
                                     <tr class="collapse" id="sec_table_ec_{{etude.id}}">
                                         <td colspan="{{user.parametres.nombre_colonnes}}">
-                                          <table class="table table-bordered">
-                                            <tbody>
-                                            {% if etude.convention_edited%}
-                                              <tr>
-                                                <td>{{etude.type_convention}}</td>
-                                                <td>{% if etude.type_convention|escape == "Convention d'étude"|escape %}<a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% else %}<a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% endif %}</td>
-                                              </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td>Convention</td>
-                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
-                                              </tr>
-                                            {% endif %}
-                                            {% if etude.devis_edited%}
-                                              <tr>
-                                                <td>Devis</td>
-                                                {% if etude.devis.id %}
-                                                <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis {{etude.devis.fichier}}</a>
-                                                {% else %}
-                                                <p class="card-text">Informations manquantes pour générer le devis.</p>
-                                                {% endif %}
-                                              </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
-                                              </tr>
-                                            {% endif %}
-                                            {% for facture in etude.factures.all %}
-                                            <tr>
-                                                <td>{{ facture.type_facture }}</td>
-                                                <td>{% if facture.fichier %}<a href="{% url 'telecharger_document' modelName='Facture' iD=facture.id %}">{{facture.fichier}}</a>{% else %}<i class="fas fa-ban">Non édité</i>{% endif %}</td>
-                                              </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                          </table>
+                                            <table class="table table-bordered">
+                                                <tbody>
+                                                <tr>
+                                                    <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
+                                                    <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
+                                                    <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Devis</td>
+                                                    <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
+                                                    <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
+                                                </tr>
+                                                {% for facture in etude.factures.all %}
+                                                <tr>
+                                                    <td>{{ facture.type_facture }}</td>
+                                                    <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
+                                                    <td>{{facture.remarque}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </td>
                                       </tr>
     
@@ -737,36 +722,21 @@
                                         <td colspan="{{user.parametres.nombre_colonnes}}">
                                         <table class="table table-bordered">
                                             <tbody>
-                                            {% if etude.convention_edited%}
                                             <tr>
-                                                <td>{{etude.type_convention}}</td>
-                                                <td>{% if etude.type_convention|escape == "Convention d'étude"|escape %}<a href="{% url 'telecharger_document' modelName='ConventionEtude' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% else %}<a href="{% url 'telecharger_document' modelName='ConventionCadre' iD=etude.convention.id %}">{{etude.convention.fichier}}</a>{% endif %}</td>
+                                                <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
+                                                <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
+                                                <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
                                             </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td>Convention</td>
-                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
-                                            </tr>
-                                            {% endif %}
-                                            {% if etude.devis_edited%}
                                             <tr>
                                                 <td>Devis</td>
-                                                {% if etude.devis.id %}
-                                                <a href="{% url 'telecharger_document' modelName='Devis' iD=etude.devis.id %}">Télécharger le devis {{etude.devis.fichier}}</a>
-                                                {% else %}
-                                                <p class="card-text">Informations manquantes pour générer le devis.</p>
-                                                {% endif %}
+                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
+                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
                                             </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td><i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span></td>
-                                            </tr>
-                                            {% endif %}
                                             {% for facture in etude.factures.all %}
                                             <tr>
                                                 <td>{{ facture.type_facture }}</td>
-                                                <td>{% if facture.fichier %}<a href="{% url 'telecharger_document' modelName='Facture' iD=facture.id %}">{{facture.fichier}}</a>{% else %}<i class="fas fa-ban">Non édité</i>{% endif %}</td>
+                                                <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
+                                                <td>{{facture.remarque}}</td>
                                             </tr>
                                             {% endfor %}
                                             </tbody>
