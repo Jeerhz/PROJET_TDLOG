@@ -335,6 +335,12 @@ class Etude(models.Model):
         phases = Phase.objects.filter(etude=self)
         total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases)
         return total_montant_HT
+    def montant_HT_totale(self):
+        return self.frais_dossier+self. montant_HT()
+    def TVA(self):
+        return 0.2*self.montant_HT_totale()
+    def total_ttc(self):
+        return 1.2*self.montant_HT_totale()
 
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
@@ -413,6 +419,9 @@ class Facture(models.Model):
         ACOMPTE =  "Facture d'acompte"
         INTERMEDIAIRE = 'Facture intermédiaire'
         SOLDE = 'Facture de solde'
+    #class TVA(models.TextChoices):
+        #FRANCE = 20
+        #ETRANGER = 0
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name='factures')
     facturé = models.BooleanField(default=False)
     pourcentage_JEH = models.FloatField(default=30)
@@ -422,8 +431,20 @@ class Facture(models.Model):
     fac_frais=models.FloatField(default=0)
     montant_HT=models.FloatField(default=30)
     fichier = models.FileField(upload_to=DOC_STORAGE, storage=DOC_STORAGE)
+    TVA_per =  models.IntegerField(default=20)
+    date_emission = models.DateField(null=True)
+    date_echeance = models.DateField(null=True)
     def fac_JEH(self):
         return self.etude.montant_HT() * (self.pourcentage_JEH / 100)
+    def phases_fac(self):
+        return Phase.objects.filter(etude=self.etude).order_by('numero')
+    def montant_HT_fac(self,phase):
+        return phase.montant_HT_par_JEH*self.pourcentage_JEH*phase.nb_JEH/100
+    
+    def montant_TVA(self):
+        return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
+    def montant_TTC(self):
+        return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
@@ -806,7 +827,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance']
     def __str__(self):
         return "Information de la Facture"
     def name(self):

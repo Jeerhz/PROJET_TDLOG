@@ -2,6 +2,9 @@ from django import template
 from django.utils import timesince
 from django.db.models import Sum, F
 from polls.models import AssignationJEH
+from num2words import num2words
+from datetime import datetime, timedelta
+
 register = template.Library()
 
 @register.filter(name='format_duration')
@@ -33,6 +36,54 @@ def JEH(eleve, etude):
 
     return f"{nb_total_JEH} JEH pour un montant de {montant_total:.2f}€ HT"
 
+@register.filter(name='montantFacturePhase')
+def montant_fac_phase(facture, phase):
+    return phase.montant_HT_par_JEH*facture.pourcentage_JEH*phase.nb_JEH/100
+
 @register.filter(name='get_item')
 def get_item(dictionary, key):
     return dictionary.get(key)
+@register.filter
+def times(number):
+    return range(number)
+
+@register.filter(name='ChiffreLettre')
+def chiffre_lettres(nombre):
+    if nombre is None:
+        return ''
+    nbr_arrondi = round(nombre,2)
+    nbr_entier = int(nbr_arrondi)
+    nbr_dec = int(round((nbr_arrondi - nbr_entier)*100)) 
+    lettres_entier = num2words(nbr_entier, lang='fr')  
+    lettres_deci = num2words(nbr_dec, lang='fr')
+    centimes = 'centimes'
+    if nbr_dec <2:
+        centimes = 'centime'
+    return f"{lettres_entier} euros et {lettres_deci} {centimes}"
+
+@register.filter(name='FormatNombres')
+def format_nombres(nombre):
+    arrondi = round(nombre, 2)
+    nbre_virg = f"{arrondi:.2f}".replace('.', ',')
+    return nbre_virg
+
+@register.filter(name='RefMission')
+def ref_mission(numero):
+    date = datetime.now()
+    annee = str(date.year)
+    an =annee[-2:]
+    return f"{an}e{numero:02d}"
+
+@register.filter(name='RefFacture')
+def ref_facture(numero):
+    date = datetime.now()
+    annee = str(date.year)
+    an =annee[-2:]
+    return f"{an}{numero:03d}"
+
+@register.filter(name='SupA')
+def superieur_a(value, arg):
+    try:
+        return int(value) > int(arg)
+    except (ValueError, TypeError):
+        return False

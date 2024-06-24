@@ -1,11 +1,9 @@
 import json
 import os
-import openpyxl
 from docxtpl import DocxTemplate
 
 from io import BytesIO
 from uuid import UUID
-from openpyxl import load_workbook
 from django.shortcuts import redirect
 from django.core.mail import send_mail, get_connection
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -15,7 +13,7 @@ from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -404,7 +402,15 @@ def facture(request, iD):
             facture = Facture.objects.get(id=iD)
             etude= facture.etude
             client = etude.client
-            context = {"facture": facture,"etude": etude, "client": client}
+            phases = Phase.objects.filter(etude=etude).order_by('numero')
+            res = facture.montant_HT_fac(phases[0])
+            #etude = {'type_convention': etude.type_convention, }
+            
+            facture.date_emission = timezone.now().strftime('%d/%m/%Y')
+            date_30  = timezone.now() +  timedelta(30)
+            facture.date_echeance = date_30.strftime('%d/%m/%Y')  
+            context = {"facture": facture,"etude": etude, "client": client,"phases": phases, "res": res, "date_emission": facture.date_emission, "date_echeance": facture.date_echeance}
+
             template = loader.get_template("polls/facpdf.html")
         except:
             template = loader.get_template("polls/page_error.html")
