@@ -45,6 +45,8 @@ from .models import (
     Devis,
     SetParametresUtilisateur,
     ParametresUtilisateur,
+    AvenantRuptureConventionEtude,
+    BonCommande,
 )
 
 
@@ -374,9 +376,9 @@ def input(request, modelName, iD):
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
-                model = apps.get_model(app_label="polls", model_name=modelName)
-                fetchform = model.retrieveForm(request.POST)
-            #if fetchform.is_valid():
+            model = apps.get_model(app_label="polls", model_name=modelName)
+            fetchform = model.retrieveForm(request.POST)
+            if fetchform.is_valid():
                 fetchform.save(commit=True, expediteur=request.user)
                 context = {
                     "form": fetchform,
@@ -387,7 +389,7 @@ def input(request, modelName, iD):
                     "liste_messages": liste_messages,
                     "message_count": message_count,
                 }
-            #else:
+            else:
                 context = {
                     "form": fetchform,
                     "title": str(fetchform),
@@ -663,7 +665,10 @@ def editer_convention(request, iD):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"Convention_Etude_{ce.__str__()}.docx"
+            if(instance.type_convention == "Convention d'étude"):
+                filename = f"Convention_Etude_{ce.__str__()}.docx"
+            else :
+                filename = f"Convention_Cadre_{ce.__str__()}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
@@ -705,6 +710,76 @@ def editer_devis(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"Devis_{devis.__str__()}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def editer_avenant_ce(request, iD):
+    if request.user.is_authenticated:
+        try:
+            instance = Etude.objects.get(id=iD)
+            client = instance.client
+            template = DocxTemplate("polls\\templates\\polls\\Avenant_Rupture_Convention_Etude.docx")
+            avenant = AvenantRuptureConventionEtude(ce=instance.convention())
+            avenant.save()
+            responsable = instance.responsable
+            context = {"etude": instance, "client": client, "responsable":responsable}
+            # Load the template
+
+            # Render the document
+            template.render(context)
+
+
+            # Create a temporary in-memory file
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"Devis_{avenant.__str__()}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def editer_bon(request, iD):
+    if request.user.is_authenticated:
+        try:
+            instance = Etude.objects.get(id=iD)
+            client = instance.client
+            template = DocxTemplate("polls\\templates\\polls\\Bon_de_Commande.docx")
+            bon = BonCommande(cc=instance.convention())
+            bon.save()
+            responsable = instance.responsable
+            context = {"etude": instance, "client": client, "responsable":responsable}
+            # Load the template
+
+            # Render the document
+            template.render(context)
+
+
+            # Create a temporary in-memory file
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"Devis_{bon.__str__()}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
@@ -912,20 +987,51 @@ def ajouter_facture(request, id_etude):
         context = {}
         return HttpResponse(template.render(context, request))
     
-def BV(request, id_etude):
+def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        chemin_absolu = os.path.join("polls\\static\\polls\\BV_test.xlsx")
-        classeur = openpyxl.load_workbook(chemin_absolu)
+        try :
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_eleve)
+            nb_JEH = 0
+            montant_HT = 0.
+            if request.method == 'POST':
+                for phase in etude.phases.all():
+                    my_checkbox_value = request.POST.get(f'checkInputPhase{phase.id}')
+                    print(f'checkInputPhase{phase.id}')
+                    print(my_checkbox_value)
+                    print(request.POST)
+                    if (my_checkbox_value is not None):
+                        nb_JEH += phase.get_nb_JEH_eleve(eleve)
+                        montant_HT += phase.get_montant_HT(eleve)
 
-        # Sélectionner la feuille de calcul
-        # feuille = classeur.active
 
-        # Modifier la cellule G4
-        # feuille['C13'] = "23e42"
+            chemin_absolu = os.path.join("polls\\static\\polls\\BV_test.xlsx")
+            classeur = openpyxl.load_workbook(chemin_absolu)
 
-        # Sauvegarder les modifications dans le fichier Excel
-        # classeur.save(chemin_absolu)
-        return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
+            # Sélectionner la feuille de calcul
+            feuille = classeur.active
+
+            # Modifier la cellule G4
+            feuille['I13'] = montant_HT
+            feuille['I14'] = nb_JEH
+
+            # Sauvegarder les modifications dans le fichier Excel
+            classeur.save(chemin_absolu)
+            return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
+        except :
+            liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+            message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message":"Erreur dans le téléversement du BV.", "liste_messages":liste_messages, "message_count":message_count}
+            return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")
         context = {}

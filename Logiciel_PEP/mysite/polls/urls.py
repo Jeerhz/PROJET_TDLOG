@@ -26,7 +26,7 @@ urlpatterns = [
     path("messagerie/", views.messages, name='messagerie'),
     path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
     path("ajouter_assignation_jeh/<int:id_etude>/<int:numero_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
-    path("BV/<int:id_etude>", views.BV, name='BV'),
+    path("BV/<int:id_etude>/<int:id_eleve>", views.BV, name='BV'),
     path("ndf/", views.ndf, name="ndf"),
     path("recrutement/<str:id_url>", views.recrutement, name="recrutement"),
     path("modifier_recrutement_etude/<int:iD>", views.modifier_recrutement_etude, name="modifier_recrutement_etude"),
@@ -36,4 +36,6 @@ urlpatterns = [
     path("settings/", views.settings, name="settings"),
     path("editer_convention/<int:iD>", views.editer_convention, name="editer_convention"),
     path("editer_devis/<int:iD>", views.editer_devis, name="editer_devis"),
+    path("editer_avenant_ce/<int:iD>", views.editer_avenant_ce, name="editer_avenant_ce"),
+    path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon")
 ]

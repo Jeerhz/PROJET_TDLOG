@@ -33,6 +33,14 @@ def JEH(eleve, etude):
 
     return f"{nb_total_JEH} JEH pour un montant de {montant_total:.2f}€ HT"
 
+@register.filter(name="cumulPhase")
+def cumulPhase(eleve, phase):
+    return phase.get_nb_JEH_eleve(eleve)
+
+@register.filter("phasesEtude")
+def phasesEtude(eleve, etude):
+    return eleve.phases_etude(etude)
+
 @register.filter(name='get_item')
 def get_item(dictionary, key):
     return dictionary.get(key)

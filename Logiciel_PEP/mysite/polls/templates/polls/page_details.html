@@ -860,15 +860,68 @@
                                         </div>
                                     </div>
                                     <div class="row">
+                                        {% if etude.type_convention == "Convention d'étude" %}
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h5 class="card-title">Avenant CE</h5>
-                                                    <p class="card-text">Ajouter un avenant à la Convention d'Etude</p>
-                                                    <a href="#" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                    {% if etude.convention_edited %}
+                                                    {% if etude.convention.avenants %}
+                                                    <table class="table">
+                                                        <tbody>
+                                                            {% for avenant in etude.convention.avenants.all %}
+                                                            <tr>
+                                                                <td>Avenant n°{{avenant.numero}}</td>
+                                                                <td>{% if avenant.date_signature %}{{avenant.date_signature}}{% else %}Non signé{% endif %}</td>
+                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-pen"></i></button></td>
+                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                            
+                                                    <hr>
+                                                    {% endif %}
+                                                    <p class="card-text">Ajouter un avenant à la convention d'étude</p>
+                                                    <a href="{% url 'editer_avenant_ce' iD %}" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                    {% else %}
+                                                    <p class="card-text text-danger">Aucune convention d'étude n'a été éditée</p>
+                                                    <a href="{% url 'editer_avenant_ce' iD %}" class="btn btn-primary disabled" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
+                                        {% elif etude.type_convention == "Convention cadre" %}
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Bons de commande</h5>
+                                                    {% if etude.convention_edited %}
+                                                    {% if etude.convention.bons_commande %}
+                                                    <table class="table">
+                                                        <tbody>
+                                                            {% for bon in etude.convention.bons_commande.all %}
+                                                            <tr>
+                                                                <td>Bon n°{{bon.numero}}</td>
+                                                                <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
+                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-pen"></i></button></td>
+                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                    <hr>
+                                                    {% endif %}
+                                                    <p class="card-text">Ajouter un bon de commande à la convention cadre</p>
+                                                    <a href="{% url 'editer_bon' iD %}" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout bon de commande</a>
+                                                    {% else %}
+                                                    <p class="card-text text-danger">Aucune convention cadre n'a été éditée</p>
+                                                    <a href="{% url 'editer_bon' iD %}" class="btn btn-primary disabled" target="_blank"><i class="fas fa-download mr-2"></i>Ajout bon de commande</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
@@ -890,83 +943,65 @@
 
                             <!-- Début de l'Onglet Intervenants -->
                             <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
-                                <!-- Début Infos Entreprises -->
-                                
-                                <!-- Fin Infos Entreprises -->
 
                                 <!-- Début Infos Élèves -->
-                                {% for eleve in intervenants %}
-                                <div class="card shadow h-100">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <div>{{eleve}}</div>
+                                
+                                <div class="col-md-12">
+                                    {% for eleve in intervenants %}
+                                    <div class="card shadow">
+                                    <div class="card-header" id="cardHeaderEleve{{eleve.id}}" data-toggle="collapse" data-target="#cardBodyEleve{{eleve.id}}" aria-expanded="false" aria-controls="cardBodyEleve{{eleve.id}}" style="cursor: pointer;">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        <strong>{{eleve}}</strong>
                                     </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>{{eleve|JEH:etude}}</th>
-                                                    <th><a class="btn btn-success">Générer le RdM</a></th>
-                                                    
-                                                </tr>
-                                            </thead>
-            
-                                        </table>
+                                    <div class="collapse" id="cardBodyEleve{{eleve.id}}" aria-labelledby="cardHeaderEleve{{eleve.id}}">
+                                    <div class="card-body">
+                                        <div class="container">
+                                        <div class="row justify-content-between">
+                                            <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
+                                            <a class="btn btn-success">Générer le RdM</a>
+                                            <a class="btn btn-success">Ajouter un avenant au RdM</a>
+                                        </div>
                                     </div>
-                                    <div class="nav-item">
-                                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenant_{{eleve.id}}"
-                                            aria-expanded="true" aria-controls="intervenant_{{eleve.id}}">
-                                            <i class="fas fa-caret-down"></i>
-                                            <span>BV et avenants</span>
-                                            <div id="intervenant_{{eleve.id}}" class="collapse" aria-labelledby="intervenant_{{eleve.id}}" data-parent="#accordionSidebar">
-                                                <div class="bg-white py-2 collapse-inner rounded">
-                                                    <div class="bg-white py-2 collapse-inner rounded">
-                                                        <table class="table table-striped">
-                                                            <thead>
-                                                                <th>Selectionner</th>
-                                                                <th>Phase</th>
-                                                                <th>Nombre JEH</th>
-                                                                <th>Pourcentage</th>
-                                                                <th>Montant</th>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% if eleve|assignation:etude %}
-                                                                {% for assignation in eleve|assignation:etude %}
-                                                              <tr>
-                                                                <th><div class="form-check form-switch">
-                                                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-                                                                    <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
-                                                                  </div></th>
-                                                                <th scope="row">{{assignation.phase.numero}}</th>
-                                                                <td>{{assignation.nombre_JEH}}</td>
-                                                                <td>{{assignation.pourcentage_retribution}}%</td>
-                                                                <td>{{assignation.retribution_brute_totale}}</td>
-                                                              </tr>
-                                                                {% endfor %}
-                                                                {% else %}
-                                                                <tr>
-                                                                    <td>Aucun</td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                  </tr>
-                                                                {% endif %}
-                                                            </tbody>
-                                                          </table>
-                                                          <div><a href="{% url 'BV' id_etude=iD %}" class="btn btn-success">Générer le BV</a></div>
-                                                          <a class="btn btn-success">Ajouter un avenant au RdM</a>
-    
-                                                    </div>
-                            
-                                                </div>
-                                            </div>
-                                        </a>
-                                        
+                                        <br>
+                                        {% if eleve|assignation:etude %}
+                                        <form action="{% url 'BV' id_etude=iD id_eleve=eleve.id %}" method="post">
+                                            {% csrf_token %}
+                                        <div class="bg-white py-2 collapse-inner rounded">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <th>Selectionner</th>
+                                                    <th>Phase</th>
+                                                    <th>Nombre JEH</th>
+                                                    <th>Pourcentage</th>
+                                                    <th>Montant</th>
+                                                </thead>
+                                                <tbody>
+                                                    {% for assignation in eleve|assignation:etude %}
+                                                  <tr>
+                                                    <th><div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
+                                                      </div></th>
+                                                      <th scope="row">{{assignation.phase.numero}}</th>
+                                                      <td>{{assignation.nombre_JEH}}</td>
+                                                      <td>{{assignation.pourcentage_retribution}}%</td>
+                                                      <td>{{assignation.retribution_brute_totale}}</td>
+                                                  </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                              </table>
+                                              <div><button type="submit" class="btn btn-success">Générer le BV</a></div>
+
+                                        </div>
+                                        </form>
+                                        {% endif %}
+
                                     </div>
+                                    </div>
+                                    </div>
+                                    <hr>
+                                    {% endfor %}
                                 </div>
-                                <!-- Fin Infos Élèves -->
-                                <br>
-                                {% endfor %}
+                                <!-- Fin Infos Eleve -->
                             </div>
                             <!-- Fin de l'Onglet Intervenants -->
 

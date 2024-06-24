@@ -193,6 +193,10 @@ class Student(models.Model):
     
     def nb_etudes_realisees(self):
         return self.etude_set.count()
+    
+    def phases_etude(self, etude):
+        phases = AssignationJEH.objects.filter(eleve=self).values_list("phase", flat=True).distinct()
+        return phases.filter(etude=etude)
 
     def default():
     # Create a JE instance with the provided default values
@@ -501,7 +505,7 @@ class ConventionEtude(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}CE"
+        return f"{current_year_last_two_digits}e{self.etude.numero}ce"
     
     def signe(self):
         return (self.date_signature is not None)
@@ -514,10 +518,27 @@ class ConventionCadre(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}CC"
+        return f"{current_year_last_two_digits}e{self.etude.numero}cc"
     
     def signe(self):
         return (self.date_signature is not None)
+    
+class AvenantRuptureConventionEtude(models.Model):
+    ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants")
+    numero = models.IntegerField()
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero}acc{self.numero}"
+    
+    def save(self, *args, **kwargs):
+        if self.numero is None :
+            nb_avenants = len(AvenantRuptureConventionEtude.objects.filter(ce=self.ce))
+            self.numero = nb_avenants + 1
+        super(AvenantRuptureConventionEtude, self).save(*args, **kwargs)
 
 class BonCommande(models.Model):
     convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
@@ -572,6 +593,13 @@ class Phase(models.Model):
         assignations_JEH = AssignationJEH.objects.filter(phase=self, eleve=eleve)
         for assignation_JEH in assignations_JEH:
             res += assignation_JEH.nombre_JEH * self.montant_HT_par_JEH
+        return res
+    
+    def get_nb_JEH_eleve(self, eleve):
+        res=0
+        assignations_JEH = AssignationJEH.objects.filter(phase=self, eleve=eleve)
+        for assignation_JEH in assignations_JEH:
+            res += assignation_JEH.nombre_JEH
         return res
     
     def get_assignations_JEH(self):
