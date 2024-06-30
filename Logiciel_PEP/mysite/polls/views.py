@@ -914,6 +914,18 @@ def search_suggestions(request):
         return JsonResponse({'suggestions_etude': list(suggestions_etude.values_list('titre', 'id')), 'suggestions_client': list(suggestions_client.values_list('nom_societe', 'id')), 'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
     else :
         return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
+    
+def search_suggestions_student(request):
+    query = request.GET.get('query', '')
+    if query:
+        keywords = query.split()
+        suggestions_student = Student.objects.filter(je=request.user.je)
+        for keyword in keywords:
+            suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
+        suggestions_student = suggestions_student[:5]
+        return JsonResponse({'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
+    else :
+        return JsonResponse({'suggestions_student': []})
 
 
 def search(request):
@@ -1042,7 +1054,19 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
         if request.method == 'POST':
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
-                fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
+                try :
+                    etude = Etude.objects.get(id=id_etude)
+                    phase = Phase.objects.get(etude=etude, numero=numero_phase)
+                    eleve = fetchform.eleve
+                    ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
+                    if (ass_jeh.exists()):
+                        ass_jeh.nombre_jeh = fetchform.nombre_jeh
+                        ass_jeh.pourcentage_retribution = fetchform.pourcentage_retribution
+                        ass_jeh.save()
+                    else :
+                        fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
+                except:
+                    pass
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
@@ -1211,6 +1235,44 @@ def convention_etude(request, iD):
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def add_intervenant(request, id_etude, id_student):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        try:
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_student)
+            for phase in etude.phases.all() :
+                nb_jeh = request.POST[("nb_jeh_phase"+str(phase.numero))]
+                pourcentage_retribution = request.POST[("pourcentage_retribution_phase"+str(phase.numero))]
+                if(nb_jeh is not None and pourcentage_retribution is not None):
+                    existing_ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
+                    if(existing_ass_jeh.exists()):
+                        retrieve_ass_jeh = existing_ass_jeh[0]
+                        retrieve_ass_jeh.nombre_JEH = nb_jeh
+                        retrieve_ass_jeh.pourcentage_retribution = pourcentage_retribution
+                        retrieve_ass_jeh.save()
+                    else :
+                        new_ass_jeh = AssignationJEH(phase=phase, eleve=eleve, nombre_JEH=nb_jeh, pourcentage_retribution=pourcentage_retribution)
+                        new_ass_jeh.save()
+            return redirect('details', modelName="Etude", iD=id_etude)
+            
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission."}
     else:
         template = loader.get_template("polls/login.html")
         context = {}

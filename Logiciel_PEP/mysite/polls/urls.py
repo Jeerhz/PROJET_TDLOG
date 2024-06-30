@@ -37,5 +37,7 @@ urlpatterns = [
     path("editer_convention/<int:iD>", views.editer_convention, name="editer_convention"),
     path("editer_devis/<int:iD>", views.editer_devis, name="editer_devis"),
     path("editer_avenant_ce/<int:iD>", views.editer_avenant_ce, name="editer_avenant_ce"),
-    path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon")
+    path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon"),
+    path("add_intervenant/<int:id_etude>/<int:id_student>", views.add_intervenant, name="add_intervenant"),
+    path("search_suggestions_student/", views.search_suggestions_student, name='search_suggestions_student'),
 ]

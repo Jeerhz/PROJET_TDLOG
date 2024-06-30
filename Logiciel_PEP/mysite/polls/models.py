@@ -576,10 +576,10 @@ class Phase(models.Model):
         return self.nb_JEH * self.montant_HT_par_JEH
     
     def save(self, *args, **kwargs):
-        id_etude = kwargs.pop('id_etude')
-        etude = Etude.objects.get(id=id_etude)
-        #etude=self.etude()
-        self.etude = etude
+        id_etude = kwargs.pop('id_etude', None)
+        if(id_etude is not None):
+            etude = Etude.objects.get(id=id_etude)
+            self.etude = etude
 
         super(Phase, self).save(*args, **kwargs)
         
@@ -620,11 +620,12 @@ class AssignationJEH(models.Model):
         return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
     
     def save(self, *args, **kwargs):
-        id_etude = kwargs.pop('id_etude')
-        numero_phase = kwargs.pop('numero_phase')
-        etude = Etude.objects.get(id=id_etude)
-        phase = Phase.objects.get(etude=etude, numero=numero_phase)
-        self.phase = phase
+        id_etude = kwargs.pop('id_etude', None)
+        numero_phase = kwargs.pop('numero_phase', None)
+        if(id_etude is not None and numero_phase is not None):
+            etude = Etude.objects.get(id=id_etude)
+            phase = Phase.objects.get(etude=etude, numero=numero_phase)
+            self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
 
 class Candidature(models.Model):
@@ -867,7 +868,7 @@ class AddClient(forms.ModelForm):
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
-        exclude = ['etude','montant_HT','begin','end']
+        exclude = ['etude', 'numero']
     def __str__(self):
         return "Information de la Phase"
     def name(self):
@@ -969,6 +970,8 @@ class Recrutement(forms.Form):
             etude.students.add(student)
             candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
             candidature.save()
+
+  
 
 
     

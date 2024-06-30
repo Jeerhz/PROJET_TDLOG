@@ -379,6 +379,36 @@
 
             
             <!-- Begin Main Content -->
+            <!-- Formulaire intervenant général -->
+            <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                <form method="post" id="form-intervenant">
+                {% csrf_token %}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nouvel intervenant <span class="badge badge-secondary" id="name-intervenant"></span></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {% for phase in etude.phases.all %}
+                        <h6>Phase {{ phase.numero }}</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH:</strong> <input type="text" name="nb_jeh_phase{{ phase.id }}" class="form-control" value=""></li>
+                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution:</strong> <input type="text" name="pourcentage_retribution_phase{{ phase.id }}" class="form-control" value=""></li>
+                        </ul>
+                        {% endfor %}
+                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </div>
+                </form>
+                </div>
+            </div>
+            <!-- Fin formulaire intervenant -->
             <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
                 <div class="alert alert-info alert-dismissible fade show" style="display: none;" role="alert" id="alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -943,6 +973,20 @@
 
                             <!-- Début de l'Onglet Intervenants -->
                             <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
+                                <div class="container col-md-7 mb-4 mt-4 ml-0 pl-3">
+                                    <div class="d-none d-sm-inline-block form-inline navbar-search w-100">
+                                        <div class="input-group w-100 m-0">
+                                            <div class="row m-0 w-100">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">Ajouter intervenant</span>
+                                                  </div>
+                                                <input type="text" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
+                                                    aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
+                                            </div>
+                                            <div class="list-group w-100" id="suggestions-results-student"></div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <!-- Début Infos Élèves -->
                                 
@@ -1440,12 +1484,15 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
+        var url_suggestions_student = '{% url "search_suggestions_student" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";
         var href_etude = str.substring(0, str.length - 1);
         str = "{% url 'details' modelName='Client' iD=0 %}";
         var href_client = str.substring(0, str.length - 1);
         str = "{% url 'details' modelName='Student' iD=0 %}";
         var href_student = str.substring(0, str.length - 1);
+        str = "{% url 'add_intervenant' id_etude=iD id_student=0 %}";
+        var href_form_intervenant = str.substring(0, str.length - 1);
     </script>
 
     <!-- Script pour utiliser les boutons comme des liens-->
@@ -1471,6 +1518,7 @@
         </script>
 
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+    <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
     <script>
