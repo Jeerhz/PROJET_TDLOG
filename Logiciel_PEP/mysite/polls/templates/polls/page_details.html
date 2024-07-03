@@ -1484,7 +1484,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
-        var url_suggestions_student = '{% url "search_suggestions_student" %}';
+        var url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";
         var href_etude = str.substring(0, str.length - 1);
         str = "{% url 'details' modelName='Client' iD=0 %}";

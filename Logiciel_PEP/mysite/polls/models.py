@@ -192,11 +192,12 @@ class Student(models.Model):
         return Candidature.objects.filter(eleve=self).count()
     
     def nb_etudes_realisees(self):
-        return self.etude_set.count()
+        return AssignationJEH.objects.filter(eleve=self).values("phase").values("etude").distinct().count()
+    
+    
     
     def phases_etude(self, etude):
-        phases = AssignationJEH.objects.filter(eleve=self).values_list("phase", flat=True).distinct()
-        return phases.filter(etude=etude)
+        return AssignationJEH.objects.filter(eleve=self, phase__etude=etude).distinct().values_list("phase", flat=True)
 
     def default():
     # Create a JE instance with the provided default values
@@ -274,7 +275,8 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
-        if self.parametres is None:
+        parametres = ParametresUtilisateur.objects.filter(membre=self)
+        if not parametres.exists():
             param = ParametresUtilisateur(membre=self)
             param.save()
 
@@ -577,10 +579,12 @@ class Phase(models.Model):
     
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude', None)
+        numero = kwargs.pop('numero', None)
         if(id_etude is not None):
             etude = Etude.objects.get(id=id_etude)
             self.etude = etude
-
+        if(numero is not None):
+            self.numero = numero
         super(Phase, self).save(*args, **kwargs)
         
     def li_eleves(self):

@@ -915,7 +915,7 @@ def search_suggestions(request):
     else :
         return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
     
-def search_suggestions_student(request):
+def search_suggestions_student(request, id_etude):
     query = request.GET.get('query', '')
     if query:
         keywords = query.split()
@@ -923,7 +923,8 @@ def search_suggestions_student(request):
         for keyword in keywords:
             suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
         suggestions_student = suggestions_student[:5]
-        return JsonResponse({'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
+        etude = Etude.objects.get(id=id_etude)
+        return JsonResponse({'suggestions_student': [[student.first_name, student.last_name, student.id, student.phases_etude(etude).count(), student.nb_etudes_realisees()] for student in suggestions_student.all()]})
     else :
         return JsonResponse({'suggestions_student': []})
 
@@ -978,7 +979,9 @@ def ajouter_phase(request, id_etude):
         if request.method == 'POST':
             fetchform = AddPhase(request.POST)
             if fetchform.is_valid():
-                fetchform.save(commit=True, id_etude=id_etude)
+                etude = Etude.objects.get(id=id_etude)
+                count_phase = Phase.objects.filter(etude=etude).count()
+                fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")

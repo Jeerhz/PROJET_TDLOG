@@ -22,7 +22,7 @@ $(document).ready(function() {
                             // Append new results
                             if (data.suggestions_student.length > 0) {
                                 data.suggestions_student.forEach(function(student) {
-                                    resultsList += '<div data-href="'+href_form_intervenant+student[2].toString()+'" data-badge="'+student[0] + ' ' + student[1]+'" class="list-group-item list-group-item-action text-dark w-100 student-sg" style="cursor:pointer;" data-toggle="modal" data-target="#formModal">' + student[0] + ' ' + student[1] + '</div>';
+                                    resultsList += '<div data-href="'+href_form_intervenant+student[2].toString()+'" data-badge="'+student[0] + ' ' + student[1]+'" class="list-group-item list-group-item-action text-dark w-100 justify-content-between student-sg" style="cursor:pointer;" data-toggle="modal" data-target="#formModal"><span>' + student[0] + ' ' + student[1] + '</span><span class="badge badge-counter">'+ student[3] +'</span><span class="badge badge-counter">'+ student[4] +'</span></div>';
                                 });
                                 resultsShow = true;
                             }

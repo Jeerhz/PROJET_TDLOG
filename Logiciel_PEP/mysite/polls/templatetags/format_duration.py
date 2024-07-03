@@ -41,6 +41,10 @@ def cumulPhase(eleve, phase):
 def phasesEtude(eleve, etude):
     return eleve.phases_etude(etude)
 
+@register.filter("nbPhasesEtude")
+def nbPhasesEtude(eleve, etude):
+    return eleve.phases_etude(etude).count()
+
 @register.filter(name='get_item')
 def get_item(dictionary, key):
     return dictionary.get(key)
