@@ -39,5 +39,10 @@ urlpatterns = [
     path("editer_avenant_ce/<int:iD>", views.editer_avenant_ce, name="editer_avenant_ce"),
     path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon"),
     path("add_intervenant/<int:id_etude>/<int:id_student>", views.add_intervenant, name="add_intervenant"),
+<<<<<<< HEAD
     path("search_suggestions_student/<int:id_etude>", views.search_suggestions_student, name='search_suggestions_student'),
+=======
+    path("search_suggestions_student/", views.search_suggestions_student, name='search_suggestions_student'),
+    #path("ajouter_representant/<int:id_client>", views.ajouter_representant, name='ajouter_representant'),
+>>>>>>> c472254e50c4f5b6d6b0b410330ed2ed74b38509
 ]

@@ -371,6 +371,7 @@
                             <li class="nav-item">
                                 <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false">Annuaire Etudes</a>
                             </li>
+                            
                         </ul>
                         
                         <!-- Contenu des onglets -->
@@ -442,7 +443,40 @@
                                         </tbody>
                                     </table>
                                 </div>
+                        </div>
+
+                        <!-- Onglet Annuaire Représentants -->
+                        <div class="tab-pane fade shadow" id="pills-representant">
+                            <div class="card">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <i class="fas fa-user-tag"></i>
+                                    <h2 class="m-0 font-weight-bold text-primary">Représentants</h2>
+                                    <!-- Barre de recherche -->
+                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Representant' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                </div>
                             </div>
+                                <div class="table-responsive" style="background-color: #FFFFFF;">
+                                    <table class="table table-borderless table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th class="text-center">Nom de société </th>
+                                                <th class="text-center"> Représentant </th>
+                                                <th class="text-center">Pays</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="clientTableBody">
+                                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
+                                            {% for client in client_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
+                                                <td class="text-center"> {{ client.nom_societe }} </td>
+                                                <td class="text-center"> {{ client.nom_representant }}</td>
+                                                <td class="text-center"> {{ client.country }} </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
 
                         <!-- Onglet Annuaire Études -->
                         <div class="tab-pane fade shadow" id="pills-etudes">

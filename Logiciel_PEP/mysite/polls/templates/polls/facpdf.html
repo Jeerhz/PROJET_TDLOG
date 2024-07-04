@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
         {% load static %}
+        {% load format_duration %}
 		<title>Facture {{etude.numero}}</title>
 		<meta
 			name="viewport"
@@ -57,47 +58,115 @@
             font-size: 15px;
             line-height: 6px;
         }
-        .objet_facture {
+        .objet_designations {
             display: inline-block;
             position: absolute;
             top: 35%;
             left: 7%; /* Distance from the left side */
             right: 7%; 
+            border: 0px;
+            padding-top: 0px;
+            height: 40%;
+            width: 100%; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
+            display: inline; 
+            
+        }
+        .objet_facture {
+            display: inline-block;
+            position: absolute;
+            top: 32%;
+            left: 7%; 
+            right: 7%; 
             background-color: #7771716b; /* Grey background color */
             border: 0px;
             padding: 10px;
             height: auto;
-            width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
-            display: inline; 
+             /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
             text-align: center;
+            
         }
         
         .table_prestation {
             position: absolute;
-            top: 42%;
+            top: 37%;
             right: 7%;
             width: 86%;
+            
             border-collapse: collapse;
+            
             /*margin: 20px 10px 20px 10px;*/
             /*line-height: 8px;*/
 
         }
-        .table_prestation th,.table_prestation td {
-            border: 0px solid #ddd;
-            padding: 3px;
-            font-size: 11px;
-            
-        }
+        
+        
         .table_prestation th {
             color: #ffffff;
             font-weight: bold;
             background-color: #000000;
+            padding-top: 4px;
+            padding-bottom: 4px;
+            padding-left: 4px;
+            padding-right: 4px;
+            font-size: 11.5px;
+            font-weight: bold;
         }
         .table_prestation td {
+            padding-top: 4px;
+            padding-left: 4px;
+            padding-right: 4px;
+
             color: #000000;
-            font-weight: normal;
+            font-size: 11.5px;
+            
+        }
+
+        .TVA_sur{
+            position: absolute;
+            top: 59%;
+            right: 7%;
+            width: 35%;
+            border-collapse: collapse;
+            border: 0px solid #ddd;
+            margin: 0px;
+            font-size: 11px;
+            font-style: italic;
+            color: #62616195; 
+            text-align: right;
+
+        }
+        .montant_chiffres{
+            position: absolute;
+            top: 65%;
+            right: 7%;
+            width: 35%;
+            font-size: 11px;
+            
+            margin: 0px;
+            line-height: 13px;
         }
         
+            
+
+        .tab_TTC{
+            position: absolute;
+            top: 62%;
+            right: 7%;
+            width: 35%;
+            border-collapse: collapse;
+            border: 0px solid #ddd;
+            margin: 0px;
+        }
+        
+        .montant{
+            position: absolute;
+            top: 55%;
+            right: 7%;
+            width: 35%;
+            border-collapse: collapse;
+            border: 0px solid #ddd;
+            margin: 0px;
+        }
         .table_montant {
             position: absolute;
             top: 55%;
@@ -105,9 +174,12 @@
             width: 35%;
             border-collapse: collapse;
             border: 0px solid #ddd;
-            padding: 8px;
-            text-align: center;
+            margin: 0px;
+            text-align: left;
             font-size: 12px;
+        }
+        .space-above td {
+            padding-top: 20px; 
         }
 
         .table_montant th,.table_montant td {
@@ -131,7 +203,7 @@
 
         .table_date {
             position: absolute;
-            top: 55%;
+            top: 52%;
             left: 7%;
             width: 43%;
             border-collapse: collapse;
@@ -150,9 +222,9 @@
 
         .info_retard {
             position: absolute;
-            top: 64%; 
+            top: 60%; 
             left: 7%;
-            width: 43%;
+            width: 49%;
             font-size: 11px;
             line-height: 13px;
             margin: 0px;
@@ -160,7 +232,7 @@
 
         .table_paiement {
             position: absolute;
-            top: 78%;
+            top: 70%;
             left: 7%;
             width: 55%;
             border-collapse: collapse;
@@ -178,8 +250,9 @@
         
        
         .footer {
-            display: inline-block;
             position: absolute;
+            display: inline-block;
+            
             bottom: 0%;
             left: 0%; /* Distance from the left side */
             right: 0%; 
@@ -209,9 +282,16 @@
 
         .italique {
             font-style: italic; 
-        }       
+        }   
+        .font_light{
+            font-weight: lighter;
+        }    
         .gras {
             font-weight: bold;
+        }
+        .txt_margin_left_right{
+            margin-left: 8px;
+            margin-right: 8px;
         }
 
         .gris_clair {
@@ -225,6 +305,9 @@
         }
         .font12 {
             font-size: 12px;
+        }
+        .font11{
+            font-size: 11px;
         }
         .blanc{
             color :rgb(255,255,255);
@@ -252,6 +335,13 @@
             align-items: center;
             justify-content: center;
         }
+        .table-striped .even {
+            background-color: #f2f2f2; /* Light gray background for even rows */
+        }
+
+        .table-striped .odd {
+            background-color: #ffffff; /* White background for odd rows */
+        }
 
         </style>
 	</head>
@@ -268,7 +358,7 @@
                 <p></p>
             </div>
             <div class="numero_facture">
-                <p class="gras">Facture n° <span contenteditable="true"> {{facture.numero_facture}}</span> <span id = "numero_mission"></span></p>
+                <p class="gras">Facture n° <span contenteditable="true"> {{facture.numero_facture|RefFacture}}</span></p>
                 <br>
                 <br>
                 <br>
@@ -306,133 +396,95 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td contenteditable="true">20,00%</td>
-                        <td contenteditable="true" id="montant_TVA">{{montant_TVA}}</td>
-                        <td contenteditable="true" id="montant_HT">{{etude.montant_HT}}</td>
-                        <script>
-                            var montantHTElement = document.getElementById('montant_HT');
-                            var montantTVAElement = document.getElementById('montant_TVA');
-                            var montantTVA = parseFloat(montantHTElement.textContent) * 0.2;
-                            montantTVAElement.textContent = montantTVA;
-                        </script>
-                    </tr>
-                    <tr>
-                        
-                    
+                        <td contenteditable="true">{{facture.TVA_per}} %</td>
+                        <td contenteditable="true" id="montant_TVA">{{facture.montant_TVA|FormatNombres}}</td>
+                        <td contenteditable="true" id="montant_HT">{{facture.fac_JEH|FormatNombres}}</td>
                         
                     </tr>
+                
                 </tbody>
             </table>
-            
-            
-            <div class="objet_facture">
-                <p><span class ="gras">Objet :</span> <span > Facture d'acompte concernant l'étude</span> <span contenteditable="true"> {{etude.numero}} </span> <span >en référence à la convention d'étude {{etude.numero}}ce</span> </p>
+            <div class="TVA_sur ">TVA sur les encaissements. </div>
+            <table class="tab_TTC">
+                <tr>
+                    <td class="align-left gras">Total TTC net à payer</td>
+                    <td class="align-right gras">{{facture.montant_TTC|FormatNombres}} EUR </td>
+                </tr>
+            </table>
+            <div class ="montant_chiffres align-left font_light font12 ">
+                <div>{{facture.montant_TTC|ChiffreLettre}}</div>
             </div>
+            
+            
+            
+            
+            <div class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span >{{facture.type_facture}} concernant l'étude</span> <span contenteditable="true"> {{etude.id|RefMission}} </span> <span >en référence à la {{etude.type_convention}} {{etude.id|RefMission}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{etude.bdc_red}} {% endif %} </span> </div>
             <table class="table_prestation">
-                <thead>
+                <thead class = "space-above">
                     <tr>
                         <th class="align-left" >Désignation</th>
                         <th class="align-right" >Montant HT</th>
                     </tr>
                 </thead>
+                
                 <tbody>
-                    
-                    <tr>
-                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left"><span class="gras">{{etude.montant_HT}}</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
-                    </tr>
+                    {% if etude.frais_dossier %}
+                        <tr>
+                            <td class="align-left"><span>Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} % de {{etude.frais_dossier|FormatNombres}} EUR.) </span></td>
+                            <td class="align-right" contenteditable="true">{{facture.fac_frais|FormatNombres}}</td>
+                        </tr>
+                    {% endif %}
+                    {% if facture.phases_fac %}
+                        {% for phase in facture.phases_fac %}
+                        <tr class="{% cycle 'even' 'odd' %}">
+                            <td class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
+                            <td class="align-right" contenteditable="true">{{facture|montantFacturePhase:phase|FormatNombres}}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
                     
                     
                 </tbody>
+                    
             </table>
+            
+            
+            
             
             <table class="table_date">
                 <tbody>
                     <tr>
                         <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
+                        <td class="align-right" contenteditable="true">{{ facture.date_emission }} </td>
                     </tr>
                     <tr>
                         <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
+                        <td class="align-right" contenteditable="true">{{ facture.date_echeance }}</td>
                     </tr>
-                    <tr>
-                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
-                        
-                    </tr>
-                    <tr>
+                    <tr  class="space-above">
                         <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
                         <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
                     </tr>
                     <tr>
                         <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
+                        <td class="align-right" contenteditable="true" >{{etude.montant_phase_HT|FormatNombres}}</td>
                     </tr>
                 </tbody>
             </table>
-            <script>
-                 
-                const listeDonnees = [
-                    { phase: 'Phase 1 : {nom_phase_1}', pourcentage: 30, jours: 2, prix: 450 },
-                    { phase: 'Phase 2 : {nom_phase_2}', pourcentage: 30, jours: 2, prix: 450 },
-                    { phase: 'Phase 3 : {nom_phase_3}', pourcentage: 30, jours: 2, prix: 450 },
-                ]
-                const table_prestation = document.getElementById('table_prestation');
-                for (let i = 0; i < listeDonnees.length; i++) {
-                    const row = document.createElement('tr');
             
             
-                    const cell1 = document.createElement('td');
-                    cell1.textContent = listeDonnees[i].phase;
-                    cell1.classList.add('align-left');
-                    cell1.setAttribute('contenteditable', 'true');
-                    row.appendChild(cell1);
-                    
-            
-                    const cell2 = document.createElement('td');
-                    const montant = (listeDonnees[i].pourcentage / 100) * listeDonnees[i].jours * listeDonnees[i].prix;
-                    cell2.textContent = montant.toFixed(2); 
-                    cell2.classList.add('align-right');
-                    cell2.setAttribute('contenteditable', 'true');
-                    row.appendChild(cell2);
-    
-            
-                    table_prestation.appendChild(row);
-                }
-            </script>
-            <table class="table_date">
-                <tbody>
-                    <tr>
-                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.end}}</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.end}}+30</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left blanc"><span class="blanc">saut de ligne</span></td>
-                        
-                    </tr>
-                    <tr>
-                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.montant_HT}}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="info_retard">
-                <p class="gris_foncé">Aucun escompte n'est accordé pour paiement anticipé. En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
+            <div class="info_retard gris_foncé">
+                <div>Aucun escompte n'est accordé pour paiement anticipé.</div>
+                <div>En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
                     sera appliqué des pénalités au taux de 3 fois le taux d'intérêt légal en vigueur. Il sera
-                    également appliqué une indemnité de recouvrement de 40 euros. Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
-                    complet des sommes dues. Règlement à la réception par chèque bancaire, postal ou virement uniquement.</p> 
+                    également appliqué une indemnité de recouvrement de 40 euros. </div> 
+                <div>
+                    Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
+                    complet des sommes dues.
+                </div>
+                <div>
+                    Règlement à la réception par chèque bancaire, postal ou virement uniquement.
+                </div>
                 
             </div>
             <table class="table_paiement">
@@ -466,11 +518,11 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="footer">
-                <div class ="gras gris_clair">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
-                <div class ="gris_clair">Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
+            <div class="footer gris_clair">
+                <div class ="gras ">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
+                <div >Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
                 <div class="dotted-line gris_clair"></div>
-                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.representant}} {{etude.numero}}</span> <span contenteditable="true" class ="gras">Net à payer :</span> </p>
+                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.titre_representant}} {{client.prenom_representant}} {{client.nom_representant}} - {{etude.id}}</span> <span class ="gras">Net à payer : </span> <span contenteditable="true" >{{facture.montant_TTC|FormatNombres}} EUR</span> </p>
             </div>
         </div>
         <div class="page-wrapper"></div>
@@ -486,5 +538,21 @@
 
 			button.addEventListener('click', generatePDF);
 		</script>
-	</body>
+        <script>
+            // Get the current date
+            var today = new Date();
+    
+            // Format the date as MM/DD/YYYY
+            var formattedDate = today.getDate() + '/' + (today.getMonth() + 1) + '/' +  today.getFullYear();
+    
+            // Insert the date into the placeholder
+            document.getElementById('current-date').textContent = formattedDate;
+            var futureDate = new Date();
+            futureDate.setDate(today.getDate() + 30);
+
+            // Format the future date as MM/DD/YYYY
+            var formattedFutureDate = futureDate.getDate() + '/' + (futureDate.getMonth() + 1) + '/' + futureDate.getFullYear();
+            document.getElementById('future-date').textContent = formattedFutureDate;
+            </script>
+        </body>
 </html>

@@ -15,7 +15,7 @@ from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -47,6 +47,8 @@ from .models import (
     ParametresUtilisateur,
     AvenantRuptureConventionEtude,
     BonCommande,
+    Representant,
+    AddRepresentant,
 )
 
 
@@ -411,8 +413,15 @@ def facture(request, iD):
             facture = Facture.objects.get(id=iD)
             etude= facture.etude
             client = etude.client
-            context = {"facture": facture,"etude": etude, "client": client}
-            template = loader.get_template("polls/facpdf.html")
+            phases = Phase.objects.filter(etude=etude).order_by('numero')
+            res = facture.montant_HT_fac(phases[0])
+            #etude = {'type_convention': etude.type_convention, }
+            
+            facture.date_emission = timezone.now().strftime('%d/%m/%Y')
+            date_30  = timezone.now() +  timedelta(30)
+            facture.date_echeance = date_30.strftime('%d/%m/%Y')  
+            context = {"facture": facture,"etude": etude, "client": client,"phases": phases, "res": res, "date_emission": facture.date_emission, "date_echeance": facture.date_echeance}
+
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -805,7 +814,7 @@ def calculate_monthly_sums(user_je):
         current_month = (month + september) % 12
         etudes = Etude.objects.filter(je=user_je, debut__month=current_month)
 
-        total_montant_HT = sum(etude.montant_HT() for etude in etudes)
+        total_montant_HT = sum(etude.montant_HT_totale() for etude in etudes)
         monthly_sums.append(total_montant_HT)
 
     for k in range(12):
@@ -821,7 +830,7 @@ def calculate_chiffre_affaire_par_departement(user_je):
     studies = Etude.objects.filter(je=user_je)
     
     for study in studies:
-        if study.montant_HT() > 0:
+        if study.montant_HT_totale() > 0:
             phases = Phase.objects.filter(etude=study)
             students = study.get_li_students()
             
@@ -836,7 +845,7 @@ def calculate_chiffre_affaire_par_type(user_je):
     type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT()
+        montant_HT = study.montant_HT_totale()
         if montant_HT > 0: 
             revenues[type_index[study.client._type]] += montant_HT
     return revenues
@@ -847,7 +856,7 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     secteur_index = {'INDUSTRIE':0, 'DISTRIBUTION':1, 'SECTEUR_PUBLIC':2, 'CONSEIL':3, 'TRANSPORT':4, 'NUMERIQUE':5, 'BTP':6, 'AUTRE':7}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT()
+        montant_HT = study.montant_HT_totale()
         if montant_HT > 0:
             revenues[secteur_index[study.client.secteur]] += montant_HT
     return revenues
@@ -987,9 +996,19 @@ def ajouter_phase(request, id_etude):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-
-
-
+'''
+def ajouter_representant(request, id_client):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            fetchform = AddRepresentant(request.POST)
+            if fetchform.is_valid():
+                fetchform.save(commit=True, id_client=id_client)
+        return redirect('details', modelName='Client', iD=id_client)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+'''
 def ajouter_facture(request, id_etude):
     if request.user.is_authenticated:
         if request.method == 'POST':
