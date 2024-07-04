@@ -385,7 +385,7 @@ class Etude(models.Model):
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE,null=True, blank=True, related_name="responsable_etudes")
     #liste des étudiants via méthodes get_li_students
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    representant = models.ForeignKey(Representant, on_delete=models.CASCADE,null=True )
+    #representant = models.ForeignKey(Representant, on_delete=models.CASCADE,null=True )
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)

@@ -62,6 +62,9 @@ def default():
     new_je.check_order = "ORDRE_CHEQUE"
     new_je.logo = "/static/polls/img/bdc.png"
     new_je.chiffres_affaires = 0.0
+    new_je.base_urssaf = 46.6
+    new_je.taux_ATMP =0.66
+    tnew_je.aux_cotisations =29.9
     new_je.save()
 
 default()
