@@ -598,7 +598,7 @@
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
@@ -704,7 +704,7 @@
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_HT}}€</td>
+                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>

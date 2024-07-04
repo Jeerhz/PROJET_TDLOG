@@ -40,4 +40,5 @@ urlpatterns = [
     path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon"),
     path("add_intervenant/<int:id_etude>/<int:id_student>", views.add_intervenant, name="add_intervenant"),
     path("search_suggestions_student/", views.search_suggestions_student, name='search_suggestions_student'),
+    #path("ajouter_representant/<int:id_client>", views.ajouter_representant, name='ajouter_representant'),
 ]

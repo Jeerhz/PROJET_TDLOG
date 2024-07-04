@@ -14,6 +14,7 @@ from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.conf import settings
+from datetime import date
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
@@ -35,7 +36,9 @@ class JE(models.Model):
     logo = models.ImageField(storage=IMAGE_STORAGE)
     chiffres_affaires = models.FloatField(default=0.0, validators=[MinValueValidator(0)])
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-
+    base_urssaf = models.FloatField(default=46.6)
+    taux_ATMP = models.FloatField(default=0.66)
+    taux_cotisations = models.FloatField(default=29.9)
 
     def __str__(self):
         return self.nom
@@ -118,6 +121,8 @@ class Client(models.Model):
     fonction_representant = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to=DOC_STORAGE, default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
+    remarque = models.TextField(blank=True, null=True, default="")
+    description = models.TextField(max_length=500, null=True)
     secteur = models.CharField(
         max_length=20,
         choices=Secteur.choices,
@@ -150,7 +155,56 @@ class Client(models.Model):
 
     def modifyForm(instance):
         return AddClient(instance=instance)  
+class Representant(models.Model):
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
+    first_name = models.CharField(max_length = 200)
+    last_name = models.CharField(max_length = 200)
+    mail = models.EmailField(max_length = 200)
+    phone_number = models.CharField(max_length=200, blank=True, null=True)
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
+    remarque = models.TextField(blank=True, null=True, default="")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    fonction = models.CharField(max_length = 100, null=True)
+    def __str__(self):
+        return self.first_name+' '+self.last_name
     
+    def get_display_dict(self):
+        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion, "Departement":self.departement}
+
+    def get_title_details(self):
+        return "Détails du représentant"
+    
+    def createForm(**kwargs):
+        return AddRepresentant()
+    
+    def retrieveForm(form):
+        return AddRepresentant(form)
+
+    def modifyForm(instance):
+        return AddRepresentant(instance=instance)
+
+    def default():
+    # Create a JE instance with the provided default values
+        default_je = JE(**default_je_data)
+    
+        return Student(
+            titre ='M.',
+            first_name="Antony",
+            last_name="Feord",
+            mail="antony.feord@eleves.enpc.fr",
+            phone_number="+27",
+            je=default_je,
+        )
+    def save(self, *args, **kwargs):
+        id_client = kwargs.pop('id_client', None)
+        if(id_client is not None):
+            client = Client.objects.get(id=id_client)
+            self.client = client
+
+        super(Representant, self).save(*args, **kwargs)
+
+
 class Student(models.Model):
     class Departement(models.TextChoices):
         IMI = 'IMI', 'IMI'
@@ -160,6 +214,8 @@ class Student(models.Model):
         GCC = 'GCC', 'GCC'
         VET = 'VET', 'VET'
         AUTRE = 'AUTRE', 'Autre'
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
     first_name = models.CharField(max_length = 200)
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
@@ -203,6 +259,7 @@ class Student(models.Model):
         default_je = JE(**default_je_data)
     
         return Student(
+            titre ='M.',
             first_name="Edgar",
             last_name="Duc",
             mail="edgar.duc@eleves.enpc.fr",
@@ -321,12 +378,14 @@ class Etude(models.Model):
     titre = models.CharField(max_length = 200)
     numero = models.CharField(max_length = 10)
     description = models.TextField(max_length=500, blank=True)
-    debut = models.DateField(blank=True)
-    duree_semaine = models.IntegerField()
+    problematique = models.TextField(max_length=500, blank=True)
+    debut = models.DateField(default=datetime.date(1969, 1, 1))
+    #duree_semaine = models.IntegerField(default=1)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE,null=True, blank=True, related_name="responsable_etudes")
     #liste des étudiants via méthodes get_li_students
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    representant = models.ForeignKey(Representant, on_delete=models.CASCADE,null=True )
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default = 0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
@@ -341,7 +400,7 @@ class Etude(models.Model):
         return self.titre
 
     def get_display_dict(self):
-        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.debut, 'Fin':self.fin(), 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH(), 'Montant HT':self.montant_HT()}
+        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.debut, 'Fin':self.fin(), 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH(), 'Montant HT':self.montant_HT_totale()}
         return intermediary_dict
     
     def get_li_students(self):
@@ -357,18 +416,53 @@ class Etude(models.Model):
     def liste_doc(self):
         return []
     
+    def duree_semaine(self):
+        phases = Phase.objects.filter(etude=self)
+        if phases:
+            duree = max(phase.duree_semaine+phase.debut_relatif for phase in phases)
+            return duree
+        else:
+            return None
+    
     def fin(self):
-        return self.debut+datetime.timedelta(weeks=self.duree_semaine)
+        if self.debut is None or self.duree_semaine() is None:
+            return datetime.date(1969, 1, 1)
+        else:
+            return self.debut+datetime.timedelta(weeks=self.duree_semaine())
     
     def nb_JEH(self):
         phases = Phase.objects.filter(etude=self)
-        total_JEH = sum(phase.nb_JEH for phase in phases)
-        return total_JEH
+        if phases:
+            total_JEH = sum(phase.nb_JEH for phase in phases)
+            return total_JEH
+        else:
+            return None
     
-    def montant_HT(self):
+    def montant_phase_HT(self):
         phases = Phase.objects.filter(etude=self)
         total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases)
         return total_montant_HT
+    def montant_HT_totale(self):
+        return self.frais_dossier+self.montant_phase_HT()
+    def TVA(self):
+        return 0.2*self.montant_HT_totale()
+    def total_ttc(self):
+        return 1.2*self.montant_HT_totale()
+    
+    def charges_URSSAF(self):
+        if self.nb_JEH() is not None:
+            return self.nb_JEH()*self.je.base_urssaf*self.je.taux_cotisations /100
+        else:
+            return 0
+    def retributions_totales(self):
+        phases = Phase.objects.filter(etude=self)
+        if phases:
+            return sum(phase.retributions() for phase in phases)
+        else:
+            return 0
+    
+    def marge_JE(self):
+        return self.montant_HT_totale()-self.retributions_totales()-self.charges_URSSAF()
 
     def save(self, *args, **kwargs):
         # Your custom validation logic here before saving
@@ -376,8 +470,9 @@ class Etude(models.Model):
         
         if self.id_url is None:
             self.id_url = uuid.uuid4()
-        if self.duree_semaine < 0:
-            raise ValueError('Begin must be set before end.')
+        if self.duree_semaine() is not None :
+            if self.duree_semaine() < 0:
+                raise ValueError('Begin must be set before end.')
         if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
             raise ValueError('Begin must be set before end.')
         if self.numero is None:
@@ -442,41 +537,54 @@ class Etude(models.Model):
 
 
     def progress_percentage(self):
-        total_duration = self.duree_semaine * 7
-        if total_duration>0:
-            progress = (timezone.now().date() - self.debut).days
-            progress_percentage = (progress/total_duration)*100
-            progress_percentage = int(max(min(100, progress_percentage), 0))
-        else :
-            progress_percentage = 0
-        return progress_percentage
+        if self.duree_semaine() is None:
+            return 0
+        else:
+            total_duration = self.duree_semaine() * 7
+            if total_duration>0:
+                progress = (timezone.now().date() - self.debut).days
+                progress_percentage = (progress/total_duration)*100
+                progress_percentage = int(max(min(100, progress_percentage), 0))
+            else :
+                progress_percentage = 0
+            return progress_percentage
 
 class Facture(models.Model):
     class Status(models.TextChoices):
         ACOMPTE =  "Facture d'acompte"
         INTERMEDIAIRE = 'Facture intermédiaire'
         SOLDE = 'Facture de solde'
+    #class TVA(models.TextChoices):
+        #FRANCE = 20
+        #ETRANGER = 0
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name='factures')
     facturé = models.BooleanField(default=False)
-    pourcentage_JEH = models.FloatField(default=30)
-    pourcentage_frais = models.FloatField(default=30)
-    type_facture = models.CharField(max_length=30, choices=Status.choices, default=Status.SOLDE)
+    pourcentage_JEH = models.FloatField(default=100)
+    pourcentage_frais = models.FloatField(default=100)
+    type_facture = models.CharField(max_length=100, choices=Status.choices, default=Status.SOLDE)
     numero_facture = models.IntegerField(default=5) 
     fac_frais=models.FloatField(default=0)
-    montant_HT=models.FloatField(default=30)
-    remarque = models.TextField(blank=True, null=True)
+    #montant_HT=models.FloatField(default=30)
+    TVA_per =  models.IntegerField(default=20)
+    date_emission = models.DateField(null=True)
+    date_echeance = models.DateField(null=True)
     def fac_JEH(self):
-        return self.etude.montant_HT() * (self.pourcentage_JEH / 100)
+        return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+    def phases_fac(self):
+        return Phase.objects.filter(etude=self.etude).order_by('numero')
+    
+    
+    def montant_TVA(self):
+        return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
+    def montant_TTC(self):
+        return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
-        num_fac = len(Facture.objects.filter(etude=etude))+1
-        self.numero_facture = self.etude.numero*100+num_fac
-        self.montant_HT=self.etude.montant_HT() * (self.pourcentage_JEH / 100) + self.etude.frais_dossier * (self.pourcentage_frais/ 100)
+        self.numero_facture = len(Facture.objects.filter(etude=etude))+1
         super(Facture, self).save(*args, **kwargs)
-
 
 class Devis(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="devis")
@@ -553,8 +661,10 @@ class BonCommande(models.Model):
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
-    date_debut = models.DateField()
-    date_fin = models.DateField()
+    debut_relatif = models.IntegerField(default = 1)
+    duree_semaine = models.IntegerField(default = 1)
+    date_debut = models.DateField(default=date.today)
+    date_fin = models.DateField(default=date.today)
     titre = models.CharField(max_length = 200)
     description = models.TextField(max_length = 5000, blank=True)
     nb_JEH = models.IntegerField()
@@ -587,6 +697,12 @@ class Phase(models.Model):
         assignations = AssignationJEH.objects.filter(phase=self)
         eleves = {assignation.eleve for assignation in assignations}
         return eleves
+    def retributions(self):
+        assignations = AssignationJEH.objects.filter(phase=self)
+        if assignations:
+            return sum(assignation.retribution_brute_totale for assignation in assignations)
+        else :
+            return self.calcul_mt_HT()*0.6
     
     def get_montant_HT(self, eleve):
         res=0
@@ -798,30 +914,30 @@ class AddStudent(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
-    
+
 class AddEtude(forms.ModelForm):
     error_message = ""
     class Meta:
         model = Etude
-        exclude = ['numero','je', 'id_url', 'remarque']
+        exclude = ['numero','je', 'id_url', 'remarque', 'debut','date_fin_recrutement','date_debut_recrutement']
     def __str__(self):
         return "Informations de l'étude"
     def name(self):
         return "AddEtude"
     def clean(self):
         cleaned_data = super().clean()
-        duree = cleaned_data.get('duree_semaine')
         ddr = cleaned_data.get('date_debut_recrutement')
         dfr = cleaned_data.get('date_fin_recrutement')
-
-        # Vérifiez que la start_date est antérieure à end_date
-        if duree<0:
-            self.add_error('duree_semaine', 'La durée doit être un entier positif.')
-            raise ValidationError(_('La durée doit être un entier positif.'))
+        #LES DUREES SONT SOOIENT RENTRÉS À LA MAIN OU CALCULER AUTOMATIQUEMENT
         
-        if ddr and dfr and ddr > dfr:
-            self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
-            raise ValidationError(_('Start date must be before the end date.'))
+        # Vérifiez que la start_date est antérieure à end_date
+        # if duree<0:
+        #    self.add_error('duree_semaine', 'La durée doit être un entier positif.')
+        #    raise ValidationError(_('La durée doit être un entier positif.'))
+        
+        #if ddr and dfr and ddr > dfr:
+        #    self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
+         #   raise ValidationError(_('Start date must be before the end date.'))
 
         return cleaned_data
     def save(self, commit=True, **kwargs):
@@ -864,11 +980,30 @@ class AddClient(forms.ModelForm):
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
     
+class AddRepresentant(forms.ModelForm):
+    class Meta:
+        model = Representant
+        exclude = ['je']
+    def __str__(self):
+        return "Informations du représentant"
+    def name(self):
+        return "AddRepresentant"
+    def save(self, commit=True, **kwargs):
+        representant = super(AddRepresentant, self).save(commit=False)
+        if commit:
+            representant.save(**kwargs)
+        return representant
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
+     
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
-        exclude = ['etude', 'numero']
+        exclude = ['etude', 'date_debut','date_fin']
     def __str__(self):
         return "Information de la Phase"
     def name(self):
@@ -887,7 +1022,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'remarque']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance']
     def __str__(self):
         return "Information de la Facture"
     def name(self):

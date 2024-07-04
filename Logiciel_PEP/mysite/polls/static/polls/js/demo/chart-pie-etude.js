@@ -13,36 +13,54 @@ function generateColors(count) {
   return colors;
 }
 
-// Pie Chart Example
-var ctx = document.getElementById("PieChartEtude");
-var labels = ["Junior", "Cotisant", "Intervenants"];
-var dataColors = ['#24569a', '#36b9cc', '#1cc88a']
-var myPieChart = new Chart(ctx, {
-  type: 'doughnut',
-  data: {
-    labels: labels,
-    datasets: [{
-      data: [22, 12, 64], 
-      backgroundColor: dataColors,
-      hoverBackgroundColor: dataColors.map(color => color.replace('#', '#ff')), 
-      hoverBorderColor: "rgba(234, 236, 244, 1)",
-    }],
-  },
-  options: {
-    maintainAspectRatio: false,
-    tooltips: {
-      backgroundColor: "rgb(255,255,255)",
-      bodyFontColor: "#858796",
-      borderColor: '#dddfeb',
-      borderWidth: 1,
-      xPadding: 15,
-      yPadding: 15,
-      displayColors: false,
-      caretPadding: 10,
+// your_chart_script.js
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Use the etudeData variable defined in your Django template
+  var dataPiechart = [
+      parseFloat(etudeData.marge_JE.replace(',', '.')),
+      parseFloat(etudeData.charges_URSSAF.replace(',', '.')),
+      parseFloat(etudeData.retributions_totales.replace(',', '.'))
+      
+  ];
+
+  var ctx = document.getElementById("PieChartEtude");
+  var dataColors = ['#24569a', '#36b9cc', '#1cc88a'];
+
+  var myPieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['', '', ''], // Empty labels array to remove labels
+        datasets: [{
+            data: dataPiechart,
+            backgroundColor: dataColors,
+            hoverBackgroundColor: dataColors.map(color => color.replace('#', '#ff')),
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }],
     },
-    legend: {
-      display: false
+    options: {
+        maintainAspectRatio: false,
+        tooltips: {
+            backgroundColor: "rgb(255,255,255)",
+            bodyFontColor: "#858796",
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            xPadding: 15,
+            yPadding: 15,
+            displayColors: false,
+            caretPadding: 10,
+            callbacks: {
+                label: function(tooltipItem, data) {
+                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                    var currentValue = dataset.data[tooltipItem.index];
+                    return currentValue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }).replace(/\./g, ',');
+                }
+            }
+        },
+        legend: {
+            display: false,
+        },
+        cutoutPercentage: 80,
     },
-    cutoutPercentage: 80,
-  },
+});
 });
