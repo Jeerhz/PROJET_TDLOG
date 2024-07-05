@@ -1,6 +1,7 @@
 import json
 import os
 import openpyxl
+import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
 
 from io import BytesIO
@@ -8,7 +9,7 @@ from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect
 from django.core.mail import send_mail, get_connection
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
 from django.urls import reverse
 from django.apps import apps
@@ -410,7 +411,7 @@ def input(request, modelName, iD):
 def facture(request, iD):
     if request.user.is_authenticated:
         try:
-            facture = Facture.objects.get(id=iD)
+            facture = Facture.objects.get(id=iD, je=request.user.je)
             etude= facture.etude
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by('numero')
@@ -466,20 +467,63 @@ def ndf(request):
 
 def stat_KPI(request):
     if request.user.is_authenticated:
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        if start_date and end_date:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+        else:
+            end_date_obj = datetime.now(pytz.UTC)
+            start_date_obj = end_date_obj - timedelta(days=1000)
+            start_date = start_date_obj.strftime('%Y-%m-%d')
+            end_date = end_date_obj.strftime('%Y-%m-%d')
+
+        # Filtrer les études en fonction des dates
+        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        print(f"Initial Etudes count: {etudes.count()}")  # Debug print
+
+        # Calculer les montants par mois et les labels
+        date_labels = []
+        cumulated_CA = []
+        current_month = start_date_obj.month
+        current_year = start_date_obj.year
+        current_sum = 0
+
+        for etude in etudes:
+            etude_month = etude.debut.month
+            etude_year = etude.debut.year
+
+            if etude_month == current_month and etude_year == current_year:
+                current_sum += etude.montant_HT_total()
+            else:
+                # Ajouter les données pour le mois précédent
+                date_labels.append(f"{current_year}-{current_month:02d}")
+                cumulated_CA.append(current_sum)
+
+                # Réinitialiser pour le nouveau mois
+                current_month = etude_month
+                current_year = etude_year
+                current_sum = etude.montant_HT_total()
+
+        # Ajouter les données pour le dernier mois
+        date_labels.append(f"{current_year}-{current_month:02d}")
+        cumulated_CA.append(current_sum)
+
+        # Calcul des autres métriques
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            date__range=(datetime.now(pytz.UTC) - timedelta(days=20), datetime.now(pytz.UTC)),
         ).order_by("date")[0:3]
         message_count = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            date__range=(datetime.now(pytz.UTC) - timedelta(days=20), datetime.now(pytz.UTC)),
         ).count()
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
-        monthly_sums = calculate_monthly_sums(user_je)
-        chiffre_affaire_total = monthly_sums[-1]
+        chiffre_affaire_total = 1000  # A METTRE A JOUR
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
         chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
         chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
@@ -568,15 +612,19 @@ def stat_KPI(request):
             "chiffre_affaire_total": chiffre_affaire_total,
             "chiffre_affaire_par_departement": chiffre_affaire_par_departement,
             "chiffre_affaire_par_type": chiffre_affaire_par_type,
-            "monthly_sums": monthly_sums,
+            "cumulated_CA": cumulated_CA,
+            "date_labels": date_labels,
             "liste_messages": liste_messages,
             "message_count": message_count,
             "chiffre_affaires": chiffres_affaires,
+            "start_date": start_date,
+            "end_date": end_date
         }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
 
 
 def messages(request):
@@ -814,7 +862,7 @@ def calculate_monthly_sums(user_je):
         current_month = (month + september) % 12
         etudes = Etude.objects.filter(je=user_je, debut__month=current_month)
 
-        total_montant_HT = sum(etude.montant_HT_totale() for etude in etudes)
+        total_montant_HT = sum(etude.montant_HT_total() for etude in etudes)
         monthly_sums.append(total_montant_HT)
 
     for k in range(12):
@@ -830,7 +878,7 @@ def calculate_chiffre_affaire_par_departement(user_je):
     studies = Etude.objects.filter(je=user_je)
     
     for study in studies:
-        if study.montant_HT_totale() > 0:
+        if study.montant_HT_total() > 0:
             phases = Phase.objects.filter(etude=study)
             students = study.get_li_students()
             
@@ -845,7 +893,7 @@ def calculate_chiffre_affaire_par_type(user_je):
     type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT_totale()
+        montant_HT = study.montant_HT_total()
         if montant_HT > 0: 
             revenues[type_index[study.client._type]] += montant_HT
     return revenues
@@ -856,7 +904,7 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     secteur_index = {'INDUSTRIE':0, 'DISTRIBUTION':1, 'SECTEUR_PUBLIC':2, 'CONSEIL':3, 'TRANSPORT':4, 'NUMERIQUE':5, 'BTP':6, 'AUTRE':7}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT_totale()
+        montant_HT = study.montant_HT_total()
         if montant_HT > 0:
             revenues[secteur_index[study.client.secteur]] += montant_HT
     return revenues
@@ -1296,3 +1344,66 @@ def add_intervenant(request, id_etude, id_student):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+#Pour afficher dynamiquement le graphe de CA
+def fetch_data(request):
+    if request.user.is_authenticated:
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        if start_date and end_date:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+        else:
+            return JsonResponse({'error': 'Invalid date range'}, status=400)
+
+        # Filtrer les études en fonction des dates
+        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        print(f"Etudes count: {etudes.count()}")
+
+        # Calculer les montants par mois et les labels
+        date_labels = []
+        cumulated_CA = []
+        current_month = start_date_obj.month
+        current_year = start_date_obj.year
+        current_sum = 0
+
+        for etude in etudes:
+            etude_month = etude.debut.month
+            etude_year = etude.debut.year
+
+            if etude_month == current_month and etude_year == current_year:
+                current_sum += etude.montant_HT_total()
+            else:
+                # Ajouter les données pour le mois précédent
+                date_labels.append(f"{current_year}-{current_month:02d}")
+                cumulated_CA.append(current_sum)
+
+                # Réinitialiser pour le nouveau mois
+                current_month = etude_month
+                current_year = etude_year
+                current_sum = etude.montant_HT_total()
+
+        # Ajouter les données pour le dernier mois
+        date_labels.append(f"{current_year}-{current_month:02d}")
+        cumulated_CA.append(current_sum)
+
+        # Debug prints
+        print(f"date_labels: {date_labels}")
+        print(f"cumulated_CA: {cumulated_CA}")
+
+        response_data = {
+            'date_labels': date_labels,
+            'cumulated_CA': cumulated_CA
+        }
+
+        # Ensure response_data is JSON serializable
+        try:
+            json_response = JsonResponse(response_data)
+        except TypeError as e:
+            print(f"Serialization error: {e}")
+            return JsonResponse({'error': 'Serialization error'}, status=500)
+
+        return json_response
+
+    return JsonResponse({'error': 'Unauthorized'}, status=403)

@@ -17,6 +17,13 @@
 
     {% load static %}
     {% load format_duration %}
+    
+    <!-- Script pour l'affichage dynamique du C-A -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    <script src="{% static 'polls/js/chart-area.js' %}"></script>
+
     <!-- Custom fonts for this template-->
     <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
@@ -469,12 +476,11 @@
                         <div class="col-xl-12 col-lg-7">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
@@ -489,8 +495,21 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
+                                    <div class="row">
+                                        <label for="start_date">Date de début:</label>
+                                        <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+                                        <label for="end_date">Date de fin:</label>
+                                        <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+                                        <button class="btn btn-primary" onclick="updateChart()">Mettre à jour</button>
+                                    </div>
                                     <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
+                                        <canvas id="myAreaChart1"></canvas>
+                                    </div>
+                                    <div id="chartData">
+                                        <h6>Chart Labels:</h6>
+                                        <pre id="chartLabels"></pre>
+                                        <h6>Chart Data:</h6>
+                                        <pre id="chartDataPoints"></pre>
                                     </div>
                                 </div>
                             </div>
