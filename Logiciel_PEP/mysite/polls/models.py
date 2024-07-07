@@ -4,7 +4,7 @@ from uuid import UUID
 from django import forms
 from django.db import models
 from django.utils import timezone 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import RegexValidator, MinLengthValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -155,6 +155,7 @@ class Client(models.Model):
 
     def modifyForm(instance):
         return AddClient(instance=instance)  
+    
 class Representant(models.Model):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
@@ -198,6 +199,7 @@ class Representant(models.Model):
         )
     def save(self, *args, **kwargs):
         id_client = kwargs.pop('id_client', None)
+        expediteur = kwargs.pop('expediteur', None)
         if(id_client is not None):
             client = Client.objects.get(id=id_client)
             self.client = client
@@ -332,14 +334,18 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
+<<<<<<< HEAD
         parametres = ParametresUtilisateur.objects.filter(membre=self)
         if not parametres.exists():
+=======
+        try:
+            param = self.parametres
+        except ObjectDoesNotExist:
+>>>>>>> d3fa30be8344980990a782919268825a1e4a1ccd
             param = ParametresUtilisateur(membre=self)
             param.save()
+        
 
-# alors en gros dans Etude tu veux 1) L'état de l'étude en négociation / Signé / En cours / Terminée  2) Les étapes d'avancement
-# de la mission (les phases) : ceux-ci contiennent différentes dates avec le nom des étapes et le prix de chacune d'elle 3) #
-# afficher le planning de l'étude
 
 class ParametresUtilisateur(models.Model):
     membre = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="parametres")
@@ -374,37 +380,46 @@ class Etude(models.Model):
         EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
         EN_COURS = 'EN_COURS', 'En cours'
         TERMINEE = 'TERMINEE', 'Terminée'
+    
     class TypeConvention(models.TextChoices):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
-    titre = models.CharField(max_length = 200)
-    numero = models.CharField(max_length = 10)
+
+    titre = models.CharField(max_length=200)
+    numero = models.IntegerField(blank=True, null=True)
     description = models.TextField(max_length=500, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
-    debut = models.DateField(default=datetime.date(1969, 1, 1))
-    #duree_semaine = models.IntegerField(default=1)
+    debut = models.DateField(default=timezone.now, blank=True, null=True)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
-    responsable = models.ForeignKey(Member, on_delete=models.CASCADE,null=True, blank=True, related_name="responsable_etudes")
-    #liste des étudiants via méthodes get_li_students
+    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes")
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    #representant = models.ForeignKey(Representant, on_delete=models.CASCADE,null=True )
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    frais_dossier = models.FloatField(default = 0)
+    frais_dossier = models.FloatField(default=0)
+    tva_pourcentage = models.FloatField(default=20)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
-    type_convention = models.CharField(choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
+    type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
     remarque = models.TextField(blank=True, null=True, default="")
-    #nb_factures = models.IntegerField(default = 2)
-    
+
     def __str__(self):
         return self.titre
 
     def get_display_dict(self):
-        intermediary_dict = {'Titre':self.titre, 'Description': self.description, 'Numéro':self.numero, 'Client':self.client.__str__(), 'Début':self.debut, 'Fin':self.fin(), 'Responsable':self.responsable.__str__(), 'Nombre de JEH':self.nb_JEH(), 'Montant HT':self.montant_HT_totale()}
+        intermediary_dict = {
+            'Titre': self.titre,
+            'Description': self.description,
+            'Numéro': self.numero,
+            'Client': str(self.client),
+            'Début': self.debut,
+            'Fin': self.fin(),
+            'Responsable': str(self.responsable),
+            'Nombre de JEH': self.nb_JEH(),
+            'Montant HT': self.montant_HT_total()
+        }
         return intermediary_dict
-    
+
     def get_li_students(self):
         phases = Phase.objects.filter(etude=self)
         student_set = set()
@@ -417,79 +432,74 @@ class Etude(models.Model):
 
     def liste_doc(self):
         return []
-    
+
     def duree_semaine(self):
         phases = Phase.objects.filter(etude=self)
-        if phases:
-            duree = max(phase.duree_semaine+phase.debut_relatif for phase in phases)
+        if phases.exists():
+            duree = max(phase.duree_semaine + phase.debut_relatif for phase in phases if phase.duree_semaine is not None and phase.debut_relatif is not None)
             return duree
         else:
-            return None
-    
+            return 0
+
     def fin(self):
-        if self.debut is None or self.duree_semaine() is None:
-            return datetime.date(1969, 1, 1)
+        if self.debut and self.duree_semaine():
+            return self.debut + datetime.timedelta(weeks=self.duree_semaine())
         else:
-            return self.debut+datetime.timedelta(weeks=self.duree_semaine())
-    
+            return None
+
     def nb_JEH(self):
         phases = Phase.objects.filter(etude=self)
-        if phases:
-            total_JEH = sum(phase.nb_JEH for phase in phases)
-            return total_JEH
-        else:
-            return None
-    
+        total_JEH = sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None) if phases.exists() else 0
+        return total_JEH
+
     def montant_phase_HT(self):
         phases = Phase.objects.filter(etude=self)
-        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases)
+        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None) if phases.exists() else 0
         return total_montant_HT
-    def montant_HT_totale(self):
-        return self.frais_dossier+self.montant_phase_HT()
+
+    def montant_HT_total(self):
+        return self.frais_dossier + self.montant_phase_HT()
+
     def TVA(self):
-        return 0.2*self.montant_HT_totale()
+        return (self.tva_pourcentage/100) * self.montant_HT_total()
+
     def total_ttc(self):
-        return 1.2*self.montant_HT_totale()
-    
+        return (1+self.tva_pourcentage/100) * self.montant_HT_total()
+
     def charges_URSSAF(self):
-        if self.nb_JEH() is not None:
-            return self.nb_JEH()*self.je.base_urssaf*self.je.taux_cotisations /100
-        else:
-            return 0
+        return self.nb_JEH() * self.je.base_urssaf * self.je.taux_cotisations / 100 if self.nb_JEH() else 0
+
     def retributions_totales(self):
         phases = Phase.objects.filter(etude=self)
-        if phases:
-            return sum(phase.retributions() for phase in phases)
-        else:
-            return 0
-    
+        return sum(phase.retributions() for phase in phases if phase.retributions is not None) if phases.exists() else 0
+
     def marge_JE(self):
-        return self.montant_HT_totale()-self.retributions_totales()-self.charges_URSSAF()
+        return self.montant_HT_total() - self.retributions_totales() - self.charges_URSSAF()
 
     def save(self, *args, **kwargs):
-        # Your custom validation logic here before saving
-        # For example, you can check if the value matches the regex pattern
-        
-        if self.id_url is None:
+        if not self.id_url:
             self.id_url = uuid.uuid4()
-        if self.duree_semaine() is not None :
-            if self.duree_semaine() < 0:
-                raise ValueError('Begin must be set before end.')
-        if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement :
-            raise ValueError('Begin must be set before end.')
-        if self.numero is None:
-            tous_numeros = Etude.objects.values_list("numero")
-            if(len(tous_numeros==0)):
-                maximum = 0
-            else:
-                maximum = max(tous_numeros)
-            self.numero = maximum + 1
+        
+        # Save the instance first to ensure it has an ID
+        if not self.pk:
+            super().save(*args, **kwargs)
+        
+        duree = self.duree_semaine()
+        if duree is not None and duree < 0:
+            raise ValueError('La durée de semaine doit être positive.')
+        
+        if self.date_debut_recrutement and self.date_fin_recrutement and self.date_debut_recrutement > self.date_fin_recrutement:
+            raise ValueError('La date de début de recrutement doit être avant la date de fin de recrutement.')
+        
+        if self.numero is None: 
+            max_numero = Etude.objects.aggregate(max_numero=Max('numero'))['max_numero'] or 0
+            self.numero = max_numero + 1
         
         super().save(*args, **kwargs)
-    
+
     def createForm(**kwargs):
         return AddEtude()
-    
+
     def retrieveForm(form):
         return AddEtude(form)
 
@@ -497,59 +507,50 @@ class Etude(models.Model):
         return AddEtude(instance=instance)
 
     def numero_AP(self, nom_doc):
-        return self.numero+nom_doc
-    
-    
+        return f"{self.numero}{nom_doc}"
+
     def nombre_phases(self):
-        phases = Phase.objects.filter(etude=self)
-        return len(phases)
-    
+        return Phase.objects.filter(etude=self).count()
+
     def ce_editable(self):
-        has_responsable = self.responsable is not None
-        has_qualite = self.resp_qualite is not None
-        return has_responsable and has_qualite
-    
+        return self.responsable is not None and self.resp_qualite is not None
+
     def convention_edited(self):
-        if self.type_convention == "Convention d'étude":     
+        if self.type_convention == "Convention d'étude":
             return ConventionEtude.objects.filter(etude=self).exists()
         elif self.type_convention == "Convention cadre":
             return ConventionCadre.objects.filter(etude=self).exists()
         else:
             return False
-        
+
     def convention(self):
-        if self.type_convention == "Convention d'étude": 
+        if self.type_convention == "Convention d'étude":
             conventions = ConventionEtude.objects.filter(etude=self)
         elif self.type_convention == "Convention cadre":
             conventions = ConventionCadre.objects.filter(etude=self)
         else:
             return None
-        if conventions.exists():
-            return conventions[0]
-        else:
-            return None
-        
-    def devis_editable(self):
-        has_responsable = self.responsable is not None
-        has_qualite = self.resp_qualite is not None
-        return has_responsable and has_qualite
-    
-    def devis_edited(self):
-        return self.devis.exists()
+        return conventions.first() if conventions.exists() else None
 
+    def devis_editable(self):
+        return self.responsable is not None and self.resp_qualite is not None
+
+    def devis_edited(self):
+        return Devis.objects.filter(etude=self).exists()
 
     def progress_percentage(self):
-        if self.duree_semaine() is None:
+        duree = self.duree_semaine()
+        if duree is None or duree == 0:
             return 0
+        total_duration = duree * 7
+        if total_duration > 0:
+            progress = (timezone.now().date() - self.debut).days
+            return int(max(min(100, (progress / total_duration) * 100), 0))
         else:
-            total_duration = self.duree_semaine() * 7
-            if total_duration>0:
-                progress = (timezone.now().date() - self.debut).days
-                progress_percentage = (progress/total_duration)*100
-                progress_percentage = int(max(min(100, progress_percentage), 0))
-            else :
-                progress_percentage = 0
-            return progress_percentage
+            return 0
+
+
+
 
 class Facture(models.Model):
     class Status(models.TextChoices):
@@ -580,6 +581,7 @@ class Facture(models.Model):
         return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
     def montant_TTC(self):
         return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
+
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
@@ -920,49 +922,50 @@ class AddStudent(forms.ModelForm):
             field.widget.attrs['class'] = 'form-control'
 
 class AddEtude(forms.ModelForm):
-    error_message = ""
     class Meta:
         model = Etude
-        exclude = ['numero','je', 'id_url', 'remarque', 'debut','date_fin_recrutement','date_debut_recrutement']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement']
+
     def __str__(self):
         return "Informations de l'étude"
+
     def name(self):
         return "AddEtude"
+
     def clean(self):
         cleaned_data = super().clean()
         ddr = cleaned_data.get('date_debut_recrutement')
         dfr = cleaned_data.get('date_fin_recrutement')
-        #LES DUREES SONT SOOIENT RENTRÉS À LA MAIN OU CALCULER AUTOMATIQUEMENT
         
-        # Vérifiez que la start_date est antérieure à end_date
-        # if duree<0:
-        #    self.add_error('duree_semaine', 'La durée doit être un entier positif.')
-        #    raise ValidationError(_('La durée doit être un entier positif.'))
+        if ddr and dfr and ddr > dfr:
+            self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
+            raise ValidationError('Start date must be before the end date.')
         
-        #if ddr and dfr and ddr > dfr:
-        #    self.add_error('date_fin_recrutement', 'Start date must be before the end date.')
-         #   raise ValidationError(_('Start date must be before the end date.'))
-
         return cleaned_data
+
     def save(self, commit=True, **kwargs):
         max_numero = Etude.objects.aggregate(max_numero=Max('numero'))['max_numero']
         if max_numero is None:
-            max_numero=0
+            max_numero = 0
+        
         etude = super(AddEtude, self).save(commit=False)
         etude.je = kwargs['expediteur'].je
-        if etude.numero is None :
-            etude.numero = max_numero+1
+        
+        if etude.numero is None:
+            etude.numero = max_numero + 1
+        
         if commit:
             etude.save()
+        
         return etude
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.fields['responsable'].widget = forms.TextInput(attrs={'class': 'form-control'})
-        #self.fields['client'].widget = forms.TextInput(attrs={'class': 'form-control'})
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+
     
 class AddClient(forms.ModelForm):
     class Meta:
