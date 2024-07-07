@@ -4,6 +4,10 @@ import openpyxl
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
 
+import logging #pour gérer plus facilement les erreurs
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
+
 from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
@@ -411,25 +415,35 @@ def input(request, modelName, iD):
 def facture(request, iD):
     if request.user.is_authenticated:
         try:
-            facture = Facture.objects.get(id=iD, je=request.user.je)
-            etude= facture.etude
+            facture = Facture.objects.get(id=iD)
+            etude = facture.etude
+            #etude = {'type_convention': etude.type_convention, }
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by('numero')
-            res = facture.montant_HT_fac(phases[0])
-            #etude = {'type_convention': etude.type_convention, }
-            
+            res = facture.montant_TTC()
             facture.date_emission = timezone.now().strftime('%d/%m/%Y')
-            date_30  = timezone.now() +  timedelta(30)
-            facture.date_echeance = date_30.strftime('%d/%m/%Y')  
-            context = {"facture": facture,"etude": etude, "client": client,"phases": phases, "res": res, "date_emission": facture.date_emission, "date_echeance": facture.date_echeance}
+            date_30 = timezone.now() + timedelta(30)
+            facture.date_echeance = date_30.strftime('%d/%m/%Y')
+            context = {
+                "facture": facture,
+                "etude": etude,
+                "client": client,
+                "phases": phases,
+                "res": res,
+                "date_emission": facture.date_emission,
+                "date_echeance": facture.date_echeance
+            }
+            template = loader.get_template("polls/facpdf.html")
 
-        except:
+        except Exception as e:
+            logger.error("Erreur interceptée: %s", e)
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
 
 def update_facture(request,iD):
     if request.method == 'POST':
@@ -463,8 +477,6 @@ def ndf(request):
 
 
 
-
-
 def stat_KPI(request):
     if request.user.is_authenticated:
         start_date = request.GET.get('start_date')
@@ -489,6 +501,7 @@ def stat_KPI(request):
         current_month = start_date_obj.month
         current_year = start_date_obj.year
         current_sum = 0
+        total_sum = 0
 
         for etude in etudes:
             etude_month = etude.debut.month
@@ -499,7 +512,8 @@ def stat_KPI(request):
             else:
                 # Ajouter les données pour le mois précédent
                 date_labels.append(f"{current_year}-{current_month:02d}")
-                cumulated_CA.append(current_sum)
+                total_sum += current_sum
+                cumulated_CA.append(total_sum)
 
                 # Réinitialiser pour le nouveau mois
                 current_month = etude_month
@@ -508,7 +522,8 @@ def stat_KPI(request):
 
         # Ajouter les données pour le dernier mois
         date_labels.append(f"{current_year}-{current_month:02d}")
-        cumulated_CA.append(current_sum)
+        total_sum += current_sum
+        cumulated_CA.append(total_sum)
 
         # Calcul des autres métriques
         liste_messages = Message.objects.filter(
@@ -523,7 +538,7 @@ def stat_KPI(request):
         ).count()
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
-        chiffre_affaire_total = 1000  # A METTRE A JOUR
+        chiffre_affaire_total = cumulated_CA[-1]
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
         chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
         chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
@@ -624,6 +639,65 @@ def stat_KPI(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+def fetch_data(request):
+    if request.user.is_authenticated:
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        if start_date and end_date:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+        else:
+            return JsonResponse({'error': 'Invalid date range'}, status=400)
+
+        # Filtrer les études en fonction des dates
+        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        print(f"Etudes count: {etudes.count()}")
+
+        # Calculer les montants par mois et les labels
+        date_labels = [start_date_obj.strftime('%Y-%m')]
+        cumulated_CA = [0]
+        current_sum = 0
+
+        for etude in etudes:
+            etude_month = etude.debut.month
+            etude_year = etude.debut.year
+            date_label = f"{etude_year}-{etude_month:02d}"
+
+            if date_labels and date_labels[-1] == date_label:
+                # Same month, add to current sum
+                current_sum += etude.montant_HT_total()
+            else:
+                # New month, append previous month data and start new sum
+                if date_labels:
+                    cumulated_CA[-1] = current_sum  # Update previous month sum
+                date_labels.append(date_label)
+                current_sum += etude.montant_HT_total()
+                cumulated_CA.append(current_sum)  # Initialize new month sum
+
+        # Debug prints
+        print(f"date_labels: {date_labels}")
+        print(f"cumulated_CA: {cumulated_CA}")
+
+        response_data = {
+            'date_labels': date_labels,
+            'cumulated_CA': cumulated_CA
+        }
+
+        # Ensure response_data is JSON serializable
+        try:
+            json_response = JsonResponse(response_data)
+        except TypeError as e:
+            print(f"Serialization error: {e}")
+            return JsonResponse({'error': 'Serialization error'}, status=500)
+
+        return json_response
+
+    return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+
 
 
 
@@ -893,9 +967,9 @@ def calculate_chiffre_affaire_par_type(user_je):
     type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT_total()
-        if montant_HT > 0: 
-            revenues[type_index[study.client._type]] += montant_HT
+        montant_HT_total = study.montant_HT_total()
+        if montant_HT_total > 0: 
+            revenues[type_index[study.client._type]] += montant_HT_total
     return revenues
 
 
@@ -904,9 +978,9 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     secteur_index = {'INDUSTRIE':0, 'DISTRIBUTION':1, 'SECTEUR_PUBLIC':2, 'CONSEIL':3, 'TRANSPORT':4, 'NUMERIQUE':5, 'BTP':6, 'AUTRE':7}
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT = study.montant_HT_total()
-        if montant_HT > 0:
-            revenues[secteur_index[study.client.secteur]] += montant_HT
+        montant_HT_total = study.montant_HT_total()
+        if montant_HT_total > 0:
+            revenues[secteur_index[study.client.secteur]] += montant_HT_total
     return revenues
 
 
@@ -1345,65 +1419,3 @@ def add_intervenant(request, id_etude, id_student):
         context = {}
     return HttpResponse(template.render(context, request))
 
-#Pour afficher dynamiquement le graphe de CA
-def fetch_data(request):
-    if request.user.is_authenticated:
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-
-        if start_date and end_date:
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-        else:
-            return JsonResponse({'error': 'Invalid date range'}, status=400)
-
-        # Filtrer les études en fonction des dates
-        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
-        print(f"Etudes count: {etudes.count()}")
-
-        # Calculer les montants par mois et les labels
-        date_labels = []
-        cumulated_CA = []
-        current_month = start_date_obj.month
-        current_year = start_date_obj.year
-        current_sum = 0
-
-        for etude in etudes:
-            etude_month = etude.debut.month
-            etude_year = etude.debut.year
-
-            if etude_month == current_month and etude_year == current_year:
-                current_sum += etude.montant_HT_total()
-            else:
-                # Ajouter les données pour le mois précédent
-                date_labels.append(f"{current_year}-{current_month:02d}")
-                cumulated_CA.append(current_sum)
-
-                # Réinitialiser pour le nouveau mois
-                current_month = etude_month
-                current_year = etude_year
-                current_sum = etude.montant_HT_total()
-
-        # Ajouter les données pour le dernier mois
-        date_labels.append(f"{current_year}-{current_month:02d}")
-        cumulated_CA.append(current_sum)
-
-        # Debug prints
-        print(f"date_labels: {date_labels}")
-        print(f"cumulated_CA: {cumulated_CA}")
-
-        response_data = {
-            'date_labels': date_labels,
-            'cumulated_CA': cumulated_CA
-        }
-
-        # Ensure response_data is JSON serializable
-        try:
-            json_response = JsonResponse(response_data)
-        except TypeError as e:
-            print(f"Serialization error: {e}")
-            return JsonResponse({'error': 'Serialization error'}, status=500)
-
-        return json_response
-
-    return JsonResponse({'error': 'Unauthorized'}, status=403)

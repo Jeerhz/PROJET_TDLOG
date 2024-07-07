@@ -383,12 +383,13 @@ class Etude(models.Model):
     numero = models.IntegerField(blank=True, null=True)
     description = models.TextField(max_length=500, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
-    debut = models.DateField(default=timezone.now, blank=True)
+    debut = models.DateField(default=timezone.now, blank=True, null=True)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes")
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0)
+    tva_pourcentage = models.FloatField(default=20)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
@@ -454,10 +455,10 @@ class Etude(models.Model):
         return self.frais_dossier + self.montant_phase_HT()
 
     def TVA(self):
-        return 0.2 * self.montant_HT_total()
+        return (self.tva_pourcentage/100) * self.montant_HT_total()
 
     def total_ttc(self):
-        return 1.2 * self.montant_HT_total()
+        return (1+self.tva_pourcentage/100) * self.montant_HT_total()
 
     def charges_URSSAF(self):
         return self.nb_JEH() * self.je.base_urssaf * self.je.taux_cotisations / 100 if self.nb_JEH() else 0
@@ -574,6 +575,7 @@ class Facture(models.Model):
         return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
     def montant_TTC(self):
         return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
+
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
         etude = Etude.objects.get(id=id_etude)
