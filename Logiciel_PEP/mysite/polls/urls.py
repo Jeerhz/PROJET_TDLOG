@@ -22,7 +22,7 @@ urlpatterns = [
     path("je_detail/", views.je_detail, name='je_detail'),
     path("search_suggestions/", views.search_suggestions, name='search_suggestions'),
     path("search/", views.search, name='search'),
-    path('stat_KPI/', views.stat_KPI, name='stat_KPI'),
+    path("stat_KPI/", views.stat_KPI, name='stat_KPI'),
     path('fetch_data/', views.fetch_data, name='fetch_data'),
     path("messagerie/", views.messages, name='messagerie'),
     path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
@@ -40,10 +40,6 @@ urlpatterns = [
     path("editer_avenant_ce/<int:iD>", views.editer_avenant_ce, name="editer_avenant_ce"),
     path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon"),
     path("add_intervenant/<int:id_etude>/<int:id_student>", views.add_intervenant, name="add_intervenant"),
-<<<<<<< HEAD
     path("search_suggestions_student/<int:id_etude>", views.search_suggestions_student, name='search_suggestions_student'),
-=======
-    path("search_suggestions_student/", views.search_suggestions_student, name='search_suggestions_student'),
     #path("ajouter_representant/<int:id_client>", views.ajouter_representant, name='ajouter_representant'),
->>>>>>> c472254e50c4f5b6d6b0b410330ed2ed74b38509
 ]

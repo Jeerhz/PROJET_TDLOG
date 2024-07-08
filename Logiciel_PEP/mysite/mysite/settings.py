@@ -82,10 +82,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_sylex',
-        'USER': 'postgres',
-        'PASSWORD': 'bensalem',
+        'USER': 'edgar_admin',
+        'PASSWORD': '/Tito1905',
         'HOST': 'localhost',  
-        'PORT': '5433',
+        'PORT': '5432',
     }
 }
 
@@ -128,6 +128,7 @@ DATETIME_FORMAT = 'd/m/Y H:i:s'
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "polls/static")
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

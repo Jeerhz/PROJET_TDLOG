@@ -1198,10 +1198,10 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
         if request.method == 'POST':
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
-                try :
+                #try :
                     etude = Etude.objects.get(id=id_etude)
                     phase = Phase.objects.get(etude=etude, numero=numero_phase)
-                    eleve = fetchform.eleve
+                    eleve = fetchform.cleaned_data['eleve']
                     ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
                     if (ass_jeh.exists()):
                         ass_jeh.nombre_jeh = fetchform.nombre_jeh
@@ -1209,7 +1209,7 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
                         ass_jeh.save()
                     else :
                         fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
-                except:
+                #except:
                     pass
         return redirect('details', modelName='Etude', iD=id_etude)
     else:

@@ -250,7 +250,7 @@ class Student(models.Model):
         return Candidature.objects.filter(eleve=self).count()
     
     def nb_etudes_realisees(self):
-        return AssignationJEH.objects.filter(eleve=self).values("phase").values("etude").distinct().count()
+        return AssignationJEH.objects.filter(eleve=self).values("phase__etude").distinct().count()
     
     
     
@@ -334,14 +334,9 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         self.username = self.email  # Set username to email
         super().save(*args, **kwargs)
-<<<<<<< HEAD
-        parametres = ParametresUtilisateur.objects.filter(membre=self)
-        if not parametres.exists():
-=======
         try:
             param = self.parametres
         except ObjectDoesNotExist:
->>>>>>> d3fa30be8344980990a782919268825a1e4a1ccd
             param = ParametresUtilisateur(membre=self)
             param.save()
         
@@ -471,7 +466,7 @@ class Etude(models.Model):
 
     def retributions_totales(self):
         phases = Phase.objects.filter(etude=self)
-        return sum(phase.retributions() for phase in phases if phase.retributions is not None) if phases.exists() else 0
+        return sum(phase.retributions() for phase in phases if phase.retributions() is not None) if phases.exists() else 0
 
     def marge_JE(self):
         return self.montant_HT_total() - self.retributions_totales() - self.charges_URSSAF()
@@ -706,7 +701,7 @@ class Phase(models.Model):
     def retributions(self):
         assignations = AssignationJEH.objects.filter(phase=self)
         if assignations:
-            return sum(assignation.retribution_brute_totale for assignation in assignations)
+            return sum(assignation.retribution_brute_totale() for assignation in assignations)
         else :
             return self.calcul_mt_HT()*0.6
     
