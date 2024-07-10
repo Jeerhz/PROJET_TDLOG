@@ -534,8 +534,8 @@
                         {% for phase in etude.phases.all %}
                         <h6>Phase {{ phase.numero }}</h6>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH:</strong> <input type="text" name="nb_jeh_phase{{ phase.id }}" class="form-control" value=""></li>
-                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution:</strong> <input type="text" name="pourcentage_retribution_phase{{ phase.id }}" class="form-control" value=""></li>
+                            <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH:</strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
+                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution:</strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
                         </ul>
                         {% endfor %}
                     </form>
@@ -949,8 +949,7 @@
                                                 <thead>
                                                     <tr>
                                                         <th>{{ phase.titre }}</th>
-                                                        <th>{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} €</th>
-                                                        <th> {{ phase.montant_HT }} €</th>
+                                                        <th><div class="right">{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} € </div></th>
                                                     </tr>
                                                 </thead>                
                                             </table>
@@ -1302,7 +1301,7 @@
                                     {% for eleve in intervenants %}
                                     <div class="card shadow">
                                     <div class="card-header" id="cardHeaderEleve{{eleve.id}}" data-toggle="collapse" data-target="#cardBodyEleve{{eleve.id}}" aria-expanded="false" aria-controls="cardBodyEleve{{eleve.id}}" style="cursor: pointer;">
-                                        <i class="fas fa-info-circle mr-2"></i>
+                                        <i class="fas fa-user-circle mr-2"></i>
                                         <strong>{{eleve}}</strong>
                                     </div>
                                     <div class="collapse" id="cardBodyEleve{{eleve.id}}" aria-labelledby="cardHeaderEleve{{eleve.id}}">
@@ -1781,9 +1780,8 @@
 
         
     <!-- Page level custom scripts -->
-    <script src="{% static 'polls/js/demo/chart-area-demo.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-etude.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script>
+    <!-- <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 

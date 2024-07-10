@@ -544,7 +544,8 @@ class Etude(models.Model):
         else:
             return 0
 
-
+    def get_phases(self):
+        return Phase.objects.filter(etude=self)
 
 
 class Facture(models.Model):
@@ -791,24 +792,29 @@ class Notification(models.Model):
     description = models.CharField(max_length=500)
     date_effet = models.DateField()
     date_echeance = models.DateField()
+
     def active(self):
         return (self.date_effet <= timezone.now() and timezone.now() <= self.date_echeance)
+
     def __str__(self):
         return self.description
+
     def send(self):
         users = self.utilisateur.all()
         for user in users:
-            if user.setting :
+            if user.setting:
                 email_host = settings.EMAIL_HOST
                 email_port = settings.EMAIL_PORT
                 email_username = settings.EMAIL_USERNAME
                 email_password = settings.EMAIL_PASSWORD
-                connection = get_connection(host=email_host, port=email_port, username=email_username,
-                    password=email_password,
-                    use_tls=True,)
-                send_mail("Notification SYLEX", self.description, "titoduc1905@gmail.com", [user.email], 
-                        fail_silently=False, 
-                        connection=connection)
+                connection = get_connection(
+                    host=email_host, port=email_port, username=email_username,
+                    password=email_password, use_tls=True,
+                )
+                send_mail(
+                    "Notification SYLOG", self.description, "titoduc1905@gmail.com", [user.email], 
+                    fail_silently=False, connection=connection
+                )
 
 class AddMessage(forms.ModelForm):
     class Meta:
