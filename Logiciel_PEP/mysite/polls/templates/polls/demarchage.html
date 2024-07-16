@@ -462,302 +462,142 @@
                 <!-- Begin Page Content -->
                 
                 <div class="card-header mt-3">
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-secondary">Signaler un problème</button>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="row">
-                
-                            <!-- Earnings (Annual) -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-success shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    Chiffre d'Affaire Annuel</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> {{chiffre_affaire}} € </div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Card Mission termininée (Annuel) -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-primary shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Missions terminées</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> {{nombre_mission_terminee}}</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <!-- Missions en cours -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-info shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Missions en cours</div>
-                                                <div class="row no-gutters align-items-center">
-                                                    <div class="col-auto">
-                                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{nombre_mission_en_cours}}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <!-- Pending Requests -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-warning shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                    Missions en négociation</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{nombre_mission_en_negociation}}</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    
+                   
                 </div>
                     
 
-                {% if user.parametres.param_statut_etude_ec %}
+                {% if representants %}
                 <!-- Beginning of container-fluid -->
+
                 <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études récentes</h2>
-                        </div>
-                    </div>
+                    
                     <div class="card mb-4 ml-4 mr-3 shadow">
                         <div class="table-responsive">
                             <table class="table table-hover text-center">
                                 <thead style="background-color: #ffffff;">
                                     <tr>
-                                        <th scope="col" style="width: 5%;"></th>
-                                        {% if user.parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Numéro</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <th scope="col">Titre</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_client %}
-                                        <th scope="col">Client</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_responsable %}
-                                        <th scope="col">Suiveur</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <th scope="col">Remarque</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
-                                        <th scope="col">Avancement</th>
-                                        {% endif%}
-                                        <th scope="col" style="width: 5%;">Global</th>
+                                        
+                                        <th scope="col">Clients ayant répondus</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for etude in etudes_recentes %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <td class="align-middle">{{etude.titre}}</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_client %}
-                                        <td class="align-middle">{{etude.client}}</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_responsable %}
-                                        <td class="align-middle">
-                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
-                                        </td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ etude.progress_percentage }}%;" aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ etude.progress_percentage }}%</div>
-                                            </div>
-                                        </td>
-                                        {% endif %}
-                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
+                                    {% for representant in representants %}
+                                        {% if representant.contacte_2m %}
+                                            <td class="align-middle">{{representant.client}}</td>
+                                            <td class="align-middle">{{representant.nom}}</td>
+                                        
+                                        {% endif %}  
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>          
+                <div class="container-fluid">
+                    
+                    <div class="card mb-4 ml-4 mr-3 shadow">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center">
+                                <thead style="background-color: #ffffff;">
+                                    <tr>
+                                        
+                                        <th scope="col">sans réponse</th>
+                                        
                                     </tr>
-                                    <tr class="collapse" id="sec_table_ec_{{etude.id}}">
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
-                                            <table class="table table-bordered">
-                                                <tbody>
-                                                <tr>
-                                                    <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
-                                                    <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                    <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Devis</td>
-                                                    <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                    <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                                </tr>
-                                                {% for facture in etude.factures.all %}
-                                                <tr>
-                                                    <td>{{ facture.type_facture }}</td>
-                                                    <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
-                                                    <td>{{facture.remarque}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                      </tr>
+                                </thead>
+                                <tbody>
+                                    {% for representant in representants %}
+
+                                        {% if representant.contacte_2m %}
+                                            {% if not representant.reponse_2m %}
+                                                <td class="align-middle">{{representant.client}}</td>
+                                            
+                                            {% endif %}
+                                        {% endif %}           
     
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>               
-                <!-- /.container-fluid -->
-                {% endif %}
-
-                {% if user.parametres.param_statut_etude_ed %}
-                <!-- Beginning of container-fluid -->
+                </div>    
                 <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
-                        </div>
-                    </div>
+                    
+                    
                     <div class="card mb-4 ml-4 mr-3 shadow">
                         <div class="table-responsive">
                             <table class="table table-hover text-center">
                                 <thead style="background-color: #ffffff;">
                                     <tr>
-                                        <th scope="col" style="width: 5%;"></th>
-                                        {% if user.parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Numéro</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <th scope="col">Titre</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_client %}
-                                        <th scope="col">Client</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_responsable %}
-                                        <th scope="col">Suiveur</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <th scope="col">Remarque</th>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
-                                        <th scope="col">Avancement</th>
-                                        {% endif%}
-                                        <th scope="col" style="width: 5%;">Global</th>
+                                        
+                                        <th scope="col">à relancer</th>
+                                        
                                     </tr>
-                                </thead>
+                                </thead> 
                                 <tbody>
-                                    {% for etude in etudes_en_discussion %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <td class="align-middle">{{etude.titre}}</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_client %}
-                                        <td class="align-middle">{{etude.client}}</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_responsable %}
-                                        <td class="align-middle">
-                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
-                                        </td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
-                                        {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ etude.progress_percentage }}%;" aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ etude.progress_percentage }}%</div>
-                                            </div>
-                                        </td>
-                                        {% endif %}
-                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
-                                    </tr>
-                                    <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
-                                        <table class="table table-bordered">
-                                            <tbody>
-                                            <tr>
-                                                <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            {% for facture in etude.factures.all %}
-                                            <tr>
-                                                <td>{{ facture.type_facture }}</td>
-                                                <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
-                                                <td>{{facture.remarque}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                        </td>
-                                    </tr>
+                                    {% for representant in representants %}
 
+                                        {% if representant.relance %}
+                                            
+                                            <td class="align-middle">{{representant.client}}</td>
+                                            
+                                            
+                                        {% endif %}           
+    
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>     
-                <!-- End of container-fluid -->
+                </div>      
+                <div class="container-fluid">
+                    
+                    <div class="card mb-4 ml-4 mr-3 shadow">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center">
+                                <thead style="background-color: #ffffff;">
+                                    <tr>
+                                        
+                                        <th class="align-middle" scope="col">jamais contacté</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for representant in representants %}
+
+                                        {% if not representant.contact_rec %}
+                                           
+                                            <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_dem_{{representant.id}}">{{representant.client}}</td>
+                                            <td class="align-middle">{{representant.first_name}} {{representant.last_name}}</td>
+                                            <td class="align-middle">{{representant.client.secteur}}</td>
+                                            <td class="align-middle">{{representant.client.derniere_mission}}</td>
+                                            
+                                            <tr class="collapse" id="sec_table_dem_{{representant.id}}">
+                                                <td  contenteditable="true">
+                                                    Bonjour {{representant.titre}} {{representant.last_name}},
+                                                    Je me permets de vous contacter au nom de la Junior Entreprise {{representant.client.je.nom}}, spécialisée dans le développement de sites web et la mise en place de solutions numériques sur mesure.
+
+
+                                                </td>
+                                                <td>
+                                                    envoyer le mail
+                                                </td>
+
+                                              </tr>   
+                                        {% endif %}           
+    
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>  
+                <!-- /.container-fluid -->
                 {% endif %}
+
+                
             </div>
             <!-- End of Main Content -->
         <!-- Footer -->
