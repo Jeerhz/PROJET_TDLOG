@@ -690,8 +690,11 @@ class Phase(models.Model):
         if(id_etude is not None):
             etude = Etude.objects.get(id=id_etude)
             self.etude = etude
-        if(numero is not None):
-            self.numero = numero
+        if(self.numero is None):
+            if(numero is not None):
+                self.numero = numero
+            else :
+                self.numero = max(Phase.objects.filter(etude=self.etude).values_list('numero', flat=True))+1
         super(Phase, self).save(*args, **kwargs)
         
     def li_eleves(self):

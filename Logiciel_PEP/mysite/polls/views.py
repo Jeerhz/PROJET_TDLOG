@@ -346,8 +346,8 @@ def input(request, modelName, iD):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        template = loader.get_template("polls/page_input.html")
         if request.method == "GET":
+            template = loader.get_template("polls/page_input.html")
             model = apps.get_model(app_label="polls", model_name=modelName)
             if iD == 0:
                 form = model.createForm(je=request.user.je)
@@ -383,20 +383,14 @@ def input(request, modelName, iD):
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
+
             model = apps.get_model(app_label="polls", model_name=modelName)
             fetchform = model.retrieveForm(request.POST)
             if fetchform.is_valid():
-                fetchform.save(commit=True, expediteur=request.user)
-                context = {
-                    "form": fetchform,
-                    "title": str(fetchform),
-                    "message": "Le formulaire a été envoyé avec succès",
-                    "modelName": modelName,
-                    "iD": iD,
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                }
+                new_object = fetchform.save(commit=True, expediteur=request.user)
+                return redirect('details', modelName=modelName, iD=new_object.id)
             else:
+                template = loader.get_template("polls/page_input.html")
                 context = {
                     "form": fetchform,
                     "title": str(fetchform),
@@ -414,7 +408,7 @@ def input(request, modelName, iD):
 
 def facture(request, iD):
     if request.user.is_authenticated:
-        try:
+        #try:
             facture = Facture.objects.get(id=iD)
             etude = facture.etude
             #etude = {'type_convention': etude.type_convention, }
@@ -435,7 +429,7 @@ def facture(request, iD):
             }
             template = loader.get_template("polls/facpdf.html")
 
-        except Exception as e:
+        #except Exception as e:
             logger.error("Erreur interceptée: %s", e)
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -1204,9 +1198,10 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
                     eleve = fetchform.cleaned_data['eleve']
                     ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
                     if (ass_jeh.exists()):
-                        ass_jeh.nombre_jeh = fetchform.nombre_jeh
-                        ass_jeh.pourcentage_retribution = fetchform.pourcentage_retribution
-                        ass_jeh.save()
+                        only_ass_jeh = ass_jeh[0]
+                        only_ass_jeh.nombre_JEH = fetchform.cleaned_data['nombre_JEH']
+                        only_ass_jeh.pourcentage_retribution = fetchform.cleaned_data['pourcentage_retribution']
+                        only_ass_jeh.save()
                     else :
                         fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
                 #except:
