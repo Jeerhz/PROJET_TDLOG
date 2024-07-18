@@ -3,7 +3,13 @@ import os
 import openpyxl
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
+<<<<<<< HEAD
 from jinja2 import Environment
+=======
+from docx import Document
+ 
+
+>>>>>>> d7928fe53117ccb6f3bc27c4ab52e87fa352b37a
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -183,6 +189,29 @@ def je_detail(request):
         je = request.user.je
         context = {
             'je': je,
+        }
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def demarchage(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        template = loader.get_template("polls/demarchage.html")
+        je = request.user.je
+        representants= Representant.objects.filter(client__je=je)
+        context = {
+            'representants': representants,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -816,7 +845,7 @@ def editer_convention(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-    
+
 def editer_devis(request, iD):
     if request.user.is_authenticated:
         try:

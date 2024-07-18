@@ -17,6 +17,7 @@ from django.conf import settings
 from datetime import date
 
 
+
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
 DOC_STORAGE = "polls/"
 
@@ -90,7 +91,7 @@ default_je_data = {
 }
 
 
-
+ 
 class Client(models.Model):
     class Type(models.TextChoices):
         GRANDE_ENTREPRISE = 'GRANDE_ENTREPRISE', 'Grande entreprise'
@@ -136,6 +137,9 @@ class Client(models.Model):
         help_text="Sélectionnez le type d'entreprise."
     )
 
+    def derniere_mission(self):
+        etudes = Etude.objects.filter(client=self).order_by('numero')
+        return etudes[0]
 
 
     def __str__(self):
@@ -156,6 +160,8 @@ class Client(models.Model):
     def modifyForm(instance):
         return AddClient(instance=instance)  
     
+    
+    
 class Representant(models.Model):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
@@ -163,10 +169,16 @@ class Representant(models.Model):
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
     phone_number = models.CharField(max_length=200, blank=True, null=True)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
+    
     remarque = models.TextField(blank=True, null=True, default="")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     fonction = models.CharField(max_length = 100, null=True)
+    contact_rec = models.BooleanField(default=False)
+    dernier_mail = models.DateField(default=datetime.date(1747, 1, 1))
+    derniere_reponse = models.DateField(default=datetime.date(1747, 1, 1))
+
+    def relance(self):
+        return self.derniere_reponse - self.dernier_mail > datetime.timedelta(days=60)
     def __str__(self):
         return self.first_name+' '+self.last_name
     

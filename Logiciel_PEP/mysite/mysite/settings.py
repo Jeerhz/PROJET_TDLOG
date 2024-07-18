@@ -81,9 +81,13 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylex',
+        'NAME': 'db_sylog',
         'USER': 'postgres',
+<<<<<<< HEAD
         'PASSWORD': '/Tito1905',
+=======
+        'PASSWORD': 'sylog',
+>>>>>>> d7928fe53117ccb6f3bc27c4ab52e87fa352b37a
         'HOST': 'localhost',  
         'PORT': '5432',
     }
