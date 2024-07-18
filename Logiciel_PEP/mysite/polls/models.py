@@ -400,6 +400,11 @@ class Etude(models.Model):
 
     def __str__(self):
         return self.titre
+    
+    def ref(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}"
 
     def get_display_dict(self):
         intermediary_dict = {
@@ -544,8 +549,7 @@ class Etude(models.Model):
         else:
             return 0
 
-    def get_phases(self):
-        return Phase.objects.filter(etude=self)
+
 
 
 class Facture(models.Model):
@@ -613,7 +617,7 @@ class ConventionEtude(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}ce"
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}ce"
     
     def signe(self):
         return (self.date_signature is not None)
@@ -647,6 +651,15 @@ class AvenantRuptureConventionEtude(models.Model):
             nb_avenants = len(AvenantRuptureConventionEtude.objects.filter(ce=self.ce))
             self.numero = nb_avenants + 1
         super(AvenantRuptureConventionEtude, self).save(*args, **kwargs)
+
+class AvenantConventionEtude(models.Model):
+    ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants_modification")
+    numero = models.IntegerField()
+    liste_phases_supprimees = models.ManyToManyField('Phase', related_name="avenant_suppression", blank=True)
+    
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+
 
 class BonCommande(models.Model):
     convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
@@ -795,29 +808,24 @@ class Notification(models.Model):
     description = models.CharField(max_length=500)
     date_effet = models.DateField()
     date_echeance = models.DateField()
-
     def active(self):
         return (self.date_effet <= timezone.now() and timezone.now() <= self.date_echeance)
-
     def __str__(self):
         return self.description
-
     def send(self):
         users = self.utilisateur.all()
         for user in users:
-            if user.setting:
+            if user.setting :
                 email_host = settings.EMAIL_HOST
                 email_port = settings.EMAIL_PORT
                 email_username = settings.EMAIL_USERNAME
                 email_password = settings.EMAIL_PASSWORD
-                connection = get_connection(
-                    host=email_host, port=email_port, username=email_username,
-                    password=email_password, use_tls=True,
-                )
-                send_mail(
-                    "Notification SYLOG", self.description, "titoduc1905@gmail.com", [user.email], 
-                    fail_silently=False, connection=connection
-                )
+                connection = get_connection(host=email_host, port=email_port, username=email_username,
+                    password=email_password,
+                    use_tls=True,)
+                send_mail("Notification SYLEX", self.description, "titoduc1905@gmail.com", [user.email], 
+                        fail_silently=False, 
+                        connection=connection)
 
 class AddMessage(forms.ModelForm):
     class Meta:

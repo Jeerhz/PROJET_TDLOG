@@ -1163,8 +1163,16 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h5 class="card-title">Facture</h5>
-                                                    <p class="card-text">Préparez la facture pour cette étude.</p>
-                                                    <a href="{% url 'facture' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la Facture</a>
+                                                    {% if etude.factures.count %}
+                                                        {% for facture in etude.factures.all %}
+                                                        <br>
+                                                        <p class="card-text">Préparez la facture n°<strong>{{facture.numero}}</strong> pour cette étude.</p>
+                                                        <a href="{% url 'facture' facture.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la Facture</a>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <br>
+                                                        <p class="card-text">Aucune facture pour cette étude.</p>
+                                                    {% endif%}
                                                 </div>
                                             </div>
                                         </div>

@@ -3,6 +3,7 @@ import os
 import openpyxl
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
+from jinja2 import Environment
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -24,6 +25,7 @@ from datetime import datetime, timedelta
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
+from .templatetags.format_duration import format_nombres
 
 from .models import (
     JE,
@@ -406,10 +408,10 @@ def input(request, modelName, iD):
     return HttpResponse(template.render(context, request))
 
 
-def facture(request, iD):
+def facture(request, id_facture):
     if request.user.is_authenticated:
-        #try:
-            facture = Facture.objects.get(id=iD)
+        try:
+            facture = Facture.objects.get(id=id_facture)
             etude = facture.etude
             #etude = {'type_convention': etude.type_convention, }
             client = etude.client
@@ -429,10 +431,9 @@ def facture(request, iD):
             }
             template = loader.get_template("polls/facpdf.html")
 
-        #except Exception as e:
-            logger.error("Erreur interceptée: %s", e)
+        except Exception as e:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Erreur dans l'identification de la mission."}
+            context = {"error_message": "Erreur dans l'identification de la facture."}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -759,7 +760,7 @@ def register(request):
 
 def editer_convention(request, iD):
     if request.user.is_authenticated:
-        try:
+        #try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
             if instance.type_convention == "Convention d'étude":
@@ -780,8 +781,15 @@ def editer_convention(request, iD):
             context = {"etude": instance, "client": client, "ce":ce, "responsable":responsable}
             # Load the template
 
+            # Create a Jinja2 environment
+            env = Environment()
+
+            # Register the custom filter
+            env.filters['FormatNombres'] = format_nombres
+
+
             # Render the document
-            template.render(context)
+            template.render(context, env)
 
 
             # Create a temporary in-memory file
@@ -797,10 +805,10 @@ def editer_convention(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except ValueError as ve:
+        #except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
