@@ -1565,52 +1565,55 @@
                         </div>
                         <!-- Onglet Annuaire Études -->
                         <div class="tab-pane fade" id="pills-missions_réalisées">
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <small>23e41</small>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Cermics - réalisation d'un site</th>
-                                                <th>3 JEH à 300,00€ HT</th>
-                                                <th>900,00€ HT</th>
-                                            </tr>
-                                        </thead>
-        
-                                    </table>
-                                </div>
-                                <li class="nav-item">
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
-                                        aria-expanded="true" aria-controls="intervenants_phase1">
-                                        <i class="bi bi-arrows-collapser"></i>
-                                        <span>Phases</span>
-                                    </a>
-                                    <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
-                                        <div class="bg-white py-2 collapse-inner rounded">
-                                            <div class="bg-white py-2 collapse-inner rounded">
-                                                <table class="table table-striped">
-                                                    
-                                                    <tbody>
-                                                      <tr>
-                                                        <th scope="col">Phase 1</th>
-                                                        <th scope="col">nom de la phase 1</th>
-                                                        <th scope="col">3 JEHs à 300,00€</th>
-                                                        <th scope="col">900,00€</th>
-                                                      </tr>
-                                                      
-                                                    </tbody>
-                                                  </table>
-                                                
+                            <div class="container p-4">
+                                <div class="row mb-3 d-flex justify-content-center">
+                                    <div class="col-5">
+                                        
+                                            <div class="card shadow p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+                                                <h3><span class="badge badge-counter badge-info">{{eleve.nb_etudes_realisees}}</span> mission(s) réalisée(s)</h3>
                                             </div>
-                    
+                                        
+                                    </div>
+                                </div>
+                                {% for mission in eleve.missions_realisees.all %}
+                                <div class="card shadow">
+                                    <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-toggle="collapse" data-target="#phases_realisees{{mission.id}}"
+                                    aria-expanded="false" aria-controls="phases_realisees{{mission.id}}">
+                                        <h3>{{ mission.titre }}</h3>
+                                        <small>{{ mission.ref }}</small>
+                                    </div>
+                                    <div class="collapse" id="phases_realisees{{mission.id}}" aria-labelledby="phases_realisees{{mission.id}}">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Phase</th>
+                                                            <th>JEH</th>
+                                                            <th>Montant HT</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% for assignation in eleve|assignation:mission %}
+                                                        <tr>
+                                                            <th>{{assignation.phase.numero}}</th>
+                                                            <th>{{assignation.nb_JEH}}</th>
+                                                            <th>{{assignation.retribution_brute_totale}}</th>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="{% url 'details' modelName='Etude' iD=mission.id %}" class="btn btn-primary">Voir étude</a>
                                         </div>
                                     </div>
-                                </li>
+                                    
+                                </div>
+                                {% endfor %}
                             </div>
-    
-                            
                         </div>
                         <div class="tab-pane fade" id="pills-missions_suivies">
                             <div> Missions suivies</div>

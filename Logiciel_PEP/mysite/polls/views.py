@@ -3,13 +3,7 @@ import os
 import openpyxl
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
-<<<<<<< HEAD
 from jinja2 import Environment
-=======
-from docx import Document
- 
-
->>>>>>> d7928fe53117ccb6f3bc27c4ab52e87fa352b37a
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -62,6 +56,7 @@ from .models import (
     BonCommande,
     Representant,
     AddRepresentant,
+    Candidature,
 )
 
 
@@ -1254,26 +1249,40 @@ def recrutement(request, id_url): # Controler les dates
         try :
             uuid_url = UUID(id_url)
             etude = Etude.objects.get(id_url=uuid_url)
-            if (etude.date_fin_recrutement.is_blank() or etude.date_debut_recrutement.is_blank() or timezone.now()<etude.date_debut_recrutement or timezone.now()>etude.date_fin_recrutement()):
+            if (etude.date_fin_recrutement is None or etude.date_debut_recrutement is None or timezone.now().date()<etude.date_debut_recrutement or timezone.now().date()>etude.date_fin_recrutement):
                 raise ValueError('')
             context = {'etude':etude, 'form':Recrutement()}
             template = loader.get_template("polls/recrutement.html")
         except :
             context = {'error_message': "Cette page n'est associée à aucune mission, ou vous tentez d'y accéder hors période de recrutement."}
             template = loader.get_template("polls/recrutement_fail.html")
-        return HttpResponse(template.render(context, request))
     else:
         try :
             uuid_url = UUID(id_url)
             etude = Etude.objects.get(id_url=uuid_url)
             recrutement = Recrutement(request.POST)
-            recrutement.save(etude=etude)
-            context = {}
-            template = loader.get_template("polls/recrutement_succes.html")
+            if(recrutement.is_valid()):
+                existing_students = Student.objects.filter(mail=recrutement.cleaned_data['email'], first_name__iexact=recrutement.cleaned_data['prenom'], last_name__iexact=recrutement.cleaned_data['nom'])
+                student = None
+                detail_message = None
+                if(existing_students.exists()):
+                    student = existing_students[0]
+                    detail_message = "Votre profil a été reconnu dans la base de données."
+                else:
+                    student = Student(je=request.user.je, first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'])
+                    student.save()
+                    detail_message = "D'après nos données, il s'agit de votre première candidature."
+                candidature = Candidature(eleve=student, motivation=recrutement.cleaned_data['motivation'], etude=etude)
+                candidature.save()
+                context = {"detail_message" : detail_message}
+                template = loader.get_template("polls/recrutement_succes.html")
+            else:
+                context = {'error_message': "Votre candidature semble contenir des données corrompues."}
+                template = loader.get_template("polls/recrutement_fail.html")
         except :
             context = {'error_message': "Votre candidature n'a pas pu aboutir."}
             template = loader.get_template("polls/recrutement_fail.html")
-        return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request))
 
 def modifier_recrutement_etude(request, iD):
     if request.user.is_authenticated:

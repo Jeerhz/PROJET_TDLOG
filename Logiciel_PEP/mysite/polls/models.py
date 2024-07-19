@@ -264,6 +264,13 @@ class Student(models.Model):
     def nb_etudes_realisees(self):
         return AssignationJEH.objects.filter(eleve=self).values("phase__etude").distinct().count()
     
+    def missions_realisees(self):
+        phases_ids = AssignationJEH.objects.filter(eleve=self).values_list("phase_id", flat=True).distinct()
+        phases = Phase.objects.filter(id__in=phases_ids)
+        etudes_ids = phases.values_list("etude_id", flat=True).distinct()
+        etudes = Etude.objects.filter(id__in=etudes_ids)
+        return etudes
+    
     
     
     def phases_etude(self, etude):
@@ -416,7 +423,7 @@ class Etude(models.Model):
     def ref(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}"
+        return f"{current_year_last_two_digits}e{self.numero:02d}"
 
     def get_display_dict(self):
         intermediary_dict = {
@@ -1118,24 +1125,6 @@ class Recrutement(forms.Form):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
-    def save(self, commit=True, **kwargs):
-        etude = kwargs['etude']
-        try :
-            student = Student.objects.get(first_name=self.prenom,
-                          last_name=self.nom,
-                          mail=self.email)
-            etude.students.add(student)
-            candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
-            candidature.save()
-        except:
-            student = Student(first_name=self.prenom,
-                            last_name=self.nom,
-                            mail=self.email,
-                            je=etude.je)
-            student.save()
-            etude.students.add(student)
-            candidature = Candidature(eleve=student, etude=etude, motivation=self.motivation)
-            candidature.save()
 
   
 
