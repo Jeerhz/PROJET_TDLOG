@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Function to make formIntervenant appear
-    var formIntervenant = document.getElementById("bv-modal");
+    var formIntervenant = document.getElementById("bv-modal-form");
     function formForIntervenant(href, formcontent) {
         // formIntervenant.classList.add("show");
         formIntervenant.setAttribute('action', href);
