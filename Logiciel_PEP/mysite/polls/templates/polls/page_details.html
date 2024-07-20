@@ -548,6 +548,30 @@
                 </div>
             </div>
             <!-- Fin formulaire intervenant -->
+            <!-- Début formulaire BV onglet Eleve -->
+            <div class="modal fade" id="bv-modal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Générer le BV</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="modal-body" id="bv-modal-table">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-success">Générer le BV</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin formulaire BV onglet Eleve -->
+
             <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
                 <div class="alert alert-info alert-dismissible fade show" style="display: none;" role="alert" id="alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -1535,7 +1559,7 @@
                             <a class="nav-link" id="pills-documents-tab" data-toggle="pill" href="#pills-documents" role="tab" aria-controls="pills-documents" aria-selected="false">Documents</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="pills-intervenants-tab" data-toggle="pill" href="#pills-intervenants" role="tab" aria-controls="pills-intervenants" aria-selected="false">Intervenants</a>
+                            <a class="nav-link" id="pills-candidatures-tab" data-toggle="pill" href="#pills-candidatures" role="tab" aria-controls="pills-candidatures" aria-selected="false">Candidatures</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="false">Missions suivies</a>
@@ -1569,8 +1593,8 @@
                                 <div class="row mb-3 d-flex justify-content-center">
                                     <div class="col-5">
                                         
-                                            <div class="card shadow p-3 bg-dark text-white d-flex justify-content-between align-items-center">
-                                                <h3><span class="badge badge-counter badge-info">{{eleve.nb_etudes_realisees}}</span> mission(s) réalisée(s)</h3>
+                                            <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
+                                                <h3 class="m-0"><span class="badge badge-counter badge-info">{{eleve.nb_etudes_realisees}}</span> mission(s) réalisée(s)</h3>
                                             </div>
                                         
                                     </div>
@@ -1608,9 +1632,37 @@
                                         </div>
                                         <div class="card-footer">
                                             <a href="{% url 'details' modelName='Etude' iD=mission.id %}" class="btn btn-primary">Voir étude</a>
+                                            <button data-href="{% url 'BV' id_etude=mission.id id_eleve=eleve.id %}" class="btn btn-success bv-trigger" data-toggle="modal" data-target="#bv-modal" data-formcontent="bv-form-content{{mission.id}}">Générer le BV</button>
                                         </div>
                                     </div>
                                     
+                                </div>
+                                <div hidden id="bv-form-content{{mission.id}}">
+                                    <div class="bg-white py-2 collapse-inner rounded">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <th>Selectionner</th>
+                                                <th>Phase</th>
+                                                <th>Nombre JEH</th>
+                                                <th>Pourcentage</th>
+                                                <th>Montant</th>
+                                            </thead>
+                                            <tbody>
+                                                {% for assignation in eleve|assignation:mission %}
+                                                    <tr>
+                                                        <th><div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
+                                                        </div></th>
+                                                        <th scope="row">{{assignation.phase.numero}}</th>
+                                                        <td>{{assignation.nombre_JEH}}</td>
+                                                        <td>{{assignation.pourcentage_retribution}}%</td>
+                                                        <td>{{assignation.retribution_brute_totale}}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                          </table>
+    
+                                    </div>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -1620,83 +1672,36 @@
                             
                                         
                         </div>
-                        <div class="tab-pane fade" id="pills-intervenants">
-                            <div class="card shadow h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>Antony Feord</div>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>3 JEH à 300,00€ HT</th>
-                                                <th><a class="btn btn-success">Générer le RdM</a></th>
-                                                
-                                            </tr>
-                                        </thead>
-        
-                                    </table>
-                                </div>
-                                <li class="nav-item">
-                                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"
-                                        aria-expanded="true" aria-controls="intervenants_phase1">
-                                        <i class="bi bi-arrows-collapser"></i>
-                                        <span>BV et avenants</span>
-                                        <div id="intervenants_phase1" class="collapse" aria-labelledby="intervenants_phase1" data-parent="#accordionSidebar">
-                                            <div class="bg-white py-2 collapse-inner rounded">
-                                                <div class="bg-white py-2 collapse-inner rounded">
-                                                    <table class="table table-striped">
-                                                        <thead>
-                                                         
-                                                        </thead>
-                                                        <tbody>
-                                                          <tr>
-                                                            <th><div class="form-check form-switch">
-                                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-                                                                <label class="form-check-label" for="flexSwitchCheckDefault">Default switch checkbox input</label>
-                                                              </div></th>
-                                                            <th scope="row">Phase 1</th>
-                                                            <td>3</td>
-                                                            <td>70%</td>
-                                                            <td>200</td>
-                                                          </tr>
-                                                          <tr>
-                                                            <th>
-                                                                <div class="form-check form-switch">
-                                                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
-                                                                    <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
-                                                                </div>
-                                                                <script>
-                                                                    document.addEventListener("DOMContentLoaded", function () {
-                                                                        var checkbox = document.getElementById('flexSwitchCheckChecked');
-                                                                        var label = document.querySelector('label[for="flexSwitchCheckChecked"]');
-                                                            
-                                                                        label.addEventListener('click', function () {
-                                                                            checkbox.checked = !checkbox.checked;
-                                                                        });
-                                                                    });
-                                                                </script>
-                                                            </th>
-                                                            
-                                                            
-                                                            <th scope="row">Phase 2</th>
-                                                            <td>2</td>
-                                                            <td>60%</td>
-                                                            <td>100</td>
-                                                          </tr>
-                                                          
-                                                        </tbody>
-                                                      </table>
-                                                      <div><a class="btn btn-success">Générer le BV</a></div>
-                                                      <a class="btn btn-success">Ajouter un avenant au RdM</a>
-
-                                                </div>
-                        
+                        <div class="tab-pane fade" id="pills-candidatures">
+                            <div class="container p-4">
+                                <div class="row mb-3 d-flex justify-content-center">
+                                    <div class="col-5">
+                                        
+                                            <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
+                                                <h3 class="m-0"><span class="badge badge-counter badge-info">{{eleve.nb_candidatures}}</span> candidature(s)</h3>
                                             </div>
+                                        
+                                    </div>
+                                </div>
+                                {% for candidature in eleve.candidatures.all %}
+                                <div class="card shadow mb-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-toggle="collapse" data-target="#candidature{{candidature.id}}"
+                                    aria-expanded="false" aria-controls="candidature{{candidature.id}}">
+                                        <h3>{{ candidature.etude.titre }}</h3>
+                                        <small>{{ candidature.etude.ref }}</small>
+                                    </div>
+                                    <div class="collapse" id="candidature{{candidature.id}}" aria-labelledby="candidature{{candidature.id}}">
+                                        <div class="card-body">
+                                            <p class="card-text">{{candidature.motivation}}</p>
+                                            
                                         </div>
-                                    </a>
+                                        <div class="card-footer d-flex justify-content-between align-items-center">
+                                            <a href="{% url 'details' modelName='Etude' iD=candidature.etude.id %}" class="btn btn-primary">Voir étude</a>
+                                        </div>
+                                    </div>
                                     
-                                </li>
+                                </div>
+                                {% endfor %}
                             </div>
                             
                         </div>
@@ -1837,6 +1842,7 @@
 
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
     <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
+    <script src="{% static 'polls/js/modal-BV.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
     <script>

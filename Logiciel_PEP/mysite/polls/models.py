@@ -782,7 +782,7 @@ class AssignationJEH(models.Model):
         super(AssignationJEH, self).save(*args, **kwargs)
 
 class Candidature(models.Model):
-    eleve = models.ForeignKey(Student, on_delete=models.CASCADE)
+    eleve = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="candidatures")
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name="candidatures")
     motivation = models.TextField(max_length=5000)
     def __str__(self):
