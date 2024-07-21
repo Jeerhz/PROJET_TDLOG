@@ -151,7 +151,7 @@
 			padding:5px;
             
             color: #1f3753; 
-            font-weight: 700;
+            font-weight: 1000;
             
 		}
 		.table_montant th {
@@ -603,6 +603,8 @@
                                 <!-- Responsable and Statut -->
                                 <div class="mt-3 d-flex justify-content-between">
                                     <h4 style="padding-left: 30px;">Responsable : {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
+                                    <h8 style="padding-left: 30px;">Client : {{ etude.client }} {{ etude.client_interlocuteur }}</h8>
+
                                     <h4 class="mb-2" style="padding-right: 50px">
                                         Statut: 
                                         {% if etude.status == 'TERMINEE' %}
@@ -1183,23 +1185,21 @@
                             <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
                                 <div class="container mt-3">
                                     <div class="row mb-3">
+                                        
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">Facture</h5>
-                                                    {% if etude.factures.count %}
-                                                        {% for facture in etude.factures.all %}
-                                                        <br>
-                                                        <p class="card-text">Préparez la facture n°<strong>{{facture.numero}}</strong> pour cette étude.</p>
-                                                        <a href="{% url 'facture' facture.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer la Facture</a>
-                                                        {% endfor %}
-                                                    {% else %}
-                                                        <br>
-                                                        <p class="card-text">Aucune facture pour cette étude.</p>
-                                                    {% endif%}
+                                                    <h5 class="card-title">Devis</h5>
+                                                    
+                                                    {% if etude.devis_edited %}                                                      
+                                                    <p class="card-text">{% if etude.devis.date_signature %}Le devis a été signé le {{etude.devis.date_signature}}.{% else %}Un devis a déjà été édité pour cette étude.{% endif %}</p>
+                                                    {% else %}                                                    
+                                                    <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
+                                                    {% endif %}
+                                                    <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div>    
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
@@ -1294,17 +1294,16 @@
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">Devis</h5>
+                                                    <h5 class="card-title">PVRF</h5>
                                                     
-                                                    {% if etude.devis_edited %}                                                      
-                                                    <p class="card-text">{% if etude.devis.date_signature %}Le devis a été signé le {{etude.devis.date_signature}}.{% else %}Un devis a déjà été édité pour cette étude.{% endif %}</p>
-                                                    {% else %}                                                    
-                                                    <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
-                                                    {% endif %}
-                                                    <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
+                                                        <br>
+                                                        <p class="card-text">Préparez le procés verbale de recette finale<strong></strong> pour cette étude.</p>
+                                                        <a  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+                                                        <br>
+                                                        <p class="card-text">Mission pas terminé</p>
                                                 </div>
                                             </div>
-                                        </div>    
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1341,7 +1340,7 @@
                                         <div class="container">
                                         <div class="row justify-content-between">
                                             <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
-                                            <a class="btn btn-success">Générer le RdM</a>
+                                            <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                             <a class="btn btn-success">Ajouter un avenant au RdM</a>
                                         </div>
                                     </div>
@@ -1391,7 +1390,187 @@
                             <!-- Debut de l'Onglet Facturation -->
                             <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
                                 <!-- début Ajouter Facture -->
+                                <!-- début Ajouter Facture -->
+                            
+                                <div class="col-mb-3">
+                                    <div class="card shadow">
+                                        <form action="{% url 'ajouter_facture' id_etude=iD %}" method="post">
+                                            <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
+                                                <i class="fas fa-plus"></i>
+                                                <strong>Facturation</strong>
+                                            </div>
+                                            <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
+                                                <div class="card-body">
+                                                
+                                                    <dl class="dl-horizontal">
+                                                        {% csrf_token %}
                                 
+                                                        {% for field in facture_form %}
+                                                        <div class="form-group row mb-3">
+                                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                            {% if field.field.widget.input_type == 'select_multiple' %}
+                        
+                                                                <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                                                    {% for choice in field.choices %}
+                                                                        <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                
+                                                            {% else %}
+                                                                {{ field }}
+                                                            {% endif %}
+                                                            {% if field.errors %}
+                                                                <div class="text-danger">
+                                                                    {% for error in field.errors %}
+                                                                        {{ error }}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}                             
+                                                    </dl>
+                                                </div>
+                                            <div class="card-footer text-center">
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                               <!-- fin Ajouter Facture -->
+                                
+                                <!--- tableau facturation-->
+                                <div class="col-lg-13 mb-3">
+                                    <div class="card shadow">
+                                        <div class="card-header">
+                                            <h6 class="text font-weight-bold primary center">Facturation :</h6>
+                                        </div>
+                                        {% if factures %}
+                                        <table class="table_facturation">
+                                            <thead>
+                                                <tr>
+                                                    <th class="th_facturation" >Modalités de paiement</th>
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.ACOMPTE %}
+                                                    <th class="th_facturation"> À la signature de la Convention d'Étude </th>
+                                                    {% endif %}
+                                                    {% endfor %} 
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
+                                                    <th class="th_facturation" > À la remise du livrable intermediaire</th>
+                                                    {% endif %}
+                                                    {% endfor %}   
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.SOLDE %}
+                                                    <th class="th_facturation" > À la remise du livrable final </th>
+                                                    {% endif %}
+                                                    {% endfor %} 
+                                                </tr>
+                                                </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td  >Dénomination</td>
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.ACOMPTE %}
+                                                    <td > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    {% endif %}
+                                                    {% endfor %} 
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
+                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    {% endif %}
+                                                    {% endfor %} 
+                                                    {% for facture in factures %}
+                                                    {% if facture.type_facture ==  facture.Status.SOLDE %}
+                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    {% endif %}
+                                                    {% endfor %} 
+                                                      
+                                                </tr>
+                                              <tr>
+                                                <td  >Sommes à verser (HT)</td>
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.ACOMPTE %}
+                                                <td  > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
+                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.SOLDE %}
+                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                              </tr>
+                                              <tr class="tr_facturation">
+                                                
+                                                <td  >Sommes à verser (TTC) à titre indicatif</td>
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.ACOMPTE %}
+                                                <td > {{facture.montant_TTC|FormatNombres}} EUR </td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
+                                                <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                                {% for facture in factures %}
+                                                {% if facture.type_facture ==  facture.Status.SOLDE %}
+                                                <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
+                                                {% endif %}
+                                                {% endfor %} 
+                                                
+                                                
+                                              </tr>
+                                              
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+                                        <table class="table_montant">
+                                            <thead>
+                                                <tr>
+                                                    <th >Total H.T. hors frais</th>
+                                                    <th contenteditable="true" style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td >frais de dossier</td>
+                                                    <td contenteditable="true" style="text-align:center;">{{etude.frais_dossier|FormatNombres}} €</td>
+                                                </tr>
+                                                
+                                            </tbody>
+                                        </table>
+                                        
+                                        <table class="tab_dossier">
+                                            
+                                            <tbody>
+                                                <tr>
+                                                    <td style="text-align: left; font-size: 20px;"> <strong>Total</strong></td>
+                                                    <td ></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: left;"> {{etude.montant_HT_total|FormatNombres}} € HT</td>
+                                                    <td style="text-align: right;"> {{etude.montant_HT_total|ChiffreLettre}} HT</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: left;"> TVA (20%) : {{etude.TVA|FormatNombres}} €</td>
+                                                    <td style="text-align: right;"> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align: left;"> {{etude.total_ttc|FormatNombres }} € TTC</td>
+                                                    <td style="text-align: right;"> {{etude.total_ttc|ChiffreLettre}} TTC</td>
+                                                </tr>
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>            
                                 <!-- facture créé dans longlet général qui n'ont pas encoré été générés-->
                                 <div class="container mt-3">
                                     {% if factures %}
@@ -1526,20 +1705,30 @@
                         <div class="card mb-3">
                             
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ client.nom_societe }}</li>
-                                <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ client.raison_sociale }}</li>
+                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong> </li>
                                 <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité:</strong> {{ client.secteur }}</li>
-                                <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }}</li>
-                                <li class="list-group-item"><i class="fas fa-city mr-2"></i><strong>Ville:</strong> {{ client.ville }}</li>
-                                <li class="list-group-item"><i class="fas fa-mail-bulk mr-2"></i><strong>Code postal:</strong> {{ client.code_postal }}</li>
-                                <li class="list-group-item"><i class="fas fa-flag mr-2"></i><strong>Pays:</strong> {{ client.country }}</li>
-                                <li class="list-group-item"><i class="fas fa-user-tie mr-2"></i><strong>Nom du représentant:</strong> {{ client.nom_representant }}</li>
-                                <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Fonction du représentant:</strong> {{ client.fonction_representant }}</li>                                        
+                                <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }} {{ client.code_postal }} {{ client.ville }} {{ client.country }}</li>
                             </ul>
                             
+                        </div>
+
+                        
+                        <div class="card mb-3">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="m-1 font-weight-bold text-primary">Représentants Clients</h5>
+                            </div>
+                            {% if representants %}
+                                {% for representant in representants %}
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ representant.first_name }}</li>
+                                        <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ representant.last_name }}</li>
+                                    </ul>
+                                {% endfor %}
+                            {% endif %} 
                             <a class="btn btn-primary float-right" href="{% url 'input' modelName='Representant' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
 
-                        </div>     
+                        </div> 
+                         
                     </div>
                 </div>          
                 {% endif %}

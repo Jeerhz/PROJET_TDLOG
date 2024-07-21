@@ -22,6 +22,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta
+import datetime
+import locale
+locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -57,6 +60,7 @@ from .models import (
     Representant,
     AddRepresentant,
     Candidature,
+    RDM,
 )
 
 
@@ -343,6 +347,8 @@ def details(request, modelName, iD):
 
             if client is not None:
                 context["client"] = client
+                representants=Representant.objects.filter(client=client)
+                context["representants"]=representants
             if eleve is not None:
                 context["eleve"] = eleve
 
@@ -505,7 +511,7 @@ def stat_KPI(request):
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
         else:
-            end_date_obj = datetime.now(pytz.UTC)
+            end_date_obj = datetime.datetime.now(pytz.UTC)
             start_date_obj = end_date_obj - timedelta(days=1000)
             start_date = start_date_obj.strftime('%Y-%m-%d')
             end_date = end_date_obj.strftime('%Y-%m-%d')
@@ -548,12 +554,12 @@ def stat_KPI(request):
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(datetime.now(pytz.UTC) - timedelta(days=20), datetime.now(pytz.UTC)),
+            date__range=(datetime.datetime.now(pytz.UTC) - timedelta(days=20), datetime.datetime.now(pytz.UTC)),
         ).order_by("date")[0:3]
         message_count = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(datetime.now(pytz.UTC) - timedelta(days=20), datetime.now(pytz.UTC)),
+            date__range=(datetime.datetime.now(pytz.UTC) - timedelta(days=20), datetime.datetime.now(pytz.UTC)),
         ).count()
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
@@ -786,13 +792,14 @@ def editer_convention(request, iD):
     if request.user.is_authenticated:
         #try:
             instance = Etude.objects.get(id=iD)
+            je= instance.je
             client = instance.client
             if instance.type_convention == "Convention d'étude":
                 model = ConventionEtude
-                template = DocxTemplate("polls\\templates\\polls\\Convention_Etude.docx")
+                template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
             elif instance.type_convention == "Convention cadre":
                 model = ConventionCadre
-                template = DocxTemplate("polls\\templates\\polls\\Convention_Cadre.docx")
+                template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
             else:
                 raise ValueError("Type de convention non défini.")
             if instance.convention_edited() :
@@ -801,8 +808,19 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            responsable = instance.responsable
-            context = {"etude": instance, "client": client, "ce":ce, "responsable":responsable}
+            members = Member.objects.get(je=je)
+            #president = next((member for member in members.values() if member["president"]), None)
+
+
+            respo = instance.responsable.student
+            qualite = instance.resp_qualite.student
+            ref_m = instance.ref()
+            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
+            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            date = datetime.datetime.now()
+            annee = date.strftime('%Y')
+            context = {"etude": instance, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
             # Load the template
 
             # Create a Jinja2 environment
@@ -841,19 +859,31 @@ def editer_convention(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
-def editer_devis(request, iD):
+def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try:
-            instance = Etude.objects.get(id=iD)
-            client = instance.client
-            template = DocxTemplate("polls\\templates\\polls\\Devis_V2.docx")
-            if instance.devis_edited() :
-                devis = instance.devis
+        #try :
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_eleve)
+            je= eleve.je
+
+
+            template = DocxTemplate("polls/templates/polls/RDM_026.docx")
+            model = RDM
+            if etude.rdm_edited() :
+                rdm = etude.devis
             else :
-                devis = Devis(etude=instance)
-                devis.save()
-            responsable = instance.responsable
-            context = {"etude": instance, "client": client, "responsable":responsable}
+                rdm = model(etude=etude)
+                rdm.save()
+            
+            
+            ref_m = etude.ref()
+            ref_d = ref_m + "pv"
+            # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
+            
+            
+
+
+            context = {"etude": etude, "rdm": rdm, "etudiant": eleve, "ref_m":ref_m,}
             # Load the template
 
             # Render the document
@@ -866,11 +896,63 @@ def editer_devis(request, iD):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"Devis_{devis.__str__()}.docx"
+            filename = f"RDM_{ref_m}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except :
+        #except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def editer_devis(request, iD):
+    if request.user.is_authenticated:
+        #try:
+            instance = Etude.objects.get(id=iD)
+            client = instance.client
+            template = DocxTemplate("polls/templates/polls/Devis_026.docx")
+            model = Devis
+            if instance.devis_edited() :
+                devis = instance.devis
+            else :
+                devis = model(etude=instance)
+                devis.save()
+            
+            responsable = instance.responsable.student
+            qualite = instance.resp_qualite.student
+            ref_m = instance.ref()
+            ref_d = ref_m + "pv"
+            # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
+            
+            date = datetime.datetime.now()
+            mois = date.strftime('%B')
+            annee = date.strftime('%Y')
+            date_creation= date.strftime('%d %B %Y')
+
+
+            context = {"etude": instance, "devis": devis, "client": client, "responsable":responsable, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,"ref_m":ref_m,"ref_d":ref_d}
+            # Load the template
+
+            # Render the document
+            template.render(context)
+
+
+            # Create a temporary in-memory file
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"Devis_{ref_m}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1057,7 +1139,7 @@ def search_suggestions(request):
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
             suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
-            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword))
+            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant_legale__icontains=keyword))
             suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
         count_client = suggestions_client.count()
         count_student = suggestions_student.count()
@@ -1111,7 +1193,7 @@ def search(request):
         combined_res_student = Student.objects.none()
         for keyword in keywords:
             liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
-            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant__icontains=keyword)))
+            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant_legale__icontains=keyword)))
             liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
         for i in range(len(liste_res_etude)):
             combined_res_etude |= liste_res_etude[i]
@@ -1174,6 +1256,7 @@ def BV(request, id_etude, id_eleve):
         try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
+            je= eleve.je
             nb_JEH = 0
             montant_HT = 0.
             if request.method == 'POST':
@@ -1187,16 +1270,27 @@ def BV(request, id_etude, id_eleve):
                         montant_HT += phase.get_montant_HT(eleve)
 
 
-            chemin_absolu = os.path.join("polls\\static\\polls\\BV_test.xlsx")
+            chemin_absolu = os.path.join("polls/static/polls/BV_test.xlsx")
+            
             classeur = openpyxl.load_workbook(chemin_absolu)
 
             # Sélectionner la feuille de calcul
             feuille = classeur.active
 
             # Modifier la cellule G4
+            feuille['H2'] = "N° 24001"
             feuille['I13'] = montant_HT
             feuille['I14'] = nb_JEH
-
+            feuille['G4'] = eleve.first_name +" " + eleve.last_name
+            feuille['G6'] = eleve.adress
+            feuille['G8'] = eleve.code_postal + " " + eleve.country
+            feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
+            feuille['C13']= etude.ref()
+            feuille['H10'] = eleve.numero_ss
+            
+            #info JE
+            feuille['I15'] = je.base_urssaf
+            feuille['F23'] = je.taux_ATMP
             # Sauvegarder les modifications dans le fichier Excel
             classeur.save(chemin_absolu)
             return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
@@ -1218,7 +1312,8 @@ def BV(request, id_etude, id_eleve):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
+
+
 def ajouter_assignation_jeh(request, id_etude, numero_phase):
     if request.user.is_authenticated:
         if request.method == 'POST':

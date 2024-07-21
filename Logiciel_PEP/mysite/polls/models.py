@@ -117,9 +117,10 @@ class Client(models.Model):
     ville = models.CharField(max_length = 100)
     code_postal = models.CharField(max_length = 20)
     country = models.CharField(max_length = 100)
-    titre_representant = models.CharField(max_length = 5, choices=TITRE_CHOIX)
-    nom_representant = models.CharField(max_length = 100)
-    fonction_representant = models.CharField(max_length = 100)
+    #titre_representant_legale = models.CharField(max_length = 5, choices=TITRE_CHOIX)
+    #nom_representant_legale = models.CharField(max_length = 100)
+    #prenom_representant_legale = models.CharField(max_length = 100)
+    #fonction_representant_legale = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to=DOC_STORAGE, default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     remarque = models.TextField(blank=True, null=True, default="")
@@ -146,7 +147,7 @@ class Client(models.Model):
         return self.nom_societe
 
     def get_display_dict(self):
-        return {'Nom de société':self.nom_societe, 'Raison sociale': self.raison_sociale, 'Adresse': self.rue+'\n'+self.ville+'\n'+self.code_postal,'Pays':self.country, 'Représentant':self.nom_representant, 'Fonction du représentant':self.fonction_representant}
+        return {'Nom de société':self.nom_societe, 'Raison sociale': self.raison_sociale, 'Adresse': self.rue+'\n'+self.ville+'\n'+self.code_postal,'Pays':self.country}
 
     def get_title_details(self):
         return "Détails du client"
@@ -172,6 +173,7 @@ class Representant(models.Model):
     
     remarque = models.TextField(blank=True, null=True, default="")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, default="96d2c7ee-6d6f-486a-86dd-1a7183b012b3")
     fonction = models.CharField(max_length = 100, null=True)
     contact_rec = models.BooleanField(default=False)
     dernier_mail = models.DateField(default=datetime.date(1747, 1, 1))
@@ -183,7 +185,7 @@ class Representant(models.Model):
         return self.first_name+' '+self.last_name
     
     def get_display_dict(self):
-        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion, "Departement":self.departement}
+        return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number}
 
     def get_title_details(self):
         return "Détails du représentant"
@@ -215,6 +217,9 @@ class Representant(models.Model):
         if(id_client is not None):
             client = Client.objects.get(id=id_client)
             self.client = client
+            if not self.je:
+                self.je = client.je
+
 
         super(Representant, self).save(*args, **kwargs)
 
@@ -235,10 +240,14 @@ class Student(models.Model):
     mail = models.EmailField(max_length = 200)
     phone_number = models.CharField(max_length=200, blank=True, null=True)
     adress = models.CharField(max_length = 300, null=True)
+    ville = models.CharField(max_length = 300, null=True, default ="Champs-sur-Marne")
+    code_postal=  models.CharField(max_length = 10, null=True, default = "77420")
     country = models.CharField(max_length = 100, null=True)
     promotion = models.CharField(max_length = 200, blank=True, null=True)
     departement = models.CharField(max_length=20, choices=Departement.choices, default=Departement.AUTRE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
+    numero_ss = models.CharField(max_length=14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits'))], default="0")
+
 
     def __str__(self):
         return self.first_name+' '+self.last_name
@@ -328,6 +337,8 @@ class Member(AbstractUser):
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    president = models.BooleanField(default=True, verbose_name="président")
+    tresorier = models.BooleanField(default=True, verbose_name="tresorier")
 
     def __str__(self):
         return self.student.__str__()
@@ -407,6 +418,8 @@ class Etude(models.Model):
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
     responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes")
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client_interlocuteur= models.ForeignKey(Representant, on_delete=models.CASCADE, related_name='client_interlocuteur')
+    client_representant_legale= models.ForeignKey(Representant, on_delete=models.CASCADE,related_name='client_representant_legale')
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0)
     tva_pourcentage = models.FloatField(default=20)
@@ -470,6 +483,10 @@ class Etude(models.Model):
         phases = Phase.objects.filter(etude=self)
         total_JEH = sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None) if phases.exists() else 0
         return total_JEH
+    def nb_phases(self):
+            phases = Phase.objects.filter(etude=self)
+            nombres_de_phases = len(phases)
+            return nombres_de_phases
 
     def montant_phase_HT(self):
         phases = Phase.objects.filter(etude=self)
@@ -556,6 +573,9 @@ class Etude(models.Model):
 
     def devis_edited(self):
         return Devis.objects.filter(etude=self).exists()
+    
+    def rdm_edited(self):
+        return RDM.objects.filter(etude=self).exists()
 
     def progress_percentage(self):
         duree = self.duree_semaine()
@@ -581,9 +601,9 @@ class Facture(models.Model):
         #ETRANGER = 0
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name='factures')
     facturé = models.BooleanField(default=False)
-    pourcentage_JEH = models.FloatField(default=100)
-    pourcentage_frais = models.FloatField(default=100)
-    type_facture = models.CharField(max_length=100, choices=Status.choices, default=Status.SOLDE)
+    pourcentage_JEH = models.FloatField(default=30)
+    pourcentage_frais = models.FloatField(default=30)
+    type_facture = models.CharField(max_length=100, choices=Status.choices, default=Status.ACOMPTE)
     numero_facture = models.IntegerField(default=5) 
     fac_frais=models.FloatField(default=0)
     #montant_HT=models.FloatField(default=30)
@@ -614,6 +634,16 @@ class Devis(models.Model):
     numero = models.IntegerField()
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
+    date = models.DateField(default=date.today)
+    
+    def ref(self):
+        ref_etude= self.etude.ref()
+        return f"{ref_etude}pv"
+    
+    def date_devis(self):
+        date = timezone.now()
+        self.date= date
+        return date
 
     def save(self, *args, **kwargs):
         if (self.numero is None):
@@ -690,11 +720,24 @@ class BonCommande(models.Model):
             self.numero = self.convention_cadre.etude.numero*100 + len(self.convention_cadre.bons_commande.all())+1
         super(BonCommande, self).save(*args, **kwargs)
 
+    
+class RDM(models.Model):
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="rdm")
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm"
+    
+    def signe(self):
+        return (self.date_signature is not None)
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
-    debut_relatif = models.IntegerField(default = 1)
-    duree_semaine = models.IntegerField(default = 1)
+    debut_relatif = models.IntegerField(default = 0)
+    duree_semaine = models.IntegerField(default = 2)
     date_debut = models.DateField(default=date.today)
     date_fin = models.DateField(default=date.today)
     titre = models.CharField(max_length = 200)
@@ -736,16 +779,20 @@ class Phase(models.Model):
         return eleves
     def retributions(self):
         assignations = AssignationJEH.objects.filter(phase=self)
+        nb_JEHs=0
+        retr_totale=0
         if assignations:
-            return sum(assignation.retribution_brute_totale() for assignation in assignations)
-        else :
-            return self.calcul_mt_HT()*0.6
+            for assignation in assignations:
+                retr_totale+=assignation.retribution_brute_totale()
+                nb_JEHs+=assignation.nombre_JEH
+        retr_totale += (self.nb_JEH-nb_JEHs)*self.montant_HT_par_JEH*0.6
+        return retr_totale
     
     def get_montant_HT(self, eleve):
         res=0
         assignations_JEH = AssignationJEH.objects.filter(phase=self, eleve=eleve)
         for assignation_JEH in assignations_JEH:
-            res += assignation_JEH.nombre_JEH * self.montant_HT_par_JEH
+            res += assignation_JEH.nombre_JEH * self.montant_HT_par_JEH*assignation_JEH.pourcentage_retribution/100
         return res
     
     def get_nb_JEH_eleve(self, eleve):
@@ -912,6 +959,7 @@ class AddMember(forms.Form):
         # Create and save a new Student object using the form data
         je = JE.objects.get(id=uuid.UUID(self.cleaned_data['identifiant_je']))
         student = Student(
+            titre= self.cleaned_data['titre'],
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
             mail=self.cleaned_data['mail'],
