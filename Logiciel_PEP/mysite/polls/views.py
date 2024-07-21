@@ -1425,10 +1425,6 @@ def convention_etude(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 def add_intervenant(request, id_etude, id_student):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
@@ -1444,62 +1440,25 @@ def add_intervenant(request, id_etude, id_student):
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
-            for phase in etude.get_phases():
-                nb_jeh_str = request.POST.get("nb_jeh_phase" + str(phase.numero), None)
-                pourcentage_retribution_str = request.POST.get("pourcentage_retribution_phase" + str(phase.numero), None)
-                
-                if nb_jeh_str and pourcentage_retribution_str:
-                    try:
-                        nb_jeh = int(nb_jeh_str)  # Convertir en entier
-                        pourcentage_retribution = float(pourcentage_retribution_str)  # Convertir en float
-                        
-                        if nb_jeh <= 0:
-                            raise ValueError("Le nombre de JEH doit être supérieur à 0.")
-                        if pourcentage_retribution <= 0:
-                            raise ValueError("Le pourcentage de rétribution doit être supérieur à 0.")
-                        
-                        logger.debug(f"nb_jeh: {nb_jeh}")
-                        logger.debug(f"pourcentage: {pourcentage_retribution}")
-                    except ValueError:
-                        raise ValueError("Les valeurs de JEH et de pourcentage de rétribution doivent être numériques et supérieures à 0.")
-                    
-                    # Essayer de récupérer une assignation existante
-                    existing_ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve).first()
-                    
-                    if existing_ass_jeh:
-                        # Soustraire l'ancienne assignation du total
-                        total_nombre_JEH = sum(assignation.nombre_JEH for assignation in AssignationJEH.objects.filter(phase=phase)) - existing_ass_jeh.nombre_JEH
-                    else:
-                        total_nombre_JEH = sum(assignation.nombre_JEH for assignation in AssignationJEH.objects.filter(phase=phase))
-
-                    # Ajouter le nombre de JEH de la nouvelle assignation
-                    if total_nombre_JEH + nb_jeh > phase.nb_JEH:
-                        raise ValueError("Le nombre de JEH(s) assigné(s) est strictement supérieur au nombre de JEH de la phase.")
-
-                    # Mettre à jour ou créer l'assignation
-                    if existing_ass_jeh:
-                        existing_ass_jeh.nombre_JEH = nb_jeh
-                        existing_ass_jeh.pourcentage_retribution = pourcentage_retribution
-                        existing_ass_jeh.save()
-                        logger.debug("Assignation existante mise à jour")
-                    else:
+            for phase in etude.phases.all() :
+                nb_jeh = request.POST[("nb_jeh_phase"+str(phase.numero))]
+                pourcentage_retribution = request.POST[("pourcentage_retribution_phase"+str(phase.numero))]
+                if(nb_jeh is not None and pourcentage_retribution is not None):
+                    existing_ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
+                    if(existing_ass_jeh.exists()):
+                        retrieve_ass_jeh = existing_ass_jeh[0]
+                        retrieve_ass_jeh.nombre_JEH = nb_jeh
+                        retrieve_ass_jeh.pourcentage_retribution = pourcentage_retribution
+                        retrieve_ass_jeh.save()
+                    else :
                         new_ass_jeh = AssignationJEH(phase=phase, eleve=eleve, nombre_JEH=nb_jeh, pourcentage_retribution=pourcentage_retribution)
                         new_ass_jeh.save()
-                        logger.debug("Nouvelle assignation créée")
-            
             return redirect('details', modelName="Etude", iD=id_etude)
-        
-        except ValueError as ve:
-            logger.error(f"Erreur de validation: {ve}")
+            
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages": liste_messages, "message_count": message_count, "error_message": f"Erreur dans l'assignation JEH : {ve}"}
-            return HttpResponse(template.render(context, request))
-        except Exception as e:
-            logger.error(f"Erreur: {e}")
-            template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages": liste_messages, "message_count": message_count, "error_message": f"Erreur dans l'attribution de la JEH: {e}"}
-            return HttpResponse(template.render(context, request))
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission."}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
-        return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request))
