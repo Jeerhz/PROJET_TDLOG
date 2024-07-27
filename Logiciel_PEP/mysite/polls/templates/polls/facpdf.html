@@ -366,7 +366,7 @@
                 <p class="gris_clair">A l'attention de : </p>
                 <br>
                 <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
-                <p><span class="gras" contenteditable="true" >{{client.titre_representant}} {{client.nom_representant}}</span></p> 
+                <p><span class="gras" contenteditable="true" >{{etude.representant_client.titre}} {{etude.representant_client.last_name}}</span></p> 
                 <p><span  contenteditable="true" >{{client.rue}}</span></p> 
                 <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
                 <p><span contenteditable="true" >{{client.country}}</span></p> 
@@ -380,9 +380,9 @@
                 <p>Champs-sur-Marne</p>
                 <p>77455 Marne-la-Vallée Cedex 2</p>
                 <br>
-                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
-                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
-                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
+                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">{{etude.je.siret}}</span></p>
+                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >{{etude.je.APE}}</span></p>
+                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">{{etude.je.TVA}}</span></p>
                 <p></p>
             
             </div>
@@ -504,11 +504,11 @@
                     </tr>
                     <tr>
                         <td class="align-left gris_clair italique">et numéro de facture</td>
-                        <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
+                        <td class="align-left">IBAN : {{etude.je.IBAN}}</td>
                     </tr>
                     <tr>
                         <td class="align-left"></td>
-                        <td class="align-left">BIC : SOGEFRPP</td>
+                        <td class="align-left">BIC : {{etude.je.BIC}}</td>
                     </tr>
                     <br>
                     <br>
@@ -522,7 +522,7 @@
                 <div class ="gras ">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
                 <div >Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
                 <div class="dotted-line gris_clair"></div>
-                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{client.titre_representant}} {{client.prenom_representant}} {{client.nom_representant}} - {{etude.id}}</span> <span class ="gras">Net à payer : </span> <span contenteditable="true" >{{facture.montant_TTC|FormatNombres}} EUR</span> </p>
+                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{etude.representant_client.titre}} {{etude.representant_client.first_name}} {{etude.representant_client.last_name}} - {{etude.ref}}</span> <span class ="gras">Net à payer : </span> <span contenteditable="true" >{{facture.montant_TTC|FormatNombres}} EUR</span> </p>
             </div>
         </div>
         <div class="page-wrapper"></div>
