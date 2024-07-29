@@ -133,17 +133,6 @@ def custom_logout(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
-# CA DEGAGE
-def students(request):
-    if request.user.is_authenticated:
-        template = loader.get_template("polls/students.html")
-        student_list = Student.objects.all()
-        context = {"student_list": student_list}
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
 
 def annuaire(request):
     if request.user.is_authenticated:
@@ -228,55 +217,6 @@ def demarchage(request):
             "notification_list":notification_list,
             "notification_count":notification_count,
             "representants":representants,
-        }
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def blank_page(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        template = loader.get_template("polls/blank_page.html")
-        context = {
-        }
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def page_detail_etude(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-
-        context ={"attribute_list": Etude.objects.filter(iD=1).get_display_dict(),
-                "title": 'nptq',
-                "iD": 1,
-                "liste_messages": liste_messages,
-                "message_count": message_count,}
-
-        template = loader.get_template("polls/page_detail_etude.html")
-        context = {
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -540,8 +480,9 @@ def stat_KPI(request):
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
         else:
-            end_date_obj = datetime.datetime.now(pytz.UTC)
-            start_date_obj = end_date_obj - timedelta(days=1000)
+            now = timezone.now()
+            end_date_obj = now.date()
+            start_date_obj = (now - timedelta(days=1000)).date()
             start_date = start_date_obj.strftime('%Y-%m-%d')
             end_date = end_date_obj.strftime('%Y-%m-%d')
 
@@ -841,7 +782,7 @@ def editer_convention(request, iD):
             representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
             representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
-            date = datetime.datetime.now()
+            date = timezone.now()
             annee = date.strftime('%Y')
             context = {"etude": instance, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
             # Load the template
@@ -952,7 +893,7 @@ def editer_devis(request, iD):
             ref_d = ref_m + "pv"
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
             
-            date = datetime.datetime.now()
+            date = timezone.now()
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
             date_creation= date.strftime('%d %B %Y')
@@ -1307,7 +1248,7 @@ def BV(request, id_etude, id_eleve):
             feuille['G4'] = eleve.first_name +" " + eleve.last_name
             feuille['G6'] = eleve.adress
             feuille['G8'] = eleve.code_postal + " " + eleve.country
-            feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
+            feuille['I3'] = timezone.now().strftime('%d %B %Y')
             feuille['C13']= etude.ref()
             feuille['H10'] = eleve.numero_ss
             
@@ -1440,34 +1381,6 @@ def remarque_etude(request, iD):
                 return JsonResponse({'success':True})
             except:
                 return JsonResponse({'success':False})
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
-
-
-def word_template(request):
-    if request.user.is_authenticated:
-        send_custom_email("Test mail Django", "Ce mail a été envoyé à partir d'une vue Django", "titoduc1905@gmail.com", "titoduc1905@gmail.com", "qrorvjgmtunxthpg", ["edgar.duc@eleves.enpc.fr"], host="smtp.gmail.com", port=587)
-        # Load the template
-        template = DocxTemplate("polls\\templates\\polls\\23e05_Convention_Etude.docx")
-
-        # Prepare context
-        context = {'name': "Edgar Duc"}
-
-        # Render the document
-        template.render(context)
-
-        # Create a temporary in-memory file
-        output = BytesIO()
-        template.save(output)
-        output.seek(0)
-
-        # Return the filled document as a FileResponse
-        filename = "filled_template.docx"
-        response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
     else:
         template = loader.get_template("polls/login.html")
         context = {}
