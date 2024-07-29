@@ -317,26 +317,54 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">1</span>
+                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
                             </a>
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="alertsDropdown">
                                 <h6 class="dropdown-header">
-                                    Notifications
+                                    Alertes
                                 </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                {% if notification_list.0 %}
+                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
                                     <div class="mr-3">
                                         <div class="icon-circle bg-primary">
                                             <i class="fas fa-file-alt text-white"></i>
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="small text-gray-500">5 mars 2024</div>
-                                        <span class="font-weight-bold">L'ESSEC ont-ils besoin d'un bar notifications?</span>
+                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
+                                        <span class="font-weight-bold">{{notification_list.0}}</span>
                                     </div>
                                 </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Tout montrer</a>
+                                {% endif %}
+                                {% if notification_list.1 %}
+                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-file-alt text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
+                                        <span class="font-weight-bold">{{notification_list.1}}</span>
+                                    </div>
+                                </a>
+                                {% endif %}
+                                {% if notification_list.2 %}
+                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-file-alt text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
+                                        <span class="font-weight-bold">{{notification_list.2}}</span>
+                                    </div>
+                                </a>
+                                {% endif %}
+                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
                             </div>
                         </li>
 
