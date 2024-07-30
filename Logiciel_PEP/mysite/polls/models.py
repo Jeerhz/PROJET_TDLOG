@@ -183,7 +183,6 @@ class Representant(models.Model):
     
     remarque = models.TextField(blank=True, null=True, default="RAS")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
-    je = models.ForeignKey(JE, on_delete=models.CASCADE, default="96d2c7ee-6d6f-486a-86dd-1a7183b012b3")
     fonction = models.CharField(max_length = 100, null=True)
     contact_recent = models.BooleanField(default=False)
     date_mail = models.DateField(default=datetime.date(1747, 1, 1))
@@ -928,12 +927,13 @@ class Message(models.Model):
         return "Détails du message"
 
 class Notification(models.Model):
-    utilisateur = models.ManyToManyField(Member, blank=True)
+    utilisateur = models.ManyToManyField(Member, blank=True, related_name="notifications")
     description = models.CharField(max_length=500)
     date_effet = models.DateField()
     date_echeance = models.DateField()
+    href_redirect = models.CharField(blank=True, null=True)
     def active(self):
-        return (self.date_effet <= timezone.now() and timezone.now() <= self.date_echeance)
+        return (self.date_effet <= timezone.now().date() and timezone.now().date() <= self.date_echeance)
     def __str__(self):
         return self.description
     def send(self):

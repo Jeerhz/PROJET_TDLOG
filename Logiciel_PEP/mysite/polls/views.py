@@ -23,7 +23,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta
-import datetime
 import locale
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
@@ -67,6 +66,7 @@ from .models import (
     AddRepresentant,
     Candidature,
     RDM,
+    Notification,
     PV,
 )
 
@@ -88,12 +88,13 @@ def index(request):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        
         user_je = request.user.je
         monthly_sums = calculate_monthly_sums(user_je)
         chiffre_affaire = monthly_sums[-1]
@@ -111,6 +112,8 @@ def index(request):
             "monthly_sums": monthly_sums,
             "liste_messages": liste_messages,
             "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
             "chiffre_affaire": chiffre_affaire,
             "etudes_recentes":etudes_recentes,
             "etudes_en_discussion":etudes_en_discussion,
@@ -149,29 +152,19 @@ def custom_logout(request):
     return HttpResponse(template.render(context, request))
 
 
-def students(request):
-    if request.user.is_authenticated:
-        template = loader.get_template("polls/students.html")
-        student_list = Student.objects.all()
-        context = {"student_list": student_list}
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
-
 def annuaire(request):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        
         template = loader.get_template("polls/annuaire.html")
         client_list = Client.objects.filter(je=request.user.je)
         etude_list = Etude.objects.filter(je=request.user.je)
@@ -183,6 +176,8 @@ def annuaire(request):
             "etude_list": etude_list,
             "liste_messages": liste_messages,
             "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -196,17 +191,22 @@ def je_detail(request):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        template = loader.get_template("polls/je_detail.html")
-        je = request.user.je
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        
+
         context = {
-            'je': je,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
+            "je":request.user.je
         }
+        template = loader.get_template("polls/je_detail.html")
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -218,31 +218,26 @@ def demarchage(request):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        
+
         template = loader.get_template("polls/demarchage.html")
         je = request.user.je
         representants= Representant.objects.filter(client__je=je)
         clients = Client.objects.filter(je=je)
         secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
         context = {
-            'representants': representants, 'clients': clients, 'secteurs': secteurs,
+            'representants': representants,
         }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
-def supprimer_demarchage(request, id_representant):
-    representant = get_object_or_404(Representant, id=id_representant)
-    representant.demarchage="A_CONTACTER"
-    representant.save()
-    return redirect('demarchage')
-    #ajouter la possibilité de changer la remarque du représentant
 
 
 def blank_page(request):
@@ -294,26 +289,6 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-def organigramme(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        template = loader.get_template("polls/blank.html")
-        context = {
-        }
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
-
 
 
 
@@ -323,12 +298,12 @@ def details(request, modelName, iD):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
 
         model = apps.get_model(app_label="polls", model_name=modelName)
         try:
@@ -360,6 +335,8 @@ def details(request, modelName, iD):
                 "iD": iD,
                 "liste_messages": liste_messages,
                 "message_count": message_count,
+                "notification_list":notification_list,
+                "notification_count":notification_count,
             }
             
             # Ajoutez `l'instance` au contexte seulement si elle est définie
@@ -385,6 +362,8 @@ def details(request, modelName, iD):
                 "error_message": "The selected object does not exist in the database.",
                 "liste_messages": liste_messages,
                 "message_count": message_count,
+                "notification_list":notification_list,
+                "notification_count":notification_count,
             }
             template = loader.get_template("polls/page_error.html")
     else:
@@ -399,12 +378,12 @@ def input(request, modelName, iD):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
         if request.method == "GET":
             template = loader.get_template("polls/page_input.html")
             model = apps.get_model(app_label="polls", model_name=modelName)
@@ -418,6 +397,8 @@ def input(request, modelName, iD):
                     "iD": iD,
                     "liste_messages": liste_messages,
                     "message_count": message_count,
+                    "notification_list":notification_list,
+                    "notification_count":notification_count,
                     "is_message": (modelName == "Message"),
                 }
             else:
@@ -432,6 +413,8 @@ def input(request, modelName, iD):
                         "iD": iD,
                         "liste_messages": liste_messages,
                         "message_count": message_count,
+                        "notification_list":notification_list,
+                        "notification_count":notification_count,
                         "is_message": (modelName == "Message"),
                     }
                 except:
@@ -439,6 +422,8 @@ def input(request, modelName, iD):
                         "error_message": "The selected object does not exist in the database.",
                         "liste_messages": liste_messages,
                         "message_count": message_count,
+                        "notification_list":notification_list,
+                        "notification_count":notification_count,
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
@@ -458,6 +443,8 @@ def input(request, modelName, iD):
                     "iD": iD,
                     "liste_messages": liste_messages,
                     "message_count": message_count,
+                    "notification_list":notification_list,
+                    "notification_count":notification_count,
                 }
     else:
         template = loader.get_template("polls/login.html")
@@ -538,8 +525,9 @@ def stat_KPI(request):
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
         else:
-            end_date_obj = datetime.datetime.now(pytz.UTC)
-            start_date_obj = end_date_obj - timedelta(days=1000)
+            now = timezone.now()
+            end_date_obj = now.date()
+            start_date_obj = (now - timedelta(days=1000)).date()
             start_date = start_date_obj.strftime('%Y-%m-%d')
             end_date = end_date_obj.strftime('%Y-%m-%d')
 
@@ -581,13 +569,13 @@ def stat_KPI(request):
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(datetime.datetime.now(pytz.UTC) - timedelta(days=20), datetime.datetime.now(pytz.UTC)),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(datetime.datetime.now(pytz.UTC) - timedelta(days=20), datetime.datetime.now(pytz.UTC)),
-        ).count()
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
         chiffre_affaire_total = cumulated_CA[-1]
@@ -683,6 +671,8 @@ def stat_KPI(request):
             "date_labels": date_labels,
             "liste_messages": liste_messages,
             "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
             "chiffre_affaires": chiffres_affaires,
             "start_date": start_date,
             "end_date": end_date
@@ -759,22 +749,20 @@ def messages(request):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        message_list = Message.objects.filter(destinataire=request.user).order_by(
-            "date"
-        )
-        template = loader.get_template("polls/page_messages.html")
+        ).order_by("date")
+        message_count = liste_messages.count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        
 
         context = {
-            "message_list": message_list,
             "liste_messages": liste_messages,
             "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
         }
+        template = loader.get_template("polls/page_messages.html")
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -794,20 +782,14 @@ def register(request):
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).order_by("date")[0:3]
-            message_count = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).count()
-            context = {"liste_messages": liste_messages, "message_count": message_count}
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
+            context = {"liste_messages": liste_messages, "message_count": message_count, "notification_list":notification_list, "notification_count":notification_count}
             template = loader.get_template("polls/index.html")
         else:
             context = {"form": fetchform}
@@ -844,7 +826,7 @@ def editer_convention(request, iD):
             representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
             representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
-            date = datetime.datetime.now()
+            date = timezone.now()
             annee = date.strftime('%Y')
 
 
@@ -1027,7 +1009,7 @@ def editer_devis(request, iD):
             ref_d = ref_m + "pv"
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
             
-            date = datetime.datetime.now()
+            date = timezone.now()
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
             date_creation= date.strftime('%d %B %Y')
@@ -1268,15 +1250,15 @@ def search_suggestions_student(request, id_etude):
 
 def search(request):
     liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-    message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        destinataire=request.user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+    ).order_by("date")
+    message_count = liste_messages.count()
+    liste_messages = liste_messages[:3]
+    all_notifications = request.user.notifications.order_by("-date_effet")
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
     query = request.GET.get('search-input', '')
     if query:
         keywords = query.split()
@@ -1303,11 +1285,11 @@ def search(request):
         final_res_etude = combined_res_etude.all()
         final_res_client = combined_res_client.all()
         final_res_student = combined_res_student.all()
-        context = {"query":query, "res_etude":final_res_etude, "res_client":final_res_client, "res_student":final_res_student, "liste_messages":liste_messages, "message_count":message_count}
+        context = {"query":query, "res_etude":final_res_etude, "res_client":final_res_client, "res_student":final_res_student, "liste_messages":liste_messages, "message_count":message_count, "notification_list":notification_list, "notification_count":notification_count}
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
     else:
-        context = {"query":query, "liste_messages":liste_messages, "message_count":message_count}
+        context = {"query":query, "liste_messages":liste_messages, "message_count":message_count, "notification_list":notification_list, "notification_count":notification_count}
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
     
@@ -1383,7 +1365,6 @@ def BV(request, id_etude, id_eleve):
             feuille['G6'] = eleve.adress
             feuille['G8'] = eleve.code_postal + " " + eleve.country
             feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
-            feuille['H39'] = datetime.datetime.now().strftime('%d %B %Y')
             feuille['C13']= etude.ref()
 
             #assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
@@ -1471,6 +1452,13 @@ def recrutement(request, id_url): # Controler les dates
                     detail_message = "D'après nos données, il s'agit de votre première candidature."
                 candidature = Candidature(eleve=student, motivation=recrutement.cleaned_data['motivation'], etude=etude)
                 candidature.save()
+
+                notif = Notification(description=student.__str__()+" a soumis sa candidature pour la mission "+etude.ref(), date_effet=timezone.now().date(), date_echeance=(timezone.now()+timedelta(weeks=2)).date(), href_redirect=reverse('details', kwargs={"modelName":"Etude", "iD":etude.id}))
+                notif.save()
+                all_responsables = [etude.responsable]
+                for representant in all_responsables:
+                    notif.utilisateur.add(representant)
+
                 context = {"detail_message" : detail_message}
                 template = loader.get_template("polls/recrutement_succes.html")
             else:
@@ -1489,6 +1477,7 @@ def modifier_recrutement_etude(request, iD):
                 etude.date_debut_recrutement = datetime.strptime(request.POST['debut'], '%d/%m/%Y').date()
                 etude.date_fin_recrutement = datetime.strptime(request.POST['fin'], '%d/%m/%Y').date()
                 etude.save()
+                print("ça marche")
                 return JsonResponse({'success':True, 'debut':etude.date_debut_recrutement, 'fin':etude.date_fin_recrutement})
             except:
                 return JsonResponse({'success':False})
@@ -1517,34 +1506,6 @@ def remarque_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-def word_template(request):
-    if request.user.is_authenticated:
-        send_custom_email("Test mail Django", "Ce mail a été envoyé à partir d'une vue Django", "titoduc1905@gmail.com", "titoduc1905@gmail.com", "qrorvjgmtunxthpg", ["edgar.duc@eleves.enpc.fr"], host="smtp.gmail.com", port=587)
-        # Load the template
-        template = DocxTemplate("polls\\templates\\polls\\23e05_Convention_Etude.docx")
-
-        # Prepare context
-        context = {'name': "Edgar Duc"}
-
-        # Render the document
-        template.render(context)
-
-        # Create a temporary in-memory file
-        output = BytesIO()
-        template.save(output)
-        output.seek(0)
-
-        # Return the filled document as a FileResponse
-        filename = "filled_template.docx"
-        response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
-
-
 def send_custom_email(subject, message, from_email, username, password, recipient_list, host=None, port=None):
     # Override default email settings if provided
     email_host = host if host else settings.EMAIL_HOST
@@ -1562,18 +1523,20 @@ def settings(request):
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
         
         template = loader.get_template("polls/settings.html")
         if request.method == 'GET':
             context = {
                 "liste_messages": liste_messages,
                 "message_count": message_count,
+                "notification_list":notification_list,
+                "notification_count":notification_count,
                 "user": request.user,
                 "form_param": SetParametresUtilisateur(instance=request.user.parametres)
             }
@@ -1585,6 +1548,8 @@ def settings(request):
                 context = {
                     "liste_messages": liste_messages,
                     "message_count": message_count,
+                    "notification_list":notification_list,
+                    "notification_count":notification_count,
                     "user": request.user,
                     "form_param": SetParametresUtilisateur(instance=request.user.parametres),
                     "alert_message":"Modifications enregistrées!"
@@ -1593,6 +1558,8 @@ def settings(request):
                 context = {
                     "liste_messages": liste_messages,
                     "message_count": message_count,
+                    "notification_list":notification_list,
+                    "notification_count":notification_count,
                     "user": request.user,
                     "form_param": SetParametresUtilisateur(instance=request.user.parametres),
                     "alert_message":"La modification n'a pas aboutie!"
@@ -1624,16 +1591,6 @@ def convention_etude(request, iD):
 
 def add_intervenant(request, id_etude, id_student):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
@@ -1653,8 +1610,18 @@ def add_intervenant(request, id_etude, id_student):
             return redirect('details', modelName="Etude", iD=id_etude)
             
         except:
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission."}
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission.", "notification_list":notification_list, "notification_count":notification_count}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
