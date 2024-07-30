@@ -17,6 +17,13 @@
 
     {% load static %}
     {% load format_duration %}
+    
+    <!-- Script pour l'affichage dynamique du C-A -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    <script src="{% static 'polls/js/chart-area.js' %}"></script>
+
     <!-- Custom fonts for this template-->
     <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
@@ -27,7 +34,6 @@
     <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
 
     <style>
-        
         /* Style for JE logo */
         .my-custom-logo {
             max-width: 80%;
@@ -35,13 +41,6 @@
             justify-content: center;
             align-self: center;
             padding: 1rem;
-        }
-
-        .tableau_mission{
-            width: 1100px;
-            overflow-x: scroll;
-            align-self: center;
-
         }
         /* Style for the suggestion results */
         #suggestions-results {
@@ -55,21 +54,15 @@
         #suggestions-results.show {
             display: block;
         }
-        .black-text {
-            color: black;
-        }
-
         
         .table tbody tr td, .table thead tr th {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* 
         .table tbody tr td {
             cursor: pointer;
-        } */
-        
+        }
         .bg-info-agenda {
             max-width: 100px;
             white-space: nowrap;
@@ -83,70 +76,42 @@
             text-overflow: clip;
             max-width: none;
         }
-        .container-fluid {
-            padding: 20px;
+        .table_demarchage {
+			border-top: 1px solid #1f3753;
+            border-bottom: 0px solid #1f3753;
+            border-left: none; 
+            border-right: none; 
+            margin:20px;
+            margin-top:0px;
+			border-collapse:collapse;
+			padding:5px;
+            
+		}
+		.table_demarchage th {
+            border-top: 1px solid #1f3753;
+            border-bottom: 0px solid #1f3753;
+            border-left: none; 
+            border-right: none; 
+			padding:5px;
+			background: #1f3753;
+			color: #f0f0f0;
         }
-
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e3e6f0;
-            padding: .75rem 1.25rem;
-            position: relative;
-            border-top-left-radius: .35rem;
-            border-top-right-radius: .35rem;
-            font-weight: bold;
+		.table_demarchage td {
+			border-top: 1px solid #1f3753;
+            border-bottom: 0px solid #1f3753;
+            border-left: none; 
+            border-right: none; 
+			
+			padding:5px;
+			background: #ffffff;
+			color: #313030;
+            
+		}
+        .attente{
+            font-style: italic;
+            text-align: center; 
+            width: 15%;
         }
-
-        .tableau_mission {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            border-radius: .35rem;
-            overflow: hidden;
-            margin-bottom: 30px; /* Espacement entre les tableaux */
-        }
-
-        .table {
-            margin-bottom: 0; /* Élimine l'espacement par défaut en bas de la table */
-        }
-
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        /* Centrage des tableaux */
-        .table-responsive {
-            display: table;
-            margin: auto;
-        }
-
-        .table-yellow tr {
-            background-color: #fff3cd; /* Une teinte légère de jaune */
-        }
-
-        .my-custom-table tbody tr {
-            background-color: #ffecd1; /* Lignes en couleur orange clair pour une meilleure lisibilité */
-            border-color: white; /* Bordures blanches entre les lignes */
-        }
-
-        .my-custom-table tr:hover {
-            background-color: #ffdfb3; /* Un peu plus foncé lors du survol pour un effet interactif */
-        }
-
-        .table-hover tbody tr:hover th,
-        .table-hover tbody tr:hover td {
-            border-color: white; /* Garde les bordures blanches au survol */
-        }
-
-        .my-custom-table-green tbody tr {
-            background-color: #e6f9e9; /* Teinte de vert clair pour une meilleure lisibilité */
-        }
-
-        .my-custom-table-green tbody tr:hover {
-            background-color: #d1f2d8; /* Un peu plus foncé lors du survol pour un effet interactif */
-        }
-        ::placeholder {
-      color: #c4c4c4; /* Adjust color as needed */
-    }
-
         
     </style>
 
@@ -170,7 +135,7 @@
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
                 <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user black-text"></i>
+                    <i class="fas fa-fw fa-house-user"></i>
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -205,13 +170,12 @@
                     <i class="fas fa-fw fa-cog" ></i>
                     <span>Ma Junior Entreprise</span></a>
             </li>
-
+            
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'demarchage' %}">
                     <i class="fas fa-fw fa-cog" ></i>
                     <span>Démarchage</span></a>
             </li>
-            
 
             <hr class="sidebar-divider">
 
@@ -460,150 +424,233 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                
-                <div class="card-header mt-3">
+                <div class="container-fluid">
+
+                    <!-- Page Heading
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                    </div> -->
+
+                    <!-- Content Row -->
+                    <div class="row mt-4 mb-4">
+
+                        
+
+                        
+                    </div>
+
+                    <!-- Content Row -->
+
+                    <div style="margin:10px;" class="row">
+
+                        <!-- Area Chart -->
+                        <div class="col-lg-13 mb-3" style="width: 90%;">
+                            <div class="card shadow">
+                                <div class="card-header">
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">clients ayant répondues :</h6>
+                                </div>
+                                <!-- Card Body -->
+                                
+                                
+            
+                                    <table style="margin-top:20px;" class="table_demarchage">
+                                        <tbody>
+                                            {% for client in clients %}
+                                            {% for repr in client.representants %}
+                                            <tr >
+                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+
+                                            </tr>
+                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
+                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                                    <table >
+                                                        <tbody>
+                                                        <tr>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">réponse le {{repr.date_reponse}} :</span> Bonjour, Merci pour votre mail, nous travaillons actuellelent sur un projet d'optimisation, seriez vous disponibles pour un rdv...</td>
+                                                        </tr>
+                                                        </tbody>
+                                                        
+                                                    </table>
+                                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>Créer une étude</a>
+                                                    
+                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    </table>
+                                    
+                                    
+                                
+                                    
+                            </div>
+                        </div>  
+                        <div class="col-lg-13 mb-3" style="width: 90%;">
+                            <div class="card shadow">
+                                <div class="card-header">
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">A Relancer :</h6>
+                                </div>
+                                <!-- Card Body -->
+                                
+                                
+                                
+
+                                    
+                                    <table style="margin-top:20px;" class="table_demarchage">
+                                        <tbody>
+                                        {% for client in clients %}
+                                        {% for repr in client.representants %}
+                                        
+                                            <tr >
+                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+
+                                            </tr>
+                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_relance{{repr.id}}">
+                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                                    <table >
+                                                        <tbody>
+                                                        <tr>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span>{{ repr.contenu_mail}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
+                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
+
+                                                </td>
+                                            </tr>
+                                        {% endfor %} 
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                
+                                
+                                    
+                                
+                                    
+                            </div>
+                        </div>    
+                        <div class="col-lg-13 mb-3" style="width: 90%;">
+                            <div class="card shadow">
+                                <div class="card-header">
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Attente d'un retour</h6>
+                                </div>
+                                <!-- Card Body -->
+                                
+                                
+            
+                                    <table style="margin-top:20px;" class="table_demarchage">
+                                        <tbody>
+                                            {% for client in clients %}
+                                            {% for repr in client.representants %}
+                                            <tr >
+                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+
+                                            </tr>
+                                            <tr style = "padding-top: 0px;" class="collapse" id="representant_att{{repr.id}}">
+                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                                    <table >
+                                                        <tbody>
+                                                        <tr>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
+                                                        </tr>
+                                                        </tbody>
+                                                        
+                                                    </table>
+                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    </table>
+                                    
+                                    
+                                
+                                    
+                            </div>
+                        </div>  
+                        <div class="col-lg-13 mb-3" style="width: 90%;">
+                            <div class="card shadow">
+                                <div class="card-header">
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Pas encore démarché :</h6>
+                                </div>
+                                <!-- Card Body -->
+                                
+                                
+                                
+
+                                {% for secteur in secteurs %}
+                                <h6 style="padding-left: 30px; padding-bottom: 0px;padding-top: 30px; color: #7a99bb; font-size: large; ">{{ secteur }}</h6>
+                                    <table class="table_demarchage">
+                                        <tbody>
+                                        {% for client in clients %}
+                                        {% if client.secteur == secteur %}
+                                        
+                                        {% for repr in client.representants %}
+                                        
+                                            <tr >
+                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                                <td style="font-style:italic; text-align:  center; width: 15%;">{{repr.date_mail}}</td>
+
+                                            </tr>
+                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_pas_dem{{repr.id}}">
+                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                                    <table>
+                                                        <tbody>
+                                                        <tr>
+                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
+                                                </td>
+                                            </tr>
+                                       
+                                        {% endfor %} 
+                                        {% endif %}
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endfor %}
+                                
+                                    
+                                
+                                    
+                            </div>
+                        </div>                                                
+                    </div>
+                    <!--End Row-->
+
                     
-                   
+                    
                 </div>
-                    
-
-                {% if representants %}
-                <!-- Beginning of container-fluid -->
-
-                <div class="container-fluid">
-                    
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        
-                                        <th scope="col">Clients ayant répondus</th>
-                                        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for representant in representants %}
-                                        {% if representant.contacte_2m %}
-                                            <td class="align-middle">{{representant.client}}</td>
-                                            <td class="align-middle">{{representant.nom}}</td>
-                                        
-                                        {% endif %}  
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>          
-                <div class="container-fluid">
-                    
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        
-                                        <th scope="col">sans réponse</th>
-                                        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for representant in representants %}
-
-                                        {% if representant.contacte_2m %}
-                                            {% if not representant.reponse_2m %}
-                                                <td class="align-middle">{{representant.client}}</td>
-                                            
-                                            {% endif %}
-                                        {% endif %}           
-    
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>    
-                <div class="container-fluid">
-                    
-                    
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        
-                                        <th scope="col">à relancer</th>
-                                        
-                                    </tr>
-                                </thead> 
-                                <tbody>
-                                    {% for representant in representants %}
-
-                                        {% if representant.relance %}
-                                            
-                                            <td class="align-middle">{{representant.client}}</td>
-                                            
-                                            
-                                        {% endif %}           
-    
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>      
-                <div class="container-fluid">
-                    
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        
-                                        <th class="align-middle" scope="col">jamais contacté</th>
-                                        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for representant in representants %}
-
-                                        {% if not representant.contact_rec %}
-                                           
-                                            <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_dem_{{representant.id}}">{{representant.client}}</td>
-                                            <td class="align-middle">{{representant.first_name}} {{representant.last_name}}</td>
-                                            <td class="align-middle">{{representant.client.secteur}}</td>
-                                            
-                                            <tr class="collapse" id="sec_table_dem_{{representant.id}}">
-                                                <td  contenteditable="true">
-                                                    Bonjour {{representant.titre}} {{representant.last_name}},
-                                                    Je me permets de vous contacter au nom de la Junior Entreprise {{representant.client.je.nom}}, spécialisée dans le développement de sites web et la mise en place de solutions numériques sur mesure.
-
-
-                                                </td>
-                                                <td>
-                                                    envoyer le mail
-                                                </td>
-
-                                              </tr>   
-                                        {% endif %}           
-    
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>  
                 <!-- /.container-fluid -->
-                {% endif %}
 
-                
             </div>
             <!-- End of Main Content -->
         <!-- Footer -->
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
                 <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etudes Projets 2024</span>
+                    <span>Copyright &copy; Ponts Etude Projets 2024</span>
                 </div>
             </div>
         </footer>
@@ -639,7 +686,29 @@
             </div>
         </div>
     </div>
-    {% csrf_token %}
+    <script>
+        function calculateColor(daysDiff) {
+            // Ensure daysDiff is within the range 0 to 60
+            daysDiff = Math.max(0, Math.min(60, daysDiff));
+            // Calculate the percentage (0-100)
+            var percentage = (daysDiff / 60) * 100;
+            // Convert the percentage to a color (green to red)
+            var green = Math.round((100 - percentage) * 2.55);
+            var red = Math.round(percentage * 2.55);
+            return `rgb(${red}, ${green}, 0)`;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Find all elements with class 'date'
+            var dateElements = document.querySelectorAll(".attente");
+            
+            // Loop through each element and set its color based on data-days-diff attribute
+            dateElements.forEach(function(element) {
+                var daysDiff = parseInt(element.getAttribute("attente_duree")) || 0;
+                element.style.color = calculateColor(daysDiff);
+            });
+        });
+    </script>
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -652,77 +721,11 @@
 
     <!-- Page level plugins -->
     <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Page level custom scripts -->
     
     <!-- 2 scripts spécifiques aux suggestions de recherche -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var rows = document.querySelectorAll(".etude_row");
-            rows.forEach(function(row) {
-                row.addEventListener("click", function() {
-                    var href = row.getAttribute("data-href");
-                    window.location.href = href;
-                });
-            });
-        });
-    </script>
-    <script>
-        // Function to send AJAX request to Django
-        function saveContent(elem) {
-          var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-          var content = elem.innerText;
-          var url = elem.dataset.url;
-          
-          // AJAX request using fetch API
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({ content: content }),
-            })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if(data.success){
-                    alert("The modification was taken into account.");
-                }
-                else{
-                    alert("The modification wasn't taken into account.");
-                }
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error.message);
-            });
-        }
-        document.addEventListener("DOMContentLoaded", function() {
-            // Event listener to detect when user clicks outside the div
-            var allEditableDiv = document.getElementsByClassName('editableDiv');
-            var arrayEditDiv = Array.from(allEditableDiv);
-            var arrayDivContent = [];
-            arrayEditDiv.forEach(elem => {
-                arrayDivContent.push(elem.textContent);
-            });
-
-            window.addEventListener('click', function(event) {
-                if (!event.target.closest('.editableDiv')) {
-                    arrayEditDiv.forEach((elem, index) => {
-                        if(elem.textContent !== arrayDivContent[index]){
-                            saveContent(elem);
-                            arrayDivContent[index] = elem.textContent;
-                        }
-                    })
-                }
-            });
-        });
-      </script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";

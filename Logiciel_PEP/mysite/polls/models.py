@@ -15,6 +15,7 @@ from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.conf import settings
 from datetime import date
+from datetime import timedelta
 
 
 
@@ -139,9 +140,11 @@ class Client(models.Model):
     )
 
     def derniere_mission(self):
-        etudes = Etude.objects.filter(client=self).order_by('numero')
-        return etudes[0]
+        etude = Etude.objects.filter(client=self).order_by('numero').first()
+        return etude
 
+    def representants(self):
+        return Representant.objects.filter(client=self)
 
     def __str__(self):
         return self.nom_societe
@@ -164,6 +167,13 @@ class Client(models.Model):
     
     
 class Representant(models.Model):
+    class Demarchage(models.TextChoices):
+        A_CONTACTER = 'A_CONTACTER', 'A contacter'
+        ATTENTE_REPONSE = 'ATTENTE_REPONSE', "Attente d'un retour"
+        RELANCER = 'RELANCER', "A relancer"
+        RETOUR_RECU = 'RETOUR_RECU', 'Retour reçu'
+        ETUDE_CREEE = 'ETUDE_CREEE', 'Étude créée'
+
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
     first_name = models.CharField(max_length = 200)
@@ -171,16 +181,33 @@ class Representant(models.Model):
     mail = models.EmailField(max_length = 200)
     phone_number = models.CharField(max_length=200, blank=True, null=True)
     
-    remarque = models.TextField(blank=True, null=True, default="")
+    remarque = models.TextField(blank=True, null=True, default="RAS")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, default="96d2c7ee-6d6f-486a-86dd-1a7183b012b3")
     fonction = models.CharField(max_length = 100, null=True)
-    contact_rec = models.BooleanField(default=False)
-    dernier_mail = models.DateField(default=datetime.date(1747, 1, 1))
-    derniere_reponse = models.DateField(default=datetime.date(1747, 1, 1))
+    contact_recent = models.BooleanField(default=False)
+    date_mail = models.DateField(default=datetime.date(1747, 1, 1))
+    contenu_mail =models.CharField(max_length = 5000, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
+    date_reponse = models.DateField(default=datetime.date(1747, 1, 1))
+    contenu_reponse =models.CharField(max_length = 5000, null=True, default="rien")
+    demarchage= models.CharField(
+        max_length=40,
+        choices=Demarchage.choices,
+        default=Demarchage.A_CONTACTER
+    )
+    def maj_demarchage(self):
+        if self.demarchage == "ATTENTE_REPONSE":
+            if datetime.today() - timedelta(days=60) >self.date_mail:
+                self.demarchage == "RELANCER"
+            elif self.date_reponse>self.date_mail:
+                self.demarchage == "RETOUR_RECU"
+    
+    def attente_duree(self):
+        if self.demarchage == "ATTENTE_REPONSE" or self.demarchage == "RELANCER":
+            return datetime.today()-self.date_mail
+        elif self.demarchage == "RETOUR_RECU":
+            return datetime.today()-self.date_reponse
 
-    def relance(self):
-        return self.derniere_reponse - self.dernier_mail > datetime.timedelta(days=60)
     def __str__(self):
         return self.first_name+' '+self.last_name
     
@@ -220,7 +247,7 @@ class Representant(models.Model):
             if not self.je:
                 self.je = client.je
 
-
+        self.maj_demarchage()
         super(Representant, self).save(*args, **kwargs)
 
 
@@ -658,6 +685,36 @@ class Devis(models.Model):
     def signe(self):
         return (self.date_signature is not None)
 
+class PV(models.Model):
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="pv")
+    numero = models.IntegerField()
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+    date = models.DateField(default=date.today)
+    
+    def ref(self):
+        ref_etude= self.etude.ref()
+        return f"{ref_etude}pv"
+    
+    def date_pv(self):
+        date = timezone.now()
+        self.date= date
+        return date
+
+    def save(self, *args, **kwargs):
+        if (self.numero is None):
+            self.numero = len(self.etude.devis.all())+1
+        super(Devis, self).save(*args, **kwargs)
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.etude.numero}D"
+    
+    def signe(self):
+        return (self.date_signature is not None)
+
+
 class ConventionEtude(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_etude")
     date_signature = models.DateField(blank=True, null=True)
@@ -812,6 +869,7 @@ class AssignationJEH(models.Model):
     pourcentage_retribution = models.FloatField()  #en pourcentage
     nombre_JEH = models.IntegerField()
     phase = models.ForeignKey(Phase, on_delete=models.CASCADE)
+    #reference= models.CharField(default="rdm" )
 
     def __str__(self):
         return self.phase.etude.__str__()+"___"+self.phase.__str__()+"___"+self.eleve.__str__()
