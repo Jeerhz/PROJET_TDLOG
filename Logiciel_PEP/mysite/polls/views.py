@@ -3,6 +3,7 @@ import os
 import openpyxl
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
+from docx.shared import Inches
 from jinja2 import Environment
 
 import logging #pour gérer plus facilement les erreurs
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.core.mail import send_mail, get_connection
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
@@ -28,6 +29,11 @@ from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
 from .templatetags.format_duration import format_nombres
+from django.shortcuts import render
+from django.template.loader import render_to_string
+
+#from weasyprint import HTML
+#from wand.image import Image
 
 from .models import (
     JE,
@@ -66,7 +72,19 @@ from .models import (
     ModificationDebutPhase,
     ModificationDureePhase,
     ModificationJEHPhase,
+    PV,
 )
+
+def my_view(request):
+    return render(request, 'polls/facpdf.html')
+
+def generate_pdf(request):
+    html_content = render_to_string('polls/facpdf.html')
+    pdf_file = HTML(string=html_content).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="page.pdf"'
+    return response
 
 
 def index(request):
@@ -216,12 +234,59 @@ def demarchage(request):
         template = loader.get_template("polls/demarchage.html")
         je = request.user.je
         representants= Representant.objects.filter(client__je=je)
+        clients = Client.objects.filter(je=je)
+        secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
         context = {
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
-            "representants":representants,
+            'representants': representants,
+        }
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def blank_page(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        template = loader.get_template("polls/blank_page.html")
+        context = {
+        }
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def page_detail_etude(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+
+        context ={"attribute_list": Etude.objects.filter(iD=1).get_display_dict(),
+                "title": 'nptq',
+                "iD": 1,
+                "liste_messages": liste_messages,
+                "message_count": message_count,}
+
+        template = loader.get_template("polls/page_detail_etude.html")
+        context = {
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -736,13 +801,13 @@ def register(request):
             template = loader.get_template("polls/register.html")
     return HttpResponse(template.render(context, request))
 
-
 def editer_convention(request, iD):
     if request.user.is_authenticated:
         #try:
             instance = Etude.objects.get(id=iD)
             je= instance.je
             client = instance.client
+            phases= Phase.objects.filter(etude=instance)
             if instance.type_convention == "Convention d'étude":
                 model = ConventionEtude
                 template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
@@ -757,10 +822,9 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            members = Member.objects.get(je=je)
-            #president = next((member for member in members.values() if member["president"]), None)
-
-
+            president = Member.objects.filter(je=je, president=True).first().student
+            duree = instance.duree_semaine()
+            nb_phases = instance.nb_phases()
             respo = instance.responsable.student
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
@@ -769,33 +833,32 @@ def editer_convention(request, iD):
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
             date = timezone.now()
             annee = date.strftime('%Y')
-            context = {"etude": instance, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
+
+
+
+
+
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
             # Load the template
 
-            # Create a Jinja2 environment
             env = Environment()
 
-            # Register the custom filter
             env.filters['FormatNombres'] = format_nombres
 
+            
 
-            # Render the document
             template.render(context, env)
-
-
-            # Create a temporary in-memory file
             output = BytesIO()
             template.save(output)
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            if(instance.type_convention == "Convention d'étude"):
-                filename = f"Convention_Etude_{ce.__str__()}.docx"
-            else :
-                filename = f"Convention_Cadre_{ce.__str__()}.docx"
+            filename = f"Devis_{ref_m}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
+        
+            
         #except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
@@ -808,12 +871,79 @@ def editer_convention(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def editer_pv(request, iD):
+    if request.user.is_authenticated:
+        #try:
+            instance = Etude.objects.get(id=iD)
+            je= instance.je
+            client = instance.client
+            model = PV
+            pv = model(etude=instance)
+            phases= Phase.objects.filter(etude=instance)
+            template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
+            
+
+            president = Member.objects.filter(je=je, president=True).first().student
+            duree = instance.duree_semaine()
+            nb_phases = instance.nb_phases()
+            respo = instance.responsable.student
+            qualite = instance.resp_qualite.student
+            ref_m = instance.ref()
+            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
+            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            date = datetime.datetime.now()
+            annee = date.strftime('%Y')
+
+
+
+
+
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je,  "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
+            # Load the template
+
+            env = Environment()
+
+            env.filters['FormatNombres'] = format_nombres
+
+            
+
+            template.render(context, env)
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"PVRI_{ref_m}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        
+            
+        #except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+        #except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+
 def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
         #try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
+            phases= Phase.objects.filter(etude=etude)
+            client= etude.client
+            
             je= eleve.je
+            president = Member.objects.filter(je=je, president=True).first().student
 
 
             template = DocxTemplate("polls/templates/polls/RDM_026.docx")
@@ -827,17 +957,23 @@ def editer_rdm(request, id_etude, id_eleve):
             
             ref_m = etude.ref()
             ref_d = ref_m + "pv"
+            date = datetime.datetime.now()
+            annee = date.strftime('%Y')
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
             
             
 
 
-            context = {"etude": etude, "rdm": rdm, "etudiant": eleve, "ref_m":ref_m,}
+            context = {"etude": etude,"client": client, "rdm": rdm, "etudiant": eleve, "ref_m":ref_m, "phases":phases,"annee":annee,"president" :president}
             # Load the template
 
-            # Render the document
-            template.render(context)
+            env = Environment()
 
+            env.filters['FormatNombres'] = format_nombres
+
+            
+
+            template.render(context, env)
 
             # Create a temporary in-memory file
             output = BytesIO()
@@ -1218,7 +1354,7 @@ def BV(request, id_etude, id_eleve):
                         montant_HT += phase.get_montant_HT(eleve)
 
 
-            chemin_absolu = os.path.join("polls/static/polls/BV_test.xlsx")
+            chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
             
             classeur = openpyxl.load_workbook(chemin_absolu)
 
@@ -1232,8 +1368,11 @@ def BV(request, id_etude, id_eleve):
             feuille['G4'] = eleve.first_name +" " + eleve.last_name
             feuille['G6'] = eleve.adress
             feuille['G8'] = eleve.code_postal + " " + eleve.country
-            feuille['I3'] = timezone.now().strftime('%d %B %Y')
+            feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
             feuille['C13']= etude.ref()
+
+            #assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
+            #feuille['C13']= assignation_jeh.reference
             feuille['H10'] = eleve.numero_ss
             
             #info JE

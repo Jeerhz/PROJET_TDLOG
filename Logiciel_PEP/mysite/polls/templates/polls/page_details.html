@@ -270,6 +270,12 @@
                 <i class="fas fa-fw fa-cog" ></i>
                 <span>Ma Junior Entreprise</span></a>
         </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'demarchage' %}">
+                <i class="fas fa-fw fa-cog" ></i>
+                <span>Démarchage</span></a>
+        </li>
         
 
         <hr class="sidebar-divider">
@@ -581,7 +587,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Générer le BV</h5>
+                            <h5 class="modal-title">Générer le BV </h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -1250,6 +1256,18 @@
                                                         <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                     {% endif %}
                                                 </div>
+                                                <table>
+                                                    <tr>
+                                                        <th>date de signature</th>
+                                                        <th contenteditable="True">01/01/1979</th>
+                                            
+                                                    </tr>
+                                                    <tr>
+                                                        <td contenteditable="True">remarque</td>
+                                                    
+                                                    </tr>
+
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
@@ -1347,11 +1365,15 @@
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">PVRF</h5>
-                                                    
+                                                    <h5 class="card-title">PV</h5>
                                                         <br>
                                                         <p class="card-text">Préparez le procés verbale de recette finale<strong></strong> pour cette étude.</p>
-                                                        <a  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+                                                        <a  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
+                                                        <br>
+                                                        <br>
+                                                        <p class="card-text">Préparez le procés verbale de recette finale<strong></strong> pour cette étude.</p>
+                                                        <a href="{% url 'editer_pv' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+
                                                         <br>
                                                         <p class="card-text">Mission pas terminé</p>
                                                 </div>
@@ -1424,7 +1446,7 @@
                                                     {% endfor %}
                                                 </tbody>
                                               </table>
-                                              <div><button type="submit" class="btn btn-success">Générer le BV</a></div>
+                                              <div><button type="submit" class="btn btn-success">Générer le BV </a></div>
 
                                         </div>
                                         </form>

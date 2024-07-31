@@ -110,6 +110,11 @@
                     <span>Ma Junior Entreprise</span></a>
             </li>
             
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'demarchage' %}">
+                    <i class="fas fa-fw fa-cog" ></i>
+                    <span>Démarchage</span></a>
+            </li>
 
             <hr class="sidebar-divider">
 
@@ -455,8 +460,8 @@
                                         <thead class="thead-dark">
                                             <tr>
                                                 <th class="text-center">Nom de société </th>
-                                                <th class="text-center"> Secteur </th>
-                                                <th class="text-center">Pays</th>
+                                                <th class="text-center"> Représentant </th>
+                                                <th class="text-center">Dernière étude</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
@@ -465,7 +470,6 @@
                                             <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.secteur }} </td>
-                                                <td class="text-center"> {{ client.country }} </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -524,7 +528,7 @@
                                             <th class="text-center">Titre</th>
                                             <th class="text-center">Client</th>
                                             <th class="text-center">Debut</th>
-                                            <th class="text-center">Responsable</th>
+                                            <th class="text-center">Suiveur</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody">

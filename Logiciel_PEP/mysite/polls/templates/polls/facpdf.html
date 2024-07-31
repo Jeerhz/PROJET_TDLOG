@@ -6,6 +6,8 @@
         {% load static %}
         {% load format_duration %}
 		<title>Facture {{etude.numero}}</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1"
@@ -348,6 +350,10 @@
 	<body>
         <div class="page-wrapper">
             <button type="button" class=" bouton_pdf" id="download-button">Télécharger</button>
+        </div>
+        <h1 class="text-center">Download HTML as PDF</h1>
+        <div class="text-center">
+            <a href="{% url 'generate_pdf' %}" class="btn btn-primary">Download as PDF</a>
         </div>
         
         
