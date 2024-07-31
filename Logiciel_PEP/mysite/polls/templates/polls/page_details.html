@@ -1219,11 +1219,10 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Devis</h5>
                                                     
-                                                    {% if etude.devis_edited %}                                                      
-                                                    <p class="card-text">{% if etude.devis.date_signature %}Le devis a été signé le {{etude.devis.date_signature}}.{% else %}Un devis a déjà été édité pour cette étude.{% endif %}</p>
-                                                    {% else %}                                                    
+                                                    {% if etude.devis.date_signature %}                                       
+                                                    <p class="card-text">Le devis a été signé le {{etude.devis.date_signature}}</p>
+                                                    {% endif %}                                                    
                                                     <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
-                                                    {% endif %}
                                                     <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
                                                 </div>
                                             </div>
@@ -1234,20 +1233,18 @@
                                                     {% if etude.type_convention == "Convention d'étude" %}
                                                         <h5 class="card-title">Convention d'Étude</h5>
                                                         
-                                                        {% if etude.convention_edited %}
-                                                        <p class="card-text">{% if etude.convention.date_signature %}La convention a été signée le {{ etude.convention.date_signature }}.{% else %}Une convention a déjà été éditée pour cette étude.{% endif %}</p>
-                                                        {% else %}
-                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
+                                                        {% if etude.convention.date_signature %}
+                                                        <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
                                                         {% endif %}
+                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
                                                         <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a>
                                                     {% elif etude.type_convention == "Convention cadre" %}
                                                         <h5 class="card-title">Convention Cadre</h5>
                                                             
-                                                        {% if etude.convention_edited %}
-                                                        <p class="card-text">{% if etude.convention.date_signature %}La convention a été signée le {{ etude.convention.date_signature }}.{% else %}Une convention cadre a déjà été éditée pour cette étude.{% endif %}</p>
-                                                        {% else %}
-                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
+                                                        {% if etude.convention.date_signature %}
+                                                        <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
                                                         {% endif %}
+                                                        <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                         <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
                                                     {% else %}
                                                         <p class="card-text text-danger">Veuillez définir un type de convention</p>
@@ -1262,15 +1259,14 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h5 class="card-title">Avenant CE</h5>
-                                                    {% if etude.convention_edited %}
                                                     {% if etude.convention.avenants %}
                                                     <table class="table">
                                                         <tbody>
-                                                            {% for avenant in etude.convention.avenants.all %}
+                                                            {% for avenant in etude.convention.avenants_modification.all %}
                                                             <tr>
                                                                 <td>Avenant n°{{avenant.numero}}</td>
                                                                 <td>{% if avenant.date_signature %}{{avenant.date_signature}}{% else %}Non signé{% endif %}</td>
-                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-pen"></i></button></td>
+                                                                <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
                                                                 <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
                                                             </tr>
                                                             {% endfor %}
@@ -1280,11 +1276,45 @@
                                                     <hr>
                                                     {% endif %}
                                                     <p class="card-text">Ajouter un avenant à la convention d'étude</p>
-                                                    <a href="{% url 'editer_avenant_ce' iD %}" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
-                                                    {% else %}
-                                                    <p class="card-text text-danger">Aucune convention d'étude n'a été éditée</p>
-                                                    <a href="{% url 'editer_avenant_ce' iD %}" class="btn btn-primary disabled" target="_blank"><i class="fas fa-download mr-2"></i>Ajout Avenant CE</a>
-                                                    {% endif %}
+                                                    <!-- Bouton et formulaire pour ajouter un avenant CE -->
+                                                    <a class="btn btn-primary" data-toggle="modal" data-target="#avenantCEModal">Ajout avenant CE</a>
+                                                    <div class="modal fade" id="avenantCEModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelAvenantCE" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="modalLabelAvenantCE">Nouvel avenant</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form action="{% url 'ajouter_avenant_ce' id_etude=iD %}" method="post">
+                                                                    <div class="modal-body">
+                                                                        {% csrf_token %}
+                                                                        {% for phase in etude.phases.all %}
+                                                                        <h6>Phase {{ phase.numero }}</h6>
+                                                                        <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Suppression:</strong> <input type="checkbox" name="suppression{{ phase.id }}" class="form-control" value="{{phase.supprimee}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Durée:</strong> <input type="number" name="duree{{ phase.id }}" class="form-control" value="{{phase.duree_semaine}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Début:</strong> <input type="number" name="debut{{ phase.id }}" class="form-control" value="{{phase.debut_relatif}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nombre JEH:</strong> <input type="number" name="nb_jeh{{ phase.id }}" class="form-control" value="{{phase.nb_JEH}}"></li>
+                                                                        </ul>
+                                                                        {% endfor %}
+                                                                        <br>
+                                                                        <h6>Général</h6>
+                                                                        <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero:</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Date signature:</strong> <input type="date" name="date_signature" class="form-control"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque:</strong> <input type="text" name="remarque" class="form-control" value=""></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1293,7 +1323,6 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h5 class="card-title">Bons de commande</h5>
-                                                    {% if etude.convention_edited %}
                                                     {% if etude.convention.bons_commande %}
                                                     <table class="table">
                                                         <tbody>
@@ -1311,10 +1340,6 @@
                                                     {% endif %}
                                                     <p class="card-text">Ajouter un bon de commande à la convention cadre</p>
                                                     <a href="{% url 'editer_bon' iD %}" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout bon de commande</a>
-                                                    {% else %}
-                                                    <p class="card-text text-danger">Aucune convention cadre n'a été éditée</p>
-                                                    <a href="{% url 'editer_bon' iD %}" class="btn btn-primary disabled" target="_blank"><i class="fas fa-download mr-2"></i>Ajout bon de commande</a>
-                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>

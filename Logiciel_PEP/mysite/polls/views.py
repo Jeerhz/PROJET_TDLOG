@@ -61,6 +61,11 @@ from .models import (
     Candidature,
     RDM,
     Notification,
+    AvenantConventionEtude,
+    SuppressionPhase,
+    ModificationDebutPhase,
+    ModificationDureePhase,
+    ModificationJEHPhase,
 )
 
 
@@ -908,12 +913,11 @@ def editer_devis(request, iD):
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
         try:
-            instance = Etude.objects.get(id=iD)
-            client = instance.client
+            instance = AvenantConventionEtude.objects.get(id=iD)
+            etude = instance.ce.etude
+            client = etude.client
             template = DocxTemplate("polls\\templates\\polls\\Avenant_Rupture_Convention_Etude.docx")
-            avenant = AvenantRuptureConventionEtude(ce=instance.convention())
-            avenant.save()
-            responsable = instance.responsable
+            responsable = etude.responsable
             context = {"etude": instance, "client": client, "responsable":responsable}
             # Load the template
 
@@ -927,7 +931,7 @@ def editer_avenant_ce(request, iD):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"Devis_{avenant.__str__()}.docx"
+            filename = f"AvenantCE_{instance.__str__()}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
@@ -1483,6 +1487,57 @@ def add_intervenant(request, id_etude, id_student):
             notification_count = len(notification_list)
             template = loader.get_template("polls/page_error.html")
             context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission.", "notification_list":notification_list, "notification_count":notification_count}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def ajouter_avenant_ce(request, id_etude):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        if request.method == 'POST':
+            try:
+                etude = Etude.objects.get(id=id_etude)
+                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=request.POST['date_signature'], remarque=request.POST['remarque'])
+                new_avenant.save()
+                for phase in etude.phases.all():
+                    if( 'suppression'+str(phase.id) in request.POST and request.POST['suppression'+str(phase.id)] == "on" and not phase.supprimee):
+                        supp_phase = SuppressionPhase(avenant_ce=new_avenant, phase=phase)
+                        supp_phase.save()
+                        phase.supprimee=True
+                    if(request.POST['debut'+str(phase.id)] != phase.debut_relatif):
+                        n_debut = request.POST['debut'+str(phase.id)]
+                        deb_phase = ModificationDebutPhase(avenant_ce=new_avenant, phase=phase, nouveau_debut=n_debut)
+                        deb_phase.save()
+                        phase.debut_relatif = n_debut
+                    if(request.POST['duree'+str(phase.id)] != phase.duree_semaine):
+                        n_duree = request.POST['duree'+str(phase.id)]
+                        dur_phase = ModificationDureePhase(avenant_ce=new_avenant, phase=phase, nouvelle_duree=n_duree)
+                        dur_phase.save()
+                        phase.duree_semaine = n_duree
+                    if(request.POST['nb_jeh'+str(phase.id)] != phase.duree_semaine):
+                        n_jeh = request.POST['nb_jeh'+str(phase.id)]
+                        jeh_phase = ModificationJEHPhase(avenant_ce=new_avenant, phase=phase, nouveau_nombre_JEH=n_jeh)
+                        jeh_phase.save()
+                        phase.nb_JEH = n_jeh
+                    phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
+                return redirect('details', modelName="Etude", iD=id_etude)
+            except:
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
+        else :
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur de requête.", "notification_list":notification_list, "notification_count":notification_count}
     else:
         template = loader.get_template("polls/login.html")
         context = {}

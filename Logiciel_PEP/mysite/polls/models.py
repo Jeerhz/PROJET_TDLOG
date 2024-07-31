@@ -530,6 +530,18 @@ class Etude(models.Model):
             self.numero = max_numero + 1
         
         super().save(*args, **kwargs)
+        if(self.type_convention == "Convention d'étude"):
+            try :
+                ConventionEtude.objects.get(etude=self)
+            except :
+                new_ce = ConventionEtude(etude=self)
+                new_ce.save()
+        elif(self.type_convention == "Convention d'étude"):
+            try :
+                ConventionCadre.objects.get(etude=self)
+            except :
+                new_cc = ConventionCadre(etude=self)
+                new_cc.save()
 
     def createForm(**kwargs):
         return AddEtude()
@@ -565,6 +577,13 @@ class Etude(models.Model):
         else:
             return None
         return conventions.first() if conventions.exists() else None
+    
+    def nouveau_num_avenant_ce(self):
+        list_num = self.convention().avenants_modification.values_list("numero", flat=True)
+        if len(list_num)==0:
+            return 1
+        else :
+            return max(list_num) + 1
 
     def devis_editable(self):
         return self.responsable is not None and self.resp_qualite is not None
@@ -684,7 +703,6 @@ class ConventionCadre(models.Model):
     
 class AvenantRuptureConventionEtude(models.Model):
     ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants")
-    numero = models.IntegerField()
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
 
@@ -692,20 +710,43 @@ class AvenantRuptureConventionEtude(models.Model):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}acc{self.numero}"
-    
-    def save(self, *args, **kwargs):
-        if self.numero is None :
-            nb_avenants = len(AvenantRuptureConventionEtude.objects.filter(ce=self.ce))
-            self.numero = nb_avenants + 1
-        super(AvenantRuptureConventionEtude, self).save(*args, **kwargs)
 
 class AvenantConventionEtude(models.Model):
     ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants_modification")
     numero = models.IntegerField()
-    liste_phases_supprimees = models.ManyToManyField('Phase', related_name="avenant_suppression", blank=True)
-    
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ace{self.numero}"
+    
+    def save(self, *args, **kwargs):
+        if self.numero is None :
+            nb_avenants = max(AvenantConventionEtude.objects.filter(ce=self.ce))
+            self.numero = nb_avenants + 1
+        super(AvenantConventionEtude, self).save(*args, **kwargs)
+
+
+class SuppressionPhase(models.Model):
+    avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_supprimees")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="suppression")
+
+class ModificationDureePhase(models.Model):
+    avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_duree")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_duree")
+    nouvelle_duree = models.IntegerField()
+
+class ModificationDebutPhase(models.Model):
+    avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_debut")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_debut")
+    nouveau_debut = models.IntegerField()
+
+class ModificationJEHPhase(models.Model):
+    avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_jeh")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_jeh")
+    nouveau_nombre_JEH = models.IntegerField()
 
 
 class BonCommande(models.Model):
@@ -715,12 +756,13 @@ class BonCommande(models.Model):
 
     def save(self, *args, **kwargs):
         if (self.numero is None):
-            self.numero = self.convention_cadre.etude.numero*100 + len(self.convention_cadre.bons_commande.all())+1
+            self.numero = self.convention_cadre.etude.numero*100 + max(self.convention_cadre.bons_commande.all())+1
         super(BonCommande, self).save(*args, **kwargs)
 
     
 class RDM(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="rdm")
+    eleve = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="rdm")
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
 
@@ -731,6 +773,34 @@ class RDM(models.Model):
     
     def signe(self):
         return (self.date_signature is not None)
+    
+class AvenantRuptureRDM(models.Model):
+    rdm = models.ForeignKey('RDM', on_delete=models.CASCADE, related_name="avenants")
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+
+class AvenantRDM(models.Model):
+    rdm = models.ForeignKey('RDM', on_delete=models.CASCADE, related_name="avenants_modification")
+    numero = models.IntegerField()
+    date_signature = models.DateField(blank=True, null=True)
+    remarque = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.rdm.etude.numero:02d}ardm{self.numero}"
+    
+    def save(self, *args, **kwargs):
+        if self.numero is None :
+            nb_avenants = max(AvenantRDM.objects.filter(rdm=self.rdm))
+            self.numero = nb_avenants + 1
+        super(AvenantRDM, self).save(*args, **kwargs)
+
+class ModificationPhaseRDM(models.Model):
+    avenant_rdm = models.ForeignKey('AvenantRDM', on_delete=models.CASCADE, related_name="phases_modif_jeh")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_jeh_rdm")
+    nouveau_nombre_JEH = models.IntegerField()
+
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
@@ -743,6 +813,7 @@ class Phase(models.Model):
     nb_JEH = models.IntegerField()
     montant_HT_par_JEH = models.FloatField()
     numero = models.IntegerField()
+    supprimee = models.BooleanField(default=False)
 
     def nb_JEH_montant_HT(self):
         assignations = AssignationJEH.objects.filter(phase=self)
@@ -1088,7 +1159,7 @@ class AddRepresentant(forms.ModelForm):
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
-        exclude = ['etude', 'date_debut','date_fin']
+        exclude = ['etude', 'date_debut','date_fin', 'supprimee']
     def __str__(self):
         return "Information de la Phase"
     def name(self):
