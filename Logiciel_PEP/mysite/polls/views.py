@@ -73,6 +73,7 @@ from .models import (
     ModificationDureePhase,
     ModificationJEHPhase,
     PV,
+    AjouterRemarqueRepresentant,
 )
 
 def my_view(request):
@@ -237,13 +238,25 @@ def demarchage(request):
         clients = Client.objects.filter(je=je)
         secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
         context = {
-            'representants': representants,
+            'representants': representants, 'clients':clients,'secteurs':secteurs,
         }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+def supprimer_demarchage(request, id_representant):
+    representant = Representant.objects.filter(id=id_representant).first()
+
+    if request.method == 'POST':
+        representant.demarchage = 'A_CONTACTER'
+        
+        nouvelle_remarque = request.POST.get('remarque', '')
+        representant.remarque = nouvelle_remarque
+        representant.save()
+        return redirect('demarchage')  
+    
+    return redirect('demarchage')  
 
 def blank_page(request):
     if request.user.is_authenticated:
@@ -312,7 +325,7 @@ def details(request, modelName, iD):
 
         model = apps.get_model(app_label="polls", model_name=modelName)
         try:
-            instance = model.objects.get(id=iD, je=request.user.je)
+            instance = model.objects.get(id=iD)
             if modelName == "Message":
                 instance.read = True
                 instance.save()

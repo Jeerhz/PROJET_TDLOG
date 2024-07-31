@@ -180,15 +180,15 @@ class Representant(models.Model):
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
     phone_number = models.CharField(max_length=200, blank=True, null=True)
-    
+    #je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     fonction = models.CharField(max_length = 100, null=True)
-    contact_recent = models.BooleanField(default=False)
-    date_mail = models.DateField(default=datetime.date(1747, 1, 1))
-    contenu_mail =models.CharField(max_length = 5000, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
-    date_reponse = models.DateField(default=datetime.date(1747, 1, 1))
-    contenu_reponse =models.CharField(max_length = 5000, null=True, default="rien")
+    contact_recent = models.BooleanField(default=False,blank=True, null=True)
+    date_mail = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_mail =models.CharField(max_length = 5000, blank=True, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
+    date_reponse = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_reponse =models.CharField(max_length = 5000, default="rien",blank=True, null=True)
     demarchage= models.CharField(
         max_length=40,
         choices=Demarchage.choices,
@@ -1045,6 +1045,9 @@ class AddMessage(forms.ModelForm):
     def __str__(self):
         return "Nouveau message"
 
+class AjouterRemarqueRepresentant(forms.Form):
+    model = Representant
+    fields = ['remarque']
 
 class AddMember(forms.Form):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
@@ -1198,7 +1201,7 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['je']
+        exclude = ['je','contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
     def __str__(self):
         return "Informations du représentant"
     def name(self):

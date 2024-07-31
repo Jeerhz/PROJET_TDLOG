@@ -476,7 +476,7 @@
                         <div class="col-lg-13 mb-3" style="width: 90%;">
                             <div class="card shadow">
                                 <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">clients ayant répondues :</h6>
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Retours :</h6>
                                 </div>
                                 <!-- Card Body -->
                                 
@@ -505,9 +505,15 @@
                                                         </tbody>
                                                         
                                                     </table>
+                                                    <div> </div>
                                                     <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>Créer une étude</a>
+                                                    <br>
+                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                        {% csrf_token %}
+                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                        <button type="submit" class="btn btn-primary">supprimer</button>
+                                                    </form>
                                                     
-                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
 
                                                 </td>
                                             </tr>
@@ -524,7 +530,7 @@
                         <div class="col-lg-13 mb-3" style="width: 90%;">
                             <div class="card shadow">
                                 <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">A Relancer :</h6>
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Deux mois sans réponses :</h6>
                                 </div>
                                 <!-- Card Body -->
                                 
@@ -555,9 +561,13 @@
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
-                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
-
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>relancer</a>
+                                                    <br>
+                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                        {% csrf_token %}
+                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                        <button type="submit" class="btn btn-primary">supprimer</button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         {% endfor %} 
@@ -574,7 +584,7 @@
                         <div class="col-lg-13 mb-3" style="width: 90%;">
                             <div class="card shadow">
                                 <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Attente d'un retour</h6>
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés :</h6>
                                 </div>
                                 <!-- Card Body -->
                                 
@@ -600,7 +610,12 @@
                                                         </tbody>
                                                         
                                                     </table>
-                                                    <a href="{% url 'supprimer_demarchage' id_representant=repr.id %}" class="btn btn-primary">supprimer</a>
+                                                    <br>
+                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                        {% csrf_token %}
+                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                        <button type="submit" class="btn btn-primary">supprimer</button>
+                                                    </form>
 
                                                 </td>
                                             </tr>
@@ -649,6 +664,8 @@
                                                         </tbody>
                                                     </table>
                                                     <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
+                                                    <br>
+                                                    <div style="font-weight: 300;">{{ repr.remarque }}</div>
                                                 </td>
                                             </tr>
                                        
