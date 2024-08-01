@@ -756,8 +756,8 @@
                                                     <form action="{% url 'modifier_recrutement_etude' iD=etude.id %}" method="post" id="rec-f-form">
                                                         {% csrf_token %}
                                                         <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <input type="text" name="debut" class="form-control" value="{{ etude.date_debut_recrutement }}"></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <input type="text" name="fin" class="form-control" value="{{ etude.date_fin_recrutement }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement }}"></li>
                                                         </ul>
                                                         <!-- Bouton Modifier -->
                                                         <div class="row justify-content-between">

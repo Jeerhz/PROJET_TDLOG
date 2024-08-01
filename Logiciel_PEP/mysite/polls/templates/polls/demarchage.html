@@ -485,7 +485,7 @@
                                     <table style="margin-top:20px;" class="table_demarchage">
                                         <tbody>
                                             {% for client in clients %}
-                                            {% for repr in client.representants %}
+                                            {% for repr in client.representants.all %}
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
@@ -541,7 +541,7 @@
                                     <table style="margin-top:20px;" class="table_demarchage">
                                         <tbody>
                                         {% for client in clients %}
-                                        {% for repr in client.representants %}
+                                        {% for repr in client.representants.all %}
                                         
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
@@ -593,7 +593,7 @@
                                     <table style="margin-top:20px;" class="table_demarchage">
                                         <tbody>
                                             {% for client in clients %}
-                                            {% for repr in client.representants %}
+                                            {% for repr in client.representants.all %}
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
@@ -646,7 +646,7 @@
                                         {% for client in clients %}
                                         {% if client.secteur == secteur %}
                                         
-                                        {% for repr in client.representants %}
+                                        {% for repr in client.representants.all %}
                                         
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>

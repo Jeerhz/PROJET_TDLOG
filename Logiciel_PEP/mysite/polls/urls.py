@@ -43,7 +43,7 @@ urlpatterns = [
     path("ajouter_avenant_ce/<int:id_etude>", views.ajouter_avenant_ce, name='ajouter_avenant_ce'),
     path('', views.my_view, name='my_view'),
     path('generate-pdf/', views.generate_pdf, name='generate_pdf'),
-    #path('supprimer_demarchage/<int:id_representant>', views.supprimer_demarchage, name='supprimer_demarchage'),
+    path('supprimer_demarchage/<int:id_representant>', views.supprimer_demarchage, name='supprimer_demarchage'),
     path("editer_pv/<int:iD>", views.editer_pv, name="editer_pv"),
     path("ajouter_representant/<int:id_client>", views.ajouter_representant, name="ajouter_representant")
     
