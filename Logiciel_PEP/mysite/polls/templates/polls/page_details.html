@@ -636,8 +636,7 @@
                             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                                 <!-- Responsable and Statut -->
                                 <div class="mt-3 d-flex justify-content-between">
-                                    <h4 style="padding-left: 30px;">Responsable : {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
-                                    <h8 style="padding-left: 30px;">Client : {{ etude.client }} {{ etude.client_interlocuteur }}</h8>
+                                    <h4 style="padding-left: 30px;"> {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
 
                                     <h4 class="mb-2" style="padding-right: 50px">
                                         Statut: 
@@ -647,7 +646,10 @@
                                             <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
                                         {% endif %}
                                     </h4>
+
                                 </div>
+                                <h4 style="padding-left: 30px;">{{ etude.client_interlocuteur }}</h4>
+
                                 <!--Fin Responsable et statut-->
                                 <div class="col-lg-13 mb-3">
                                     <div class="card shadow">
@@ -667,10 +669,10 @@
                                             <tbody>
                                                 {% for phase in phases %}
                                                 <tr>
-                                                    <td contenteditable="true">Phase {{phase.numero}} - {{phase.titre}} </td>
-                                                    <td contenteditable="true" style="text-align:center;">{{phase.nb_JEH}}</td>
-                                                    <td contenteditable="true" style="text-align:center;">{{phase.montant_HT_par_JEH}} €</td>
-                                                    <td contenteditable="true" style="text-align:center;">{{phase.calcul_mt_HT}} €&nbsp;</td>
+                                                    <td >Phase {{phase.numero}} - {{phase.titre}} </td>
+                                                    <td  style="text-align:center;">{{phase.nb_JEH}}</td>
+                                                    <td  style="text-align:center;">{{phase.montant_HT_par_JEH}} €</td>
+                                                    <td  style="text-align:center;">{{phase.calcul_mt_HT}} €&nbsp;</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -950,13 +952,13 @@
                                             <thead>
                                                 <tr>
                                                     <th >Total H.T. hors frais</th>
-                                                    <th contenteditable="true" style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
+                                                    <th style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td >frais de dossier</td>
-                                                    <td contenteditable="true" style="text-align:center;">{{etude.frais_dossier|FormatNombres}} €</td>
+                                                    <td style="text-align:center;">{{etude.frais_dossier|FormatNombres}} €</td>
                                                 </tr>
                                                 
                                             </tbody>
@@ -1611,13 +1613,13 @@
                                             <thead>
                                                 <tr>
                                                     <th >Total H.T. hors frais</th>
-                                                    <th contenteditable="true" style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
+                                                    <th  style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td >frais de dossier</td>
-                                                    <td contenteditable="true" style="text-align:center;">{{etude.frais_dossier|FormatNombres}} €</td>
+                                                    <td  style="text-align:center;">{{etude.frais_dossier|FormatNombres}} €</td>
                                                 </tr>
                                                 
                                             </tbody>

@@ -182,13 +182,13 @@ class Representant(models.Model):
     phone_number = models.CharField(max_length=200, blank=True, null=True)
     #je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="representants")
-    fonction = models.CharField(max_length = 100)
-    contact_recent = models.BooleanField(default=False)
-    date_mail = models.DateField(blank=True, null=True)
-    contenu_mail =models.CharField(max_length = 5000, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
-    date_reponse = models.DateField(blank=True, null=True)
-    contenu_reponse =models.CharField(max_length = 5000, null=True, default="rien")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    fonction = models.CharField(max_length = 100, null=True)
+    contact_recent = models.BooleanField(default=False,blank=True, null=True)
+    date_mail = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_mail =models.CharField(max_length = 5000, blank=True, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
+    date_reponse = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_reponse =models.CharField(max_length = 5000, default="rien",blank=True, null=True)
     demarchage= models.CharField(
         max_length=40,
         choices=Demarchage.choices,
@@ -354,6 +354,19 @@ class CustomUserManager(BaseUserManager):
 
 
 class Member(AbstractUser):
+    class Poste(models.TextChoices):
+        PRESIDENT = 'PRESIDENT', 'président'
+        VICE_PRESIDENT = 'VICE_PRESIDENT', 'vice-président'
+        TRESORIER = 'TRESORIER', 'Trésorier'
+        VICE_TRESORIER = 'VICE_TRESORIER', 'vice-trésorier'
+        SECRETAIRE_GENERALE = 'SECRETAIRE_GENERALE', 'secrétaire générale'
+        CHEF_DE_PROJET = 'CHEF_DE_PROJET', 'chef de projet'
+        DIRECTEUR_COMMERCIALE = 'DIRECTEUR_COMMERCIALE', 'directeur commerciale'
+        DIRECTEUR_PROJET = 'DIRECTEUR_PROJET', 'directeur projet'
+        DSI = 'DSI', 'DSI'
+        RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
+        DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
+        DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
@@ -363,8 +376,10 @@ class Member(AbstractUser):
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    president = models.BooleanField(default=True, verbose_name="président")
-    tresorier = models.BooleanField(default=True, verbose_name="tresorier")
+    
+    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.PRESIDENT)
+
+    
 
     def __str__(self):
         return self.student.__str__()
@@ -1201,23 +1216,16 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['client', 'contact_recent','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
-        widgets = {
-            'date_mail': forms.DateInput(
-                format=('%d/%m/%Y'),
-                attrs={'class': 'form-control', 
-                    'type': 'date'
-                    }),
-            'date_reponse': forms.DateInput(
-                format=('%d/%m/%Y'),
-                attrs={'class': 'form-control', 
-                    'type': 'date'
-                    }),
-        }
+        exclude = ['je','contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
     def __str__(self):
         return "Informations du représentant"
     def name(self):
         return "AddRepresentant"
+    def save(self, commit=True, **kwargs):
+        representant = super(AddRepresentant, self).save(commit=False)
+        if commit:
+            representant.save(**kwargs)
+        return representant
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

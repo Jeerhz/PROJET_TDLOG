@@ -834,7 +834,7 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            president = Member.objects.filter(je=je, president=True).first().student
+            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -895,7 +895,7 @@ def editer_pv(request, iD):
             template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
             
 
-            president = Member.objects.filter(je=je, president=True).first().student
+            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -955,7 +955,7 @@ def editer_rdm(request, id_etude, id_eleve):
             client= etude.client
             
             je= eleve.je
-            president = Member.objects.filter(je=je, president=True).first().student
+            president = Member.objects.filter(je=je,  poste='PRESIDENT').first().student
 
 
             template = DocxTemplate("polls/templates/polls/RDM_026.docx")
