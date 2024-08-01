@@ -180,7 +180,7 @@ class Representant(models.Model):
     last_name = models.CharField(max_length = 200)
     mail = models.EmailField(max_length = 200)
     phone_number = models.CharField(max_length=200, blank=True, null=True)
-    
+    #je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="representants")
     fonction = models.CharField(max_length = 100)
@@ -1045,6 +1045,9 @@ class AddMessage(forms.ModelForm):
     def __str__(self):
         return "Nouveau message"
 
+class AjouterRemarqueRepresentant(forms.Form):
+    model = Representant
+    fields = ['remarque']
 
 class AddMember(forms.Form):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
@@ -1198,7 +1201,7 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['client', 'contenu_mail', 'contenu_reponse']
+        exclude = ['client', 'contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
         widgets = {
             'date_mail': forms.DateInput(
                 format=('%d/%m/%Y'),
