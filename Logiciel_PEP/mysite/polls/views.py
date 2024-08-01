@@ -1490,10 +1490,9 @@ def modifier_recrutement_etude(request, iD):
         if request.method == 'POST':
             try:
                 etude = Etude.objects.get(id=iD)
-                etude.date_debut_recrutement = datetime.strptime(request.POST['debut'], '%d/%m/%Y').date()
-                etude.date_fin_recrutement = datetime.strptime(request.POST['fin'], '%d/%m/%Y').date()
+                etude.date_debut_recrutement = request.POST['debut']
+                etude.date_fin_recrutement = request.POST['fin']
                 etude.save()
-                print("ça marche")
                 return JsonResponse({'success':True, 'debut':etude.date_debut_recrutement, 'fin':etude.date_fin_recrutement})
             except:
                 return JsonResponse({'success':False})
