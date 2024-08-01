@@ -463,7 +463,7 @@ class Etude(models.Model):
     client_representant_legale= models.ForeignKey(Representant, on_delete=models.CASCADE,related_name='client_representant_legale')
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0)
-    tva_pourcentage = models.FloatField(default=20)
+    taux_tva = models.FloatField(default=20)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
@@ -538,10 +538,10 @@ class Etude(models.Model):
         return self.frais_dossier + self.montant_phase_HT()
 
     def TVA(self):
-        return (self.tva_pourcentage/100) * self.montant_HT_total()
+        return (self.taux_tva/100) * self.montant_HT_total()
 
     def total_ttc(self):
-        return (1+self.tva_pourcentage/100) * self.montant_HT_total()
+        return (1+self.taux_tva/100) * self.montant_HT_total()
 
     def charges_URSSAF(self):
         return self.nb_JEH() * self.je.base_urssaf * self.je.taux_cotisations / 100 if self.nb_JEH() else 0
@@ -670,16 +670,35 @@ class Facture(models.Model):
     TVA_per =  models.IntegerField(default=20)
     date_emission = models.DateField(null=True)
     date_echeance = models.DateField(null=True)
+    facture_pdf = models.FileField(upload_to='factures/pdfs/', null=True, blank=True)
+
+
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.numero_facture:02d}"
+    
+    
+    
+
     def fac_JEH(self):
         return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+    def fac_frais(self):
+        return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+
     def phases_fac(self):
         return Phase.objects.filter(etude=self.etude).order_by('numero')
     
-    
+    def montant_HT(self):
+        return self.fac_JEH()+self.fac_frais()
     def montant_TVA(self):
-        return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
+        return self.TVA_per*(self.montant_HT())/100
     def montant_TTC(self):
-        return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
+        return (self.TVA_per+100)*(self.montant_HT())/100
+
+    def je(self):
+        return self.etude.je
 
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
@@ -784,6 +803,7 @@ class AvenantRuptureConventionEtude(models.Model):
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}acc{self.numero}"
 
+
 class AvenantConventionEtude(models.Model):
     ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants_modification")
     numero = models.IntegerField()
@@ -793,7 +813,7 @@ class AvenantConventionEtude(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ace{self.numero}"
+        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero}"
     
     def save(self, *args, **kwargs):
         if self.numero is None :
@@ -1255,7 +1275,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance','facture_pdf']
     def __str__(self):
         return "Information de la Facture"
     def name(self):

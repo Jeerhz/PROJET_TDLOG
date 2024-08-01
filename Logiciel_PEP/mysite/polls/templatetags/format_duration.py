@@ -76,6 +76,15 @@ def chiffre_lettres(nombre):
         centimes = 'centime'
     return f"{lettres_entier} euros et {lettres_deci} {centimes}"
 
+@register.filter(name='EnLettres')
+def en_lettres(nombre):
+    if nombre is None:
+        return ''
+    else:
+        return num2words(nombre, lang='fr')  
+     
+     
+
 @register.filter(name='FormatNombres')
 def format_nombres(nombre):
     arrondi = round(nombre, 2)

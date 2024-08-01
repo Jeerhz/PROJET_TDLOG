@@ -194,10 +194,22 @@
                     <span>Stat/KPI</span></a>
             </li>
 
+            
             <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Factures et BVs</span></a>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
+                    aria-expanded="true" aria-controls="pageconnexion">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Trésorerie</span>
+                </a>
+                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
+                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
+                        <a class="collapse-item" href="#">DAS2</a>
+                        
+                        
+                    </div>
+                </div>
             </li>
 
             <li class="nav-item">
@@ -279,7 +291,7 @@
                     <form action="{% url 'search' %}"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
                                 aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
@@ -305,7 +317,7 @@
                                 <form class="form-inline mr-auto w-100 navbar-search">
                                     <div class="input-group">
                                         <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
+                                            placeholder="Rechercher..." aria-label="Search"
                                             aria-describedby="basic-addon2">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="button">

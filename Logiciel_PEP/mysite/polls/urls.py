@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    # ex: /polls/5/results/
+    # ex: /polls/5/results/ 
 
     path("convention_etude/<int:iD>", views.convention_etude, name="convention_etude"),
     
@@ -45,7 +45,13 @@ urlpatterns = [
     path('generate-pdf/', views.generate_pdf, name='generate_pdf'),
     path('supprimer_demarchage/<int:id_representant>', views.supprimer_demarchage, name='supprimer_demarchage'),
     path("editer_pv/<int:iD>", views.editer_pv, name="editer_pv"),
-    path("ajouter_representant/<int:id_client>", views.ajouter_representant, name="ajouter_representant")
+    path("ajouter_representant/<int:id_client>", views.ajouter_representant, name="ajouter_representant"),
+    path("factures/", views.factures, name="factures"),
+    path("BVs/", views.BVs, name="BVs"),
+
+
+
+    
     
     
     

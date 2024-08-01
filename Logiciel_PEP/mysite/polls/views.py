@@ -5,6 +5,8 @@ import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
 from docx.shared import Inches
 from jinja2 import Environment
+import math
+
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -22,13 +24,13 @@ from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 import locale
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres
+from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -1058,15 +1060,43 @@ def editer_devis(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
         try:
             instance = AvenantConventionEtude.objects.get(id=iD)
-            etude = instance.ce.etude
+            ce= instance.ce
+            etude = ce.etude
             client = etude.client
-            template = DocxTemplate("polls\\templates\\polls\\Avenant_Rupture_Convention_Etude.docx")
-            responsable = etude.responsable
-            context = {"etude": instance, "client": client, "responsable":responsable}
+            representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+
+            president = Member.objects.filter(je=etude.je,  poste='PRESIDENT').first().student
+            ref_m = etude.ref()
+
+            if etude.fin():
+                semaine_fin = math.ceil( (datetime.combine(etude.fin(),time(12, 0))  -datetime.today() ).days /7 )
+            else:
+                semaine_fin= etude.duree_semaine()
+
+            semaine_fin_lettres= en_lettres(semaine_fin)
+
+            nb_JEH= etude.nb_JEH()
+            nb_JEH_lettres = en_lettres(nb_JEH)
+
+            phase_montant_HT=etude.montant_phase_HT()
+            phase_montant_HT_lettres = chiffre_lettres(phase_montant_HT)
+            frais_HT =etude.frais_dossier
+            frais_HT_lettres=chiffre_lettres(frais_HT)
+            total_HT= etude.montant_HT_total()
+            total_HT_lettres = chiffre_lettres(total_HT)
+            total_TTC= etude.total_ttc()
+            total_TTC_lettres= chiffre_lettres(total_TTC)
+            template = DocxTemplate("polls/templates/polls/avenant_ce_026.docx")
+            context = {"avenant": instance, "etude": etude, "client": client, "president":president, "ref_m":ref_m,"ce":ce,"repr_legale": representant_legale_client, "semaine_fin":semaine_fin,
+                       "semaine_fin":semaine_fin,"semaine_fin_lettres":semaine_fin_lettres,"nb_JEH":nb_JEH,"nb_JEH_lettres":nb_JEH_lettres,
+                       "phase_montant_HT":phase_montant_HT,"phase_montant_HT_lettres":phase_montant_HT_lettres,"frais_HT":frais_HT, "frais_HT_lettres":frais_HT_lettres,
+                       "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres
+                       }
             # Load the template
 
             # Render the document
@@ -1726,3 +1756,34 @@ def ajouter_representant(request, id_client):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+
+def factures(request):
+    if request.user.is_authenticated:
+        user_je = request.user.je
+        factures = Facture.objects.all().order_by('numero_facture')
+        #pas optimale mais faudrait potentiellement crééer un champs je
+        filtered_factures = [facture for facture in factures if facture.je() == user_je]
+        template = loader.get_template("polls/factures.html")
+        context = { "factures": filtered_factures}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def BVs(request):
+    if request.user.is_authenticated:
+        user_je = request.user.je
+        factures = Facture.objects.all().order_by('numero_facture')
+        #pas optimale mais faudrait potentiellement crééer un champs je
+        filtered_factures = [facture for facture in factures if facture.je() == user_je]
+        template = loader.get_template("polls/factures.html")
+        context = { "factures": filtered_factures}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+

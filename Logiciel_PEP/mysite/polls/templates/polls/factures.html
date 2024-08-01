@@ -484,12 +484,11 @@
             
                                     <table style="margin-top:20px;" class="table_demarchage">
                                         <tbody>
-                                            {% for client in clients %}
-                                            {% for repr in client.representants.all %}
+                                            {% for facture in factures %}
                                             <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{facture}} <span style="color: #6d7379; font-weight: 400;">{{facture.etude}}</span></td>
+                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
+                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{facture.montant_HT}}</td>
 
                                             </tr>
                                             <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
@@ -497,28 +496,19 @@
                                                     <table >
                                                         <tbody>
                                                         <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">infos</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">réponse le {{repr.date_reponse}} :</span> Bonjour, Merci pour votre mail, nous travaillons actuellelent sur un projet d'optimisation, seriez vous disponibles pour un rdv...</td>
+                                                            <td style= "border: 0px;"><span style="font-weight: bold;">infos</td>
                                                         </tr>
                                                         </tbody>
                                                         
                                                     </table>
-                                                    <div> </div>
-                                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>Créer une étude</a>
                                                     <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
                                                     
-
                                                 </td>
                                             </tr>
                                         </tbody>
-                                        {% endfor %}
                                     {% endfor %}
                                     </table>
                                     
@@ -527,160 +517,7 @@
                                     
                             </div>
                         </div>  
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Deux mois sans réponses :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-                                
-
-                                    
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <tbody>
-                                        {% for client in clients %}
-                                        {% for repr in client.representants.all %}
-                                        
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_relance{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span>{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>relancer</a>
-                                                    <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        {% endfor %} 
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                
-                                
-                                    
-                                
-                                    
-                            </div>
-                        </div>    
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-            
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <tbody>
-                                            {% for client in clients %}
-                                            {% for repr in client.representants.all %}
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style = "padding-top: 0px;" class="collapse" id="representant_att{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
-                                                        </tr>
-                                                        </tbody>
-                                                        
-                                                    </table>
-                                                    <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
-
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                        {% endfor %}
-                                    {% endfor %}
-                                    </table>
-                                    
-                                    
-                                
-                                    
-                            </div>
-                        </div>  
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Pas encore démarché :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-                                
-
-                                {% for secteur in secteurs %}
-                                <h6 style="padding-left: 30px; padding-bottom: 0px;padding-top: 30px; color: #7a99bb; font-size: large; ">{{ secteur }}</h6>
-                                    <table class="table_demarchage">
-                                        <tbody>
-                                        {% for client in clients %}
-                                        {% if client.secteur == secteur %}
-                                        
-                                        {% for repr in client.representants.all %}
-                                        
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td style="font-style:italic; text-align:  center; width: 15%;">{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_pas_dem{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table>
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
-                                                    <br>
-                                                    <div style="font-weight: 300;">{{ repr.remarque }}</div>
-                                                </td>
-                                            </tr>
-                                       
-                                        {% endfor %} 
-                                        {% endif %}
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                {% endfor %}
-                                
-                                    
-                                
-                                    
-                            </div>
-                        </div>                                                
+                                                                
                     </div>
                     <!--End Row-->
 
@@ -731,29 +568,7 @@
             </div>
         </div>
     </div>
-    <script>
-        function calculateColor(daysDiff) {
-            // Ensure daysDiff is within the range 0 to 60
-            daysDiff = Math.max(0, Math.min(60, daysDiff));
-            // Calculate the percentage (0-100)
-            var percentage = (daysDiff / 60) * 100;
-            // Convert the percentage to a color (green to red)
-            var green = Math.round((100 - percentage) * 2.55);
-            var red = Math.round(percentage * 2.55);
-            return `rgb(${red}, ${green}, 0)`;
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            // Find all elements with class 'date'
-            var dateElements = document.querySelectorAll(".attente");
-            
-            // Loop through each element and set its color based on data-days-diff attribute
-            dateElements.forEach(function(element) {
-                var daysDiff = parseInt(element.getAttribute("attente_duree")) || 0;
-                element.style.color = calculateColor(daysDiff);
-            });
-        });
-    </script>
+    
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>

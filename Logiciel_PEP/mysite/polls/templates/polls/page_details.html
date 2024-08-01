@@ -342,7 +342,7 @@
                     <form action="{% url 'search' %}"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
                                 aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
@@ -368,7 +368,7 @@
                                 <form class="form-inline mr-auto w-100 navbar-search">
                                     <div class="input-group">
                                         <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
+                                            placeholder="Rechercher...." aria-label="Search"
                                             aria-describedby="basic-addon2">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="button">
@@ -909,17 +909,17 @@
                                                 <td  >Sommes à verser (HT)</td>
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                <td  > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td  > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                               </tr>
@@ -1001,22 +1001,16 @@
 
                                 {% for phase in phases %}
                                 <div class="card mb-3">
-                                    <div class="col-12 mb-4">
+                                    <div style="padding:20px;" class="col-12 mb-4"  >
                                         <!-- Card -->
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <small>Phase {{ phase.numero }}</small>
+                                        
+                                        <div style="font-weight: 700; color: #000; ">
+                                    Phase {{ phase.numero }} : {{ phase.titre }} 
                                         </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>{{ phase.titre }}</th>
-                                                        <th><div class="right">{{ phase.nb_JEH }} JEH à {{ phase.montant_HT_par_JEH }} € </div></th>
-                                                    </tr>
-                                                </thead>                
-                                            </table>
+                                        <div>
+                                            {{ phase.description }}
                                         </div>
-                                        <div class="nav-item">
+                                        <div class="nav-item" >
                                             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
                                                 aria-expanded="true" aria-controls="intervenants_phase{{ phase.id }}">
                                                 <i class="fas fa-caret-down"></i>
@@ -1278,13 +1272,13 @@
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">Avenant CE</h5>
+                                                    <h5 class="card-title">Avenant Convention d'Étude</h5>
                                                     {% if etude.convention.avenants %}
                                                     <table class="table">
                                                         <tbody>
                                                             {% for avenant in etude.convention.avenants_modification.all %}
                                                             <tr>
-                                                                <td>Avenant n°{{avenant.numero}}</td>
+                                                                <td>{{avenant}}</td>
                                                                 <td>{% if avenant.date_signature %}{{avenant.date_signature}}{% else %}Non signé{% endif %}</td>
                                                                 <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
                                                                 <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
@@ -1498,6 +1492,7 @@
                                                             {% else %}
                                                                 {{ field }}
                                                             {% endif %}
+                                                            
                                                             {% if field.errors %}
                                                                 <div class="text-danger">
                                                                     {% for error in field.errors %}
@@ -1512,6 +1507,7 @@
                                                 </div>
                                             <div class="card-footer text-center">
                                                 <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
                                             </div>
                                         </form>
                                     </div>
@@ -1570,17 +1566,17 @@
                                                 <td  >Sommes à verser (HT)</td>
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                <td  > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td  > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                                 {% for facture in factures %}
                                                 {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                <td > {{facture.fac_JEH|FormatNombres}} EUR </td>
+                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
                                                 {% endif %}
                                                 {% endfor %} 
                                               </tr>
@@ -1698,7 +1694,7 @@
                                                     <th scope="row">Total</th>
                                                     <td></td>
                                                     <td></td>
-                                                    <td><strong>{{facture.fac_JEH|FormatNombres}}€</strong></td>
+                                                    <td><strong>{{facture.montant_HT|FormatNombres}}€</strong></td>
                                                     
                                                     
                                                 </tr>
@@ -1723,7 +1719,6 @@
                                 
                             </div>
                             <!-- Fin de l'Onglet Facturation-->
-                            
                             <!-- Début de l'onglet recrutement -->
                             <div class="tab-pane fade" id="recrutement" role="tabpanel" aria-labelledby="recrutement-tab">
                                 <div class="content mt-3 mb-4">
