@@ -2,6 +2,9 @@
 <<<<<<< HEAD
 =======
 
+./Logiciel_PEP/mysite/mysite/__pycache__/
+./Logiciel_PEP/mysite/mysite/migrations/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
