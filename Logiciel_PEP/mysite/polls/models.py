@@ -1201,7 +1201,7 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['client', 'contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
+        exclude = ['client', 'contact_recent','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
         widgets = {
             'date_mail': forms.DateInput(
                 format=('%d/%m/%Y'),
