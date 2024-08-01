@@ -182,12 +182,12 @@ class Representant(models.Model):
     phone_number = models.CharField(max_length=200, blank=True, null=True)
     
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
-    fonction = models.CharField(max_length = 100, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="representants")
+    fonction = models.CharField(max_length = 100)
     contact_recent = models.BooleanField(default=False)
-    date_mail = models.DateField(default=datetime.date(1747, 1, 1))
+    date_mail = models.DateField(blank=True, null=True)
     contenu_mail =models.CharField(max_length = 5000, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
-    date_reponse = models.DateField(default=datetime.date(1747, 1, 1))
+    date_reponse = models.DateField(blank=True, null=True)
     contenu_reponse =models.CharField(max_length = 5000, null=True, default="rien")
     demarchage= models.CharField(
         max_length=40,
@@ -1198,16 +1198,23 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['je']
+        exclude = ['client', 'contenu_mail', 'contenu_reponse']
+        widgets = {
+            'date_mail': forms.DateInput(
+                format=('%d/%m/%Y'),
+                attrs={'class': 'form-control', 
+                    'type': 'date'
+                    }),
+            'date_reponse': forms.DateInput(
+                format=('%d/%m/%Y'),
+                attrs={'class': 'form-control', 
+                    'type': 'date'
+                    }),
+        }
     def __str__(self):
         return "Informations du représentant"
     def name(self):
         return "AddRepresentant"
-    def save(self, commit=True, **kwargs):
-        representant = super(AddRepresentant, self).save(commit=False)
-        if commit:
-            representant.save(**kwargs)
-        return representant
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

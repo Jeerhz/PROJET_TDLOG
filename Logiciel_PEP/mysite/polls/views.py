@@ -356,8 +356,7 @@ def details(request, modelName, iD):
 
             if client is not None:
                 context["client"] = client
-                representants=Representant.objects.filter(client=client)
-                context["representants"]=representants
+                context["representant_form"]= AddRepresentant()
             if eleve is not None:
                 context["eleve"] = eleve
 
@@ -1672,6 +1671,40 @@ def ajouter_avenant_ce(request, id_etude):
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
                 return redirect('details', modelName="Etude", iD=id_etude)
             except:
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
+        else :
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur de requête.", "notification_list":notification_list, "notification_count":notification_count}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def ajouter_representant(request, id_client):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        if request.method == 'POST':
+            #try:
+                client = Client.objects.get(id=id_client)
+                fetchform = AddRepresentant(request.POST)
+                #if fetchform.is_valid():
+                new_representant = fetchform.save(commit=False)
+                new_representant.client = client
+                new_representant.save()
+                return redirect('details', modelName="Client", iD=id_client)
+                #else :
+                    #raise ValueError("Formulaire corrompu")
+            #except:
                 template = loader.get_template("polls/page_error.html")
                 context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
         else :

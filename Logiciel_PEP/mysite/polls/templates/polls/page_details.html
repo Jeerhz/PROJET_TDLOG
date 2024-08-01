@@ -1333,6 +1333,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <!-- Fin formaulaire avenant CE -->
                                                 </div>
                                             </div>
                                         </div>
@@ -1773,11 +1774,11 @@
 
                 {% if modelName == "Client" %}
                 <div class="tab-content">
-                    <div class="card shadow mb-4 w-100">
+                    <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
                         </div>
-                        <div class="card mb-3">
+                        <div class="card-body mb-3">
                             
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong> </li>
@@ -1786,23 +1787,67 @@
                             </ul>
                             
                         </div>
-
-                        
-                        <div class="card mb-3">
+                    </div>
+                    <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                <h5 class="m-1 font-weight-bold text-primary">Représentants Clients</h5>
+                                <h5 class="m-1 font-weight-bold text-primary">Représentants Client</h5>
                             </div>
-                            {% if representants %}
-                                {% for representant in representants %}
+                            <div class="card-body">
+                            {% if client.representants %}
+                                {% for representant in client.representants.all %}
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Nom de la société:</strong> {{ representant.first_name }}</li>
-                                        <li class="list-group-item"><i class="fas fa-balance-scale mr-2"></i><strong>Raison sociale:</strong> {{ representant.last_name }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user-tag mr-2"></i><strong>Nom :</strong> {{ representant }}</li>
                                     </ul>
                                 {% endfor %}
+                            {% else %}
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><i class="fas fa-flappy-disk mr-2"></i><strong>Aucun représentant</strong></li>
+                                </ul>
                             {% endif %} 
-                            <a class="btn btn-primary float-right" href="{% url 'input' modelName='Representant' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
-
-                        </div> 
+                            </div>
+                            <!-- Bouton et formulaire pour ajouter un avenant CE -->
+                            <a class="btn btn-primary float-right" data-toggle="modal" data-target="#representantModal"><i class="fas fa-plus"></i>  Ajout représentant</a>
+                            <div class="modal fade" id="representantModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelRepresentant" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modalLabelRepresentant">Nouveau représentant</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <form action="{% url 'ajouter_representant' id_client=iD %}" method="post">
+                                            <div class="modal-body">
+                                                {% csrf_token %}
+                                                <dl class="dl-horizontal">
+                                                    {% csrf_token %}
+                            
+                                                    {% for field in representant_form %}
+                                                    <div class="form-group row mb-3">
+                                                    <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                        <div class="col-sm-8 justify-content-center">
+                                                        {{ field }}
+                                                        {% if field.errors %}
+                                                            <div class="text-danger">
+                                                                {% for error in field.errors %}
+                                                                    {{ error }}
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}                             
+                                                </dl>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Fin formulaire ajout Representant -->
                          
                     </div>
                 </div>          
