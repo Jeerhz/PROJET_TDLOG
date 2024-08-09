@@ -30,7 +30,7 @@ locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres
+from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres, assignation
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -953,38 +953,47 @@ def editer_rdm(request, id_etude, id_eleve):
         #try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            phases= Phase.objects.filter(etude=etude)
+            #phases= Phase.objects.filter(etude=etude)
             client= etude.client
-            
+            assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
             president = Member.objects.filter(je=je,  poste='PRESIDENT').first().student
-
-
+            remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
+            date_fin= timezone.now().date()
+            for assignation in assignations:
+                if assignation.phase.date_fin > date_fin:
+                    date_fin = assignation.phase.date_fin
+            etudiant_nb_JEH = sum(assignation.nombre_JEH for assignation in assignations )
             template = DocxTemplate("polls/templates/polls/RDM_026.docx")
             model = RDM
             if etude.rdm_edited() :
-                rdm = etude.devis
+                #a modifier
+                rdm = model(etude=etude, eleve=eleve)
             else :
-                rdm = model(etude=etude)
+                rdm = model(etude=etude, eleve=eleve)
                 rdm.save()
             
             
             ref_m = etude.ref()
-            ref_d = ref_m + "pv"
-            date = datetime.datetime.now()
+            ref_d = rdm
+            ce = etude.convention()
+            date = timezone.now().date()
             annee = date.strftime('%Y')
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
             
             
 
 
-            context = {"etude": etude,"client": client, "rdm": rdm, "etudiant": eleve, "ref_m":ref_m, "phases":phases,"annee":annee,"president" :president}
+            context = {"etude": etude,"client": client, "rdm": rdm, "ref_d":ref_d, "etudiant": eleve, "ref_m":ref_m, "assignations":assignations,"annee":annee,"president" :president,"etudiant_nb_JEH":etudiant_nb_JEH,"date_fin":date_fin,
+                       "remuneration":remuneration,"ce":ce}
             # Load the template
 
             env = Environment()
 
             env.filters['FormatNombres'] = format_nombres
-
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+        
             
 
             template.render(context, env)
@@ -1379,7 +1388,7 @@ def ajouter_facture(request, id_etude):
     
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try :
+        #try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             je= eleve.je
@@ -1423,7 +1432,7 @@ def BV(request, id_etude, id_eleve):
             # Sauvegarder les modifications dans le fichier Excel
             classeur.save(chemin_absolu)
             return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
-        except :
+        #except :
             liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
@@ -1493,7 +1502,7 @@ def recrutement(request, id_url): # Controler les dates
                     student = existing_students[0]
                     detail_message = "Votre profil a été reconnu dans la base de données."
                 else:
-                    student = Student(je=request.user.je, first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'])
+                    student = Student(je=request.user.je, titre=recrutement.cleaned_data['titre'], first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'], promotion=recrutement.cleaned_data['promotion'], departement=recrutement.cleaned_data['departement'])
                     student.save()
                     detail_message = "D'après nos données, il s'agit de votre première candidature."
                 candidature = Candidature(eleve=student, motivation=recrutement.cleaned_data['motivation'], etude=etude)

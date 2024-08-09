@@ -160,9 +160,20 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Factures et BVs</span></a>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
+                    aria-expanded="true" aria-controls="pageconnexion">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Trésorerie</span>
+                </a>
+                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
+                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
+                        <a class="collapse-item" href="#">DAS2</a>
+                        
+                        
+                    </div>
+                </div>
             </li>
 
             <li class="nav-item">
@@ -476,7 +487,7 @@
                         <div class="col-lg-13 mb-3" style="width: 90%;">
                             <div class="card shadow">
                                 <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Retours :</h6>
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Factures </h6>
                                 </div>
                                 <!-- Card Body -->
                                 
@@ -488,7 +499,7 @@
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{facture}} <span style="color: #6d7379; font-weight: 400;">{{facture.etude}}</span></td>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{facture.montant_HT}}</td>
+                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{facture.montant_HT|FormatNombres}} EUR.</td>
 
                                             </tr>
                                             <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
