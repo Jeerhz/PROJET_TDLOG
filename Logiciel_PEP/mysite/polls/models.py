@@ -261,6 +261,16 @@ class Student(models.Model):
         GCC = 'GCC', 'GCC'
         VET = 'VET', 'VET'
         AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
     first_name = models.CharField(max_length = 200)
@@ -271,10 +281,11 @@ class Student(models.Model):
     ville = models.CharField(max_length = 300, null=True, default ="Champs-sur-Marne")
     code_postal=  models.CharField(max_length = 10, null=True, default = "77420")
     country = models.CharField(max_length = 100, null=True)
-    promotion = models.CharField(max_length = 200, blank=True, null=True)
+    promotion = models.CharField(max_length = 200, choices=Promotion.choices, default=Promotion.P026)
     departement = models.CharField(max_length=20, choices=Departement.choices, default=Departement.AUTRE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
     numero_ss = models.CharField(max_length=14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits'))], default="0")
+    remarque = models.TextField(blank=True, null=True, default="")
 
 
     def __str__(self):
@@ -864,7 +875,14 @@ class RDM(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm"
+        initials = self.eleve.first_name[0] + self.eleve.last_name[0]
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
+    
+    def ref(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        initials = self.eleve.first_name[0] + self.eleve.last_name[0]
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
     
     def signe(self):
         return (self.date_signature is not None)
@@ -984,6 +1002,9 @@ class AssignationJEH(models.Model):
     def retribution_brute_totale(self):
         return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
     
+    def mt_totale(self):
+        return self.phase.montant_HT_par_JEH * self.nombre_JEH 
+    
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude', None)
         numero_phase = kwargs.pop('numero_phase', None)
@@ -992,6 +1013,8 @@ class AssignationJEH(models.Model):
             phase = Phase.objects.get(etude=etude, numero=numero_phase)
             self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
+    
+    
 
 class Candidature(models.Model):
     eleve = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="candidatures")
@@ -1346,10 +1369,33 @@ class SetParametresUtilisateur(forms.ModelForm):
 
 
 class Recrutement(forms.Form):
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    titre= forms.ChoiceField( choices=TITRE_CHOIX)
     prenom = forms.CharField(max_length = 50)
     nom = forms.CharField(max_length = 50)
     email = forms.EmailField(max_length = 100)
+    promotion = forms.ChoiceField( choices=Promotion.choices, initial=Promotion.P026)
+    departement = forms.ChoiceField( choices=Departement.choices, initial=Departement.AUTRE)
     motivation = forms.CharField(max_length = 5000, widget=forms.Textarea)
+    
     def __str__(self):
         return "Formulaire de candidature"
     def __init__(self, *args, **kwargs):
@@ -1359,7 +1405,4 @@ class Recrutement(forms.Form):
             field.widget.attrs['class'] = 'form-control'
 
   
-
-
-    
 

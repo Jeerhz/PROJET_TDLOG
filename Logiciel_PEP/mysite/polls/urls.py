@@ -32,6 +32,7 @@ urlpatterns = [
     path("ajouter_assignation_jeh/<int:id_etude>/<int:numero_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
     path("BV/<int:id_etude>/<int:id_eleve>", views.BV, name='BV'),
     path("ndf/", views.ndf, name="ndf"),
+    path("ba/<int:iD>", views.ba, name="ba"),
     path("recrutement/<str:id_url>", views.recrutement, name="recrutement"),
     path('modifier_je/<uuid:id>/', views.modifier_je, name='modifier_je'),
     path('modifier_etude/<int:iD>/', views.modifier_etude, name='modifier_etude'),
