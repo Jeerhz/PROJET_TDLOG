@@ -2,6 +2,8 @@ import datetime
 import uuid
 from uuid import UUID
 from django import forms
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
 from django.db import models
 from django.utils import timezone 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -132,7 +134,7 @@ class Client(models.Model):
         default=Secteur.SECTEUR_PUBLIC,
         help_text="Sélectionnez le secteur d'activité du client."
     )
-    _type = models.CharField(
+    type = models.CharField(
         max_length=20,
         choices=Type.choices,
         default=Type.SECTEUR_PUBLIC,
@@ -1086,20 +1088,22 @@ class AjouterRemarqueRepresentant(forms.Form):
 
 class AddMember(forms.Form):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
-    first_name = forms.CharField(max_length=200)
-    last_name = forms.CharField(max_length=200)
-    titre = forms.ChoiceField(choices=TITRE_CHOIX)
-    mail = forms.EmailField(max_length=200)
-    password = forms.CharField(widget=forms.PasswordInput)
-    password_confirmation = forms.CharField(widget=forms.PasswordInput) 
-    phone_number = forms.CharField(max_length=200)
-    adress = forms.CharField(max_length=300)
-    country = forms.CharField(max_length=100)
-    promotion = forms.CharField(max_length=200, required=False)
-    identifiant_je = forms.CharField(max_length = 50)
-    photo = forms.ImageField(required=False)
+    first_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}))
+    last_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
+    titre = forms.ChoiceField(choices=TITRE_CHOIX, widget=forms.Select(attrs={'class': 'form-control'}))
+    mail = forms.EmailField(max_length=200, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    password_confirmation = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}))
+    phone_number = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}))
+    adress = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address'}))
+    country = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}))
+    promotion = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Promotion'}))
+    identifiant_je = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'JE Identifier'}))
+    photo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
+
     def __str__(self):
         return "Ajouter un membre"
+
     def name(self):
         return "AddMember"
 
@@ -1117,16 +1121,15 @@ class AddMember(forms.Form):
             JE.objects.get(id=id)
         except JE.DoesNotExist:
             self.add_error('identifiant_je', "This JE identifier does not exist.")
-            raise ValidationError("This JE identifier does not exist.", code="JE")
+            raise forms.ValidationError("This JE identifier does not exist.", code="JE")
         except ValueError:
             self.add_error('identifiant_je', "Invalid UUID format.")
-            raise ValidationError("Invalid UUID format.", code="invalid_uuid")
+            raise forms.ValidationError("Invalid UUID format.", code="invalid_uuid")
 
     def save(self, commit=True, **kwargs):
-        # Create and save a new Student object using the form data
         je = JE.objects.get(id=uuid.UUID(self.cleaned_data['identifiant_je']))
         student = Student(
-            titre= self.cleaned_data['titre'],
+            titre=self.cleaned_data['titre'],
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
             mail=self.cleaned_data['mail'],
@@ -1150,22 +1153,30 @@ class AddStudent(forms.ModelForm):
     class Meta:
         model = Student
         exclude = ['je']
+
+    titre = forms.ChoiceField(choices=Student.TITRE_CHOIX)
+
     def __str__(self):
         return "Informations de l'étudiant"
+
     def name(self):
         return "AddStudent"
+
     def save(self, commit=True, **kwargs):
         student = super(AddStudent, self).save(commit=False)
-        student.je = kwargs['expediteur'].je
+        if 'expediteur' in kwargs:
+            student.je = kwargs['expediteur'].je
         if commit:
             student.save()
         return student
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+
 
 class AddEtude(forms.ModelForm):
     class Meta:
@@ -1217,21 +1228,27 @@ class AddClient(forms.ModelForm):
     class Meta:
         model = Client
         exclude = ['je']
+        
     def __str__(self):
         return "Informations du client"
+    
     def name(self):
         return "AddClient"
+    
     def save(self, commit=True, **kwargs):
         client = super(AddClient, self).save(commit=False)
-        client.je = kwargs['expediteur'].je
+        if 'expediteur' in kwargs:
+            client.je = kwargs['expediteur'].je
         if commit:
             client.save()
         return client
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
     
 class AddRepresentant(forms.ModelForm):
     class Meta:

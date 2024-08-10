@@ -713,21 +713,43 @@
                                 
                                     <!--Card avec les informations générales (à droite du PieChart) -->
                                     <div class="col-lg-7 pt-4">
-                                        <div class="card shadow" >
+                                        <div class="card shadow">
                                             <div class="card-body">
-                                                <div class="tab-content">
+                                                <div class="tab-content" id="etude-info">
                                                     <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> {{ etude.debut }}</li>
-                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> {{ etude.fin }}</li>
-                                                        <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> {{ etude.nb_JEH }}</li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant/ JEH :</strong> {{ etude.montant_phase_HT }} €</li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> {{ etude.frais_dossier }} €</li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude.fin }}</span></li>
+                                                        <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant/ JEH :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
                                                     </ul>
-                                                    <!-- Bouton Modifier -->
+                                                    <!-- Modify Button -->
                                                     <div class="text-right">
-                                                        <button type="button" class="btn btn-outline-secondary mt-3">Modifier</button> <!-- Bouton sobre -->
+                                                        <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
                                                     </div>
-                                                    <!--Fin Bouton Modifier-->
+                                                    <!-- End Modify Button -->
+                                                </div>
+                                                <div class="tab-content d-none" id="etude-form">
+                                                    <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
+                                                        {% csrf_token %}
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant/ JEH :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                        </ul>
+                                                        <!-- Save and Cancel Buttons -->
+                                                        <div class="row justify-content-between">
+                                                            <div class="col-auto">
+                                                                <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-etude">Annuler</button>
+                                                            </div>
+                                                            <div class="col-auto">
+                                                                <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
+                                                            </div>
+                                                        </div>
+                                                        <!-- End Save and Cancel Buttons -->
+                                                    </form>
                                                 </div>
                                             </div>
                                         </div>
@@ -1774,6 +1796,10 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
+                            <div>
+                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModalClient">Modifier</button>
+                                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalClient">Supprimer</button>
+                            </div>
                         </div>
                         <div class="card-body mb-3">
                             
@@ -1845,9 +1871,130 @@
                                 </div>
                             </div>
                             <!-- Fin formulaire ajout Representant -->
-                         
+                        </div> 
                     </div>
-                </div>          
+                    <!-- Edit Modal -->
+                    <div class="modal fade" id="editModalClient" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form id="editClientForm" method="POST" action="{% url 'edit_client' client.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">Modifier Client</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Nom de la société -->
+                                        <div class="form-group">
+                                            <label for="nom_societe">Nom de la société</label>
+                                            <input type="text" class="form-control" id="nom_societe" name="nom_societe" value="{{ client.nom_societe }}">
+                                        </div>
+
+                                        <!-- Raison sociale -->
+                                        <div class="form-group">
+                                            <label for="raison_sociale">Raison sociale</label>
+                                            <input type="text" class="form-control" id="raison_sociale" name="raison_sociale" value="{{ client.raison_sociale }}">
+                                        </div>
+
+                                        <!-- Rue -->
+                                        <div class="form-group">
+                                            <label for="rue">Rue</label>
+                                            <input type="text" class="form-control" id="rue" name="rue" value="{{ client.rue }}">
+                                        </div>
+
+                                        <!-- Ville -->
+                                        <div class="form-group">
+                                            <label for="ville">Ville</label>
+                                            <input type="text" class="form-control" id="ville" name="ville" value="{{ client.ville }}">
+                                        </div>
+
+                                        <!-- Code Postal -->
+                                        <div class="form-group">
+                                            <label for="code_postal">Code Postal</label>
+                                            <input type="text" class="form-control" id="code_postal" name="code_postal" value="{{ client.code_postal }}">
+                                        </div>
+
+                                        <!-- Country -->
+                                        <div class="form-group">
+                                            <label for="country">Pays</label>
+                                            <input type="text" class="form-control" id="country" name="country" value="{{ client.country }}">
+                                        </div>
+
+                                        <!-- Secteur d'activité -->
+                                        <div class="form-group">
+                                            <label for="secteur">Secteur d'activité</label>
+                                            <select class="form-control" id="secteur" name="secteur">
+                                                <option value="DISTRIBUTION" {% if client.secteur == "DISTRIBUTION" %}selected{% endif %}>Distribution</option>
+                                                <option value="INDUSTRIE" {% if client.secteur == "INDUSTRIE" %}selected{% endif %}>Industrie</option>
+                                                <option value="SECTEUR_PUBLIC" {% if client.secteur == "SECTEUR_PUBLIC" %}selected{% endif %}>Secteur Public</option>
+                                                <option value="CONSEIL" {% if client.secteur == "CONSEIL" %}selected{% endif %}>Conseil</option>
+                                                <option value="TRANSPORT" {% if client.secteur == "TRANSPORT" %}selected{% endif %}>Transport</option>
+                                                <option value="NUMERIQUE" {% if client.secteur == "NUMERIQUE" %}selected{% endif %}>Numerique</option>
+                                                <option value="BTP" {% if client.secteur == "BTP" %}selected{% endif %}>BTP</option>
+                                                <option value="AUTRE" {% if client.secteur == "AUTRE" %}selected{% endif %}>Autre</option>
+                                            </select>
+                                        </div>
+                                        
+
+                                        <!-- Type d'entreprise -->
+                                        <div class="form-group">
+                                            <label for="type">Type d'entreprise</label>
+                                            <select class="form-control" id="type" name="type">
+                                                <option value="GRANDE_ENTREPRISE" {% if client.type == "GRANDE_ENTREPRISE" %}selected{% endif %}>Grande entreprise</option>
+                                                <option value="SECTEUR_PUBLIC" {% if client.type == "SECTEUR_PUBLIC" %}selected{% endif %}>Secteur Public</option>
+                                                <option value="START_UP_ET_TPE" {% if client.type == "START_UP_ET_TPE" %}selected{% endif %}>Start-up et TPE</option>
+                                                <option value="PME" {% if client.type == "PME" %}selected{% endif %}>Petite et moyenne entreprise</option>
+                                                <option value="ETI" {% if client.type == "ETI" %}selected{% endif %}>Entreprise de taille intermédiaire</option>
+                                                <option value="ASSOCIATION" {% if client.type == "ASSOCIATION" %}selected{% endif %}>Association</option>
+                                            </select>
+                                        </div>
+                                        
+
+                                        <!-- Remarque -->
+                                        <div class="form-group">
+                                            <label for="remarque">Remarque</label>
+                                            <textarea class="form-control" id="remarque" name="remarque">{{ client.remarque }}</textarea>
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="form-group">
+                                            <label for="description">Description</label>
+                                            <textarea class="form-control" id="description" name="description">{{ client.description }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModalClient" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel">Supprimer Client</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Êtes-vous sûr de vouloir supprimer ce client ?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                    <form id="deleteClientForm" method="POST" action="{% url 'delete_client' client.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>          
                 {% endif %}
                 
                 {% if modelName == "Student" %}
@@ -1874,11 +2021,14 @@
                     <div class="tab-content mt-2" style="background-color: #FFFFFF;">
                 
                         <!-- Onglet info_étude -->
-                        
                         <div class="tab-pane fade show active" id="pills-fiche_info">
                             <div class="card shadow mb-4 w-100">
                                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                     <h5 class="m-1 font-weight-bold text-primary">Détails Élève</h5>
+                                    <div>
+                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
+                                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
+                                    </div>
                                 </div>
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
@@ -1886,13 +2036,120 @@
                                         <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
                                         <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
                                         <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}
+                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
                                         <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
-                                        <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Departement:</strong> {{ eleve.departement }}</li>
+                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Département:</strong> {{ eleve.get_departement_display }}</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <form id="editStudentForm" method="POST" action="{% url 'edit_student' eleve.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editModalLabel">Modifier Élève</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!-- Titre Field -->
+                                            <div class="form-group">
+                                                <label for="titre">Titre</label>
+                                                <select class="form-control" id="titre" name="titre">
+                                                    <option value="M." {% if eleve.titre == "M." %}selected{% endif %}>M.</option>
+                                                    <option value="Mme" {% if eleve.titre == "Mme" %}selected{% endif %}>Mme</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="last_name">Nom</label>
+                                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ eleve.last_name }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="first_name">Prénom</label>
+                                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ eleve.first_name }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="mail">Email</label>
+                                                <input type="email" class="form-control" id="mail" name="mail" value="{{ eleve.mail }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="phone_number">Téléphone</label>
+                                                <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ eleve.phone_number }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="ville">Ville</label>
+                                                <input type="text" class="form-control" id="ville" name="ville" value="{{ eleve.ville }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="code_postal">Code Postal</label>
+                                                <input type="text" class="form-control" id="code_postal" name="code_postal" value="{{ eleve.code_postal }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="numero_ss">Numéro de Sécurité Sociale</label>
+                                                <input type="text" class="form-control" id="numero_ss" name="numero_ss" value="{{ eleve.numero_ss }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="adress">Adresse</label>
+                                                <input type="text" class="form-control" id="adress" name="adress" value="{{ eleve.adress }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="country">Pays</label>
+                                                <input type="text" class="form-control" id="country" name="country" value="{{ eleve.country }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="promotion">Promotion</label>
+                                                <input type="text" class="form-control" id="promotion" name="promotion" value="{{ eleve.promotion }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="departement">Département</label>
+                                                <select class="form-control" id="departement" name="departement">
+                                                    {% for key, value in eleve.Departement.choices %}
+                                                        <option value="{{ key }}" {% if eleve.departement == key %}selected{% endif %}>{{ value }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteModalLabel">Supprimer Élève</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Êtes-vous sûr de vouloir supprimer cet élève ?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                        <form id="deleteStudentForm" method="POST" action="{% url 'delete_student' eleve.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Onglet Annuaire Études -->
                         <div class="tab-pane fade" id="pills-missions_réalisées">
                             <div class="container p-4">
@@ -2052,7 +2309,7 @@
             <footer class="sticky-footer bg-white" style="margin-top: auto;">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; PEP JUNIOR ENTREPRISE 2024</span>
+                        <span>Copyright &copy; SYLOG 2024</span>
                     </div>
                 </div>
             </footer>
@@ -2111,18 +2368,6 @@
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        var url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-        str = "{% url 'add_intervenant' id_etude=iD id_student=0 %}";
-        var href_form_intervenant = str.substring(0, str.length - 1);
-    </script>
 
     <!-- Script pour utiliser les boutons comme des liens-->
     <script>
@@ -2146,8 +2391,89 @@
         });
         </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var modifier_je = document.getElementById('modifier-je');
+        var je_info = document.getElementById('je-info');
+        var je_form = document.getElementById('je-form');
+
+        // Toggle between info view and form view when the Modify button is clicked
+        modifier_je.addEventListener('click', function() {
+            je_info.classList.toggle('d-none');
+            je_form.classList.toggle('d-none');
+        });
+
+        var annuler_je = document.getElementById('annuler-je');
+        annuler_je.addEventListener('click', function() {
+            je_info.classList.toggle('d-none');
+            je_form.classList.toggle('d-none');
+        });
+
+        // Handle the form submission via AJAX
+        document.getElementById('je-f-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form data
+            var formData = new FormData(this);
+
+            // Send POST request using Fetch API
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                // Handle JSON response
+                if (data.success) {
+                    // Show success message or perform any action
+                    showAlert('Modification successful!');
+                    // Refresh the page to reflect changes
+                    location.reload();
+                } else {
+                    // Show error message or perform any action
+                    showAlert('Modification failed!');
+                }
+            })
+            .catch(error => {
+                // Handle any errors
+                console.error('Error:', error);
+                showAlert("La communication avec le serveur a échoué.");
+            });
+        });
+    });
+</script>
+
+
+    
+    <script type="text/javascript">
+
+        var url_suggestions = '{% url "search_suggestions" %}';
+        var url_suggestions_student = '';
+
+        {% if iD %}
+            url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}';
+        {% else %}
+            console.error("iD is not available or invalid.");
+        {% endif %}
+        /* var url_suggestions = '{% url "search_suggestions" %}';
+        var url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}'; */
+        let str = "{% url 'details' modelName='Etude' iD=0 %}";
+        var href_etude = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Client' iD=0 %}";
+        var href_client = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Student' iD=0 %}";
+        var href_student = str.substring(0, str.length - 1);
+        str = "{% url 'add_intervenant' id_etude=iD id_student=0 %}";
+        var href_form_intervenant = str.substring(0, str.length - 1);
+    </script>
+
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
     <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
+
+
     <script src="{% static 'polls/js/modal-BV.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
