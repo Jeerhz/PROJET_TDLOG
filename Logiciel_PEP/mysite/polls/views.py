@@ -533,6 +533,20 @@ def ndf(request):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def ba(request, iD):
+    if request.user.is_authenticated:
+        try:
+            eleve= Student.objects.get(id=iD)
+            template = loader.get_template("polls/ba.html")
+            context={"eleve":eleve}
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 def stat_KPI(request):
@@ -1419,7 +1433,7 @@ def BV(request, id_etude, id_eleve):
             feuille['G4'] = eleve.first_name +" " + eleve.last_name
             feuille['G6'] = eleve.adress
             feuille['G8'] = eleve.code_postal + " " + eleve.country
-            feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
+            feuille['I3'] = datetime.now().strftime('%d %B %Y')
             feuille['C13']= etude.ref()
 
             #assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)

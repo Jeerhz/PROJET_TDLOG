@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+	<meta name=Generator content="Microsoft Word 15 (filtered)">
+    {% load static %}
+    {% load format_duration %}
+	<title>Convention étudiant</title>
+	<style>
+		/* Font Definitions */
+		@font-face {font-family: Wingdings; panose-1: 5 0 0 0 0 0 0 0 0 0;}
+		@font-face
+			{font-family:"MS Mincho";
+			panose-1:2 2 6 9 4 2 5 8 3 4;}
+		@font-face
+			{font-family:"Cambria Math";
+			panose-1:2 4 5 3 5 4 6 3 2 4;}
+		@font-face
+			{font-family:Calibri;
+			panose-1:2 15 5 2 2 2 4 3 2 4;}
+		@font-face
+			{font-family:Verdana;
+			panose-1:2 11 6 4 3 5 4 4 2 4;}
+		@font-face
+			{font-family:Cambria;
+			panose-1:2 4 5 3 5 4 6 3 2 4;}
+		@font-face
+			{font-family:"Lucida Bright";
+			panose-1:2 4 6 2 5 5 5 2 3 4;}
+		@font-face
+			{font-family:Garamond;
+			panose-1:2 2 4 4 3 3 1 1 8 3;}
+		@font-face
+			{font-family:Tahoma;
+			panose-1:2 11 6 4 3 5 4 4 2 4;}
+		@font-face
+			{font-family:Quicksand;
+			panose-1:0 0 0 0 0 0 0 0 0 0;}
+		@font-face
+			{font-family:Taviraj;
+			panose-1:0 0 6 0 0 0 0 0 0 0;}
+		@font-face
+			{font-family:"Bree Rg";
+			panose-1:2 11 6 4 2 2 2 2 2 4;}
+		@font-face
+			{font-family:Roboto;
+			panose-1:2 0 0 0 0 0 0 0 0 0;}
+		@font-face
+			{font-family:DIN-Rg;
+			panose-1:2 11 6 4 2 2 2 2 2 4;}
+		@font-face
+			{font-family:"Roboto Lt";
+			panose-1:2 11 6 4 2 2 2 2 2 4;}
+		@font-face
+			{font-family:"\@MS Mincho";
+			panose-1:2 2 6 9 4 2 5 8 3 4;}
+		/* Style Definitions */
+		p.MsoNormal, li.MsoNormal, div.MsoNormal
+			{margin-top:0cm;
+			margin-right:0cm;
+			margin-bottom:6.0pt;
+			margin-left:0cm;
+			text-align:justify;
+			text-justify:inter-ideograph;
+			line-height:110%;
+			font-size:10.5pt;
+			font-family:"Lucida Bright",serif;}
+		h1
+			{mso-style-link:"Titre 1 Car";
+			margin-top:20.0pt;
+			margin-right:0cm;
+			margin-bottom:12.0pt;
+			margin-left:0cm;
+			text-align:justify;
+			text-justify:inter-ideograph;
+			line-height:normal;
+			page-break-after:avoid;
+			border:none;
+			padding:0cm;
+			font-size:18.0pt;
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			font-weight:normal;}
+		p.MsoHeader, li.MsoHeader, div.MsoHeader
+			{mso-style-link:"En-tête Car";
+			margin-top:0cm;
+			margin-right:0cm;
+			margin-bottom:6.0pt;
+			margin-left:0cm;
+			text-align:justify;
+			text-justify:inter-ideograph;
+			line-height:110%;
+			font-size:10.5pt;
+			font-family:"Lucida Bright",serif;}
+		p.MsoFooter, li.MsoFooter, div.MsoFooter
+			{mso-style-link:"Pied de page Car";
+			margin-top:0cm;
+			margin-right:0cm;
+			margin-bottom:6.0pt;
+			margin-left:0cm;
+			text-align:justify;
+			text-justify:inter-ideograph;
+			line-height:110%;
+			font-size:10.5pt;
+			font-family:"Lucida Bright",serif;}
+		p.MsoTitle, li.MsoTitle, div.MsoTitle
+			{mso-style-name:"Titre\,Titre du document";
+			mso-style-link:"Titre Car\,Titre du document Car";
+			margin-top:30.0pt;
+			margin-right:0cm;
+			margin-bottom:12.0pt;
+			margin-left:0cm;
+			text-align:center;
+			line-height:normal;
+			page-break-after:avoid;
+			border:none;
+			padding:0cm;
+			font-size:28.0pt;
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			letter-spacing:-.35pt;
+			font-weight:bold;}
+		p.MsoTitleCxSpFirst, li.MsoTitleCxSpFirst, div.MsoTitleCxSpFirst
+			{mso-style-name:"Titre\,Titre du documentCxSpFirst";
+			mso-style-link:"Titre Car\,Titre du document Car";
+			margin-top:30.0pt;
+			margin-right:0cm;
+			margin-bottom:0cm;
+			margin-left:0cm;
+			text-align:center;
+			line-height:normal;
+			page-break-after:avoid;
+			border:none;
+			padding:0cm;
+			font-size:28.0pt;
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			letter-spacing:-.35pt;
+			font-weight:bold;}
+		p.MsoTitleCxSpMiddle, li.MsoTitleCxSpMiddle, div.MsoTitleCxSpMiddle
+			{mso-style-name:"Titre\,Titre du documentCxSpMiddle";
+			mso-style-link:"Titre Car\,Titre du document Car";
+			margin:0cm;
+			text-align:center;
+			line-height:normal;
+			page-break-after:avoid;
+			border:none;
+			padding:0cm;
+			font-size:28.0pt;
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			letter-spacing:-.35pt;
+			font-weight:bold;}
+		p.MsoTitleCxSpLast, li.MsoTitleCxSpLast, div.MsoTitleCxSpLast
+			{mso-style-name:"Titre\,Titre du documentCxSpLast";
+			mso-style-link:"Titre Car\,Titre du document Car";
+			margin-top:0cm;
+			margin-right:0cm;
+			margin-bottom:12.0pt;
+			margin-left:0cm;
+			text-align:center;
+			line-height:normal;
+			page-break-after:avoid;
+			border:none;
+			padding:0cm;
+			font-size:28.0pt;
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			letter-spacing:-.35pt;
+			font-weight:bold;}
+		a:link, span.MsoHyperlink
+			{color:blue;
+			text-decoration:underline;}
+		strong
+			{color:windowtext;}
+		p.MsoNoSpacing, li.MsoNoSpacing, div.MsoNoSpacing
+			{margin:0cm;
+			text-align:justify;
+			text-justify:inter-ideograph;
+			line-height:normal;
+			font-size:10.5pt;
+			font-family:"Lucida Bright",serif;}
+		span.MsoSubtleReference
+			{font-variant:small-caps;
+			color:#404040;}
+		span.ARemplacer
+			{mso-style-name:"A Remplacer";
+			font-family:"Arial",sans-serif;
+			font-style:italic;}
+		span.Titre1Car
+			{mso-style-name:"Titre 1 Car";
+			mso-style-link:"Titre 1";
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;}
+		span.TitreCar
+			{mso-style-name:"Titre Car\,Titre du document Car";
+			mso-style-link:"Titre\,Titre du document";
+			font-family:"Lucida Sans",sans-serif;
+			color:#8E3232;
+			letter-spacing:-.35pt;
+			font-weight:bold;}
+		span.PieddepageCar
+			{mso-style-name:"Pied de page Car";
+			mso-style-link:"Pied de page";
+			font-family:"Arial",sans-serif;}
+		span.En-tteCar
+			{mso-style-name:"En-tête Car";
+			mso-style-link:En-tête;
+			font-family:"Arial",sans-serif;}
+		.MsoChpDefault
+			{font-size:10.5pt;
+			font-family:"Lucida Bright",serif;}
+		.MsoPapDefault
+			{margin-bottom:6.0pt;
+			line-height:110%;}
+		
+		ol
+			{margin-bottom:0cm;}
+		ul
+			{margin-bottom:0cm;}
+		.body {
+            line-height: 1.1;
+            font-size: 12px;
+            display : flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #5b5b5b;
+			padding: 20px;
+			font-size: 50px;
+        }
+		.a4-page {
+			font-family: "Lucida Sans", sans-serif;
+            width: 210mm;
+            height: 297mm;
+            margin: 10mm auto; /* Margins for print look */
+            padding: 20mm; /* Inner margin */
+            box-sizing: border-box; /* Includes padding and border in the element's width and height */
+            border: 1px solid #000; /* Optional: Border to visualize the edges of the paper */
+            background-color: white; /* White background like paper */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional: Slight shadow for a lifted effect */
+            page-break-after: always; /* Ensures each page breaks properly */
+			line-height:normal;
+			font-size: 10px;
+			position: relative;
+        }
+
+        /* Last page should not have a page break after */
+        .a4-page:last-child {
+            page-break-after: auto;
+        }
+		.container {
+            font-family: "Lucida Sans", sans-serif;
+            width: 210mm;
+            height: 297mm;
+            margin: 10mm auto; /* Margins for print look */
+            padding: 20mm; /* Inner margin */
+            box-sizing: border-box; /* Includes padding and border in the element's width and height */
+            border: 1px solid #000; /* Optional: Border to visualize the edges of the paper */
+            background-color: white; /* White background like paper */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+		.header {
+            position: absolute;
+			width: auto;
+            top: 0mm; /* Positioning 10mm from the top of the page */
+            left: 0mm;
+            right: 0mm;
+            height: 37mm; /* Header height */
+			line-height: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 10pt;
+            border-bottom: 1px solid #000; 
+			background-color: #303854;/* Optional: Border for the header */
+        }
+		.header2 {
+            top: 6mm;
+            left: 15mm;
+            right:20mm;
+			position: absolute;
+			width: auto;
+            display: inline-block;
+		}
+
+		.footer {
+			position: absolute;
+            bottom: 35mm;
+            height: 60px;
+            left: 15mm;
+            right:15mm;
+            width: auto;
+            
+        }
+		.footer2 {
+			position: absolute;
+			
+            height: 70px;
+            bottom: 1mm;
+            left: 15mm;
+            right:15mm;
+            text-align: center;
+            line-height: 6mm;
+            width: auto;
+
+		}
+
+	</style>
+
+	</head>
+	<body lang=FR link=blue vlink="#954F72" style='word-wrap:break-word'>
+		<div class="a4-page">
+            <br>
+			<div class="header">
+				<img src="{% static 'polls/img/ba_pep.png' %}" alt="Logo Junior" style="width: 500px; height: auto;position: relative; top: 3mm;">
+			</div>
+			<br>
+			<br>
+			<br><br><br><br><br><br><br>
+			
+			<div style='border-top:solid #303854 1.5pt;border-left:none;border-bottom:solid #303854 1.5pt;
+			border-right:none;padding:1.0pt 0cm 1.0pt 0cm; margin: 0px;margin-bottom: 15px;'>
+
+			<p class=MsoTitle style='border:none;padding:0cm; margin: 0px;'><a name="_Toc388607173"></a><a
+			name="_Toc388615229"></a><a name="_Toc388615452"></a><a name="_Toc388616007"></a><span
+			style='font-family:Taviraj;color:#303854'>Bulletin d’adhésion </span></p>
+
+			</div>
+
+			<p class=MsoNormal align=center style='text-align:center; '><strong><span
+			style='font-size:14.0pt;line-height:150%;font-family:Quicksand;color: #ff0000;'>{{eleve.titre}}
+			{{eleve.first_name}} {{eleve.last_name}}</span></strong></p>
+
+			<p class=MsoNormal align=center style='text-align:center'><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand;color: #ff0000;'>{{eleve.adress}},
+			{{eleve.code_postal}} {{eleve.ville}}</span></p>
+
+			<p class=MsoNormal align=center style='text-align:center'><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand'>Tél. : <span style="color: #ff0000;">{{eleve.phone_number}}</span>
+			</span></p>
+
+			<p class=MsoNormal align=center style='text-align:center'><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand'>&nbsp;</span></p>
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand; padding-left: 20px;'>Il a été préalablement rappelé que Ponts
+			Etudes Projets, association loi 1901, a pour objet de compléter la formation
+			théorique dispensée à l’Ecole des Ponts ParisTech par des applications
+			pratiques en entreprise à vocation pédagogique. Elle met en œuvre l'ensemble de
+			ses moyens pour proposer à ses adhérents des missions pratiques conformément à
+			son objet social.</span></p>
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>Dans le respect du contrat
+			d’association, <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> a vocation à bénéficier de
+			l’activité de Ponts Etudes Projets.  <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> certifie
+			avoir accès à un exemplaire des Statuts et du Règlement Intérieur de Ponts
+			Etudes Projets et s’engage à s’y conformer. En complément des Statuts et du
+			Règlement Intérieur, le présent bulletin d’adhésion a pour objet de préciser
+			les termes de la collaboration entre les parties signataires à la réalisation d'études
+			et de missions que Ponts Etudes Projets pourra confier à  <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> au cours de sa scolarité.</span></p>
+
+			<div style='border:none;border-bottom:solid #303854 1.7pt;padding:0cm 0cm .0pt 0cm; margin-bottom: 15px; '>
+
+			<h1 style='border:none;padding:0cm; margin-bottom: 0px;'><span style='font-size:16.0pt;font-family:
+			Taviraj;color:#303854'>Article 1&nbsp;: Obligations de  <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span></span></h1>
+
+			</div>
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%; font-family:Quicksand'> <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> a pour
+			obligation de fournir les documents nécessaires à la constitution et à la mise
+			à jour de son dossier étudiant. {etudiant_prenom} {etudiant_nom} atteste être
+			étudiant de l’Ecole des Ponts ParisTech et s'engage à faire connaître à Ponts
+			Etudes Projets toute modification intervenant dans son cursus universitaire ou
+			scolaire, ainsi que tout changement de coordonnées et informations pouvant
+			faire évoluer son statut d’étudiant (adresse, téléphone, adresse e-mail, droits
+			de sécurité sociale étudiante, etc.). </span></p>
+            <div class="footer"> 
+                <br>
+                <br>
+                <div style="text-align: center; font-family: 'Taviraj';color: #1f3753;font-weight: bold; " >Ponts Etudes Projets</div>
+                <div style="text-align: center; font-family: 'Taviraj';color: #1f3753;font-style:italic; font-size:10px;" >Association loi 1901 affiliée à la Confédération Nationale des Junior-Entreprises</div>
+            
+                <br>
+                <div  style="text-align: center; font-family: 'Taviraj';color: #1f3753;">6-8 avenue Blaise Pascal, Champs-sur-Marne, 77455 Marne-la-Vallée Cedex 2</div>
+                <div style="text-align: center; font-family: 'Taviraj';color: #1f3753;">Tél. : 01 64 15 33 99 – Fax : 01 64 15 33 90 – pep@enpc.org – pep.enpc.org</div>
+            </div>
+			
+            <div class ="footer2">
+            <div style="color: #5b5b5b;text-align: center;font-weight: 250;">Tous droits de reproduction réservés
+                </div>
+            <div style="font-size: 13px; font-weight: 500;">Page 1 sur 3</div>
+
+        </div>
+		</div>
+        
+		<div class="a4-page">
+            <div class="header2">
+                <div style="text-align: right; position: relative;top: 10mm; float: right;">REFERENCE :CE_20240603</div>
+				<img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre" style="width: 300px; height: auto;float: left;">
+                
+			</div>
+            <br><br><br><br>
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+				line-height:150%;font-family:Quicksand'> <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span>
+				s’engage à ne divulguer à des tiers aucune information obtenue lors de sa
+				collaboration avec Ponts Etudes Projets, en particulier les informations
+				relatives à ses clients et à son organisation interne.</span></p>
+			
+			<h1 style='border:none;padding:0cm; margin-bottom: 0px;'><span style='font-size:16.0pt;font-family:
+			Taviraj;color:#303854'>Article 2&nbsp;: </span><span style='font-size:16.0pt;
+			font-family:Taviraj;color:#303854'>Participation éventuelle à des missions
+			pédagogiques</span></h1>
+			<div style='border:none;border-bottom:solid #303854 1.7pt;padding:0cm 0cm 0cm 0cm; margin-bottom: 15px;'></div>
+			
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>Ponts Etudes Projets se réserve le
+			droit de choisir les intervenants qui réaliseront les missions dont elle a la
+			charge. <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> est libre d’accepter ou de décliner
+			les missions</span><span style='font-size:11.0pt;line-height:150%;font-family:
+			Quicksand;background:white'> </span><span style='font-size:11.0pt;line-height:
+			150%;font-family:Quicksand'>pédagogiques,<span style='background:white'>
+			confiées par un client à </span>Ponts Etudes Projets dans le cadre du
+			complément de formation consistant à l’application pratique des concepts
+			théoriques dispensés à l'Étudiant par </span><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>l’Ecole des Ponts ParisTech, qui lui
+			seront proposées.</span></p>
+
+			<p class=MsoNormal style='margin-bottom:0cm'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>&nbsp;</span></p>
+
+			<p class=MsoNormal style='margin-bottom:0cm;text-indent:35.4pt'><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand;background:white'>Cette
+			participation pourra donner lieu au versement d'une rétribution. Dans ce cas,
+			le versement de cette rétribution fera l’objet de la remise d'un bulletin de
+			versement. Ce document ne recouvrera en aucun cas le caractère de bulletin de
+			salaire au titre d’un emploi salarié, mais il aura uniquement pour objet
+			d'attester le versement des cotisations sociales dues conformément au statut
+			spécifique des Junior-Entreprises.</span></p>
+
+			<p class=MsoNormal style='margin-bottom:0cm'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>&nbsp;</span></p>
+
+			<p class=MsoNormal style='margin-bottom:0cm;text-indent:35.4pt'><span
+			style='font-size:11.0pt;line-height:110%;font-family:Quicksand;background:white'>Un
+			Récapitulatif de Mission viendra définir les modalités d'intervention de </span><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand'> <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span></span><span style='font-size:11.0pt;line-height:150%;font-family:
+			Quicksand;background:white'> sur la mission confiée à la</span><span
+			style='font-size:11.0pt;line-height:150%;font-family:Quicksand'> Ponts Etudes
+			Projets.</span></p>
+
+	
+
+			
+			<div style='border:none;border-bottom:solid #303854 1.7pt;padding:0cm 0cm 1.0pt 0cm; margin-bottom: 15px;'>
+
+			<h1 style='border:none;padding:0cm; margin-bottom: 0px;'><span style='font-size:16.0pt;font-family:
+			Taviraj;color:#303854;'>Article 3&nbsp;: Perte de l’adhésion</span></h1>
+
+			</div>
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>En cas de non-respect par <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> de l’une de ses obligations, et plus généralement pour tout
+			préjudice causé à Ponts Etudes Projets, cette dernière se réserve le droit de
+			prendre à son encontre des mesures prévues par son Règlement Intérieur et ses
+			Statuts.</span></p>
+
+			<p class=MsoNormal style='text-indent:35.4pt'><span style='font-size:11.0pt;
+			line-height:150%;font-family:Quicksand'>À tout moment,  <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span> peut mettre fin à son adhésion de sa propre initiative. Il
+			tiendra Ponts Etudes Projets informée de sa décision dans un délai de 2
+			semaines. La cotisation éventuellement payée reste due.</span></p>
+
+			<p class=MsoNormal><span style='font-size:11.0pt;line-height:150%;font-family:
+			Quicksand'>&nbsp;</span></p>
+
+			<p class=MsoNormal><span style='font-size:11.0pt;line-height:150%;font-family:
+			Quicksand'>&nbsp;</span></p>
+            <div class ="footer2">
+                <div style="color: #5b5b5b;text-align: center;font-weight: 250;">Tous droits de reproduction réservés
+                    </div>
+                <div style="font-size: 13px; font-weight: 500;">Page 2 sur 3</div>
+
+            </div>
+		</div>
+		<div class="a4-page">
+            <div class="header2">
+                <div style="text-align: right; position: relative;top: 10mm; float: right;">REFERENCE :CE_20240603</div>
+				<img src="{% static 'polls/img/logo_pep_CE.png' %}" alt="Logo Junior" class="image_logo_autre" style="width: 300px; height: auto;float: left;">
+                
+			</div>
+            <br><br><br><br>
+			<p class=MsoNormal><span style='font-size:11.0pt;line-height:110%;font-family:
+			Quicksand'>Document comportant 3 pages,fait à le  <span style="color: #ff0000;">{{date}}</span>.</span></p>
+
+
+			<span style='font-size:11.0pt;line-height:110%;font-family:Quicksand'><br
+			clear=all style='page-break-before:auto'>
+			</span>
+			<p class=MsoNormal><span style='font-family:Quicksand'>&nbsp;</span></p>
+
+			<p class=MsoNormal><span style='font-family:Quicksand'>&nbsp;</span></p>
+
+			<table class=MsoTableGrid border=0 cellspacing=0 cellpadding=0
+			style='border-collapse:collapse;border:none'>
+			<tr>
+			<td width=311 valign=top style='width:232.95pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal style='margin-bottom:0cm;line-height:normal'><span
+			style='font-size:12.0pt;font-family:Quicksand'>&nbsp;</span></p>
+			</td>
+			<td width=316 valign=top style='width:236.85pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><span style='font-size:12.0pt;font-family:Quicksand'>&nbsp;</span></p>
+			</td>
+			</tr>
+			<tr>
+			<td width=311 valign=top style='width:232.95pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><span style='font-size:12.0pt;font-family:Quicksand'>Pour
+			<b><span style="color: #ff0000;">{{president.first_name}} {{president.last_name}}</span></b>, représentant légal, et par délégation</span><b><span
+			style='font-size:12.0pt;font-family:Quicksand'> </span></b></p>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><b><span style='font-size:12.0pt;font-family:Quicksand'>&nbsp;</span></b></p>
+			</td>
+			<td width=316 valign=top style='width:236.85pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><b><span style='font-size:12.0pt;font-family:Quicksand'> <span style="color: #ff0000;">{{eleve.first_name}} {{eleve.last_name}}</span></span></b></p>
+			</td>
+			</tr>
+			<tr>
+			<td width=311 valign=top style='width:232.95pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><span style='font-size:9.0pt;font-family:Taviraj;
+			color:#7D89B5'>Signature</span></p>
+			</td>
+			<td width=316 valign=top style='width:236.85pt;padding:0cm 5.4pt 0cm 5.4pt'>
+			<p class=MsoNormal align=center style='margin-bottom:0cm;text-align:center;
+			line-height:normal'><span style='font-size:9.0pt;font-family:Taviraj;
+			color:#7D89B5'>Signature</span></p>
+			</td>
+			</tr>
+			</table>
+
+			<p class=MsoNormal><span style='font-family:Quicksand'>&nbsp;</span></p>
+            <div class ="footer2">
+                <div style="color: #5b5b5b;text-align: center;font-weight: 250;">Tous droits de reproduction réservés
+                    </div>
+                <div style="font-size: 13px; font-weight: 500;">Page 3 sur 3</div>
+
+            </div>
+		</div>
+		
+			
+
+
+
+	
+
+	</body>
+
+</html>
