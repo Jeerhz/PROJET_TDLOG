@@ -426,10 +426,10 @@ class Member(AbstractUser):
             param.save()
 
     def signature_mail(self):
-        role = "Responsable communication"
+        role = self.poste
         num_tel = ""
         if self.student.phone_number is not None:
-            num_tel = self.student.phone_number
+            num_tel = "Tel: "+self.student.phone_number
 
         return role+" chez "+self.je.__str__()+"\n"+num_tel+"\n"
         
