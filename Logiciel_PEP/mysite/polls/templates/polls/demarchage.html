@@ -497,6 +497,7 @@
                                         <tbody>
                                             {% for client in clients %}
                                             {% for repr in client.representants.all %}
+                                            {% if repr.demarchage == 'RETOUR_RECU' %}
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
@@ -528,9 +529,11 @@
 
                                                 </td>
                                             </tr>
-                                        </tbody>
-                                        {% endfor %}
+                                            {% endif %}
+                                            {% endfor %}
                                     {% endfor %}
+                                        </tbody>
+                                        
                                     </table>
                                     
                                     
@@ -553,6 +556,7 @@
                                         <tbody>
                                         {% for client in clients %}
                                         {% for repr in client.representants.all %}
+                                        {% if repr.demarchage == 'A_RELANCER' %}
                                         
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
@@ -572,7 +576,7 @@
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>relancer</a>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>relancer</a>
                                                     <br>
                                                     <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
                                                         {% csrf_token %}
@@ -581,6 +585,7 @@
                                                     </form>
                                                 </td>
                                             </tr>
+                                        {% endif %}
                                         {% endfor %} 
                                         {% endfor %}
                                         </tbody>
@@ -595,7 +600,7 @@
                         <div class="col-lg-13 mb-3" style="width: 90%;">
                             <div class="card shadow">
                                 <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés :</h6>
+                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés récemment :</h6>
                                 </div>
                                 <!-- Card Body -->
                                 
@@ -605,6 +610,7 @@
                                         <tbody>
                                             {% for client in clients %}
                                             {% for repr in client.representants.all %}
+                                            {% if repr.demarchage == 'ATTENTE_REPONSE' %}
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
@@ -630,9 +636,11 @@
 
                                                 </td>
                                             </tr>
-                                        </tbody>
+                                            {% endif %}
                                         {% endfor %}
                                     {% endfor %}
+                                        </tbody>
+                                        
                                     </table>
                                     
                                     
@@ -658,6 +666,7 @@
                                         {% if client.secteur == secteur %}
                                         
                                         {% for repr in client.representants.all %}
+                                        {% if repr.demarchage == 'A_CONTACTER' %}
                                         
                                             <tr >
                                                 <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
@@ -674,12 +683,12 @@
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right"><i class="fas fa-envelope mr-2"></i>envoyer</a>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>Envoyer</a>
                                                     <br>
                                                     <div style="font-weight: 300;">{{ repr.remarque }}</div>
                                                 </td>
                                             </tr>
-                                       
+                                        {% endif %}
                                         {% endfor %} 
                                         {% endif %}
                                         {% endfor %}
@@ -702,6 +711,55 @@
 
             </div>
             <!-- End of Main Content -->
+            <!-- Visualisation mail -->
+            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{% url 'send_mail_demarchage' %}" method="post">
+                            <div class="modal-body p-4">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Destinataire</span>
+                                        </div>
+                                        <input type="text" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Objet</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="subject" value="Mission">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <textarea type="text" class="form-control" name="message"></textarea>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Signature</strong>
+                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
+                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin formulaire ajout Representant -->
         <!-- Footer -->
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">

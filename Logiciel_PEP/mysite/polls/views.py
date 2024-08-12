@@ -29,7 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 import locale
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
-from django.conf import settings
+from django.conf import settings as conf_settings
 from django.core.files.base import ContentFile
 from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres, assignation
 from django.shortcuts import render
@@ -241,7 +241,13 @@ def demarchage(request):
         clients = Client.objects.filter(je=je)
         secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
         context = {
-            'representants': representants, 'clients':clients,'secteurs':secteurs,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list":notification_list,
+            "notification_count":notification_count,
+            'representants': representants,
+            'clients':clients,
+            'secteurs':secteurs,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -1793,16 +1799,57 @@ def remarque_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-def send_custom_email(subject, message, from_email, username, password, recipient_list, host=None, port=None):
-    # Override default email settings if provided
-    email_host = host if host else settings.EMAIL_HOST
-    email_port = port if port else settings.EMAIL_PORT
-    connection = get_connection(host=email_host, port=email_port, username=username,
-        password=password,
-        use_tls=True,)
-    send_mail(subject, message, from_email, recipient_list, 
-              fail_silently=False, 
-              connection=connection)
+def send_mail_demarchage(request):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+        context = {
+        "liste_messages": liste_messages,
+        "message_count": message_count,
+        "notification_list":notification_list,
+        "notification_count":notification_count,
+        }
+        if request.method == 'POST':
+            try :
+                host = None
+                port = None
+                username = None
+                email_host = host if host else conf_settings.EMAIL_HOST
+                email_port = port if port else conf_settings.EMAIL_PORT
+                username = None
+                username = username if username else conf_settings.EMAIL_USERNAME
+                password = None
+                password = password if password else conf_settings.EMAIL_PASSWORD
+                connection = get_connection(host=email_host, port=email_port, username=username,
+                    password=password,
+                    use_tls=True,)
+                subject = request.POST['subject']
+                message = request.POST['message']+"\n"+"\n"+request.POST['name']+"\n"+request.POST['signature']
+                from_email = conf_settings.EMAIL_USERNAME
+                recipient_list = [request.POST['destinataire']]
+                send_mail(subject, message, from_email, recipient_list, 
+                        fail_silently=False, 
+                        connection=connection)
+                return redirect('demarchage')
+            except:
+                context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
+                template = loader.get_template("polls/page_error.html")
+        else :
+            template = loader.get_template("polls/page_error.html")
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 
 def settings(request):
     if request.user.is_authenticated:
@@ -1930,7 +1977,15 @@ def ajouter_avenant_ce(request, id_etude):
         if request.method == 'POST':
             try:
                 etude = Etude.objects.get(id=id_etude)
-                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=request.POST['date_signature'], remarque=request.POST['remarque'])
+                signature = None
+                if request.POST['date_signature'] != '':
+                    signature = request.POST['date_signature']
+                nouveau_frais_dossier = request.POST['frais_dossier']              
+                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, remarque=request.POST['remarque'])
+                if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
+                    new_avenant.nouveau_frais_dossier = nouveau_frais_dossier
+                    new_avenant.ancien_frais_dossier = etude.frais_dossier
+                    etude.frais_dossier = nouveau_frais_dossier
                 new_avenant.save()
                 for phase in etude.phases.all():
                     if( 'suppression'+str(phase.id) in request.POST and request.POST['suppression'+str(phase.id)] == "on" and not phase.supprimee):
@@ -1939,17 +1994,17 @@ def ajouter_avenant_ce(request, id_etude):
                         phase.supprimee=True
                     if(request.POST['debut'+str(phase.id)] != phase.debut_relatif):
                         n_debut = request.POST['debut'+str(phase.id)]
-                        deb_phase = ModificationDebutPhase(avenant_ce=new_avenant, phase=phase, nouveau_debut=n_debut)
+                        deb_phase = ModificationDebutPhase(avenant_ce=new_avenant, phase=phase, nouveau_debut=n_debut, ancien_debut=phase.debut_relatif)
                         deb_phase.save()
                         phase.debut_relatif = n_debut
                     if(request.POST['duree'+str(phase.id)] != phase.duree_semaine):
                         n_duree = request.POST['duree'+str(phase.id)]
-                        dur_phase = ModificationDureePhase(avenant_ce=new_avenant, phase=phase, nouvelle_duree=n_duree)
+                        dur_phase = ModificationDureePhase(avenant_ce=new_avenant, phase=phase, nouvelle_duree=n_duree, ancienne_duree=phase.duree_semaine)
                         dur_phase.save()
                         phase.duree_semaine = n_duree
                     if(request.POST['nb_jeh'+str(phase.id)] != phase.duree_semaine):
                         n_jeh = request.POST['nb_jeh'+str(phase.id)]
-                        jeh_phase = ModificationJEHPhase(avenant_ce=new_avenant, phase=phase, nouveau_nombre_JEH=n_jeh)
+                        jeh_phase = ModificationJEHPhase(avenant_ce=new_avenant, phase=phase, nouveau_nombre_JEH=n_jeh, ancien_nombre_JEH=phase.nb_JEH)
                         jeh_phase.save()
                         phase.nb_JEH = n_jeh
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
