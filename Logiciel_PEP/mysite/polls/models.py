@@ -391,7 +391,7 @@ class Member(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
-    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.INDEFINI)
+    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.INDEFINI, blank=True, null=True)
 
     
 
@@ -1138,6 +1138,19 @@ class AjouterRemarqueRepresentant(forms.Form):
 
 class AddMember(forms.Form):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    class Poste(models.TextChoices):
+        PRESIDENT = 'PRESIDENT', 'président'
+        VICE_PRESIDENT = 'VICE_PRESIDENT', 'vice-président'
+        TRESORIER = 'TRESORIER', 'Trésorier'
+        VICE_TRESORIER = 'VICE_TRESORIER', 'vice-trésorier'
+        SECRETAIRE_GENERALE = 'SECRETAIRE_GENERALE', 'secrétaire générale'
+        CHEF_DE_PROJET = 'CHEF_DE_PROJET', 'chef de projet'
+        DIRECTEUR_COMMERCIALE = 'DIRECTEUR_COMMERCIALE', 'directeur commerciale'
+        DIRECTEUR_PROJET = 'DIRECTEUR_PROJET', 'directeur projet'
+        DSI = 'DSI', 'DSI'
+        RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
+        DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
+        DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
     first_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}))
     last_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
     titre = forms.ChoiceField(choices=TITRE_CHOIX, widget=forms.Select(attrs={'class': 'form-control'}))
@@ -1148,7 +1161,13 @@ class AddMember(forms.Form):
     adress = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address'}))
     country = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}))
     promotion = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Promotion'}))
+    poste = forms.ChoiceField(
+        choices=Poste.choices,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Poste'})
+    )
     identifiant_je = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'JE Identifier'}))
+
     photo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
 
     def __str__(self):
@@ -1193,6 +1212,8 @@ class AddMember(forms.Form):
         new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
         if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
             new_member.photo = self.cleaned_data['photo']
+        if 'poste' in self.cleaned_data and self.cleaned_data['poste']:
+            new_member.Poste = self.cleaned_data['poste']
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member

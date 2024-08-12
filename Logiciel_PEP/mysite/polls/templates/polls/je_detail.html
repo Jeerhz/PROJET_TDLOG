@@ -424,10 +424,9 @@
                                     <a class="nav-link" id="orga-tab" data-toggle="tab" href="#organigramme" role="tab" aria-controls="organigramme" aria-selected="false">Organigramme</a>
                                 </li>
                             </ul>
-                            <div class="tab-content" id="EtudesContent">
+                            <div class="tab-content" id="jeTabContent">
                                 <!-- Onglet Général -->
                                 <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                                    <!-- Amélioration : Suppression de la carte imbriquée pour un design plus épuré -->
                                     <div id="je-info">
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item"><i class="fas fa-file-alt mr-2"></i><strong>Nom:</strong> {{ je.nom }}</li>
@@ -440,7 +439,7 @@
                                             <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>BIC:</strong> {{ je.BIC }}</li>
                                             <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre de Membres:</strong> {{ je.member_set.count }}</li>
                                             <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre d'Inscrits:</strong> {{ je.student_set.count }}</li>
-                                            <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires</strong> {{ je.chiffres_affaires }} €</li>
+                                            <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires:</strong> {{ je.chiffres_affaires }} €</li>
                                         </ul>
                                         <!-- Modifier Button -->
                                         <div class="text-right mt-3">
@@ -472,13 +471,8 @@
                                         </form>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                                
-                                <!-- Onglet Membre -->
+                                <!-- Onglet Membres -->
                                 <div class="tab-pane fade" id="membre" role="tabpanel" aria-labelledby="membre-tab">
                                     <div class="row">
                                         {% for membre in je.member_set.all %}
@@ -499,20 +493,19 @@
                                     </div>
                                 </div>
 
+                                <!-- Onglet Organigramme -->
                                 <div class="tab-pane fade" id="organigramme" role="tabpanel" aria-labelledby="orga-tab">
                                     <div class="card-body">
-                                        <a href="#" class="btn btn-success"> Organigramme</a>
+                                        <a href="#" class="btn btn-success">Organigramme</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                
-            <!-- End of Main Content -->
-        </div>
-        <!-- End of Content Wrapper -->
+                <!-- End of Main Content -->
+            </div>
+            <!-- End of Content Wrapper -->
 
         <!-- Footer -->
         <footer class="sticky-footer bg-white" style="margin-top: auto">
@@ -556,56 +549,25 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var modifier_je = document.getElementById('modifier-je');
-            var je_info = document.getElementById('je-info');
-            var je_form = document.getElementById('je-form');
-    
-            // Toggle between info view and form view when the Modify button is clicked
-            modifier_je.addEventListener('click', function() {
-                je_info.classList.toggle('d-none');
-                je_form.classList.toggle('d-none');
-            });
-    
-            var annuler_je = document.getElementById('annuler-je');
-            annuler_je.addEventListener('click', function() {
-                je_info.classList.toggle('d-none');
-                je_form.classList.toggle('d-none');
-            });
-    
-            // Handle the form submission via AJAX
-            document.getElementById('je-f-form').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent default form submission
-    
-                // Get form data
-                var formData = new FormData(this);
-    
-                // Send POST request using Fetch API
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                })
-                .then(response => response.json()) // Parse JSON response
-                .then(data => {
-                    // Handle JSON response
-                    if (data.success) {
-                        // Show success message or perform any action
-                        showAlert('Modification successful!');
-                        location.reload();  // Optionally, reload the page to reflect changes
-                    } else {
-                        // Show error message or perform any action
-                        showAlert('Modification failed!');
-                    }
-                })
-                .catch(error => {
-                    // Handle any errors
-                    console.error('Error:', error);
-                    showAlert("La communication avec le serveur a échoué.");
-                });
-            });
+        var modifier_je = document.getElementById('modifier-je');
+        var je_info = document.getElementById('je-info');
+        var je_form = document.getElementById('je-form');
+
+        // Toggle entre l'affichage des infos et du formulaire
+        modifier_je.addEventListener('click', function() {
+            je_info.classList.toggle('d-none');
+            je_form.classList.toggle('d-none');
         });
+
+        var annuler_je = document.getElementById('annuler-je');
+        annuler_je.addEventListener('click', function() {
+            je_info.classList.toggle('d-none');
+            je_form.classList.toggle('d-none');
+        });
+
+        // Pas besoin de gestion AJAX, la soumission normale suffira pour rediriger
+    });
+
     </script>
     
 
