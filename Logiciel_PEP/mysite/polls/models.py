@@ -380,6 +380,7 @@ class Member(AbstractUser):
         RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
         DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
         DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
+        INDEFINI = 'INDEFINI', 'Indéfini'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
@@ -390,7 +391,7 @@ class Member(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
-    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.PRESIDENT)
+    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.INDEFINI)
 
     
 
