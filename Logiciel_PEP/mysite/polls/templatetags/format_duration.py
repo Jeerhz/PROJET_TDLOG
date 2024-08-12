@@ -25,15 +25,19 @@ def format_duration(value):
 def assignation(eleve, etude):
     return list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
 
+
 @register.filter(name='JEH')
 def JEH(eleve, etude):
     queryset = AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude)
     nb_total_JEH = queryset.aggregate(total_sum=Sum('nombre_JEH'))['total_sum'] or 0
+    JEH= "JEH"
+    if nb_total_JEH>1:
+        JEH= "JEHs"
 
     # Calculate the total monetary amount manually using the model's method
     montant_total = sum(assignment.retribution_brute_totale() for assignment in queryset)
 
-    return f"{nb_total_JEH} JEH pour un montant de {montant_total:.2f}€ HT"
+    return f"{nb_total_JEH} {JEH} pour un montant de {montant_total:.2f}€ HT"
 
 @register.filter(name="cumulPhase")
 def cumulPhase(eleve, phase):
@@ -75,6 +79,15 @@ def chiffre_lettres(nombre):
     if nbr_dec <2:
         centimes = 'centime'
     return f"{lettres_entier} euros et {lettres_deci} {centimes}"
+
+@register.filter(name='EnLettres')
+def en_lettres(nombre):
+    if nombre is None:
+        return ''
+    else:
+        return num2words(nombre, lang='fr')  
+     
+     
 
 @register.filter(name='FormatNombres')
 def format_nombres(nombre):

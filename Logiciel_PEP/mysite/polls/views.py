@@ -5,6 +5,8 @@ import pytz #pour CA dynamique
 from docxtpl import DocxTemplate
 from docx.shared import Inches
 from jinja2 import Environment
+import math
+
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -22,13 +24,14 @@ from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
+from django.views.decorators.csrf import csrf_exempt
 import locale
 locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings as conf_settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres
+from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres, assignation
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -395,21 +398,163 @@ def details(request, modelName, iD):
     return HttpResponse(template.render(context, request))
 
 
+
+def edit_student(request, pk):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        # Retrieve the student instance, or return a 404 if not found
+        student = get_object_or_404(Student, pk=pk)
+
+
+        if request.method == 'POST':
+            form = AddStudent(request.POST, instance=student)
+            if form.is_valid():
+                form.save()  # Save changes to the database
+                return redirect('details', modelName="Student", iD=student.id)
+            else:
+                # Debugging: print out form errors if it is not valid
+                print(form.errors)
+        else:
+            form = AddStudent(instance=student)
+
+
+        context = {
+            "eleve": student, 
+            "form": form,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Student",
+            "iD": student.id,
+        }
+
+        return render(request, "polls/page_details.html", context)
+    
+    else:
+        return redirect('login')
+    
+def edit_client(request, pk):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        # Retrieve the client instance, or return a 404 if not found
+        client = get_object_or_404(Client, pk=pk)
+
+
+        if request.method == 'POST':
+            form = AddClient(request.POST, instance=client)
+            if form.is_valid():
+                form.save()  # Save changes to the database
+                return redirect('details', modelName="Client", iD=client.id)
+            else:
+                # Debugging: print out form errors if it is not valid
+                print(form.errors)
+        else:
+            form = AddClient(instance=client)
+
+
+        context = {
+            "client": client,
+            "representant_form" : AddRepresentant(),
+            "form": form,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Client",
+            "iD": client.id,
+        }
+
+        return render(request, "polls/page_details.html", context)
+    
+    else:
+        return redirect('login')
+
+def delete_student(request, pk):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        student = get_object_or_404(Student, pk=pk)
+        if request.method == 'POST':
+            student.delete()
+        return redirect('annuaire')
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def delete_client(request, pk):
+    if request.user.is_authenticated:
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        client = get_object_or_404(Student, pk=pk)
+        if request.method == 'POST':
+            client.delete()
+        return redirect('annuaire')
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def input(request, modelName, iD):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
+        ).order_by("date")[0:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        template = loader.get_template("polls/page_input.html")
+        model = apps.get_model(app_label="polls", model_name=modelName)
         if request.method == "GET":
-            template = loader.get_template("polls/page_input.html")
-            model = apps.get_model(app_label="polls", model_name=modelName)
             if iD == 0:
                 form = model.createForm(je=request.user.je)
                 context = {
@@ -420,8 +565,6 @@ def input(request, modelName, iD):
                     "iD": iD,
                     "liste_messages": liste_messages,
                     "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
                     "is_message": (modelName == "Message"),
                 }
             else:
@@ -436,8 +579,6 @@ def input(request, modelName, iD):
                         "iD": iD,
                         "liste_messages": liste_messages,
                         "message_count": message_count,
-                        "notification_list":notification_list,
-                        "notification_count":notification_count,
                         "is_message": (modelName == "Message"),
                     }
                 except:
@@ -445,19 +586,26 @@ def input(request, modelName, iD):
                         "error_message": "The selected object does not exist in the database.",
                         "liste_messages": liste_messages,
                         "message_count": message_count,
-                        "notification_list":notification_list,
-                        "notification_count":notification_count,
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
-
-            model = apps.get_model(app_label="polls", model_name=modelName)
             fetchform = model.retrieveForm(request.POST)
             if fetchform.is_valid():
-                new_object = fetchform.save(commit=True, expediteur=request.user)
-                return redirect('details', modelName=modelName, iD=new_object.id)
+                if iD == 0:
+                    fetchform.save(commit=True, expediteur=request.user)
+                else:
+                    fetchform.save(commit=True)
+                context = {
+                    "form": fetchform,
+                    "title": str(fetchform),
+                    "message": "Le formulaire a été envoyé avec succès",
+                    "modelName": modelName,
+                    "iD": iD,
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                }
+                return redirect('annuaire')
             else:
-                template = loader.get_template("polls/page_input.html")
                 context = {
                     "form": fetchform,
                     "title": str(fetchform),
@@ -466,8 +614,6 @@ def input(request, modelName, iD):
                     "iD": iD,
                     "liste_messages": liste_messages,
                     "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
                 }
     else:
         template = loader.get_template("polls/login.html")
@@ -529,6 +675,20 @@ def ndf(request):
             
             template = loader.get_template("polls/ndf.html")
             context={}
+        except:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Erreur dans l'identification de la mission."}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def ba(request, iD):
+    if request.user.is_authenticated:
+        try:
+            eleve= Student.objects.get(id=iD)
+            template = loader.get_template("polls/ba.html")
+            context={"eleve":eleve}
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -840,7 +1000,7 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            president = Member.objects.filter(je=je, president=True).first().student
+            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -901,7 +1061,7 @@ def editer_pv(request, iD):
             template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
             
 
-            president = Member.objects.filter(je=je, president=True).first().student
+            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -957,38 +1117,47 @@ def editer_rdm(request, id_etude, id_eleve):
         #try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            phases= Phase.objects.filter(etude=etude)
+            #phases= Phase.objects.filter(etude=etude)
             client= etude.client
-            
+            assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
-            president = Member.objects.filter(je=je, president=True).first().student
-
-
+            president = Member.objects.filter(je=je,  poste='PRESIDENT').first().student
+            remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
+            date_fin= timezone.now().date()
+            for assignation in assignations:
+                if assignation.phase.date_fin > date_fin:
+                    date_fin = assignation.phase.date_fin
+            etudiant_nb_JEH = sum(assignation.nombre_JEH for assignation in assignations )
             template = DocxTemplate("polls/templates/polls/RDM_026.docx")
             model = RDM
             if etude.rdm_edited() :
-                rdm = etude.devis
+                #a modifier
+                rdm = model(etude=etude, eleve=eleve)
             else :
-                rdm = model(etude=etude)
+                rdm = model(etude=etude, eleve=eleve)
                 rdm.save()
             
             
             ref_m = etude.ref()
-            ref_d = ref_m + "pv"
-            date = datetime.datetime.now()
+            ref_d = rdm
+            ce = etude.convention()
+            date = timezone.now().date()
             annee = date.strftime('%Y')
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
             
             
 
 
-            context = {"etude": etude,"client": client, "rdm": rdm, "etudiant": eleve, "ref_m":ref_m, "phases":phases,"annee":annee,"president" :president}
+            context = {"etude": etude,"client": client, "rdm": rdm, "ref_d":ref_d, "etudiant": eleve, "ref_m":ref_m, "assignations":assignations,"annee":annee,"president" :president,"etudiant_nb_JEH":etudiant_nb_JEH,"date_fin":date_fin,
+                       "remuneration":remuneration,"ce":ce}
             # Load the template
 
             env = Environment()
 
             env.filters['FormatNombres'] = format_nombres
-
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+        
             
 
             template.render(context, env)
@@ -1064,15 +1233,43 @@ def editer_devis(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
         try:
             instance = AvenantConventionEtude.objects.get(id=iD)
-            etude = instance.ce.etude
+            ce= instance.ce
+            etude = ce.etude
             client = etude.client
-            template = DocxTemplate("polls\\templates\\polls\\Avenant_Rupture_Convention_Etude.docx")
-            responsable = etude.responsable
-            context = {"etude": instance, "client": client, "responsable":responsable}
+            representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+
+            president = Member.objects.filter(je=etude.je,  poste='PRESIDENT').first().student
+            ref_m = etude.ref()
+
+            if etude.fin():
+                semaine_fin = math.ceil( (datetime.combine(etude.fin(),time(12, 0))  -datetime.today() ).days /7 )
+            else:
+                semaine_fin= etude.duree_semaine()
+
+            semaine_fin_lettres= en_lettres(semaine_fin)
+
+            nb_JEH= etude.nb_JEH()
+            nb_JEH_lettres = en_lettres(nb_JEH)
+
+            phase_montant_HT=etude.montant_phase_HT()
+            phase_montant_HT_lettres = chiffre_lettres(phase_montant_HT)
+            frais_HT =etude.frais_dossier
+            frais_HT_lettres=chiffre_lettres(frais_HT)
+            total_HT= etude.montant_HT_total()
+            total_HT_lettres = chiffre_lettres(total_HT)
+            total_TTC= etude.total_ttc()
+            total_TTC_lettres= chiffre_lettres(total_TTC)
+            template = DocxTemplate("polls/templates/polls/avenant_ce_026.docx")
+            context = {"avenant": instance, "etude": etude, "client": client, "president":president, "ref_m":ref_m,"ce":ce,"repr_legale": representant_legale_client, "semaine_fin":semaine_fin,
+                       "semaine_fin":semaine_fin,"semaine_fin_lettres":semaine_fin_lettres,"nb_JEH":nb_JEH,"nb_JEH_lettres":nb_JEH_lettres,
+                       "phase_montant_HT":phase_montant_HT,"phase_montant_HT_lettres":phase_montant_HT_lettres,"frais_HT":frais_HT, "frais_HT_lettres":frais_HT_lettres,
+                       "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres
+                       }
             # Load the template
 
             # Render the document
@@ -1179,7 +1376,7 @@ def calculate_chiffre_affaire_par_type(user_je):
     for study in studies:
         montant_HT_total = study.montant_HT_total()
         if montant_HT_total > 0: 
-            revenues[type_index[study.client._type]] += montant_HT_total
+            revenues[type_index[study.client.type]] += montant_HT_total
     return revenues
 
 
@@ -1355,7 +1552,7 @@ def ajouter_facture(request, id_etude):
     
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try :
+        #try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             je= eleve.je
@@ -1386,7 +1583,7 @@ def BV(request, id_etude, id_eleve):
             feuille['G4'] = eleve.first_name +" " + eleve.last_name
             feuille['G6'] = eleve.adress
             feuille['G8'] = eleve.code_postal + " " + eleve.country
-            feuille['I3'] = datetime.datetime.now().strftime('%d %B %Y')
+            feuille['I3'] = datetime.now().strftime('%d %B %Y')
             feuille['C13']= etude.ref()
 
             #assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
@@ -1399,7 +1596,7 @@ def BV(request, id_etude, id_eleve):
             # Sauvegarder les modifications dans le fichier Excel
             classeur.save(chemin_absolu)
             return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
-        except :
+        #except :
             liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
@@ -1469,7 +1666,7 @@ def recrutement(request, id_url): # Controler les dates
                     student = existing_students[0]
                     detail_message = "Votre profil a été reconnu dans la base de données."
                 else:
-                    student = Student(je=request.user.je, first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'])
+                    student = Student(je=request.user.je, titre=recrutement.cleaned_data['titre'], first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'], promotion=recrutement.cleaned_data['promotion'], departement=recrutement.cleaned_data['departement'])
                     student.save()
                     detail_message = "D'après nos données, il s'agit de votre première candidature."
                 candidature = Candidature(eleve=student, motivation=recrutement.cleaned_data['motivation'], etude=etude)
@@ -1491,6 +1688,32 @@ def recrutement(request, id_url): # Controler les dates
             template = loader.get_template("polls/recrutement_fail.html")
     return HttpResponse(template.render(context, request))
 
+
+@csrf_exempt
+def modifier_je(request, id):
+    je = get_object_or_404(JE, id=id)
+
+    if request.method == 'POST':
+        # Update the fields with data from the form
+        je.nom = request.POST.get('nom')
+        je.raison_sociale = request.POST.get('raison_sociale')
+        je.rue = request.POST.get('rue')
+        je.ville = request.POST.get('ville')
+        je.code_postal = request.POST.get('code_postal')
+        je.siret = request.POST.get('siret')
+        je.APE = request.POST.get('APE')
+        je.TVA = request.POST.get('TVA')
+        je.IBAN = request.POST.get('IBAN')
+        je.BIC = request.POST.get('BIC')
+        je.chiffres_affaires = request.POST.get('chiffres_affaires')
+        je.save()
+
+        # Return JSON response
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
 def modifier_recrutement_etude(request, iD):
     if request.user.is_authenticated:
         if request.method == 'POST':
@@ -1506,6 +1729,41 @@ def modifier_recrutement_etude(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+    
+@csrf_exempt
+def modifier_etude(request, iD):
+    # Fetch the Etude instance using the provided iD
+    etude = get_object_or_404(Etude, id=iD)
+
+    if request.method == 'POST':
+        # Get the form data from the request
+        debut = request.POST.get('debut')
+        fin = request.POST.get('fin')
+        nb_JEH = request.POST.get('nb_JEH')
+        montant_phase_HT = request.POST.get('montant_phase_HT')
+        frais_dossier = request.POST.get('frais_dossier')
+
+        # Update the Etude instance with the new data
+        etude.debut = debut
+        etude.fin = fin
+        etude.nb_JEH = nb_JEH
+        etude.montant_phase_HT = montant_phase_HT
+        etude.frais_dossier = frais_dossier
+        etude.save()  # Save changes to the database
+
+        # Prepare JSON response
+        response_data = {
+            'success': True,
+            'debut': etude.debut,
+            'fin': etude.fin,
+            'nb_JEH': etude.nb_JEH,
+            'montant_phase_HT': etude.montant_phase_HT,
+            'frais_dossier': etude.frais_dossier,
+        }
+        return JsonResponse(response_data)
+    else:
+        # If not POST, return an error response
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
     
 def remarque_etude(request, iD):
     if request.user.is_authenticated:
@@ -1781,3 +2039,34 @@ def ajouter_representant(request, id_client):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+
+def factures(request):
+    if request.user.is_authenticated:
+        user_je = request.user.je
+        factures = Facture.objects.all().order_by('numero_facture')
+        #pas optimale mais faudrait potentiellement crééer un champs je
+        filtered_factures = [facture for facture in factures if facture.je() == user_je]
+        template = loader.get_template("polls/factures.html")
+        context = { "factures": filtered_factures}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def BVs(request):
+    if request.user.is_authenticated:
+        user_je = request.user.je
+        factures = Facture.objects.all().order_by('numero_facture')
+        #pas optimale mais faudrait potentiellement crééer un champs je
+        filtered_factures = [facture for facture in factures if facture.je() == user_je]
+        template = loader.get_template("polls/factures.html")
+        context = { "factures": filtered_factures}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+

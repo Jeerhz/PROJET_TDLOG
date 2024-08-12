@@ -2,6 +2,8 @@ import datetime
 import uuid
 from uuid import UUID
 from django import forms
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
 from django.db import models
 from django.utils import timezone 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -132,7 +134,7 @@ class Client(models.Model):
         default=Secteur.SECTEUR_PUBLIC,
         help_text="Sélectionnez le secteur d'activité du client."
     )
-    _type = models.CharField(
+    type = models.CharField(
         max_length=20,
         choices=Type.choices,
         default=Type.SECTEUR_PUBLIC,
@@ -182,13 +184,13 @@ class Representant(models.Model):
     phone_number = models.CharField(max_length=200, blank=True, null=True)
     #je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="representants")
-    fonction = models.CharField(max_length = 100)
-    contact_recent = models.BooleanField(default=False)
-    date_mail = models.DateField(blank=True, null=True)
-    contenu_mail =models.CharField(max_length = 5000, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
-    date_reponse = models.DateField(blank=True, null=True)
-    contenu_reponse =models.CharField(max_length = 5000, null=True, default="rien")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    fonction = models.CharField(max_length = 100, null=True)
+    contact_recent = models.BooleanField(default=False,blank=True, null=True)
+    date_mail = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_mail =models.CharField(max_length = 5000, blank=True, null=True, default= " Bonjour {{titre}} {{last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avons effectué une mission pour vous il y a deux ans...")
+    date_reponse = models.DateField(default=datetime.date(1747, 1, 1),blank=True, null=True)
+    contenu_reponse =models.CharField(max_length = 5000, default="rien",blank=True, null=True)
     demarchage= models.CharField(
         max_length=40,
         choices=Demarchage.choices,
@@ -259,6 +261,16 @@ class Student(models.Model):
         GCC = 'GCC', 'GCC'
         VET = 'VET', 'VET'
         AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
     first_name = models.CharField(max_length = 200)
@@ -269,10 +281,11 @@ class Student(models.Model):
     ville = models.CharField(max_length = 300, null=True, default ="Champs-sur-Marne")
     code_postal=  models.CharField(max_length = 10, null=True, default = "77420")
     country = models.CharField(max_length = 100, null=True)
-    promotion = models.CharField(max_length = 200, blank=True, null=True)
+    promotion = models.CharField(max_length = 200, choices=Promotion.choices, default=Promotion.P026)
     departement = models.CharField(max_length=20, choices=Departement.choices, default=Departement.AUTRE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
     numero_ss = models.CharField(max_length=14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits'))], default="0")
+    remarque = models.TextField(blank=True, null=True, default="")
 
 
     def __str__(self):
@@ -354,6 +367,19 @@ class CustomUserManager(BaseUserManager):
 
 
 class Member(AbstractUser):
+    class Poste(models.TextChoices):
+        PRESIDENT = 'PRESIDENT', 'président'
+        VICE_PRESIDENT = 'VICE_PRESIDENT', 'vice-président'
+        TRESORIER = 'TRESORIER', 'Trésorier'
+        VICE_TRESORIER = 'VICE_TRESORIER', 'vice-trésorier'
+        SECRETAIRE_GENERALE = 'SECRETAIRE_GENERALE', 'secrétaire générale'
+        CHEF_DE_PROJET = 'CHEF_DE_PROJET', 'chef de projet'
+        DIRECTEUR_COMMERCIALE = 'DIRECTEUR_COMMERCIALE', 'directeur commerciale'
+        DIRECTEUR_PROJET = 'DIRECTEUR_PROJET', 'directeur projet'
+        DSI = 'DSI', 'DSI'
+        RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
+        DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
+        DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
@@ -363,8 +389,10 @@ class Member(AbstractUser):
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    president = models.BooleanField(default=True, verbose_name="président")
-    tresorier = models.BooleanField(default=True, verbose_name="tresorier")
+    
+    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.PRESIDENT)
+
+    
 
     def __str__(self):
         return self.student.__str__()
@@ -456,7 +484,7 @@ class Etude(models.Model):
     client_representant_legale= models.ForeignKey(Representant, on_delete=models.CASCADE,related_name='client_representant_legale')
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0)
-    tva_pourcentage = models.FloatField(default=20)
+    taux_tva = models.FloatField(default=20)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
@@ -531,10 +559,10 @@ class Etude(models.Model):
         return self.frais_dossier + self.montant_phase_HT()
 
     def TVA(self):
-        return (self.tva_pourcentage/100) * self.montant_HT_total()
+        return (self.taux_tva/100) * self.montant_HT_total()
 
     def total_ttc(self):
-        return (1+self.tva_pourcentage/100) * self.montant_HT_total()
+        return (1+self.taux_tva/100) * self.montant_HT_total()
 
     def charges_URSSAF(self):
         return self.nb_JEH() * self.je.base_urssaf * self.je.taux_cotisations / 100 if self.nb_JEH() else 0
@@ -663,16 +691,35 @@ class Facture(models.Model):
     TVA_per =  models.IntegerField(default=20)
     date_emission = models.DateField(null=True)
     date_echeance = models.DateField(null=True)
+    facture_pdf = models.FileField(upload_to='factures/pdfs/', null=True, blank=True)
+
+
+
+    def __str__(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        return f"{current_year_last_two_digits}e{self.numero_facture:02d}"
+    
+    
+    
+
     def fac_JEH(self):
         return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+    def fac_frais(self):
+        return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+
     def phases_fac(self):
         return Phase.objects.filter(etude=self.etude).order_by('numero')
     
-    
+    def montant_HT(self):
+        return self.fac_JEH()+self.fac_frais()
     def montant_TVA(self):
-        return self.TVA_per*(self.fac_JEH() + self.fac_frais)/100
+        return self.TVA_per*(self.montant_HT())/100
     def montant_TTC(self):
-        return (self.TVA_per+100)*(self.fac_JEH()+self.fac_frais)/100
+        return (self.TVA_per+100)*(self.montant_HT())/100
+
+    def je(self):
+        return self.etude.je
 
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude')
@@ -777,6 +824,7 @@ class AvenantRuptureConventionEtude(models.Model):
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.etude.numero}acc{self.numero}"
 
+
 class AvenantConventionEtude(models.Model):
     ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants_modification")
     numero = models.IntegerField()
@@ -788,7 +836,7 @@ class AvenantConventionEtude(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ace{self.numero}"
+        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero}"
     
     def save(self, *args, **kwargs):
         if self.numero is None :
@@ -852,7 +900,14 @@ class RDM(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm"
+        initials = self.eleve.first_name[0] + self.eleve.last_name[0]
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
+    
+    def ref(self):
+        current_year = timezone.now().year
+        current_year_last_two_digits = current_year % 100
+        initials = self.eleve.first_name[0] + self.eleve.last_name[0]
+        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
     
     def signe(self):
         return (self.date_signature is not None)
@@ -973,6 +1028,9 @@ class AssignationJEH(models.Model):
     def retribution_brute_totale(self):
         return self.phase.montant_HT_par_JEH * self.nombre_JEH * self.pourcentage_retribution/100
     
+    def mt_totale(self):
+        return self.phase.montant_HT_par_JEH * self.nombre_JEH 
+    
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude', None)
         numero_phase = kwargs.pop('numero_phase', None)
@@ -981,6 +1039,8 @@ class AssignationJEH(models.Model):
             phase = Phase.objects.get(etude=etude, numero=numero_phase)
             self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
+    
+    
 
 class Candidature(models.Model):
     eleve = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="candidatures")
@@ -1077,20 +1137,22 @@ class AjouterRemarqueRepresentant(forms.Form):
 
 class AddMember(forms.Form):
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
-    first_name = forms.CharField(max_length=200)
-    last_name = forms.CharField(max_length=200)
-    titre = forms.ChoiceField(choices=TITRE_CHOIX)
-    mail = forms.EmailField(max_length=200)
-    password = forms.CharField(widget=forms.PasswordInput)
-    password_confirmation = forms.CharField(widget=forms.PasswordInput) 
-    phone_number = forms.CharField(max_length=200)
-    adress = forms.CharField(max_length=300)
-    country = forms.CharField(max_length=100)
-    promotion = forms.CharField(max_length=200, required=False)
-    identifiant_je = forms.CharField(max_length = 50)
-    photo = forms.ImageField(required=False)
+    first_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}))
+    last_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
+    titre = forms.ChoiceField(choices=TITRE_CHOIX, widget=forms.Select(attrs={'class': 'form-control'}))
+    mail = forms.EmailField(max_length=200, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    password_confirmation = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}))
+    phone_number = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}))
+    adress = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address'}))
+    country = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}))
+    promotion = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Promotion'}))
+    identifiant_je = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'JE Identifier'}))
+    photo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
+
     def __str__(self):
         return "Ajouter un membre"
+
     def name(self):
         return "AddMember"
 
@@ -1108,16 +1170,15 @@ class AddMember(forms.Form):
             JE.objects.get(id=id)
         except JE.DoesNotExist:
             self.add_error('identifiant_je', "This JE identifier does not exist.")
-            raise ValidationError("This JE identifier does not exist.", code="JE")
+            raise forms.ValidationError("This JE identifier does not exist.", code="JE")
         except ValueError:
             self.add_error('identifiant_je', "Invalid UUID format.")
-            raise ValidationError("Invalid UUID format.", code="invalid_uuid")
+            raise forms.ValidationError("Invalid UUID format.", code="invalid_uuid")
 
     def save(self, commit=True, **kwargs):
-        # Create and save a new Student object using the form data
         je = JE.objects.get(id=uuid.UUID(self.cleaned_data['identifiant_je']))
         student = Student(
-            titre= self.cleaned_data['titre'],
+            titre=self.cleaned_data['titre'],
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
             mail=self.cleaned_data['mail'],
@@ -1141,22 +1202,30 @@ class AddStudent(forms.ModelForm):
     class Meta:
         model = Student
         exclude = ['je']
+
+    titre = forms.ChoiceField(choices=Student.TITRE_CHOIX)
+
     def __str__(self):
         return "Informations de l'étudiant"
+
     def name(self):
         return "AddStudent"
+
     def save(self, commit=True, **kwargs):
         student = super(AddStudent, self).save(commit=False)
-        student.je = kwargs['expediteur'].je
+        if 'expediteur' in kwargs:
+            student.je = kwargs['expediteur'].je
         if commit:
             student.save()
         return student
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
+
 
 class AddEtude(forms.ModelForm):
     class Meta:
@@ -1208,42 +1277,41 @@ class AddClient(forms.ModelForm):
     class Meta:
         model = Client
         exclude = ['je']
+        
     def __str__(self):
         return "Informations du client"
+    
     def name(self):
         return "AddClient"
+    
     def save(self, commit=True, **kwargs):
         client = super(AddClient, self).save(commit=False)
-        client.je = kwargs['expediteur'].je
+        if 'expediteur' in kwargs:
+            client.je = kwargs['expediteur'].je
         if commit:
             client.save()
         return client
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
+
     
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['client', 'contact_recent','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
-        widgets = {
-            'date_mail': forms.DateInput(
-                format=('%d/%m/%Y'),
-                attrs={'class': 'form-control', 
-                    'type': 'date'
-                    }),
-            'date_reponse': forms.DateInput(
-                format=('%d/%m/%Y'),
-                attrs={'class': 'form-control', 
-                    'type': 'date'
-                    }),
-        }
+        exclude = ['je','contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
     def __str__(self):
         return "Informations du représentant"
     def name(self):
         return "AddRepresentant"
+    def save(self, commit=True, **kwargs):
+        representant = super(AddRepresentant, self).save(commit=False)
+        if commit:
+            representant.save(**kwargs)
+        return representant
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1273,7 +1341,7 @@ class AddPhase(forms.ModelForm):
 class AddFacture(forms.ModelForm):
     class Meta:
         model = Facture
-        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance']
+        exclude = ['etude','facturé','numero_facture','fac_frais', 'montant_HT', 'fichier','date_emission','date_echeance','facture_pdf']
     def __str__(self):
         return "Information de la Facture"
     def name(self):
@@ -1327,10 +1395,33 @@ class SetParametresUtilisateur(forms.ModelForm):
 
 
 class Recrutement(forms.Form):
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
+    TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
+    titre= forms.ChoiceField( choices=TITRE_CHOIX)
     prenom = forms.CharField(max_length = 50)
     nom = forms.CharField(max_length = 50)
     email = forms.EmailField(max_length = 100)
+    promotion = forms.ChoiceField( choices=Promotion.choices, initial=Promotion.P026)
+    departement = forms.ChoiceField( choices=Departement.choices, initial=Departement.AUTRE)
     motivation = forms.CharField(max_length = 5000, widget=forms.Textarea)
+    
     def __str__(self):
         return "Formulaire de candidature"
     def __init__(self, *args, **kwargs):
@@ -1340,7 +1431,4 @@ class Recrutement(forms.Form):
             field.widget.attrs['class'] = 'form-control'
 
   
-
-
-    
 
