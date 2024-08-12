@@ -395,6 +395,14 @@ class Member(AbstractUser):
         except ObjectDoesNotExist:
             param = ParametresUtilisateur(membre=self)
             param.save()
+
+    def signature_mail(self):
+        role = "Responsable communication"
+        num_tel = ""
+        if self.student.phone_number is not None:
+            num_tel = self.student.phone_number
+
+        return role+" chez "+self.je.__str__()+"\n"+num_tel+"\n"
         
 
 
@@ -772,6 +780,8 @@ class AvenantRuptureConventionEtude(models.Model):
 class AvenantConventionEtude(models.Model):
     ce = models.ForeignKey('ConventionEtude', on_delete=models.CASCADE, related_name="avenants_modification")
     numero = models.IntegerField()
+    ancien_frais_dossier = models.FloatField(blank=True, null=True)
+    nouveau_frais_dossier = models.FloatField(blank=True, null=True)
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
 
@@ -786,6 +796,18 @@ class AvenantConventionEtude(models.Model):
             self.numero = nb_avenants + 1
         super(AvenantConventionEtude, self).save(*args, **kwargs)
 
+    def modif_budget(self):
+        modifs_jeh = self.phases_modif_jeh
+        modif_frais_dossier = False
+        if self.ancien_frais_dossier is not None and self.nouveau_frais_dossier is not None:
+            modif_frais_dossier = self.ancien_frais_dossier != self.nouveau_frais_dossier
+        return modifs_jeh.exists() or modif_frais_dossier
+    
+    def modif_planning(self):
+        modifs_duree = self.phases_modif_duree
+        suppressions = self.phases_supprimees
+        return modifs_duree.exists() or suppressions.exists()
+
 
 class SuppressionPhase(models.Model):
     avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_supprimees")
@@ -794,16 +816,19 @@ class SuppressionPhase(models.Model):
 class ModificationDureePhase(models.Model):
     avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_duree")
     phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_duree")
+    ancienne_duree = models.IntegerField()
     nouvelle_duree = models.IntegerField()
 
 class ModificationDebutPhase(models.Model):
     avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_debut")
     phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_debut")
+    ancien_debut = models.IntegerField()
     nouveau_debut = models.IntegerField()
 
 class ModificationJEHPhase(models.Model):
     avenant_ce = models.ForeignKey('AvenantConventionEtude', on_delete=models.CASCADE, related_name="phases_modif_jeh")
     phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_jeh")
+    ancien_nombre_JEH = models.IntegerField()
     nouveau_nombre_JEH = models.IntegerField()
 
 
@@ -857,6 +882,7 @@ class AvenantRDM(models.Model):
 class ModificationPhaseRDM(models.Model):
     avenant_rdm = models.ForeignKey('AvenantRDM', on_delete=models.CASCADE, related_name="phases_modif_jeh")
     phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="modif_jeh_rdm")
+    ancien_nombre_JEH = models.IntegerField()
     nouveau_nombre_JEH = models.IntegerField()
 
 

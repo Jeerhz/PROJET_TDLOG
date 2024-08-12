@@ -328,6 +328,19 @@
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
+            <div class="toast-container position-fixed w-100 top-0 start-0 p-3 justify-content-center" style="z-index:1050;">
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" id="alert">
+                    <div class="toast-header">
+                    <strong class="mr-auto">Formulaire</strong>
+                    <small>maintenant</small>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="toast-body" id="alert-content">
+                    </div>
+                </div>
+              </div>
 
             <!-- Main Content -->
             <div id="content">
@@ -607,11 +620,6 @@
             <!-- Fin formulaire BV onglet Eleve -->
 
             <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
-                <div class="alert alert-info alert-dismissible fade show" style="display: none;" role="alert" id="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                  </div>
                 <!-- Card Shadow for Etude -->
                 {% if modelName == "Etude" %}
                 <div class="card shadow mb-4">
@@ -1002,7 +1010,15 @@
                                     <div class="col-12 mb-4">
                                         <!-- Card -->
                                         <div class="card-header d-flex justify-content-between align-items-center">
-                                            <small>Phase {{ phase.numero }}</small>
+                                            {% if phase.modif_duree.exists or phase.modif_debut.exists or phase.modif_jeh.exists %}
+                                            <span class="text-warning">Phase {{ phase.numero }}</span>
+                                            <span><i class="fas fa-exclamation-circle fa-2x text-warning mr-2"></i></span>
+                                            {% elif phase.suppression.exists %}
+                                            <span class="text-danger">Phase {{ phase.numero }}</span>
+                                            <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
+                                            {% else %}
+                                            <span>Phase {{ phase.numero }}</span>
+                                            {% endif %}
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover">
@@ -1088,6 +1104,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <!-- Fin formulaire assignation JEH-->
                                                 </div>
                                             </div>
                                         </div>
@@ -1320,6 +1337,7 @@
                                                                         <br>
                                                                         <h6>Général</h6>
                                                                         <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nouveau frais dossier:</strong> <input type="number" name="frais_dossier" class="form-control" value="{{etude.frais_dossier}}"></li>
                                                                             <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero:</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
                                                                             <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Date signature:</strong> <input type="date" name="date_signature" class="form-control"></li>
                                                                             <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque:</strong> <input type="text" name="remarque" class="form-control" value=""></li>
@@ -1508,8 +1526,9 @@
                                                         {% endfor %}                             
                                                     </dl>
                                                 </div>
-                                            <div class="card-footer text-center">
-                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                <div class="card-footer text-center">
+                                                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -1805,7 +1824,7 @@
                                 </ul>
                             {% endif %} 
                             </div>
-                            <!-- Bouton et formulaire pour ajouter un avenant CE -->
+                            <!-- Bouton et formulaire pour ajouter représentant -->
                             <a class="btn btn-primary float-right" data-toggle="modal" data-target="#representantModal"><i class="fas fa-plus"></i>  Ajout représentant</a>
                             <div class="modal fade" id="representantModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelRepresentant" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
@@ -2180,9 +2199,10 @@
     <script>
         function showAlert(message) {
             alert_div = document.getElementById("alert");
-            alert_div.style.display= "none";
-            alert_div.textContent = message;
-            alert_div.style.display = "block";
+            content_div = document.getElementById("alert-content");
+            content_div.textContent = message;
+            const toast = new bootstrap.Toast(alert_div);
+            toast.show();
         }
         function generer(event) {
                 event.preventDefault(); // Prevent the default action (i.e., navigation)
