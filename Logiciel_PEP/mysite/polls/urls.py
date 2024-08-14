@@ -58,6 +58,8 @@ urlpatterns = [
     path("send_mail_demarchage", views.send_mail_demarchage, name="send_mail_demarchage"),
     path("factures/", views.factures, name="factures"),
     path("BVs/", views.BVs, name="BVs"),
+    path("create_mail_template/", views.create_mail_template, name="create_mail_template"),
+    path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
 
 
 

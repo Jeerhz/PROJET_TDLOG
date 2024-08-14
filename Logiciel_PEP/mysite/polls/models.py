@@ -1108,6 +1108,28 @@ class Notification(models.Model):
                 send_mail("Notification SYLEX", self.description, "titoduc1905@gmail.com", [user.email], 
                         fail_silently=False, 
                         connection=connection)
+                
+class CustomMailTemplate(models.Model):
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, related_name="mail_templates")
+    message = models.TextField(max_length=20000)
+    numero = models.IntegerField()
+
+    def __str__(self):
+        return "Template "+str(self.numero)
+    
+class CreateMailTemplate(forms.ModelForm):
+    class Meta:
+        model = CustomMailTemplate
+        exclude = ['je']
+    
+    def __str__(self):
+        return "Nouveau template"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
 
 class AddMessage(forms.ModelForm):
     class Meta:

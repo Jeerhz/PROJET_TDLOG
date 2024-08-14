@@ -16,13 +16,14 @@ from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect, get_object_or_404
-from django.core.mail import send_mail, get_connection
+from django.core.mail import send_mail, get_connection, EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
 from django.urls import reverse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
@@ -77,6 +78,8 @@ from .models import (
     ModificationJEHPhase,
     PV,
     AjouterRemarqueRepresentant,
+    CustomMailTemplate,
+    CreateMailTemplate,
 )
 
 def my_view(request):
@@ -240,6 +243,9 @@ def demarchage(request):
         representants= Representant.objects.filter(client__je=je)
         clients = Client.objects.filter(je=je)
         secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
+        mail_templates = je.mail_templates
+        mail_templates_ids = list(mail_templates.values_list('id', flat=True))
+        mail_template_contents = list(mail_templates.values_list('message', flat=True))
         context = {
             "liste_messages": liste_messages,
             "message_count": message_count,
@@ -248,6 +254,9 @@ def demarchage(request):
             'representants': representants,
             'clients':clients,
             'secteurs':secteurs,
+            'mail_template_form': CreateMailTemplate(),
+            'mail_template_ids' : mail_templates_ids,
+            'mail_template_contents' : mail_template_contents,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -1832,17 +1841,19 @@ def send_mail_demarchage(request):
                     password=password,
                     use_tls=True,)
                 subject = request.POST['subject']
-                message = request.POST['message']+"\n"+"\n"+request.POST['name']+"\n"+request.POST['signature']
+                print(request.POST['message'])
+                html_message = loader.render_to_string('polls/mail_template.html', {'message': request.POST['message'], 'name': request.POST['name'], 'signature': request.POST['signature']})
                 from_email = conf_settings.EMAIL_USERNAME
                 recipient_list = [request.POST['destinataire']]
-                send_mail(subject, message, from_email, recipient_list, 
-                        fail_silently=False, 
-                        connection=connection)
+                mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=recipient_list, connection=connection)
+                mail.content_subtype = 'html'
+                mail.send()
                 return redirect('demarchage')
             except:
                 context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
                 template = loader.get_template("polls/page_error.html")
         else :
+            context['error_message'] = "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
             template = loader.get_template("polls/page_error.html")
     else:
         template = loader.get_template("polls/login.html")
@@ -2082,5 +2093,90 @@ def BVs(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+def create_mail_template(request):
+    if request.user.is_authenticated:
+        if request.method=='POST':
+
+            try:
+                message = request.POST['message']
+                je = request.user.je
+                numero = request.POST.get('numero', None)
+                numero = numero if numero else (max(je.mail_templates.values_list('numero', flat=True))+1)
+                new_mail_template = CustomMailTemplate(je=je, message=message, numero=numero)
+                new_mail_template.save()
+                return redirect('demarchage')
+            except:
+                liste_messages = Message.objects.filter(
+                    destinataire=request.user,
+                    read=False,
+                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                ).order_by("date")
+                message_count = liste_messages.count()
+                liste_messages = liste_messages[:3]
+                all_notifications = request.user.notifications.order_by("-date_effet")
+                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_count = len(notification_list)
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "La création du template a échoué.", "notification_list":notification_list, "notification_count":notification_count}
+        else:
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def delete_mail_template(request):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                template_id = request.POST['id_template']
+                template = CustomMailTemplate.objects.get(id=template_id)
+                if(template.je != request.user.je):
+                    raise ValueError('Le template sélectionné n\'a pas été trouvé.')
+                template.delete()
+                return redirect('demarchage')
+            except:
+                liste_messages = Message.objects.filter(
+                    destinataire=request.user,
+                    read=False,
+                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                ).order_by("date")
+                message_count = liste_messages.count()
+                liste_messages = liste_messages[:3]
+                all_notifications = request.user.notifications.order_by("-date_effet")
+                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_count = len(notification_list)
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le template sélectionné n'a pas été trouvé.", "notification_list":notification_list, "notification_count":notification_count}
+                return HttpResponse(template.render(context, request))
+        else :
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+            return HttpResponse(template.render(context, request))
+
+    else:
+        return redirect('login')  # Adjust as needed
 
 
