@@ -2,11 +2,12 @@ import json
 import os
 import openpyxl
 import pytz #pour CA dynamique
-from docxtpl import DocxTemplate
-from docx.shared import Inches
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 from jinja2 import Environment
 import math
-
+from html2image import Html2Image
+import time as time1
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -1231,7 +1232,8 @@ def editer_devis(request, iD):
         #try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
-            template = DocxTemplate("polls/templates/polls/Devis_026.docx")
+            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
+            template = DocxTemplate(template_path)
             model = Devis
             if instance.devis_edited() :
                 devis = instance.devis
@@ -1261,11 +1263,143 @@ def editer_devis(request, iD):
                     fac_acom = facture
                 elif facture.type_facture=="SOLDE":
                     fac_solde = facture
-            context = {"president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
-                       "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,
-                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde}
-            # Load the template
+        
+
+            css_planning = """
+            .table_planning {
+                background-color:white;
+                border-collapse: collapse;
+                margin: 20px;
+                text-align: left;
+                border: 2px solid black;
+                width: 80%;
+            }
+
+            .th_planning, .td_planning {
+                padding: 8px;
+                border-top: 1px solid #ddd;
+                position: relative;
+                font-size: 20px;
+            }
+            .bar_container_plan {
+                position: relative;
+                height: 30px;
+            }
+
+            .bar_plan {
+                height: 100%;
+                background-color: rgb(48, 56, 84);
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+
+            .bar_plan .label_plan {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                font-size: 20px;
+                transform: translate(-50%, -50%);
+                color: white;
+            }
+
+            .semaines_plan {
+                display: flex;
+                justify-content: space-between;
+                font-size: 20px;
+                color: #777;
+                margin-bottom: 0px;
+            }
+            .semaines_plan span {
+                flex: 1; /* Equal width for each span */
+                text-align: right; /* Center text within each span */
+            }
+            /* FIN PLANNING */
+            """
+            html_template = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Invoice</title>
+                <style>
+                    {css}
+                </style>
+            </head>
+            <body style="background-color:white;">
+                <table class="table_planning">
+                    <thead>
+                        <tr>
+                            <th class="th_planning" style="font-size: 30px;">{debut} - {fin}</th>
+                            <th class="th_planning"></th>
+                            <th class="th_planning">
+                                <div class="semaines_plan">
+                                    {semaines}
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+            """
+
             
+
+            semaines_html = ""
+            for i in range(instance.duree_semaine()):
+                semaines_html += f"<span>{i + 1}</span>"
+
+            rows_html = ""
+            for phase in phases:
+                width = (phase.duree_semaine / instance.duree_semaine()) * 100
+                left = (phase.debut_relatif / instance.duree_semaine()) * 100
+                semaine_label = "semaine" if phase.duree_semaine == 1 else "semaines"
+                JEH_label = "JAH" if phase.nb_JEH == 1 else "JEHs"
+                row = f"""
+                <tr>
+                    <td class='td_planning'>Phase {phase.numero}</td>
+                    <td class='td_planning' style='text-align: center;'>{phase.nb_JEH} {JEH_label}</td>
+                    <td class='td_planning' style='width: 70%;'>
+                        <div class='bar_container_plan'>
+                            <div class='bar_plan' style='width: {width}%; left: {left}%;'>
+                                <div class='label_plan'>{phase.duree_semaine} {semaine_label}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                """
+                rows_html += row
+            
+            
+            final_html = html_template.format(debut=instance.debut, fin=instance.fin(), rows=rows_html, css=css_planning, semaines=semaines_html)
+            
+
+
+            output_dir = 'polls/static/polls/img'
+            os.makedirs(output_dir, exist_ok=True)
+            os.chdir(output_dir)
+            filename = 'tab_planning.png'
+            time1.sleep(1)
+            hti = Html2Image()
+            hti.size = (2000, 100+ 50*instance.nb_phases())
+            hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
+            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            time1.sleep(1)
+            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            with open(image_path, "rb") as img_file:
+                image_data = img_file.read()
+
+            image_stream = BytesIO(image_data)
+            image = InlineImage(template, image_stream, width=Mm(200))
+            time1.sleep(1)
+            context = {"planning_pre":image, "president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
+                       "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,
+                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures}
+            
+
             env = Environment()
 
             env.filters['FormatNombres'] = format_nombres
