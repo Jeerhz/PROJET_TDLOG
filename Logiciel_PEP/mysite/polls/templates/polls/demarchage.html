@@ -475,7 +475,7 @@
                     <div class="row mt-4 mb-4 justify-content-center">
                         <div class="col-9">
                             <div class="card shadow">
-                                <div class="card-header">
+                                <div class="card-header"> 
                                     <h6 class="card-title">Liste templates</h6>
                                     <button class="btn btn-primary float-right" data-toggle="modal" data-target="#mailTemplateModal"><i class="fas fa-plus mr-2"></i>Créer nouveau template</button>
                                 </div>
@@ -595,6 +595,63 @@
                                                         <button type="submit" class="btn btn-primary">supprimer</button>
                                                     </form>
                                                 </td>
+                                                <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
+                                                                <div class="modal-body p-4">
+                                                                    <div class="row">
+                                                                        {% if request.user.je.mail_templates.exists %}
+                                                                            {% for template in request.user.je.mail_templates.all %}
+                                                                                <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
+                                                                            {% endfor %}
+                                                                        {% else %}
+                                                                        <p>Aucun template</p>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                    <hr>
+                                                                    {% csrf_token %}
+                                                                    <div class="row">
+                                                                        <div class="input-group">
+                                                                            <div class="input-group-prepend">
+                                                                                <span class="input-group-text">Destinataire</span>
+                                                                            </div>
+                                                                            <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
+                                                                        </div>
+                                                                        <div class="input-group">
+                                                                            <div class="input-group-prepend">
+                                                                                <span class="input-group-text">Objet</span>
+                                                                            </div>
+                                                                            <input type="text" class="form-control" name="subject" value="Mission">
+                                                                        </div>
+                                                                    </div>
+                                                                    <hr>
+                                                                    <div class="row">
+                                                                        <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
+                                                                    </div>
+                                                                    <hr>
+                                                                    <div class="row">
+                                                                        <div class="col-6">
+                                                                            <strong>Signature</strong>
+                                                                            <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
+                                                                            <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </tr>
                                         {% endif %}
                                         {% endfor %} 
@@ -647,6 +704,65 @@
 
                                                 </td>
                                             </tr>
+                                            <!-- Visualisation mail -->
+            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
+                            <div class="modal-body p-4">
+                                <div class="row">
+                                    {% if request.user.je.mail_templates.exists %}
+                                        {% for template in request.user.je.mail_templates.all %}
+                                            <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
+                                        {% endfor %}
+                                    {% else %}
+                                    <p>Aucun template</p>
+                                    {% endif %}
+                                </div>
+                                <hr>
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Destinataire</span>
+                                        </div>
+                                        <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Objet</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="subject" value="Mission">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Signature</strong>
+                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
+                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin formulaire envoi mail -->
                                             {% endif %}
                                         {% endfor %}
                                     {% endfor %}
@@ -699,30 +815,7 @@
                                                     <div style="font-weight: 300;">{{ repr.remarque }}</div>
                                                 </td>
                                             </tr>
-                                        {% endif %}
-                                        {% endfor %} 
-                                        {% endif %}
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                {% endfor %}
-                                
-                                    
-                                
-                                    
-                            </div>
-                        </div>                                                
-                    </div>
-                    <!--End Row-->
-
-                    
-                    
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-            <!-- Visualisation mail -->
+                                            <!-- Visualisation mail -->
             <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -732,7 +825,7 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="{% url 'send_mail_demarchage' %}" method="post">
+                        <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
                             <div class="modal-body p-4">
                                 <div class="row">
                                     {% if request.user.je.mail_templates.exists %}
@@ -781,6 +874,30 @@
                 </div>
             </div>
             <!-- Fin formulaire envoi mail -->
+                                        {% endif %}
+                                        {% endfor %} 
+                                        {% endif %}
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endfor %}
+                                
+                                    
+                                
+                                    
+                            </div>
+                        </div>                                                
+                    </div>
+                    <!--End Row-->
+
+                    
+                    
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+            
 
             <!-- Ajout template mail -->
             <div class="modal fade" id="mailTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTMail" aria-hidden="true">

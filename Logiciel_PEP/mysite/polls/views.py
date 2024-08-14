@@ -32,7 +32,7 @@ locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings as conf_settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres, assignation
+from .templatetags.format_duration import format_nombres, chiffre_lettres, en_lettres, assignation
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -1032,7 +1032,7 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1043,17 +1043,29 @@ def editer_convention(request, iD):
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
             date = timezone.now()
             annee = date.strftime('%Y')
+            nb_JEH=instance.nb_JEH()
+            tot_HT_phase = format_nombres(instance.montant_phase_HT())
+            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
+            fac_acom=factures.first()
+            fac_solde=factures.first()
+            for facture in factures:
+                if facture.type_facture=="ACOMPTE":
+                    fac_acom = facture
+                elif facture.type_facture=="SOLDE":
+                    fac_solde = facture
 
+            #acompte_HT= format_nombres(fac_acom.montant_HT())
+            #solde_HT= format_nombres(fac_solde.montant_HT())
 
-
-
-
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
+                       "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
+                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde}
             # Load the template
 
             env = Environment()
 
             env.filters['FormatNombres'] = format_nombres
+            env.filters['ChiffreLettre'] = chiffre_lettres
 
             
 
@@ -1093,7 +1105,7 @@ def editer_pv(request, iD):
             template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
             
 
-            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1153,7 +1165,7 @@ def editer_rdm(request, id_etude, id_eleve):
             client= etude.client
             assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
-            president = Member.objects.filter(je=je,  poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
             date_fin= timezone.now().date()
             for assignation in assignations:
@@ -1237,16 +1249,33 @@ def editer_devis(request, iD):
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
             date_creation= date.strftime('%d %B %Y')
-
-
-            context = {"etude": instance, "devis": devis, "client": client, "responsable":responsable, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,"ref_m":ref_m,"ref_d":ref_d}
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            phases= Phase.objects.filter(etude=instance)
+            nb_JEH=instance.nb_JEH()
+            tot_HT_phase = format_nombres(instance.montant_phase_HT())
+            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
+            fac_acom=factures.first()
+            fac_solde=factures.first()
+            for facture in factures:
+                if facture.type_facture=="ACOMPTE":
+                    fac_acom = facture
+                elif facture.type_facture=="SOLDE":
+                    fac_solde = facture
+            context = {"president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
+                       "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,
+                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde}
             # Load the template
+            
+            env = Environment()
+
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+        
+            
 
             # Render the document
-            template.render(context)
-
-
-            # Create a temporary in-memory file
+            template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
@@ -1268,14 +1297,14 @@ def editer_devis(request, iD):
 
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
-        try:
+        #try:
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce= instance.ce
             etude = ce.etude
             client = etude.client
             representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
 
-            president = Member.objects.filter(je=etude.je,  poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             ref_m = etude.ref()
 
             if etude.fin():
@@ -1318,7 +1347,7 @@ def editer_avenant_ce(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except :
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1808,7 +1837,7 @@ def remarque_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-def send_mail_demarchage(request):
+def send_mail_demarchage(request,iD):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
                 destinataire=request.user,
@@ -1848,6 +1877,10 @@ def send_mail_demarchage(request):
                 mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=recipient_list, connection=connection)
                 mail.content_subtype = 'html'
                 mail.send()
+                #representant = Representant.objects.get(id=iD)
+                #representant.contenu_mail=request.POST['message']
+                #representant.demarchage="ATTENTE_REPONSE"
+                #representant.save()
                 return redirect('demarchage')
             except:
                 context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
@@ -1986,11 +2019,10 @@ def ajouter_avenant_ce(request, id_etude):
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
         if request.method == 'POST':
-            try:
+            #try:
                 etude = Etude.objects.get(id=id_etude)
                 signature = None
-                if request.POST['date_signature'] != '':
-                    signature = request.POST['date_signature']
+                
                 nouveau_frais_dossier = request.POST['frais_dossier']              
                 new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, remarque=request.POST['remarque'])
                 if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
@@ -2020,7 +2052,7 @@ def ajouter_avenant_ce(request, id_etude):
                         phase.nb_JEH = n_jeh
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
                 return redirect('details', modelName="Etude", iD=id_etude)
-            except:
+            #except:
                 template = loader.get_template("polls/page_error.html")
                 context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
         else :
