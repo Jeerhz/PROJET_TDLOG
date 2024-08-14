@@ -422,10 +422,18 @@ class Member(AbstractUser):
         try:
             param = self.parametres
         except ObjectDoesNotExist:
-            param = ParametresUtilisateur(membre=self)
+            role = self.poste
+            num_tel = ""
+            if self.student.phone_number is not None:
+                num_tel = "Tel: "+self.student.phone_number
+
+            signature = role+" chez "+self.je.__str__()+"\n"+num_tel+"\n"
+            param = ParametresUtilisateur(membre=self, signature=signature)
             param.save()
 
     def signature_mail(self):
+        if self.parametres.signature:
+            return self.parametres.signature
         role = self.poste
         num_tel = ""
         if self.student.phone_number is not None:
@@ -447,6 +455,7 @@ class ParametresUtilisateur(models.Model):
     param_col_etude_montant_HT = models.BooleanField(default=False, verbose_name="Montant HT")
     param_col_etude_remarque = models.BooleanField(default=True, verbose_name="Remarque")
     param_col_etude_avancement = models.BooleanField(default=True, verbose_name="Avancement")
+    signature = models.TextField(max_length=200, default="", verbose_name="Signature Mail")
 
     def __str__(self):
         return "Paramètres "+self.membre.__str__()
@@ -1431,11 +1440,14 @@ class SetParametresUtilisateur(forms.ModelForm):
         
     def col_etude(self):
         return ['param_col_etude_numero', 'param_col_etude_titre', 'param_col_etude_client', 'param_col_etude_responsable', 'param_col_etude_montant_HT', 'param_col_etude_avancement']
+    def demarchage(self):
+        return ['signature']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'custom-control-input'
+        self.fields['signature'].widget.attrs['class'] = 'form-control'
 
 
 class Recrutement(forms.Form):
