@@ -18,11 +18,13 @@ from django.core.mail import send_mail, get_connection
 from django.conf import settings
 from datetime import date
 from datetime import timedelta
+import os
 
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
 DOC_STORAGE = "polls/"
+IMAGE_UPLOAD = os.path.join(settings.BASE_DIR, '/polls/static/polls/img')
 
     
 class JE(models.Model):
@@ -386,7 +388,7 @@ class Member(AbstractUser):
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
     titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
-    photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
+    photo = models.ImageField(upload_to='static/polls/img/', default='/static/polls/img/undraw_profile.svg') #local
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -1241,10 +1243,10 @@ class AddMember(forms.Form):
         )
         student.save()
         new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
-        if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
+        if 'photo' in self.cleaned_data:
             new_member.photo = self.cleaned_data['photo']
-        if 'poste' in self.cleaned_data and self.cleaned_data['poste']:
-            new_member.Poste = self.cleaned_data['poste']
+        if 'poste' in self.cleaned_data:
+            new_member.poste = self.cleaned_data['poste']
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member

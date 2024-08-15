@@ -990,7 +990,7 @@ def register(request):
         context = {"form": form}
         template = loader.get_template("polls/register.html")
     else:
-        fetchform = AddMember(request.POST)
+        fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
             new_member = fetchform.save()
             login(request, new_member)

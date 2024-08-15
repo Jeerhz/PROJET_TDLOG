@@ -297,7 +297,7 @@
                                 {% if liste_messages.0 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
+                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -313,7 +313,7 @@
                                 {% if liste_messages.1 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
+                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
                                             alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
@@ -327,7 +327,7 @@
                                 {% if liste_messages.2 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
+                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
                                             alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
@@ -341,7 +341,7 @@
                                 {% if liste_messages.3 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
+                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -363,7 +363,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{% static 'polls/img/undraw_profile.svg' %}">
+                                    src="{{ request.user.photo.url }}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -404,7 +404,7 @@
                                 {% for message in request.user.destinataire.all %}
                                 <li class="list-group-item">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ message.expediteur.photo }}" alt="Profile" style="width: 40px; height: 40px; margin-right: 15px;">
+                                        <img src="{{ message.expediteur.photo.url }}" alt="Profile" style="width: 50px; height: 50px; margin-right: 15px;">
                                         <div class="d-flex flex-column flex-grow-1">
                                             <div class="d-flex justify-content-between">
                                                 <h5 class="mb-1">De: {{message.expediteur}}</h5>
@@ -417,6 +417,7 @@
                                 {% endfor %}
                             </ul>
                             <div class="card-footer text-right">
+                                <a class="btn btn-primary float-left" href="{% url 'input' modelName='Message' iD=0 %}"><i class="fas fa-plus mr-2"></i>Nouveau message</a>
                                 <a href="#" class="text-primary">Voir tous les messages</a>
                             </div>
                         </div>
