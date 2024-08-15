@@ -1938,6 +1938,7 @@ def modifier_etude(request, iD):
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
+            
 
         # 'fin' should not be updated, as it's set to readonly in the form
 

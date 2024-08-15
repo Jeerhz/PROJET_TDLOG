@@ -1313,7 +1313,7 @@ class AddStudent(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
-            if field_name=="poste":
+            if field_name=='poste':
                 member = self.is_member()
                 member.poste= self.fields[field_name]
                 member.save()
