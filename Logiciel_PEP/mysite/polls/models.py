@@ -291,6 +291,9 @@ class Student(models.Model):
     def __str__(self):
         return self.first_name+' '+self.last_name
     
+    def is_member(self):
+        return getattr(self, 'member', None)
+    
     def get_display_dict(self):
         return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion, "Departement":self.departement}
 
@@ -383,7 +386,7 @@ class Member(AbstractUser):
         INDEFINI = 'INDEFINI', 'Indéfini'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
-    student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
+    student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True,related_name='member')
     titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
     photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
@@ -391,7 +394,7 @@ class Member(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
-    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.INDEFINI, blank=True, null=True)
+    poste = models.CharField(max_length=40, choices=Poste.choices,  blank=True, null=True)
 
     
 
@@ -427,7 +430,7 @@ class Member(AbstractUser):
             if self.student.phone_number is not None:
                 num_tel = "Tel: "+self.student.phone_number
 
-            signature = role+" chez "+self.je.__str__()+"\n"+num_tel+"\n"
+            signature = "role" +" chez "+self.je.__str__()+"\n"+num_tel+"\n"
             param = ParametresUtilisateur(membre=self, signature=signature)
             param.save()
 
@@ -1182,6 +1185,24 @@ class AddMember(forms.Form):
         RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
         DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
         DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
     first_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}))
     last_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
     titre = forms.ChoiceField(choices=TITRE_CHOIX, widget=forms.Select(attrs={'class': 'form-control'}))
@@ -1191,12 +1212,8 @@ class AddMember(forms.Form):
     phone_number = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}))
     adress = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address'}))
     country = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}))
-    promotion = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Promotion'}))
-    poste = forms.ChoiceField(
-        choices=Poste.choices,
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Poste'})
-    )
+    promotion = forms.ChoiceField(choices=Promotion.choices, required=False, widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Promo'}))
+    poste = forms.ChoiceField(choices=Poste.choices,required=False, widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Poste'}))
     identifiant_je = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'JE Identifier'}))
 
     photo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
@@ -1237,10 +1254,11 @@ class AddMember(forms.Form):
             adress=self.cleaned_data['adress'],
             country=self.cleaned_data['country'],
             promotion=self.cleaned_data['promotion'],
+            
             je=je
         )
         student.save()
-        new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
+        new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'],poste=self.cleaned_data['poste'])
         if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
             new_member.photo = self.cleaned_data['photo']
         if 'poste' in self.cleaned_data and self.cleaned_data['poste']:
@@ -1275,6 +1293,10 @@ class AddStudent(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
+            if field_name=="poste":
+                member = self.is_member()
+                member.poste= self.fields[field_name]
+                member.save()
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
 
