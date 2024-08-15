@@ -934,12 +934,12 @@
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    <td  > {{facture.type_facture}}  </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    <td  > {{facture.type_facture}}  </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                       
@@ -1164,7 +1164,7 @@
                                             <tbody>
                                                 {% for phase in phases %}
                                                 <tr>
-                                                    <td class="td_planning">Phase {{phase.numero}} : {{phase.titre}}</td>
+                                                    <td class="td_planning">Phase {{phase.numero}} </td>
                                                     <td class="td_planning" style="text-align: center;">{{phase.nb_JEH}} JEHs</td>
                                                     <td class="td_planning" style="width: 70%;">
                                                         <div class="bar_container_plan" >
@@ -1333,7 +1333,7 @@
                                                     </table>
                                                             
                                                     <hr>
-                                                    {% endif %}
+                                                    {% endif %} 
                                                     <p class="card-text">Ajouter un avenant à la convention d'étude</p>
                                                     <!-- Bouton et formulaire pour ajouter un avenant CE -->
                                                     <a class="btn btn-primary" data-toggle="modal" data-target="#avenantCEModal">Ajout avenant CE</a>
@@ -1363,7 +1363,6 @@
                                                                         <ul class="list-group list-group-flush">
                                                                             <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nouveau frais dossier:</strong> <input type="number" name="frais_dossier" class="form-control" value="{{etude.frais_dossier}}"></li>
                                                                             <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero:</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Date signature:</strong> <input type="date" name="date_signature" class="form-control"></li>
                                                                             <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque:</strong> <input type="text" name="remarque" class="form-control" value=""></li>
                                                                         </ul>
                                                                     </div>
@@ -1520,7 +1519,7 @@
                                                             {% if eleve|assignation:etude %}
                                                             {% for assignation in eleve|assignation:etude %}
                                                             <tr>
-                                                                <td class="td_planning">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
+                                                                <td class="td_planning">Phase {{assignation.phase.numero}} </td>
                                                                 <td class="td_planning" style="text-align: center;">{{assignation.nombre_JEH}} JEHs</td>
                                                                 <td class="td_planning" style="width: 70%;">
                                                                     <div class="bar_container_plan" >

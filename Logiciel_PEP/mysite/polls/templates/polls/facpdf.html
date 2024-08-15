@@ -351,10 +351,6 @@
         <div class="page-wrapper">
             <button type="button" class=" bouton_pdf" id="download-button">Télécharger</button>
         </div>
-        <h1 class="text-center">Download HTML as PDF</h1>
-        <div class="text-center">
-            <a href="{% url 'generate_pdf' %}" class="btn btn-primary">Download as PDF</a>
-        </div>
         
         
         <div id = "invoice" class="container">
@@ -414,7 +410,7 @@
             <table class="tab_TTC">
                 <tr>
                     <td class="align-left gras">Total TTC net à payer</td>
-                    <td class="align-right gras">{{facture.montant_TTC|FormatNombres}} EUR </td>
+                    <td contenteditable="True" class="align-right gras">{{facture.montant_TTC|FormatNombres}} EUR </td>
                 </tr>
             </table>
             <div class ="montant_chiffres align-left font_light font12 ">
@@ -424,7 +420,7 @@
             
             
             
-            <div class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span >{{facture.type_facture}} concernant l'étude</span> <span contenteditable="true"> {{etude.id|RefMission}} </span> <span >en référence à la {{etude.type_convention}} {{etude.id|RefMission}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{etude.bdc_red}} {% endif %} </span> </div>
+            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.id|RefMission}} </span > <span >en référence à la {{etude.type_convention}} {{etude.id|RefMission}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{etude.bdc_red}} {% endif %} </span> </div>
             <table class="table_prestation">
                 <thead class = "space-above">
                     <tr>
@@ -443,8 +439,8 @@
                     {% if facture.phases_fac %}
                         {% for phase in facture.phases_fac %}
                         <tr class="{% cycle 'even' 'odd' %}">
-                            <td class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
-                            <td class="align-right" contenteditable="true">{{facture|montantFacturePhase:phase|FormatNombres}}</td>
+                            <td contenteditable="True" class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
+                            <td  class="align-right" contenteditable="true">{{facture|montantFacturePhase:phase|FormatNombres}}</td>
                         </tr>
                         {% endfor %}
                     {% endif %}

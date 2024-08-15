@@ -16,7 +16,7 @@ from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.conf import settings
-from datetime import date
+from datetime import date 
 from datetime import timedelta
 import os
 

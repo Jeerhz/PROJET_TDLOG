@@ -102,7 +102,7 @@ def ref_mission(numero):
     an =annee[-2:]
     return f"{an}e{numero:02d}"
 
-@register.filter(name='RefFacture')
+@register.filter(name='RefFacture') 
 def ref_facture(numero):
     date = datetime.now()
     annee = str(date.year)
