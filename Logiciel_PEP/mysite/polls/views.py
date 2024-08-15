@@ -622,7 +622,7 @@ def input(request, modelName, iD):
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
-            fetchform = model.retrieveForm(request.POST)
+            fetchform = model.retrieveForm(request.POST, files=request.FILES)
             if fetchform.is_valid():
                 if iD == 0:
                     fetchform.save(commit=True, expediteur=request.user)
