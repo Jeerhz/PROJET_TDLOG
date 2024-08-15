@@ -18,11 +18,13 @@ from django.core.mail import send_mail, get_connection
 from django.conf import settings
 from datetime import date 
 from datetime import timedelta
+import os
 
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
 DOC_STORAGE = "polls/"
+IMAGE_UPLOAD = os.path.join(settings.BASE_DIR, '/polls/static/polls/img')
 
     
 class JE(models.Model):
@@ -37,7 +39,7 @@ class JE(models.Model):
     IBAN = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     BIC = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     check_order = models.CharField(max_length=50)
-    logo = models.ImageField(storage=IMAGE_STORAGE)
+    logo = models.ImageField(upload_to='static/polls/img/')
     chiffres_affaires = models.FloatField(default=0.0, validators=[MinValueValidator(0)])
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     base_urssaf = models.FloatField(default=46.6)
@@ -125,7 +127,7 @@ class Client(models.Model):
     #prenom_representant_legale = models.CharField(max_length = 100)
     #fonction_representant_legale = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    logo = models.ImageField(upload_to=DOC_STORAGE, default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
+    logo = models.ImageField(upload_to="static/polls/img/", default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     remarque = models.TextField(blank=True, null=True, default="")
     description = models.TextField(max_length=500, null=True)
     secteur = models.CharField(
@@ -160,8 +162,11 @@ class Client(models.Model):
     def createForm(**kwargs):
         return AddClient()
     
-    def retrieveForm(form):
-        return AddClient(form) 
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddClient(form, kwargs['files'])
+        else:
+            return AddClient(form) 
 
     def modifyForm(instance):
         return AddClient(instance=instance)  
@@ -221,8 +226,11 @@ class Representant(models.Model):
     def createForm(**kwargs):
         return AddRepresentant()
     
-    def retrieveForm(form):
-        return AddRepresentant(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddRepresentant(form, kwargs['files'])
+        else:
+            return AddRepresentant(form) 
 
     def modifyForm(instance):
         return AddRepresentant(instance=instance)
@@ -303,8 +311,11 @@ class Student(models.Model):
     def createForm(**kwargs):
         return AddStudent()
     
-    def retrieveForm(form):
-        return AddStudent(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddStudent(form, kwargs['files'])
+        else:
+            return AddStudent(form) 
 
     def modifyForm(instance):
         return AddStudent(instance=instance)
@@ -389,7 +400,7 @@ class Member(AbstractUser):
     student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True,related_name='member')
     titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
-    photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
+    photo = models.ImageField(upload_to='static/polls/img/', default='/static/polls/img/undraw_profile.svg') #local
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -404,8 +415,11 @@ class Member(AbstractUser):
     def createForm(**kwargs):
         return AddMember()
     
-    def retrieveForm(form):
-        return AddMember(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddMember(form, kwargs['files'])
+        else:
+            return AddMember(form) 
 
     def modifyForm(instance):
         return AddMember(instance=instance)
@@ -623,8 +637,11 @@ class Etude(models.Model):
     def createForm(**kwargs):
         return AddEtude()
 
-    def retrieveForm(form):
-        return AddEtude(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddEtude(form, kwargs['files'])
+        else:
+            return AddEtude(form) 
 
     def modifyForm(instance):
         return AddEtude(instance=instance)
@@ -1081,8 +1098,11 @@ class Message(models.Model):
     def createForm(**kwargs):
         return AddMessage(**kwargs)
     
-    def retrieveForm(form):
-        return AddMessage(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddMessage(form, kwargs['files'])
+        else:
+            return AddMessage(form) 
 
     def modifyForm(instance):
         return AddMessage(instance=instance)
@@ -1258,11 +1278,11 @@ class AddMember(forms.Form):
             je=je
         )
         student.save()
-        new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'],poste=self.cleaned_data['poste'])
-        if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
+        new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
+        if 'photo' in self.cleaned_data:
             new_member.photo = self.cleaned_data['photo']
-        if 'poste' in self.cleaned_data and self.cleaned_data['poste']:
-            new_member.Poste = self.cleaned_data['poste']
+        if 'poste' in self.cleaned_data:
+            new_member.poste = self.cleaned_data['poste']
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member
