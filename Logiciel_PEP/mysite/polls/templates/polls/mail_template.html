@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Sylex mail</title>
+</head>
+<body style="margin: 0; padding-top: 10px; padding-bottom:10px; padding-left: 0; padding-right: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <div style="width: 80%; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 5px;">
+        <div style="width:100%; padding-top: 20px; padding-bottom:20px; padding-left: 40px; padding-right: 40px;">
+            <p style="font-size: 16px; line-height: 1.5;">{{ message|linebreaksbr }}</p>
+        </div>
+        <hr style="border: 1px solid #393939; margin: 20px 0;">
+        <div style="padding: 10px; width:100%;">
+            <div style="font-size: 16px; width:100%; padding-left:20px;">
+                <div style="font-weight: bold; margin-left: 10px; width:100%;">{{ name }}</div>
+                <div style="font-style: italic; width:100%;">{{ signature|linebreaksbr }}</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

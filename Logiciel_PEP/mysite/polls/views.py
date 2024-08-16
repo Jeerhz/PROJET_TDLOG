@@ -2,11 +2,12 @@ import json
 import os
 import openpyxl
 import pytz #pour CA dynamique
-from docxtpl import DocxTemplate
-from docx.shared import Inches
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 from jinja2 import Environment
 import math
-
+from html2image import Html2Image
+import time as time1
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -16,13 +17,14 @@ from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
 from django.shortcuts import redirect, get_object_or_404
-from django.core.mail import send_mail, get_connection
+from django.core.mail import send_mail, get_connection, EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
 from django.urls import reverse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
@@ -31,7 +33,7 @@ locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 from django.http import JsonResponse, FileResponse
 from django.conf import settings as conf_settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres, chiffre_lettres,en_lettres, assignation
+from .templatetags.format_duration import format_nombres, chiffre_lettres, en_lettres, assignation
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
@@ -77,6 +79,8 @@ from .models import (
     ModificationJEHPhase,
     PV,
     AjouterRemarqueRepresentant,
+    CustomMailTemplate,
+    CreateMailTemplate,
 )
 
 def my_view(request):
@@ -240,6 +244,9 @@ def demarchage(request):
         representants= Representant.objects.filter(client__je=je)
         clients = Client.objects.filter(je=je)
         secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
+        mail_templates = je.mail_templates
+        mail_templates_ids = list(mail_templates.values_list('id', flat=True))
+        mail_template_contents = list(mail_templates.values_list('message', flat=True))
         context = {
             "liste_messages": liste_messages,
             "message_count": message_count,
@@ -248,6 +255,9 @@ def demarchage(request):
             'representants': representants,
             'clients':clients,
             'secteurs':secteurs,
+            'mail_template_form': CreateMailTemplate(),
+            'mail_template_ids' : mail_templates_ids,
+            'mail_template_contents' : mail_template_contents,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -784,7 +794,7 @@ def input(request, modelName, iD):
                     }
                     template = loader.get_template("polls/page_error.html")
         else:
-            fetchform = model.retrieveForm(request.POST)
+            fetchform = model.retrieveForm(request.POST, files=request.FILES)
             if fetchform.is_valid():
                 if iD == 0:
                     fetchform.save(commit=True, expediteur=request.user)
@@ -1153,7 +1163,7 @@ def register(request):
         context = {"form": form}
         template = loader.get_template("polls/register.html")
     else:
-        fetchform = AddMember(request.POST)
+        fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
             new_member = fetchform.save()
             login(request, new_member)
@@ -1195,7 +1205,7 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1206,17 +1216,29 @@ def editer_convention(request, iD):
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
             date = timezone.now()
             annee = date.strftime('%Y')
+            nb_JEH=instance.nb_JEH()
+            tot_HT_phase = format_nombres(instance.montant_phase_HT())
+            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
+            fac_acom=factures.first()
+            fac_solde=factures.first()
+            for facture in factures:
+                if facture.type_facture=="ACOMPTE":
+                    fac_acom = facture
+                elif facture.type_facture=="SOLDE":
+                    fac_solde = facture
 
+            #acompte_HT= format_nombres(fac_acom.montant_HT())
+            #solde_HT= format_nombres(fac_solde.montant_HT())
 
-
-
-
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
+                       "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
+                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde}
             # Load the template
 
             env = Environment()
 
             env.filters['FormatNombres'] = format_nombres
+            env.filters['ChiffreLettre'] = chiffre_lettres
 
             
 
@@ -1256,7 +1278,7 @@ def editer_pv(request, iD):
             template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
             
 
-            president = Member.objects.filter(je=je, poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1316,7 +1338,7 @@ def editer_rdm(request, id_etude, id_eleve):
             client= etude.client
             assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
-            president = Member.objects.filter(je=je,  poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
             date_fin= timezone.now().date()
             for assignation in assignations:
@@ -1382,7 +1404,8 @@ def editer_devis(request, iD):
         #try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
-            template = DocxTemplate("polls/templates/polls/Devis_026.docx")
+            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
+            template = DocxTemplate(template_path)
             model = Devis
             if instance.devis_edited() :
                 devis = instance.devis
@@ -1400,16 +1423,165 @@ def editer_devis(request, iD):
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
             date_creation= date.strftime('%d %B %Y')
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            phases= Phase.objects.filter(etude=instance)
+            nb_JEH=instance.nb_JEH()
+            tot_HT_phase = format_nombres(instance.montant_phase_HT())
+            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
+            fac_acom=factures.first()
+            fac_solde=factures.first()
+            for facture in factures:
+                if facture.type_facture=="ACOMPTE":
+                    fac_acom = facture
+                elif facture.type_facture=="SOLDE":
+                    fac_solde = facture
+        
+
+            css_planning = """
+            .table_planning {
+                background-color:white;
+                border-collapse: collapse;
+                margin: 20px;
+                text-align: left;
+                border: 2px solid black;
+                width: 80%;
+            }
+
+            .th_planning, .td_planning {
+                padding: 8px;
+                border-top: 1px solid #ddd;
+                position: relative;
+                font-size: 20px;
+            }
+            .bar_container_plan {
+                position: relative;
+                height: 30px;
+            }
+
+            .bar_plan {
+                height: 100%;
+                background-color: rgb(48, 56, 84);
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+
+            .bar_plan .label_plan {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                font-size: 20px;
+                transform: translate(-50%, -50%);
+                color: white;
+            }
+
+            .semaines_plan {
+                display: flex;
+                justify-content: space-between;
+                font-size: 20px;
+                color: #777;
+                margin-bottom: 0px;
+            }
+            .semaines_plan span {
+                flex: 1; /* Equal width for each span */
+                text-align: right; /* Center text within each span */
+            }
+            /* FIN PLANNING */
+            """
+            html_template = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Invoice</title>
+                <style>
+                    {css}
+                </style>
+            </head>
+            <body style="background-color:white;">
+                <table class="table_planning">
+                    <thead>
+                        <tr>
+                            <th class="th_planning" style="font-size: 30px;">{debut} - {fin}</th>
+                            <th class="th_planning"></th>
+                            <th class="th_planning">
+                                <div class="semaines_plan">
+                                    {semaines}
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+            """
+
+            
+
+            semaines_html = ""
+            for i in range(instance.duree_semaine()):
+                semaines_html += f"<span>{i + 1}</span>"
+
+            rows_html = ""
+            for phase in phases:
+                width = (phase.duree_semaine / instance.duree_semaine()) * 100
+                left = (phase.debut_relatif / instance.duree_semaine()) * 100
+                semaine_label = "semaine" if phase.duree_semaine == 1 else "semaines"
+                JEH_label = "JAH" if phase.nb_JEH == 1 else "JEHs"
+                row = f"""
+                <tr>
+                    <td class='td_planning'>Phase {phase.numero}</td>
+                    <td class='td_planning' style='text-align: center;'>{phase.nb_JEH} {JEH_label}</td>
+                    <td class='td_planning' style='width: 70%;'>
+                        <div class='bar_container_plan'>
+                            <div class='bar_plan' style='width: {width}%; left: {left}%;'>
+                                <div class='label_plan'>{phase.duree_semaine} {semaine_label}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                """
+                rows_html += row
+            
+            
+            final_html = html_template.format(debut=instance.debut, fin=instance.fin(), rows=rows_html, css=css_planning, semaines=semaines_html)
+            
 
 
-            context = {"etude": instance, "devis": devis, "client": client, "responsable":responsable, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,"ref_m":ref_m,"ref_d":ref_d}
-            # Load the template
+            output_dir = 'polls/static/polls/img'
+            os.makedirs(output_dir, exist_ok=True)
+            os.chdir(output_dir)
+            filename = 'tab_planning.png'
+            time1.sleep(1)
+            hti = Html2Image()
+            hti.size = (2000, 100+ 50*instance.nb_phases())
+            hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
+            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            time1.sleep(1)
+            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            with open(image_path, "rb") as img_file:
+                image_data = img_file.read()
+
+            image_stream = BytesIO(image_data)
+            image = InlineImage(template, image_stream, width=Mm(200))
+            time1.sleep(1)
+            context = {"planning_pre":image, "president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
+                       "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation,
+                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures}
+            
+
+            env = Environment()
+
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+        
+            
 
             # Render the document
-            template.render(context)
-
-
-            # Create a temporary in-memory file
+            template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
@@ -1431,14 +1603,14 @@ def editer_devis(request, iD):
 
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
-        try:
+        #try:
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce= instance.ce
             etude = ce.etude
             client = etude.client
             representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
 
-            president = Member.objects.filter(je=etude.je,  poste='PRESIDENT').first().student
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
             ref_m = etude.ref()
 
             if etude.fin():
@@ -1481,7 +1653,7 @@ def editer_avenant_ce(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except :
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1937,6 +2109,7 @@ def modifier_etude(request, iD):
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
+            
 
         # 'fin' should not be updated, as it's set to readonly in the form
 
@@ -1970,7 +2143,7 @@ def remarque_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-def send_mail_demarchage(request):
+def send_mail_demarchage(request,iD):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
                 destinataire=request.user,
@@ -2003,17 +2176,23 @@ def send_mail_demarchage(request):
                     password=password,
                     use_tls=True,)
                 subject = request.POST['subject']
-                message = request.POST['message']+"\n"+"\n"+request.POST['name']+"\n"+request.POST['signature']
+                print(request.POST['message'])
+                html_message = loader.render_to_string('polls/mail_template.html', {'message': request.POST['message'], 'name': request.POST['name'], 'signature': request.POST['signature']})
                 from_email = conf_settings.EMAIL_USERNAME
                 recipient_list = [request.POST['destinataire']]
-                send_mail(subject, message, from_email, recipient_list, 
-                        fail_silently=False, 
-                        connection=connection)
+                mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=recipient_list, connection=connection)
+                mail.content_subtype = 'html'
+                mail.send()
+                #representant = Representant.objects.get(id=iD)
+                #representant.contenu_mail=request.POST['message']
+                #representant.demarchage="ATTENTE_REPONSE"
+                #representant.save()
                 return redirect('demarchage')
             except:
                 context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
                 template = loader.get_template("polls/page_error.html")
         else :
+            context['error_message'] = "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
             template = loader.get_template("polls/page_error.html")
     else:
         template = loader.get_template("polls/login.html")
@@ -2146,11 +2325,10 @@ def ajouter_avenant_ce(request, id_etude):
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
         if request.method == 'POST':
-            try:
+            #try:
                 etude = Etude.objects.get(id=id_etude)
                 signature = None
-                if request.POST['date_signature'] != '':
-                    signature = request.POST['date_signature']
+                
                 nouveau_frais_dossier = request.POST['frais_dossier']              
                 new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, remarque=request.POST['remarque'])
                 if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
@@ -2180,7 +2358,7 @@ def ajouter_avenant_ce(request, id_etude):
                         phase.nb_JEH = n_jeh
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
                 return redirect('details', modelName="Etude", iD=id_etude)
-            except:
+            #except:
                 template = loader.get_template("polls/page_error.html")
                 context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
         else :
@@ -2264,5 +2442,90 @@ def BVs(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+def create_mail_template(request):
+    if request.user.is_authenticated:
+        if request.method=='POST':
+
+            try:
+                message = request.POST['message']
+                je = request.user.je
+                numero = request.POST.get('numero', None)
+                numero = numero if numero else (max(je.mail_templates.values_list('numero', flat=True))+1)
+                new_mail_template = CustomMailTemplate(je=je, message=message, numero=numero)
+                new_mail_template.save()
+                return redirect('demarchage')
+            except:
+                liste_messages = Message.objects.filter(
+                    destinataire=request.user,
+                    read=False,
+                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                ).order_by("date")
+                message_count = liste_messages.count()
+                liste_messages = liste_messages[:3]
+                all_notifications = request.user.notifications.order_by("-date_effet")
+                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_count = len(notification_list)
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "La création du template a échoué.", "notification_list":notification_list, "notification_count":notification_count}
+        else:
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+def delete_mail_template(request):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                template_id = request.POST['id_template']
+                template = CustomMailTemplate.objects.get(id=template_id)
+                if(template.je != request.user.je):
+                    raise ValueError('Le template sélectionné n\'a pas été trouvé.')
+                template.delete()
+                return redirect('demarchage')
+            except:
+                liste_messages = Message.objects.filter(
+                    destinataire=request.user,
+                    read=False,
+                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                ).order_by("date")
+                message_count = liste_messages.count()
+                liste_messages = liste_messages[:3]
+                all_notifications = request.user.notifications.order_by("-date_effet")
+                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_count = len(notification_list)
+                template = loader.get_template("polls/page_error.html")
+                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le template sélectionné n'a pas été trouvé.", "notification_list":notification_list, "notification_count":notification_count}
+                return HttpResponse(template.render(context, request))
+        else :
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+            ).order_by("date")
+            message_count = liste_messages.count()
+            liste_messages = liste_messages[:3]
+            all_notifications = request.user.notifications.order_by("-date_effet")
+            notification_list = [notif for notif in all_notifications if notif.active()]
+            notification_count = len(notification_list)
+            template = loader.get_template("polls/page_error.html")
+            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+            return HttpResponse(template.render(context, request))
+
+    else:
+        return redirect('login')  # Adjust as needed
 
 

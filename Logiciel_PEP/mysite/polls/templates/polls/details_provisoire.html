@@ -339,19 +339,6 @@
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-            <div class="toast-container position-fixed w-100 top-0 start-0 p-3 justify-content-center" style="z-index:1050;">
-                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" id="alert">
-                    <div class="toast-header">
-                    <strong class="mr-auto">Formulaire</strong>
-                    <small>maintenant</small>
-                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    </div>
-                    <div class="toast-body" id="alert-content">
-                    </div>
-                </div>
-              </div>
 
             <!-- Main Content -->
             <div id="content">
@@ -391,7 +378,7 @@
                                 aria-labelledby="searchDropdown">
                                 <form class="form-inline mr-auto w-100 navbar-search">
                                     <div class="input-group">
-                                        <input type="text" id="inputmessagesid" class="form-control bg-light border-0 small"
+                                        <input type="text" class="form-control bg-light border-0 small"
                                             placeholder="Rechercher...." aria-label="Search"
                                             aria-describedby="basic-addon2">
                                         <div class="input-group-append">
@@ -478,7 +465,7 @@
                                 {% if liste_messages.0 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -494,7 +481,7 @@
                                 {% if liste_messages.1 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
                                             alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
@@ -508,7 +495,7 @@
                                 {% if liste_messages.2 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
@@ -522,7 +509,7 @@
                                 {% if liste_messages.3 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -544,7 +531,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
+                                    src="{% static 'polls/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -576,7 +563,6 @@
 
             
             <!-- Begin Main Content -->
-
             <!-- Formulaire intervenant général -->
             <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -607,7 +593,6 @@
                 </div>
             </div>
             <!-- Fin formulaire intervenant -->
-
             <!-- Début formulaire BV onglet Eleve -->
             <div class="modal fade" id="bv-modal" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -633,9 +618,13 @@
             <!-- Fin formulaire BV onglet Eleve -->
 
             <div class="card-header" style="padding-top: 0; padding-bottom: 0;">
+                <div class="alert alert-info alert-dismissible fade show" style="display: none;" role="alert" id="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
                 <!-- Card Shadow for Etude -->
                 {% if modelName == "Etude" %}
-
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 text-center">
                         <h2 style="font-size: 25px;">{{ etude.id|RefMission }} - {{ etude.client.nom_societe }} : <span style="font-size: 20px;">{{ etude.titre }} </span> </h2>
@@ -660,271 +649,22 @@
                                 <div class="mt-3 d-flex justify-content-between">
                                     <h4 style="font-size: 20px;" style="padding-left: 30px;"> Responsable : {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
 
-                                    <div style="padding-right: 50px;">
-                                        <h4 class="mb-2">
-                                            Statut:
-                                            {% if etude.status == 'TERMINEE' %}
-                                                <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
-                                            {% else %}
-                                                <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
-                                            {% endif %}
-                                        </h4>
-                                        <div class="col-auto right">
-                                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalEtude">Supprimer l'étude</button>
-                                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modifyModalEtude">Modifier l'étude</button>
-                                        </div>
-                                    </div>
+                                    <h4 class="mb-2" style="padding-right: 50px">
+                                        Statut: 
+                                        {% if etude.status == 'TERMINEE' %}
+                                            <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
+                                        {% else %}
+                                            <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
+                                        {% endif %}
+                                    </h4>
+
                                 </div>
                                 <h4 style="font-size: 20px;" style="padding-left: 30px;">Interlocuteur : {{ etude.client_interlocuteur }}</h4>
+                                <!-- Content Rows -->
                                 <!--Fin Responsable et statut-->
                                 
-                                <!-- Modify Modal -->
-                                <div class="modal fade" id="modifyModalEtude" tabindex="-1" role="dialog" aria-labelledby="modifyModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <form id="modifyEtudeForm" method="POST" action="{% url 'modify_etude' etude.id %}">
-                                                {% csrf_token %}
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="modifyModalLabel">Modifier l'étude</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <!-- Titre -->
-                                                    <div class="form-group">
-                                                        <label for="titre">Titre</label>
-                                                        <input type="text" class="form-control" id="titre" name="titre" value="{{ etude.titre }}">
-                                                    </div>
-                                
-                                                    <!-- Numéro -->
-                                                    <div class="form-group">
-                                                        <label for="numero">Numéro</label>
-                                                        <input type="number" class="form-control" id="numero" name="numero" value="{{ etude.numero }}">
-                                                    </div>
-                                
-                                                    <!-- Description -->
-                                                    <div class="form-group">
-                                                        <label for="description">Description</label>
-                                                        <textarea class="form-control" id="description" name="description">{{ etude.description }}</textarea>
-                                                    </div>
-                                
-                                                    <!-- Problématique -->
-                                                    <div class="form-group">
-                                                        <label for="problematique">Problématique</label>
-                                                        <textarea class="form-control" id="problematique" name="problematique">{{ etude.problematique }}</textarea>
-                                                    </div>
-                                
-                                                    <!-- Date de début -->
-                                                    <div class="form-group">
-                                                        <label for="debut">Date de début</label>
-                                                        <input type="date" class="form-control" id="debut" name="debut" value="{{ etude.debut|date:'Y-m-d' }}">
-                                                    </div>
-                                
-                                                    <!-- Client -->
-                                                    <div class="form-group">
-                                                        <label for="client">Client</label>
-                                                        <select class="form-control" id="client" name="client" onchange="updateRepresentants(this.value)">
-                                                            <option value="">Sélectionnez un client</option>
-                                                            {% for client in clients %}
-                                                                <option value="{{ client.id }}" {% if etude.client.id == client.id %}selected{% endif %}>
-                                                                    {{ client.nom_societe }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- Interlocuteur du Client -->
-                                                    <div class="form-group">
-                                                        <label for="client_interlocuteur">Interlocuteur du Client</label>
-                                                        <select class="form-control" id="client_interlocuteur" name="client_interlocuteur">
-                                                            <option value="">Sélectionnez un interlocuteur</option>
-                                                            {% for representant in representants_interlocuteurs %}
-                                                                <option value="{{ representant.id }}" {% if etude.client_interlocuteur.id == representant.id %}selected{% endif %}>
-                                                                    {{ representant.first_name }} {{ representant.last_name }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- Représentant Légal du Client -->
-                                                    <div class="form-group">
-                                                        <label for="client_representant_legale">Représentant Légal du Client</label>
-                                                        <select class="form-control" id="client_representant_legale" name="client_representant_legale">
-                                                            <option value="">Sélectionnez un représentant légal</option>
-                                                            {% for representant in representants_legaux %}
-                                                                <option value="{{ representant.id }}" {% if etude.client_representant_legale.id == representant.id %}selected{% endif %}>
-                                                                    {{ representant.first_name }} {{ representant.last_name }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- Responsable de l'Étude -->
-                                                    <div class="form-group">
-                                                        <label for="responsable">Responsable de l'étude</label>
-                                                        <select class="form-control" id="responsable" name="responsable">
-                                                            <option value="">Sélectionnez un responsable</option>
-                                                            {% for member in members %}
-                                                                <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
-                                                                    {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- Frais de Dossier -->
-                                                    <div class="form-group">
-                                                        <label for="frais_dossier">Frais de Dossier</label>
-                                                        <input type="number" class="form-control" id="frais_dossier" name="frais_dossier" value="{{ etude.frais_dossier }}">
-                                                    </div>
-                                
-                                                    <!-- Taux de TVA -->
-                                                    <div class="form-group">
-                                                        <label for="taux_tva">Taux de TVA (%)</label>
-                                                        <input type="number" step="0.01" class="form-control" id="taux_tva" name="taux_tva" value="{{ etude.taux_tva }}">
-                                                    </div>
-                                
-                                                    <!-- Statut -->
-                                                    <div class="form-group">
-                                                        <label for="status">Statut</label>
-                                                        <select class="form-control" id="status" name="status">
-                                                            {% for key, value in etude.Status.choices %}
-                                                                <option value="{{ key }}" {% if etude.status == key %}selected{% endif %}>{{ value }}</option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-                                
-                                                    <!-- Type de convention -->
-                                                    <div class="form-group">
-                                                        <label for="type_convention">Type de convention</label>
-                                                        <select class="form-control" id="type_convention" name="type_convention">
-                                                            {% for key, value in etude.TypeConvention.choices %}
-                                                                <option value="{{ key }}" {% if etude.type_convention == key %}selected{% endif %}>{{ value }}</option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-                                
-                                                    <!-- Remarque -->
-                                                    <div class="form-group">
-                                                        <label for="remarque">Remarque</label>
-                                                        <textarea class="form-control" id="remarque" name="remarque">{{ etude.remarque }}</textarea>
-                                                    </div>
-                                
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <script type="text/javascript">
-                                    function updateRepresentants(clientId) {
-                                        if (!clientId) {
-                                            $('#client_interlocuteur').html('<option value="">Sélectionnez un interlocuteur</option>');
-                                            $('#client_representant_legale').html('<option value="">Sélectionnez un représentant légal</option>');
-                                            return;
-                                        }
-                                
-                                        // AJAX call to update the legal representative and interlocutor fields based on selected client
-                                        $.ajax({
-                                            url: "{% url 'get_client_representants' %}",
-                                            data: {
-                                                'client_id': clientId
-                                            },
-                                            success: function (data) {
-                                                $('#client_interlocuteur').html(data.interlocuteurs);
-                                                $('#client_representant_legale').html(data.legaux);
-                                            }
-                                        });
-                                    }
-                                </script>
-                                
-
-                                <!-- End Modify Modal -->
-
-                                <div class="col-lg-13 mb-3">
-                                    <div class="card shadow">
-                                        <table class="table_budget">
-                                            <thead>
-                                                <tr style="text-align: center;">
-                                                    <th></th>
-                                                    <th>JEH</th>
-                                                    <th>Prix H.T. / JEH</th>
-                                                    <th>Total H.T.</th>
-                                                </tr>
-                                            </thead>
-                                            {% if phases %}
-                                            <tbody>
-                                                {% for phase in phases %}
-                                                <tr>
-                                                    <td >Phase {{phase.numero}} - {{phase.titre}} </td>
-                                                    <td  style="text-align:center;">{{phase.nb_JEH}}</td>
-                                                    <td  style="text-align:center;">{{phase.montant_HT_par_JEH}} €</td>
-                                                    <td  style="text-align:center;">{{phase.calcul_mt_HT}} €&nbsp;</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                            {% endif %}
-                                        </table>
-                                    </div>
-                                </div>
                                 <!-- Content Rows -->
                                 <div class="row mt-3">
-
-
-                                     <!--Card avec les informations générales (à droite du PieChart) -->
-                                    <div class="col-lg-7 pt-4">
-                                        <div class="card shadow">
-                                            <div class="card-body">
-                                                <div class="tab-content" id="etude-info">
-                                                    <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
-                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude.fin }}</span></li>
-                                                        <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <span id="etude-frais">{{ etude.remarque }}</span> </li>
-
-                                                    </ul>
-                                                    <!-- Modify Button -->
-                                                    <div class="text-right">
-                                                        <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
-                                                    </div>
-                                                    <!-- End Modify Button -->
-                                                </div>
-                                                <div class="tab-content d-none" id="etude-form">
-                                                    <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
-                                                        {% csrf_token %}
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut }}"></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.fin }}" readonly></li>
-                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-
-                                                        </ul>
-                                                        <!-- Save and Cancel Buttons -->
-                                                        <div class="row justify-content-between">
-                                                            <div class="col-auto">
-                                                                <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-etude">Annuler</button>
-                                                            </div>
-                                                            <div class="col-auto">
-                                                                <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
-                                                            </div>
-                                                        </div>
-                                                        <!-- End Save and Cancel Buttons -->
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <br>
-                                        
-                                    </div>
-                                    <!-- Fin de la Card avec les infos -->
                                     <!-- Pie Chart -->
                                     <div class="col-lg-5">
                                         <div class="card shadow">
@@ -952,13 +692,82 @@
                                     </div>
                                     <!-- Fin du Pie Chart -->
                                 
-                                   
+                                    <!--Card avec les informations générales (à droite du PieChart) -->
+                                    <div class="col-lg-7 pt-4">
+                                        <div class="card shadow" >
+                                            <div class="card-body">
+                                                <div class="tab-content">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> {{ etude.debut }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> {{ etude.fin }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> {{ etude.nb_JEH }}</li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant/ JEH :</strong> {{ etude.montant_phase_HT }} €</li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> {{ etude.frais_dossier }} €</li>
+                                                    </ul>
+                                                    <!-- Bouton Modifier -->
+                                                    <div class="text-right">
+                                                        <button type="button" class="btn btn-outline-secondary mt-3">Modifier</button> <!-- Bouton sobre -->
+                                                    </div>
+                                                    <!--Fin Bouton Modifier-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="card shadow" >
+                                            <div class="card-header">
+                                                <i class="fas fa-envelope"></i>
+                                                <strong>Recrutement</strong>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="tab-content" id="recrutement-info">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <span id="date-debut">{{ etude.date_debut_recrutement }}</span></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="date-fin">{{ etude.date_fin_recrutement }}</span></li>
+                                                    </ul>
+                                                    <!-- Bouton Modifier -->
+                                                    <div class="row justify-content-between">
+                                                        <div class="col-auto">
+                                                            <a href="{% url 'recrutement' id_url=etude.id_url %}" type="button" class="btn btn-outline-secondary mt-3">Accéder au formulaire</a> <!-- Bouton sobre -->
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-recrutement">Modifier</button>
+                                                        </div>
+                                                    </div>
+                                                    <!--Fin Bouton Modifier-->
+                                                </div>
+                                                <div class="tab-content d-none" id="recrutement-form">
+                                                    <form action="{% url 'modifier_recrutement_etude' iD=etude.id %}" method="post" id="rec-f-form">
+                                                        {% csrf_token %}
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début:</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement }}"></li>
+                                                        </ul>
+                                                        <!-- Bouton Modifier -->
+                                                        <div class="row justify-content-between">
+                                                            <div class="col-auto">
+                                                                <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-recrutement">Annuler</a> <!-- Bouton sobre -->
+                                                            </div>
+                                                            <div class="col-auto">
+                                                                <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                    <!--Fin Bouton Modifier-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Fin de la Card avec les infos -->
                                 </div>
-                                <br>
                                 <!-- Fin de la ligne avec Graphe et Card Infos -->
-                                 <!--Fin Responsable et statut-->
-                                 <div class="col-lg-13 mb-3">
+
+                                
+                                <!-- début Ajouter Facture -->
+                                <div class="col-lg-13 mb-3">
                                     <div class="card shadow">
+                                        <div class="card-header">
+                                            <h6 class="text font-weight-bold primary center">Budget :</h6>
+                                        </div>
                                         <table class="table_budget">
                                             <thead>
                                                 <tr style="text-align: center;">
@@ -981,52 +790,8 @@
                                             </tbody>
                                             {% endif %}
                                         </table>
-                                        <br>
                                         
-                                    </div>
-                                </div>
-                                <br>
-                                <div class="card shadow" >
-                                    <div class="card-header">
-                                        <i class="fas fa-envelope"></i>
-                                        <strong>Recrutement</strong>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="tab-content" id="recrutement-info">
-                                            <ul class="list-group list-group-flush">
-                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <span id="date-debut">{{ etude.date_debut_recrutement }}</span></li>
-                                                <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <span id="date-fin">{{ etude.date_fin_recrutement }}</span></li>
-                                            </ul>
-                                            <!-- Bouton Modifier -->
-                                            <div class="row justify-content-between">
-                                                <div class="col-auto">
-                                                    <a href="{% url 'recrutement' id_url=etude.id_url %}" type="button" class="btn btn-outline-secondary mt-3">Accéder au formulaire</a> <!-- Bouton sobre -->
-                                                </div>
-                                                <div class="col-auto">
-                                                    <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-recrutement">Modifier</button>
-                                                </div>
-                                            </div>
-                                            <!--Fin Bouton Modifier-->
-                                        </div>
-                                        <div class="tab-content d-none" id="recrutement-form">
-                                            <form action="{% url 'modifier_recrutement_etude' iD=etude.id %}" method="post" id="rec-f-form">
-                                                {% csrf_token %}
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement }}"></li>
-                                                    <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement }}"></li>
-                                                </ul>
-                                                <!-- Bouton Modifier -->
-                                                <div class="row justify-content-between">
-                                                    <div class="col-auto">
-                                                        <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-recrutement">Annuler</a> <!-- Bouton sobre -->
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                            <!--Fin Bouton Modifier-->
-                                        </div>
+                                        
                                     </div>
                                 </div>
                                 <!-- Debut Ligne Description Accordeon -->
@@ -1056,9 +821,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- début Ajouter Facture -->
-                            
-                                <!-- <div class="col-mb-3">
+                                <div class="col-mb-3">
                                     <div class="card shadow">
                                         <form action="{% url 'ajouter_facture' id_etude=iD %}" method="post">
                                             <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
@@ -1073,136 +836,44 @@
                                 
                                                         {% for field in facture_form %}
                                                         <div class="form-group row mb-3">
-                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
                                                             <div class="col-sm-8 justify-content-center">
-                                                                {% if field.field.widget.input_type == 'select_multiple' %}
-                            
+                                                            {% if field.field.widget.input_type == 'select_multiple' %}
+                        
                                                                 <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
                                                                     {% for choice in field.choices %}
                                                                         <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
                                                                     {% endfor %}
                                                                 </select>
-                                                    
-                                                                {% else %}
-                                                                    {{ field }}
-                                                                {% endif %}
-                                                                {% if field.errors %}
+                                                
+                                                            {% else %}
+                                                                {{ field }}
+                                                            {% endif %}
+                                                            {% if field.errors %}
                                                                 <div class="text-danger">
                                                                     {% for error in field.errors %}
                                                                         {{ error }}
                                                                     {% endfor %}
                                                                 </div>
-                                                                {% endif %}
+                                                            {% endif %}
                                                             </div>
                                                         </div>
                                                         {% endfor %}                             
                                                     </dl>
                                                 </div>
-                                                <div class="card-footer text-center">
-                                                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                                                </div>
+                                            <div class="card-footer text-center">
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
-                               #ajouter facture et tableau facturation
+                               <!-- fin Ajouter Facture -->
                                 
-
-                                <div class="col-lg-13 mb-3">
-                                    <div class="card shadow">
-                                        <div class="card-header">
-                                            <h6 class="text font-weight-bold primary center">Facturation :</h6>
-                                        </div>
-                                        {% if factures %}
-                                        <table class="table_facturation">
-                                            <thead>
-                                                <tr>
-                                                    <th class="th_facturation" >Modalités de paiement</th>
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                    <th class="th_facturation"> À la signature de la Convention d'Étude </th>
-                                                    {% endif %}
-                                                    {% endfor %} 
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <th class="th_facturation" > À la remise du livrable intermediaire</th>
-                                                    {% endif %}
-                                                    {% endfor %}   
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <th class="th_facturation" > À la remise du livrable final </th>
-                                                    {% endif %}
-                                                    {% endfor %} 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td  >Dénomination</td>
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                    <td > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
-                                                    {% endif %}
-                                                    {% endfor %} 
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <td  > {{facture.type_facture}}  </td>
-                                                    {% endif %}
-                                                    {% endfor %} 
-                                                    {% for facture in factures %}
-                                                    {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <td  > {{facture.type_facture}}  </td>
-                                                    {% endif %}
-                                                    {% endfor %} 
-                                                      
-                                                </tr>
-                                              <tr>
-                                                <td  >Sommes à verser (HT)</td>
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                <td  > {{facture.montant_HT|FormatNombres}} EUR </td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                <td > {{facture.montant_HT|FormatNombres}} EUR </td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                              </tr>
-                                              <tr class="tr_facturation">
-                                                
-                                                <td  >Sommes à verser (TTC) à titre indicatif</td>
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                <td > {{facture.montant_TTC|FormatNombres}} EUR </td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                                {% for facture in factures %}
-                                                {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
-                                                {% endif %}
-                                                {% endfor %} 
-                                                
-                                                
-                                              </tr>
-                                              
-                                            </tbody>
-                                        </table>
-                                        {% endif %}
-                                        
-                                        
-                                    </div>
-                                </div>                   -->              
-                                <!--Fin tableau facturation-->
+                                                            
+                                
+                                
+                                <!--Fin de l'accordéon Description-->
+                                </div>
                             </div>
                             <!--Fin de l'Onglet Général -->
                                 
@@ -1214,46 +885,11 @@
                                 <div class="card mb-3">
                                     <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
                                         <!-- Card -->
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            {% if phase.modif_duree.exists or phase.modif_debut.exists or phase.modif_jeh.exists %}
-                                            <span class="text-warning">Phase {{ phase.numero }}</span>
-                                            <span><i class="fas fa-exclamation-circle fa-2x text-warning mr-2"></i></span>
-                                            {% elif phase.suppression.exists %}
-                                            <span class="text-danger">Phase {{ phase.numero }}</span>
-                                            <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
-                                            {% else %}
-                                            <span>Phase {{ phase.numero }}</span>
-                                            {% endif %}
-                                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
-                                                 Supprimer la phase
-                                            </button>
+                                        
+                                        <div ><span style="font-weight: 700; color: #000; ">Phase {{ phase.numero }} : {{ phase.titre }} </span>  {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}}€</div>
+                                        <div>
+                                            {{ phase.description }}
                                         </div>
-
-                                        <!-- Modal -->
-                                        <div class="modal fade" id="deleteModalPhase" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="deleteModalLabel">Supprimer la phase</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Êtes-vous sûr de vouloir supprimer cette phase ?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                        <form id="deletePhaseForm" method="POST" action="{% url 'delete_phase' phase.id etude.id %}">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
                                         <br>
                                         <div class="nav-item" >
                                             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
@@ -1329,7 +965,6 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <!-- Fin formulaire assignation JEH-->
                                                 </div>
                                             </div>
                                         </div>
@@ -1341,6 +976,7 @@
                                 Aucune phase
                                 {% endif %}
                                  <!-- Début Planning avec graphe-->
+                                  
                                 <!--tableau planing-->
                                 <div class="col-lg-13 mb-3">
                                     <div class="card shadow">
@@ -1364,7 +1000,7 @@
                                             <tbody>
                                                 {% for phase in phases %}
                                                 <tr>
-                                                    <td class="td_planning">Phase {{phase.numero}} </td>
+                                                    <td class="td_planning">Phase {{phase.numero}} : {{phase.titre}}</td>
                                                     <td class="td_planning" style="text-align: center;">{{phase.nb_JEH}} JEHs</td>
                                                     <td class="td_planning" style="width: 70%;">
                                                         <div class="bar_container_plan" >
@@ -1391,7 +1027,7 @@
                                                 
                                             }
                                     
-                                            // Set width of bars based on database values
+                                            // Example usage
                                             {% if phases %}
                                                 {% for phase in phases %}
                                                     setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
@@ -1405,58 +1041,63 @@
                                 <br>
                                 <div class="col-md-8">
                                     <div class="card shadow">
-                                        <form action="{% url 'ajouter_phase' id_etude=iD %}" method="post">
-                                            <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
-                                                <i class="fas fa-plus"></i>
-                                                <strong>Nouvelle phase</strong>
-                                            </div>
-                                            <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
-                                                <div class="card-body">
-                                                    <dl class="dl-horizontal">
-                                                        {% csrf_token %}
-                                
-                                                        {% for field in phase_form %}
-                                                        <div class="form-group row mb-3">
-                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                            <div class="col-sm-8 justify-content-center">
-                                                                {% if field.field.widget.input_type == 'select_multiple' %}
-                        
-                                                                <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
-                                                                    {% for choice in field.choices %}
-                                                                    <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
-                                                                    {% endfor %}
-                                                                </select>
+                                    <form action="{% url 'ajouter_phase' id_etude=iD %}" method="post">
+                                    <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
+                                        <i class="fas fa-plus"></i>
+                                        <strong>Nouvelle phase</strong>
+                                    </div>
+                                    <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
+                                    <div class="card-body">
                                     
-                                                                {% else %}
-                                                                    {{ field }}
-                                                                {% endif %}
-                                                                {% if field.errors %}
-                                                                <div class="text-danger">
-                                                                    {% for error in field.errors %}
-                                                                        {{ error }}
-                                                                    {% endfor %}
-                                                                </div>
-                                                                
-                                                                {% endif %}
-                                                            </div>
-                                                        </div>
-                                                        {% endfor %}                             
-                                                    </dl>
-                                                </div>
-                                                <div class="card-footer text-center">
-                                                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                        <dl class="dl-horizontal">
+                                            {% csrf_token %}
+                    
+                                            {% for field in phase_form %}
+                                            <div class="form-group row mb-3">
+                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                <div class="col-sm-8 justify-content-center">
+                                                {% if field.field.widget.input_type == 'select_multiple' %}
+            
+                                                    <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                                        {% for choice in field.choices %}
+                                                            <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                    
+                                                {% else %}
+                                                    {{ field }}
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in field.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
                                                 </div>
                                             </div>
-                                        </form>
+                                            {% endfor %}                             
+                                        </dl>
+                                    </div>
+                                    <div class="card-footer text-center">
+                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                    </div>
+                                    </form>
+                                    </div>
                                     </div>
                                 </div>
-                            </div>                            
+
+                             
+
+                            </div>
+                            
                             <!-- Fin de l'Onglet Phase-->  
 
                             <!-- Début de l'Onglet Documents -->
                             <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
                                 <div class="container mt-3">
                                     <div class="row mb-3">
+                                        
                                         <div class="col-md-6">
                                             <div class="card">
                                                 <div class="card-body">
@@ -1529,7 +1170,7 @@
                                                     </table>
                                                             
                                                     <hr>
-                                                    {% endif %} 
+                                                    {% endif %}
                                                     <p class="card-text">Ajouter un avenant à la convention d'étude</p>
                                                     <!-- Bouton et formulaire pour ajouter un avenant CE -->
                                                     <a class="btn btn-primary" data-toggle="modal" data-target="#avenantCEModal">Ajout avenant CE</a>
@@ -1548,18 +1189,18 @@
                                                                         {% for phase in etude.phases.all %}
                                                                         <h6>Phase {{ phase.numero }}</h6>
                                                                         <ul class="list-group list-group-flush">
-                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Suppression :</strong> <input type="checkbox" name="suppression{{ phase.id }}" class="form-control" value="{{phase.supprimee}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Durée :</strong> <input type="number" name="duree{{ phase.id }}" class="form-control" value="{{phase.duree_semaine}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Début :</strong> <input type="number" name="debut{{ phase.id }}" class="form-control" value="{{phase.debut_relatif}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nombre JEH :</strong> <input type="number" name="nb_jeh{{ phase.id }}" class="form-control" value="{{phase.nb_JEH}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Suppression:</strong> <input type="checkbox" name="suppression{{ phase.id }}" class="form-control" value="{{phase.supprimee}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Durée:</strong> <input type="number" name="duree{{ phase.id }}" class="form-control" value="{{phase.duree_semaine}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Début:</strong> <input type="number" name="debut{{ phase.id }}" class="form-control" value="{{phase.debut_relatif}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nombre JEH:</strong> <input type="number" name="nb_jeh{{ phase.id }}" class="form-control" value="{{phase.nb_JEH}}"></li>
                                                                         </ul>
                                                                         {% endfor %}
                                                                         <br>
                                                                         <h6>Général</h6>
                                                                         <ul class="list-group list-group-flush">
-                                                                            <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nouveau frais dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{etude.frais_dossier}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero :</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque :</strong> <input type="text" name="remarque" class="form-control" value=""></li>
+                                                                            <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero:</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Date signature:</strong> <input type="date" name="date_signature" class="form-control"></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque:</strong> <input type="text" name="remarque" class="form-control" value=""></li>
                                                                         </ul>
                                                                     </div>
                                                                     <div class="modal-footer">
@@ -1630,8 +1271,8 @@
                                             <div class="row m-0 w-100">
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text">Ajouter intervenant</span>
-                                                </div>
-                                                <input type="text" id="specialid" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
+                                                  </div>
+                                                <input type="text" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
                                                     aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
                                             </div>
                                             <div class="list-group w-100" id="suggestions-results-student"></div>
@@ -1640,6 +1281,7 @@
                                 </div>
 
                                 <!-- Début Infos Élèves -->
+                                
                                 <div class="col-md-12">
                                     {% for eleve in intervenants %}
                                     <div class="card shadow">
@@ -1650,108 +1292,113 @@
                                         <div class="collapse" id="cardBodyEleve{{eleve.id}}" aria-labelledby="cardHeaderEleve{{eleve.id}}">
                                             <div class="card-body">
                                                 <div class="container">
-                                                    <div class="row justify-content-between">
-                                                        <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
-                                                        <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
-                                                        <a class="btn btn-success">Ajouter un avenant au RdM</a>
-                                                    </div>
-                                                </div>
-                                                <br>
-                                                {% if eleve|assignation:etude %}
-                                                <form action="{% url 'BV' id_etude=iD id_eleve=eleve.id %}" method="post">
-                                                    {% csrf_token %}
-                                                    <div class="bg-white py-2 collapse-inner rounded">
-                                                        <table class="table table-striped">
-                                                            <thead>
-                                                                <th>Selectionner</th>
-                                                                <th>Phase</th>
-                                                                <th>Nombre JEH</th>
-                                                                <th>Pourcentage</th>
-                                                                <th>Montant</th>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% for assignation in eleve|assignation:etude %}
-                                                            <tr>
-                                                                <th><div class="form-check form-switch">
-                                                                    <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
-                                                                </div></th>
-                                                                <th scope="row">{{assignation.phase.numero}}</th>
-                                                                <td>{{assignation.nombre_JEH}}</td>
-                                                                <td>{{assignation.pourcentage_retribution}}%</td>
-                                                                <td>{{assignation.retribution_brute_totale}}</td>
-                                                            </tr>
-                                                                {% endfor %}
-                                                            </tbody>
-                                                        </table>
-                                                        <div><button type="submit" class="btn btn-success">Générer le BV </a></div>
-
-                                                    </div>
-                                                </form>
-                                                {% endif %}
-                                                <!--fin tableau planing-->
-                                            
-                                                <div class="col-lg-13 mb-3">
-                                                    <div class="card shadow">
-                                                        <div class="card-header">
-                                                            <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude pour l'étudiant :</h6>
-                                                        </div>
-                                                        
-                                                        <table class="table_planning">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
-                                                                    <th class="th_planning"></th>
-                                                                    <th class="th_planning">
-                                                                        <div class="semaines_plan">
-                                                                            {% for i in 1|Range_boucle:etude.duree_semaine %}
-                                                                            <span>{{ i }}</span>
-                                                                            {% endfor %}
-                                                                        </div>
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% if eleve|assignation:etude %}
-                                                                {% for assignation in eleve|assignation:etude %}
-                                                                <tr>
-                                                                    <td class="td_planning">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
-                                                                    <td class="td_planning" style="text-align: center;">{{assignation.nombre_JEH}} JEHs</td>
-                                                                    <td class="td_planning" style="width: 70%;">
-                                                                        <div class="bar_container_plan" >
-                                                                            <div class="bar_plan" id="bar_plan-{{eleve.id}}-{{assignation.phase.numero}}">
-                                                                                <div class="label_plan"> {{assignation.phase.duree_semaine}} semaines</div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                                {% endfor %}
-                                                                {% endif %}
-                                                            </tbody>
-                                                        </table>
-                                                        
-                                                        <script>
-                                                            function setBarWidth(barId, duree_phase, debut_phase, duree_total) {
-                                                                var bar = document.getElementById(barId);
-                                                                if (bar) {
-                                                                    bar.style.width = (duree_phase / duree_total) * 100 + '%';
-                                                                    bar.style.left = (debut_phase / duree_total) * 100 + '%';
-                                                                } else {
-                                                                    console.error('Element with ID ' + barId + ' not found.');
-                                                                }
-                                                                
-                                                            }
-                                                    
-                                                            {% if eleve|assignation:etude %}
-                                                                {% for assignation in eleve|assignation:etude %}
-                                                                    setBarWidth('bar_plan-{{eleve.id}}-{{assignation.phase.numero}}', {{assignation.phase.duree_semaine}}, {{assignation.phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
-                                                                
-                                                                {% endfor %}
-                                                            {% endif %}
-                                                        </script>
-                                                    </div>
+                                                <div class="row justify-content-between">
+                                                    <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
+                                                    <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
+                                                    <a class="btn btn-success">Ajouter un avenant au RdM</a>
                                                 </div>
                                             </div>
+                                            <br>
+                                            {% if eleve|assignation:etude %}
+                                            <form action="{% url 'BV' id_etude=iD id_eleve=eleve.id %}" method="post">
+                                                {% csrf_token %}
+                                            <div class="bg-white py-2 collapse-inner rounded">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <th>Selectionner</th>
+                                                        <th>Phase</th>
+                                                        <th>Nombre JEH</th>
+                                                        <th>Pourcentage</th>
+                                                        <th>Montant</th>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for assignation in eleve|assignation:etude %}
+                                                    <tr>
+                                                        <th><div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
+                                                        </div></th>
+                                                        <th scope="row">{{assignation.phase.numero}}</th>
+                                                        <td>{{assignation.nombre_JEH}}</td>
+                                                        <td>{{assignation.pourcentage_retribution}}%</td>
+                                                        <td>{{assignation.retribution_brute_totale}}</td>
+                                                    </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                                <div><button type="submit" class="btn btn-success">Générer le BV </a></div>
+
+                                            </div>
+                                            </form>
+                                            {% endif %}
+                                            <!--tableau planing-->
+                                            
+                                            <div class="col-lg-13 mb-3">
+                                                <div class="card shadow">
+                                                    <div class="card-header">
+                                                        <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude pour l'étudiant :</h6>
+                                                    </div>
+                                                    
+                                                    <table class="table_planning">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
+                                                                <th class="th_planning"></th>
+                                                                <th class="th_planning">
+                                                                    <div class="semaines_plan">
+                                                                        {% for i in 1|Range_boucle:etude.duree_semaine %}
+                                                                        <span>{{ i }}</span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if eleve|assignation:etude %}
+                                                            {% for assignation in eleve|assignation:etude %}
+                                                            <tr>
+                                                                <td class="td_planning">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
+                                                                <td class="td_planning" style="text-align: center;">{{assignation.nombre_JEH}} JEHs</td>
+                                                                <td class="td_planning" style="width: 70%;">
+                                                                    <div class="bar_container_plan" >
+                                                                        <div class="bar_plan" id="bar_plan-{{eleve.id}}-{{assignation.phase.numero}}">
+                                                                            <div class="label_plan"> {{assignation.phase.duree_semaine}} semaines</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                    
+                                                    <script>
+                                                        function setBarWidth(barId, duree_phase, debut_phase, duree_total) {
+                                                            var bar = document.getElementById(barId);
+                                                            if (bar) {
+                                                                bar.style.width = (duree_phase / duree_total) * 100 + '%';
+                                                                bar.style.left = (debut_phase / duree_total) * 100 + '%';
+                                                            } else {
+                                                                console.error('Element with ID ' + barId + ' not found.');
+                                                            }
+                                                            
+                                                        }
+                                                
+                                                        {% if eleve|assignation:etude %}
+                                                            {% for assignation in eleve|assignation:etude %}
+                                                                setBarWidth('bar_plan-{{eleve.id}}-{{assignation.phase.numero}}', {{assignation.phase.duree_semaine}}, {{assignation.phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
+                                                            
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </script>
+
+                                                </div>
+                                            </div>
+                                <!--Fin planning avec graphe--> 
                                         </div>
+                                        </div>
+                                         <!-- Début Planning avec graphe-->
+                                  
+                                
                                     </div>
                                     <hr>
                                     {% endfor %}
@@ -1763,6 +1410,8 @@
                             <!-- Debut de l'Onglet Facturation -->
                             <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
                                 <!-- début Ajouter Facture -->
+                                <!-- début Ajouter Facture -->
+                            
                                 <div class="col-mb-3">
                                     <div class="card shadow">
                                         <form action="{% url 'ajouter_facture' id_etude=iD %}" method="post">
@@ -1772,49 +1421,52 @@
                                             </div>
                                             <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
                                                 <div class="card-body">
+                                                
                                                     <dl class="dl-horizontal">
                                                         {% csrf_token %}
+                                
                                                         {% for field in facture_form %}
                                                         <div class="form-group row mb-3">
-                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
                                                             <div class="col-sm-8 justify-content-center">
-                                                                {% if field.field.widget.input_type == 'select_multiple' %}
+                                                            {% if field.field.widget.input_type == 'select_multiple' %}
+                        
                                                                 <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
                                                                     {% for choice in field.choices %}
-                                                                    <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                                        <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
                                                                     {% endfor %}
                                                                 </select>
-                                                                {% else %}
+                                                
+                                                            {% else %}
                                                                 {{ field }}
-                                                                {% endif %}
-                                                                {% if field.errors %}
+                                                            {% endif %}
+                                                            
+                                                            {% if field.errors %}
                                                                 <div class="text-danger">
                                                                     {% for error in field.errors %}
-                                                                    {{ error }}
+                                                                        {{ error }}
                                                                     {% endfor %}
                                                                 </div>
-                                                                {% endif %}
+                                                            {% endif %}
                                                             </div>
                                                         </div>
-                                                        {% endfor %}
+                                                        {% endfor %}                             
                                                     </dl>
                                                 </div>
-                                                <div class="card-footer text-center">
-                                                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                                                </div>
+                                            <div class="card-footer text-center">
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
-                                
-                                <!-- fin Ajouter Facture -->
+                               <!-- fin Ajouter Facture -->
                                 
                                 <!--- tableau facturation-->
                                 <div class="col-lg-13 mb-3">
                                     <div class="card shadow">
                                         <div class="card-header">
                                             <h6 class="text font-weight-bold primary center">Facturation :</h6>
-                                            
                                         </div>
                                         {% if factures %}
                                         <table class="table_facturation">
@@ -1948,43 +1600,13 @@
                                         {% for facture in factures %}
                                     
                                         <div class="card border border-primary border-5 mb-3">
-                                            <div class="card-header d-flex justify-content-between align-items-center">
-                                                <div>
+                                            <div class="card-header d-flex justify-content-between">
+                                                <div class="m-0 p-0">
                                                     <i class="fas fa-book-open mr-2"></i>
                                                     <span>{{facture.type_facture}}</span>
                                                 </div>
-                                                <div class="d-flex align-items-center">
-                                                    <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture">
-                                                        Supprimer la facture
-                                                    </button>
-                                                </div>
+                                                <small>{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
                                             </div>
-
-                                            <!-- Modal -->
-                                            <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteModalLabel">Supprimer la facture</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            Êtes-vous sûr de vouloir supprimer cette facture ?
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                            <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id etude.id %}">
-                                                                {% csrf_token %}
-                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        
                                             <!-- Début de la table avec pourcentage de Facturation--> 
                                             <table class="table table-striped" style="color: #000; font-weight: 300;">
                                                 <thead>
@@ -2042,9 +1664,9 @@
                                     {% endif %}
                                 </div>  
                                 <!-- Fin container mt-3 -->          
+                                
                             </div>
                             <!-- Fin de l'Onglet Facturation-->
-
                             <!-- Début de l'onglet recrutement -->
                             <div class="tab-pane fade" id="recrutement" role="tabpanel" aria-labelledby="recrutement-tab">
                                 <div class="content mt-3 mb-4">
@@ -2100,32 +1722,11 @@
                                 </div>
                             </div>
                             <!-- Fin de l'onglet recrutement -->
+
                         </div>
                         <!--Fin TabContent-->
-                        <div class="modal fade" id="deleteModalEtude" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteModalLabel">Supprimer l'étude</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Êtes-vous sûr de vouloir supprimer cette étude ?
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                        <form id="deleteEtudeForm" method="POST" action="{% url 'delete_etude' etude.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <!-- Fin CardBody-->
                     </div>
+                    <!-- Fin CardBody-->
                 </div>
                 {% endif %}
                 <!-- Fin du if ModelName==Etude-->
@@ -2137,240 +1738,78 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
-                            <div>
-                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModalClient">Modifier</button>
-                                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalClient">Supprimer</button>
-                            </div>
                         </div>
                         <div class="card-body mb-3">
+                            
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong></li>
+                                <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong> </li>
                                 <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité:</strong> {{ client.secteur }}</li>
                                 <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }} {{ client.code_postal }} {{ client.ville }} {{ client.country }}</li>
-                                <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Logo:</strong><img class="ml-3" src="{{ client.logo.url }}" alt="Logo" style="width: 100px; height: 100px;"></li>
                             </ul>
+                            
                         </div>
                     </div>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                            <h5 class="m-1 font-weight-bold text-primary">Représentants Client</h5>
-                        </div>
-                        <div class="card-body">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="m-1 font-weight-bold text-primary">Représentants Client</h5>
+                            </div>
+                            <div class="card-body">
                             {% if client.representants %}
-                            {% for representant in client.representants.all %}
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-user-tag mr-2"></i><strong>{{ representant.first_name }} {{representant.last_name}}</strong>
-                                        </div>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-briefcase mr-2"></i><strong>Fonction: </strong> {{ representant.fonction }}
-                                        </div>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-envelope mr-2"></i><strong>Email: </strong> <a href="mailto:{{ representant.email }}">{{ representant.mail }}</a>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-phone mr-2"></i><strong>Téléphone: </strong> <a href="tel:{{ representant.telephone }}">{{ representant.phone_number }}</a>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRepresentantModal{{ representant.id }}">Supprimer</button>
-                                    </div>
-                                </li>
-                            </ul>
-
-                            <!-- Modal de confirmation de suppression -->
-                            <div class="modal fade" id="deleteRepresentantModal{{ representant.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDeleteRepresentant{{ representant.id }}" aria-hidden="true">
+                                {% for representant in client.representants.all %}
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><i class="fas fa-user-tag mr-2"></i><strong>Nom :</strong> {{ representant }}</li>
+                                    </ul>
+                                {% endfor %}
+                            {% else %}
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><i class="fas fa-flappy-disk mr-2"></i><strong>Aucun représentant</strong></li>
+                                </ul>
+                            {% endif %} 
+                            </div>
+                            <!-- Bouton et formulaire pour ajouter un avenant CE -->
+                            <a class="btn btn-primary float-right" data-toggle="modal" data-target="#representantModal"><i class="fas fa-plus"></i>  Ajout représentant</a>
+                            <div class="modal fade" id="representantModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelRepresentant" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="modalLabelDeleteRepresentant{{ representant.id }}">Supprimer Représentant</h5>
+                                            <h5 class="modal-title" id="modalLabelRepresentant">Nouveau représentant</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
-                                        <div class="modal-body">
-                                            Êtes-vous sûr de vouloir supprimer ce représentant ?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                            <a href="{% url 'supprimer_representant' id_representant=representant.id %}" class="btn btn-danger">Supprimer</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
+                                        <form action="{% url 'ajouter_representant' id_client=iD %}" method="post">
+                                            <div class="modal-body">
+                                                {% csrf_token %}
+                                                <dl class="dl-horizontal">
+                                                    {% csrf_token %}
                             
-                            {% else %}
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-floppy-disk mr-2"></i><strong>Aucun représentant</strong></li>
-                                </ul>
-                            {% endif %} 
-                        </div>
-                        <!-- Bouton et formulaire pour ajouter représentant -->
-                        <a class="btn btn-primary float-right" data-toggle="modal" data-target="#representantModal"><i class="fas fa-plus"></i>  Ajout représentant</a>
-                        <div class="modal fade" id="representantModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelRepresentant" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="modalLabelRepresentant">Nouveau représentant</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <form action="{% url 'ajouter_representant' id_client=client.id %}" method="post">
-                                        <div class="modal-body">
-                                            {% csrf_token %}
-                                            <dl class="dl-horizontal">
-                                                {% for field in representant_form %}
-                                                <div class="form-group row mb-3">
+                                                    {% for field in representant_form %}
+                                                    <div class="form-group row mb-3">
                                                     <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                    <div class="col-sm-8 justify-content-center">
+                                                        <div class="col-sm-8 justify-content-center">
                                                         {{ field }}
                                                         {% if field.errors %}
-                                                        <div class="text-danger">
-                                                            {% for error in field.errors %}
-                                                            {{ error }}
-                                                            {% endfor %}
-                                                        </div>
+                                                            <div class="text-danger">
+                                                                {% for error in field.errors %}
+                                                                    {{ error }}
+                                                                {% endfor %}
+                                                            </div>
                                                         {% endif %}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                {% endfor %}
-                                            </dl>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                            <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                                        </div>
-                                    </form>                                        
+                                                    {% endfor %}                             
+                                                </dl>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- Fin formulaire ajout Representant -->
-                    </div> 
-                    <!-- Edit Modal -->
-                    <div class="modal fade" id="editModalClient" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <form id="editClientForm" method="POST" action="{% url 'edit_client' client.id %}">
-                                    {% csrf_token %}
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="editModalLabel">Modifier Client</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Nom de la société -->
-                                        <div class="form-group">
-                                            <label for="nom_societe">Nom de la société</label>
-                                            <input type="text" class="form-control" id="nom_societe" name="nom_societe" value="{{ client.nom_societe }}">
-                                        </div>
-
-                                        <!-- Raison sociale -->
-                                        <div class="form-group">
-                                            <label for="raison_sociale">Raison sociale</label>
-                                            <input type="text" class="form-control" id="raison_sociale" name="raison_sociale" value="{{ client.raison_sociale }}">
-                                        </div>
-
-                                        <!-- Rue -->
-                                        <div class="form-group">
-                                            <label for="rue">Rue</label>
-                                            <input type="text" class="form-control" id="rue" name="rue" value="{{ client.rue }}">
-                                        </div>
-
-                                        <!-- Ville -->
-                                        <div class="form-group">
-                                            <label for="ville">Ville</label>
-                                            <input type="text" class="form-control" id="ville" name="ville" value="{{ client.ville }}">
-                                        </div>
-
-                                        <!-- Code Postal -->
-                                        <div class="form-group">
-                                            <label for="code_postal">Code Postal</label>
-                                            <input type="text" class="form-control" id="code_postal" name="code_postal" value="{{ client.code_postal }}">
-                                        </div>
-
-                                        <!-- Country -->
-                                        <div class="form-group">
-                                            <label for="country">Pays</label>
-                                            <input type="text" class="form-control" id="country" name="country" value="{{ client.country }}">
-                                        </div>
-
-                                        <!-- Secteur d'activité -->
-                                        <div class="form-group">
-                                            <label for="secteur">Secteur d'activité</label>
-                                            <select class="form-control" id="secteur" name="secteur">
-                                                <option value="DISTRIBUTION" {% if client.secteur == "DISTRIBUTION" %}selected{% endif %}>Distribution</option>
-                                                <option value="INDUSTRIE" {% if client.secteur == "INDUSTRIE" %}selected{% endif %}>Industrie</option>
-                                                <option value="SECTEUR_PUBLIC" {% if client.secteur == "SECTEUR_PUBLIC" %}selected{% endif %}>Secteur Public</option>
-                                                <option value="CONSEIL" {% if client.secteur == "CONSEIL" %}selected{% endif %}>Conseil</option>
-                                                <option value="TRANSPORT" {% if client.secteur == "TRANSPORT" %}selected{% endif %}>Transport</option>
-                                                <option value="NUMERIQUE" {% if client.secteur == "NUMERIQUE" %}selected{% endif %}>Numerique</option>
-                                                <option value="BTP" {% if client.secteur == "BTP" %}selected{% endif %}>BTP</option>
-                                                <option value="AUTRE" {% if client.secteur == "AUTRE" %}selected{% endif %}>Autre</option>
-                                            </select>
-                                        </div>
-                                        
-
-                                        <!-- Type d'entreprise -->
-                                        <div class="form-group">
-                                            <label for="type">Type d'entreprise</label>
-                                            <select class="form-control" id="type" name="type">
-                                                <option value="GRANDE_ENTREPRISE" {% if client.type == "GRANDE_ENTREPRISE" %}selected{% endif %}>Grande entreprise</option>
-                                                <option value="SECTEUR_PUBLIC" {% if client.type == "SECTEUR_PUBLIC" %}selected{% endif %}>Secteur Public</option>
-                                                <option value="START_UP_ET_TPE" {% if client.type == "START_UP_ET_TPE" %}selected{% endif %}>Start-up et TPE</option>
-                                                <option value="PME" {% if client.type == "PME" %}selected{% endif %}>Petite et moyenne entreprise</option>
-                                                <option value="ETI" {% if client.type == "ETI" %}selected{% endif %}>Entreprise de taille intermédiaire</option>
-                                                <option value="ASSOCIATION" {% if client.type == "ASSOCIATION" %}selected{% endif %}>Association</option>
-                                            </select>
-                                        </div>
-                                        
-
-                                        <!-- Remarque -->
-                                        <div class="form-group">
-                                            <label for="remarque">Remarque</label>
-                                            <textarea class="form-control" id="remarque" name="remarque">{{ client.remarque }}</textarea>
-                                        </div>
-
-                                        <!-- Description -->
-                                        <div class="form-group">
-                                            <label for="description">Description</label>
-                                            <textarea class="form-control" id="description" name="description">{{ client.description }}</textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Delete Modal -->
-                    <div class="modal fade" id="deleteModalClient" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel">Supprimer Client</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    Êtes-vous sûr de vouloir supprimer ce client ?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                    <form id="deleteClientForm" method="POST" action="{% url 'delete_client' client.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                            <!-- Fin formulaire ajout Representant -->
+                         
                     </div>
                 </div>          
                 {% endif %}
@@ -2399,14 +1838,11 @@
                     <div class="tab-content mt-2" style="background-color: #FFFFFF;">
                 
                         <!-- Onglet info_étude -->
+                        
                         <div class="tab-pane fade show active" id="pills-fiche_info">
                             <div class="card shadow mb-4 w-100">
                                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h5 class="m-1 font-weight-bold text-primary">{% if eleve.is_member %} {{ eleve.is_member.poste }} {% else %} Détails Élève {% endif %}</h5>
-                                    <div>
-                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
-                                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
-                                    </div>
+                                    <h5 class="m-1 font-weight-bold text-primary">Détails Élève</h5>
                                 </div>
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
@@ -2414,134 +1850,13 @@
                                         <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
                                         <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
                                         <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
+                                        <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}
                                         <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
-                                        <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Département:</strong> {{ eleve.get_departement_display }}</li>
-                                        
+                                        <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Departement:</strong> {{ eleve.departement }}</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Edit Modal -->
-                        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <form id="editStudentForm" method="POST" action="{% url 'edit_student' eleve.id %}">
-                                        {% csrf_token %}
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="editModalLabel">Modifier Élève</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <!-- Titre Field -->
-                                            <div class="form-group">
-                                                <label for="titre">Titre</label>
-                                                <select class="form-control" id="titre" name="titre">
-                                                    <option value="M." {% if eleve.titre == "M." %}selected{% endif %}>M.</option>
-                                                    <option value="Mme" {% if eleve.titre == "Mme" %}selected{% endif %}>Mme</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="last_name">Nom</label>
-                                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ eleve.last_name }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="first_name">Prénom</label>
-                                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ eleve.first_name }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="mail">Email</label>
-                                                <input type="email" class="form-control" id="mail" name="mail" value="{{ eleve.mail }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="phone_number">Téléphone</label>
-                                                <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ eleve.phone_number }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="ville">Ville</label>
-                                                <input type="text" class="form-control" id="ville" name="ville" value="{{ eleve.ville }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="code_postal">Code Postal</label>
-                                                <input type="text" class="form-control" id="code_postal" name="code_postal" value="{{ eleve.code_postal }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="numero_ss">Numéro de Sécurité Sociale</label>
-                                                <input type="text" class="form-control" id="numero_ss" name="numero_ss" value="{{ eleve.numero_ss }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="adress">Adresse</label>
-                                                <input type="text" class="form-control" id="adress" name="adress" value="{{ eleve.adress }}">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="country">Pays</label>
-                                                <input type="text" class="form-control" id="country" name="country" value="{{ eleve.country }}">
-                                            </div>
-
-
-                                            <div class="form-group">
-                                                <label for="promotion">Promotion</label>
-                                                <select class="form-control" id="promotion" name="promotion">
-                                                    <option value="2022" {% if eleve.promotion == "2022" %}selected{% endif %}>2022</option>
-                                                    <option value="2023" {% if eleve.promotion == "2023" %}selected{% endif %}>2023</option>
-                                                    <option value="2024" {% if eleve.promotion == "2024" %}selected{% endif %}>2024</option>
-                                                    <option value="2025" {% if eleve.promotion == "2025" %}selected{% endif %}>2025</option>
-                                                    <option value="2026" {% if eleve.promotion == "2026" %}selected{% endif %}>2026</option>
-                                                    <option value="2027" {% if eleve.promotion == "2027" %}selected{% endif %}>2027</option>
-                                                    <option value="DD" {% if eleve.promotion == "DD" %}selected{% endif %}>Double-diplôme</option>
-                                                    <option value="MS" {% if eleve.promotion == "MS" %}selected{% endif %}>Master Spécialisé</option>
-                                                    <option value="AUTRE" {% if eleve.promotion == "AUTRE" %}selected{% endif %}>Autre</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="departement">Département</label>
-                                                <select class="form-control" id="departement" name="departement">
-                                                    {% for key, value in eleve.Departement.choices %}
-                                                        <option value="{{ key }}" {% if eleve.departement == key %}selected{% endif %}>{{ value }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        
-                        <!-- Delete Modal -->
-                        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteModalLabel">Supprimer Élève</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Êtes-vous sûr de vouloir supprimer cet élève ?
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                        <form id="deleteStudentForm" method="POST" action="{% url 'delete_student' eleve.id %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <!-- Onglet Annuaire Études -->
                         <div class="tab-pane fade" id="pills-missions_réalisées">
                             <div class="container p-4">
@@ -2687,21 +2002,22 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>          
                 {% endif %}
                 <!-- End of Card Shadow Student -->
+
             </div>
             <!-- End of Card Header-->
-
-          </div> <!-- BECAUSE SEARCH BAR NOT WORKING-->
-
+        </div>
+        <!-- end of div content-->
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white" style="margin-top: auto;">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; SYLOG 2024</span>
+                        <span>Copyright &copy; PEP JUNIOR ENTREPRISE 2024</span>
                     </div>
                 </div>
             </footer>
@@ -2760,6 +2076,18 @@
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        var url_suggestions = '{% url "search_suggestions" %}';
+        var url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}';
+        let str = "{% url 'details' modelName='Etude' iD=0 %}";
+        var href_etude = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Client' iD=0 %}";
+        var href_client = str.substring(0, str.length - 1);
+        str = "{% url 'details' modelName='Student' iD=0 %}";
+        var href_student = str.substring(0, str.length - 1);
+        str = "{% url 'add_intervenant' id_etude=iD id_student=0 %}";
+        var href_form_intervenant = str.substring(0, str.length - 1);
+    </script>
 
     <!-- Script pour utiliser les boutons comme des liens-->
     <script>
@@ -2783,68 +2111,8 @@
         });
         </script>
 
-        <!-- Script pour gérer les boutons de modification et de suppression pour l'étude -->
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modifier_etude = document.getElementById('modifier-etude');
-                var etude_info = document.getElementById('etude-info');
-                var etude_form = document.getElementById('etude-form');
-
-                // Toggle between info view and form view when the Modify button is clicked
-                modifier_etude.addEventListener('click', function() {
-                    etude_info.classList.toggle('d-none');
-                    etude_form.classList.toggle('d-none');
-                });
-
-                var annuler_etude = document.getElementById('annuler-etude');
-                annuler_etude.addEventListener('click', function() {
-                    etude_info.classList.toggle('d-none');
-                    etude_form.classList.toggle('d-none');
-                });
-
-                // Validate form before submission
-                document.getElementById('etude-f-form').addEventListener('submit', function(event) {
-                    var debut = document.querySelector('input[name="debut"]').value;
-                    var fin = document.querySelector('input[name="fin"]').value;
-
-                    if (!debut) {
-                        event.preventDefault();  // Prevent form submission
-                        alert('Veuillez renseigner la date de début.');  // Display alert
-                        return false;
-                    }
-                });
-            });
-        </script>
-
-
-
-    
-    <script type="text/javascript">
-
-        var url_suggestions = '{% url "search_suggestions" %}';
-        var url_suggestions_student = '';
-
-        {% if iD %}
-            url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}';
-        {% else %}
-            console.error("iD is not available or invalid.");
-        {% endif %}
-        /* var url_suggestions = '{% url "search_suggestions" %}';
-        var url_suggestions_student = '{% url "search_suggestions_student" id_etude=iD %}'; */
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-        str = "{% url 'add_intervenant' id_etude=iD id_student=0 %}";
-        var href_form_intervenant = str.substring(0, str.length - 1);
-    </script>
-
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
     <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
-
-
     <script src="{% static 'polls/js/modal-BV.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
@@ -2874,10 +2142,9 @@
     <script>
         function showAlert(message) {
             alert_div = document.getElementById("alert");
-            content_div = document.getElementById("alert-content");
-            content_div.textContent = message;
-            const toast = new bootstrap.Toast(alert_div);
-            toast.show();
+            alert_div.style.display= "none";
+            alert_div.textContent = message;
+            alert_div.style.display = "block";
         }
         function generer(event) {
                 event.preventDefault(); // Prevent the default action (i.e., navigation)

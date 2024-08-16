@@ -472,9 +472,20 @@
                     </div> -->
 
                     <!-- Content Row -->
-                    <div class="row mt-4 mb-4">
-
-                        
+                    <div class="row mt-4 mb-4 justify-content-center">
+                        <div class="col-9">
+                            <div class="card shadow">
+                                <div class="card-header"> 
+                                    <h6 class="card-title">Liste templates</h6>
+                                    <button class="btn btn-primary float-right" data-toggle="modal" data-target="#mailTemplateModal"><i class="fas fa-plus mr-2"></i>Créer nouveau template</button>
+                                </div>
+                                <div class="card-body">
+                                    {% for template in request.user.je.mail_templates.all %}
+                                        <button class="btn btn-outline-secondary" id="template{{template.id}}" data-toggle="modal" data-target="#mailTVisualizeModal"><i class="fas fa-eye mr-2"></i>{{template}}</button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
 
                         
                     </div>
@@ -576,7 +587,7 @@
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>relancer</a>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>relancer</a>
                                                     <br>
                                                     <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
                                                         {% csrf_token %}
@@ -683,11 +694,70 @@
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>Envoyer</a>
+                                                    <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>Envoyer</a>
                                                     <br>
                                                     <div style="font-weight: 300;">{{ repr.remarque }}</div>
                                                 </td>
                                             </tr>
+                                            <!-- Visualisation mail -->
+            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
+                            <div class="modal-body p-4">
+                                <div class="row">
+                                    {% if request.user.je.mail_templates.exists %}
+                                        {% for template in request.user.je.mail_templates.all %}
+                                            <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
+                                        {% endfor %}
+                                    {% else %}
+                                    <p>Aucun template</p>
+                                    {% endif %}
+                                </div>
+                                <hr>
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Destinataire</span>
+                                        </div>
+                                        <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Objet</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="subject" value="Mission">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Signature</strong>
+                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
+                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin formulaire envoi mail -->
                                         {% endif %}
                                         {% endfor %} 
                                         {% endif %}
@@ -711,55 +781,68 @@
 
             </div>
             <!-- End of Main Content -->
-            <!-- Visualisation mail -->
-            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
+            
+
+            <!-- Ajout template mail -->
+            <div class="modal fade" id="mailTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTMail" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                            <h5 class="modal-title" id="modalLabelTMail">Envoi mail</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="{% url 'send_mail_demarchage' %}" method="post">
+                        <form action="{% url 'create_mail_template' %}" method="post">
                             <div class="modal-body p-4">
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Destinataire</span>
+                                <dl class="dl-horizontal">
+                                    {% csrf_token %}
+            
+                                    {% for field in mail_template_form %}
+                                    <div class="form-group row mb-3">
+                                    <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                        <div class="col-sm-8 justify-content-center">
+                                            {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger">
+                                                {% for error in field.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                         </div>
-                                        <input type="text" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
                                     </div>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Objet</span>
-                                        </div>
-                                        <input type="text" class="form-control" name="subject" value="Mission">
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <textarea type="text" class="form-control" name="message"></textarea>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <strong>Signature</strong>
-                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
-                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
-                                    </div>
-                                </div>
+                                    {% endfor %}                             
+                                </dl>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                                <button type="submit" class="btn btn-primary">Créer</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <!-- Fin formulaire ajout Representant -->
+            <!-- Fin ajout template mail -->
+            <!-- Visualisation mail -->
+            <div class="modal fade" id="mailTVisualizeModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTVMail" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabelTVMail">Template mail</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4" id="mailTVisualizeModalText"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                            <button type="button" id="delete-tpl-btn" data-toggle="modal" data-target="#deleteTplModal" class="btn btn-danger">Supprimer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin visualisation mail -->
         <!-- Footer -->
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
@@ -796,6 +879,31 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                     <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supprimer template modal -->
+    <div class="modal fade" id="deleteTplModal" tabindex="-1" role="dialog" aria-labelledby="deleteTplLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteTplLabel">Supprimer l'étude</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer ce template ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <form id="deleteEtudeForm" method="POST" action="{% url 'delete_mail_template' %}">
+                        {% csrf_token %}
+                        <input type="number" id="delete-id" hidden name="id_template">
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -850,6 +958,54 @@
         var href_student = str.substring(0, str.length - 1);
     </script>
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+            var mailButtons = Array.from(document.getElementsByClassName('mail-button'));
+            var destinataireInput = document.getElementById('destinataire');
+            mailButtons.forEach(function(button){
+                button.addEventListener("click", (event) => {
+                    destinataireInput.value = button.dataset.destinataire;
+                });
+            });
+    
+        });
+    </script>
+    <script type="text/javascript">
+        var templateIds = {{mail_template_ids|safe}};
+        var templateContents = {{mail_template_contents|safe}};
+        document.addEventListener("DOMContentLoaded", () => {
+            var tVisualizeModalText =  document.getElementById('mailTVisualizeModalText');
+            var deleteTplBtn = document.getElementById('delete-tpl-btn');
+            templateIds.forEach((item, index) => {
+                var templateButton = document.getElementById('template'+item.toString());
+                templateButton.addEventListener("click", (event) => {
+                    tVisualizeModalText.innerHTML = templateContents[index].replace(/\n/g, '<br>');
+                    deleteTplBtn.dataset.id = item.toString();
+                });
+            });
+
+            var tplButtons = Array.from(document.getElementsByClassName('choosetpl'));
+            var msgPrincipal = document.getElementById('msgmail');
+            tplButtons.forEach(function(button){
+                button.addEventListener("click", (event) => {
+                    var indexTpl = templateIds.indexOf(parseInt(button.dataset.id, 10));
+                    if(indexTpl !== -1){
+                        msgPrincipal.textContent = templateContents[indexTpl];
+                    }
+                    else{
+                        // Must handle error here
+                    }
+                });
+            });
+
+            var idForDelete = document.getElementById('delete-id');
+            deleteTplBtn.addEventListener("click", (event) => {
+                idForDelete.value = parseInt(deleteTplBtn.dataset.id, 10);
+            });
+        });
+
+    </script>
 
 </body>
 

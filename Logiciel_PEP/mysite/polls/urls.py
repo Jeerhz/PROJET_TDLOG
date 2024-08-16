@@ -58,11 +58,15 @@ urlpatterns = [
     path('generate-pdf/', views.generate_pdf, name='generate_pdf'),
     path('supprimer_demarchage/<int:id_representant>', views.supprimer_demarchage, name='supprimer_demarchage'),
     path("editer_pv/<int:iD>", views.editer_pv, name="editer_pv"),
+    path("ajouter_representant/<int:id_client>", views.ajouter_representant, name="ajouter_representant"),
+    path("send_mail_demarchage/<int:iD>", views.send_mail_demarchage, name="send_mail_demarchage"),
     path('ajouter_representant/<int:id_client>/', views.ajouter_representant, name='ajouter_representant'),
     path('supprimer_representant/<int:id_representant>/', views.supprimer_representant, name='supprimer_representant'),
     path("send_mail_demarchage", views.send_mail_demarchage, name="send_mail_demarchage"),
     path("factures/", views.factures, name="factures"),
     path("BVs/", views.BVs, name="BVs"),
+    path("create_mail_template/", views.create_mail_template, name="create_mail_template"),
+    path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
 
 
 

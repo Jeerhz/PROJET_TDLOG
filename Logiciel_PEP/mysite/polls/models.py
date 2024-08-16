@@ -16,13 +16,15 @@ from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.conf import settings
-from datetime import date
+from datetime import date 
 from datetime import timedelta
+import os
 
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
 DOC_STORAGE = "polls/"
+IMAGE_UPLOAD = os.path.join(settings.BASE_DIR, '/polls/static/polls/img')
 
     
 class JE(models.Model):
@@ -37,7 +39,7 @@ class JE(models.Model):
     IBAN = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     BIC = models.CharField(max_length=34, validators=[RegexValidator(r'^[A-Z0-9]+$', _('Special characters are not allowed.'))])
     check_order = models.CharField(max_length=50)
-    logo = models.ImageField(storage=IMAGE_STORAGE)
+    logo = models.ImageField(upload_to='static/polls/img/')
     chiffres_affaires = models.FloatField(default=0.0, validators=[MinValueValidator(0)])
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     base_urssaf = models.FloatField(default=46.6)
@@ -125,7 +127,7 @@ class Client(models.Model):
     #prenom_representant_legale = models.CharField(max_length = 100)
     #fonction_representant_legale = models.CharField(max_length = 100)
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    logo = models.ImageField(upload_to=DOC_STORAGE, default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
+    logo = models.ImageField(upload_to="static/polls/img/", default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     remarque = models.TextField(blank=True, null=True, default="")
     description = models.TextField(max_length=500, null=True)
     secteur = models.CharField(
@@ -160,8 +162,11 @@ class Client(models.Model):
     def createForm(**kwargs):
         return AddClient()
     
-    def retrieveForm(form):
-        return AddClient(form) 
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddClient(form, kwargs['files'])
+        else:
+            return AddClient(form) 
 
     def modifyForm(instance):
         return AddClient(instance=instance)  
@@ -221,8 +226,11 @@ class Representant(models.Model):
     def createForm(**kwargs):
         return AddRepresentant()
     
-    def retrieveForm(form):
-        return AddRepresentant(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddRepresentant(form, kwargs['files'])
+        else:
+            return AddRepresentant(form) 
 
     def modifyForm(instance):
         return AddRepresentant(instance=instance)
@@ -291,6 +299,9 @@ class Student(models.Model):
     def __str__(self):
         return self.first_name+' '+self.last_name
     
+    def is_member(self):
+        return getattr(self, 'member', None)
+    
     def get_display_dict(self):
         return {"Prénom":self.first_name, "Nom":self.last_name, "Email":self.mail, "Numéro de téléphone":self.phone_number, "Promotion":self.promotion, "Departement":self.departement}
 
@@ -300,8 +311,11 @@ class Student(models.Model):
     def createForm(**kwargs):
         return AddStudent()
     
-    def retrieveForm(form):
-        return AddStudent(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddStudent(form, kwargs['files'])
+        else:
+            return AddStudent(form) 
 
     def modifyForm(instance):
         return AddStudent(instance=instance)
@@ -383,15 +397,15 @@ class Member(AbstractUser):
         INDEFINI = 'INDEFINI', 'Indéfini'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     je = models.ForeignKey('JE', on_delete=models.CASCADE, null=True)
-    student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True)
+    student = models.OneToOneField('Student', on_delete=models.CASCADE, null=True,related_name='member')
     titre = models.CharField(max_length=5, choices=TITRE_CHOIX)
     email = models.EmailField(max_length=200, primary_key=True)
-    photo = models.ImageField(storage=IMAGE_STORAGE, default='/static/polls/img/undraw_profile.svg') #local
+    photo = models.ImageField(upload_to='static/polls/img/', default='/static/polls/img/undraw_profile.svg') #local
     #photo = models.ImageField(upload_to='polls/', null=True, blank=True) #Par defaut S3
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
-    poste = models.CharField(max_length=40, choices=Poste.choices, default=Poste.INDEFINI, blank=True, null=True)
+    poste = models.CharField(max_length=40, choices=Poste.choices,  blank=True, null=True)
 
     
 
@@ -401,8 +415,11 @@ class Member(AbstractUser):
     def createForm(**kwargs):
         return AddMember()
     
-    def retrieveForm(form):
-        return AddMember(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddMember(form, kwargs['files'])
+        else:
+            return AddMember(form) 
 
     def modifyForm(instance):
         return AddMember(instance=instance)
@@ -422,10 +439,18 @@ class Member(AbstractUser):
         try:
             param = self.parametres
         except ObjectDoesNotExist:
-            param = ParametresUtilisateur(membre=self)
+            role = self.poste
+            num_tel = ""
+            if self.student.phone_number is not None:
+                num_tel = "Tel: "+self.student.phone_number
+
+            signature = "role" +" chez "+self.je.__str__()+"\n"+num_tel+"\n"
+            param = ParametresUtilisateur(membre=self, signature=signature)
             param.save()
 
     def signature_mail(self):
+        if self.parametres.signature:
+            return self.parametres.signature
         role = self.poste
         num_tel = ""
         if self.student.phone_number is not None:
@@ -447,6 +472,7 @@ class ParametresUtilisateur(models.Model):
     param_col_etude_montant_HT = models.BooleanField(default=False, verbose_name="Montant HT")
     param_col_etude_remarque = models.BooleanField(default=True, verbose_name="Remarque")
     param_col_etude_avancement = models.BooleanField(default=True, verbose_name="Avancement")
+    signature = models.TextField(max_length=200, default="", verbose_name="Signature Mail")
 
     def __str__(self):
         return "Paramètres "+self.membre.__str__()
@@ -611,8 +637,11 @@ class Etude(models.Model):
     def createForm(**kwargs):
         return AddEtude()
 
-    def retrieveForm(form):
-        return AddEtude(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddEtude(form, kwargs['files'])
+        else:
+            return AddEtude(form) 
 
     def modifyForm(instance):
         return AddEtude(instance=instance)
@@ -1069,8 +1098,11 @@ class Message(models.Model):
     def createForm(**kwargs):
         return AddMessage(**kwargs)
     
-    def retrieveForm(form):
-        return AddMessage(form)
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddMessage(form, kwargs['files'])
+        else:
+            return AddMessage(form) 
 
     def modifyForm(instance):
         return AddMessage(instance=instance)
@@ -1108,6 +1140,28 @@ class Notification(models.Model):
                 send_mail("Notification SYLEX", self.description, "titoduc1905@gmail.com", [user.email], 
                         fail_silently=False, 
                         connection=connection)
+                
+class CustomMailTemplate(models.Model):
+    je = models.ForeignKey(JE, on_delete=models.CASCADE, related_name="mail_templates")
+    message = models.TextField(max_length=20000)
+    numero = models.IntegerField()
+
+    def __str__(self):
+        return "Template "+str(self.numero)
+    
+class CreateMailTemplate(forms.ModelForm):
+    class Meta:
+        model = CustomMailTemplate
+        exclude = ['je']
+    
+    def __str__(self):
+        return "Nouveau template"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs['class'] = 'form-control'
 
 class AddMessage(forms.ModelForm):
     class Meta:
@@ -1151,6 +1205,24 @@ class AddMember(forms.Form):
         RESPONSABLE_QUALITE = 'RESPONSABLE_QUALITE', 'responsable_qualite'
         DIRECTEUR_COMMUNICATION = 'DIRECTEUR_COMMUNICATION', 'directeur communication'
         DIRECTEUR_RSE = 'DIRECTEUR_RSE', 'directeur RSE'
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        AUTRE = 'AUTRE', 'Autre'
+    class Promotion(models.TextChoices):
+        P022 = '2022', '2022'
+        P023 = '2023', '2023'
+        P024 = '2024', '2024'
+        P025 = '2025', '2025'
+        P026 = '2026', '2026'
+        P027 = '2027', '2027'
+        DD = 'DD', 'Double-diplome'
+        MS = 'MS', 'Master Spécialisé'
+        AUTRE = 'AUTRE', 'Autre'
     first_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}))
     last_name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
     titre = forms.ChoiceField(choices=TITRE_CHOIX, widget=forms.Select(attrs={'class': 'form-control'}))
@@ -1160,12 +1232,8 @@ class AddMember(forms.Form):
     phone_number = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}))
     adress = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Address'}))
     country = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}))
-    promotion = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Promotion'}))
-    poste = forms.ChoiceField(
-        choices=Poste.choices,
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Poste'})
-    )
+    promotion = forms.ChoiceField(choices=Promotion.choices, required=False, widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Promo'}))
+    poste = forms.ChoiceField(choices=Poste.choices,required=False, widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'Poste'}))
     identifiant_je = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'JE Identifier'}))
 
     photo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
@@ -1206,14 +1274,15 @@ class AddMember(forms.Form):
             adress=self.cleaned_data['adress'],
             country=self.cleaned_data['country'],
             promotion=self.cleaned_data['promotion'],
+            
             je=je
         )
         student.save()
         new_member = Member(email=self.cleaned_data['mail'], student=student, je=je, titre=self.cleaned_data['titre'])
-        if 'photo' in self.cleaned_data and self.cleaned_data['photo']:
+        if 'photo' in self.cleaned_data:
             new_member.photo = self.cleaned_data['photo']
-        if 'poste' in self.cleaned_data and self.cleaned_data['poste']:
-            new_member.Poste = self.cleaned_data['poste']
+        if 'poste' in self.cleaned_data:
+            new_member.poste = self.cleaned_data['poste']
         new_member.set_password(self.cleaned_data['password'])
         new_member.save()
         return new_member
@@ -1244,6 +1313,10 @@ class AddStudent(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
+            if field_name=='poste':
+                member = self.is_member()
+                member.poste= self.fields[field_name]
+                member.save()
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
 
@@ -1410,11 +1483,14 @@ class SetParametresUtilisateur(forms.ModelForm):
         
     def col_etude(self):
         return ['param_col_etude_numero', 'param_col_etude_titre', 'param_col_etude_client', 'param_col_etude_responsable', 'param_col_etude_montant_HT', 'param_col_etude_avancement']
+    def demarchage(self):
+        return ['signature']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'custom-control-input'
+        self.fields['signature'].widget.attrs['class'] = 'form-control'
 
 
 class Recrutement(forms.Form):
