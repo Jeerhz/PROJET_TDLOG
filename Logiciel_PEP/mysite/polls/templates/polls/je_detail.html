@@ -482,7 +482,7 @@
                                                     <div class="text-center">
                                                         <img src="{{ membre.photo.url }}" class="img-fluid rounded-circle mb-3" alt="Photo de {{ membre.student.first_name }} {{ membre.student.last_name }}" style="width: 140px; height: 140px; object-fit: cover;">
                                                         <h6 class="font-weight-bold text-primary">{{ membre.student.first_name }} {{ membre.student.last_name }}</h6>
-                                                        <a href="#" class="stretched-link"></a>
+                                                        <a href="{% url 'details' modelName='Student' iD=request.user.student.id %}" class="stretched-link"></a>
                                                     </div>
                                                 </div>
                                             </div>

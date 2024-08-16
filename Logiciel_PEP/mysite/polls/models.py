@@ -1277,11 +1277,12 @@ class AddEtude(forms.ModelForm):
             max_numero = 0
         
         etude = super(AddEtude, self).save(commit=False)
-        etude.je = kwargs['expediteur'].je
+        if 'expediteur' in kwargs:
+            etude.je = kwargs['expediteur'].je
         
         if etude.numero is None:
             etude.numero = max_numero + 1
-        
+
         if commit:
             etude.save()
         

@@ -347,9 +347,20 @@ def details(request, modelName, iD):
             eleve = None
             if modelName == "Etude":
                 etude = instance
-                phases = Phase.objects.filter(etude=instance).order_by('date_debut')
+                phases = Phase.objects.filter(etude=instance).order_by('debut_relatif', 'numero')
                 factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
                 intervenants = etude.get_li_students()
+                clients = Client.objects.all()
+                members = Member.objects.all()
+
+                # If a client is selected, get the relevant representants
+                if etude.client:
+                    representants_interlocuteurs = etude.client.representants()
+                    representants_legaux = etude.client.representants()
+                else:
+                    representants_interlocuteurs = []
+                    representants_legaux = []
+
             if modelName == "Student":
                 eleve = instance
             if modelName == "Client":
@@ -375,6 +386,10 @@ def details(request, modelName, iD):
                 context["phase_form"] = AddPhase()
                 context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
+                context["clients"] = clients
+                context["representants_interlocuteurs"] = representants_interlocuteurs
+                context["representants_legaux"] = representants_legaux
+                context["members"] = members
 
             if client is not None:
                 context["client"] = client
@@ -460,6 +475,90 @@ def edit_student(request, pk):
     else:
         return redirect('login')
     
+
+def modify_etude(request, pk):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        # Retrieve the etude instance, or return a 404 if not found
+        etude = get_object_or_404(Etude, pk=pk)
+        clients = Client.objects.all()
+        members = Member.objects.all()
+
+        # If a client is selected, get the relevant representants
+        if etude.client:
+            representants_interlocuteurs = etude.client.representants()
+            representants_legaux = etude.client.representants()
+        else:
+            representants_interlocuteurs = []
+            representants_legaux = []
+
+        if request.method == 'POST':
+            form = AddEtude(request.POST, instance=etude)
+            if form.is_valid():
+                form.save()  # Save changes to the database
+                return redirect('details', modelName="Etude", iD=etude.id)
+            else:
+                # Debugging: print out form errors if it is not valid
+                print(form.errors)
+        else:
+            form = AddEtude(instance=etude)
+
+        context = {
+            'etude': etude,
+            'clients': clients,
+            'representants_interlocuteurs': representants_interlocuteurs,
+            'representants_legaux': representants_legaux,
+            'members': members,
+            'form': form,
+            'liste_messages': liste_messages,
+            'message_count': message_count,
+            'notification_list': notification_list,
+            'notification_count': len(notification_list),
+            'modelName': "Etude",
+            'iD': etude.id,
+        }
+
+        return render(request, 'polls/page_details.html', context)
+    
+    else:
+        return redirect('login')
+    
+
+def get_client_representants(request):
+    client_id = request.GET.get('client_id')
+    if client_id:
+        client = get_object_or_404(Client, id=client_id)
+        representants = client.representants()
+        
+        interlocuteurs = [
+            {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
+            for r in representants
+        ]
+
+        legaux = [
+            {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
+            for r in representants
+        ]
+
+        return JsonResponse({
+            'interlocuteurs': ''.join([f'<option value="{r["id"]}">{r["name"]}</option>' for r in interlocuteurs]),
+            'legaux': ''.join([f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux])
+        })
+    return JsonResponse({'error': 'Invalid client ID'}, status=400)
+
 def edit_client(request, pk):
     if request.user.is_authenticated:
         # Fetch messages and notifications
@@ -535,9 +634,82 @@ def delete_etude(request, pk):
         etude = get_object_or_404(Etude, pk=pk)
         if request.method == 'POST':
             etude.delete()
-            return redirect('annuaire')  # Adjust the redirect target as needed
+            return redirect('annuaire')  
     else:
-        return redirect('login')  # Adjust as needed
+        return redirect('login')  
+
+
+def delete_phase(request, pk, iD):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        
+        phase = get_object_or_404(Phase, pk=pk)
+        etude = get_object_or_404(Etude, pk=iD)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        if request.method == 'POST':
+            phase.delete()
+            return redirect('details', modelName="Etude", iD=etude.id)
+    else:
+        return redirect('login')
+
+def delete_facture(request, pk, iD):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        
+        facture = get_object_or_404(Facture, pk=pk)
+        etude = get_object_or_404(Etude, pk=iD)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        if request.method == 'POST':
+            facture.delete()
+            return redirect('details', modelName="Etude", iD=etude.id)
+    else:
+        return redirect('login')
+
+
 
 
 
@@ -1753,7 +1925,6 @@ def modifier_recrutement_etude(request, iD):
         return HttpResponse(template.render(context, request))
     
 
-
 def modifier_etude(request, iD):
     # Fetch the Etude instance using the provided iD
     etude = get_object_or_404(Etude, id=iD)
@@ -1774,7 +1945,7 @@ def modifier_etude(request, iD):
         etude.save()
 
         # Redirect to the details page with the correct modelName
-        modelName = 'Etude'  # Assuming 'Etude' is the modelName used in your URL pattern
+        modelName = 'Etude'  
         return HttpResponseRedirect(reverse('details', args=[modelName, iD]))
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
@@ -2020,6 +2191,7 @@ def ajouter_avenant_ce(request, id_etude):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def ajouter_representant(request, id_client):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
@@ -2033,17 +2205,17 @@ def ajouter_representant(request, id_client):
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
         if request.method == 'POST':
-            #try:
+            try:
                 client = Client.objects.get(id=id_client)
                 fetchform = AddRepresentant(request.POST)
-                #if fetchform.is_valid():
-                new_representant = fetchform.save(commit=False)
-                new_representant.client = client
-                new_representant.save()
-                return redirect('details', modelName="Client", iD=id_client)
-                #else :
-                    #raise ValueError("Formulaire corrompu")
-            #except:
+                if fetchform.is_valid():
+                    new_representant = fetchform.save(commit=False)
+                    new_representant.client = client
+                    new_representant.save()
+                    return redirect('details', modelName="Client", iD=id_client)
+                else :
+                    raise ValueError("Formulaire corrompu")
+            except:
                 template = loader.get_template("polls/page_error.html")
                 context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
         else :
@@ -2053,6 +2225,16 @@ def ajouter_representant(request, id_client):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+    
+
+def supprimer_representant(request, id_representant):
+    if request.user.is_authenticated:
+        representant = get_object_or_404(Representant, id=id_representant)
+        id_client = representant.client.id
+        representant.delete()
+        return redirect('details', modelName="Client", iD=id_client)
+    else:
+        return redirect('login')
 
 
 
