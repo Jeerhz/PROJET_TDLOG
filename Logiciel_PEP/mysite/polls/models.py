@@ -441,10 +441,12 @@ class Member(AbstractUser):
         except ObjectDoesNotExist:
             role = self.poste
             num_tel = ""
-            if self.student.phone_number is not None:
-                num_tel = "Tel: "+self.student.phone_number
 
-            signature = "role" +" chez "+self.je.__str__()+"\n"+num_tel+"\n"
+            # Check if self.student is not None before accessing phone_number
+            if self.student is not None and self.student.phone_number is not None:
+                num_tel = "Tel: " + self.student.phone_number
+
+            signature = f"{role} chez {self.je.__str__()}\n{num_tel}\n"
             param = ParametresUtilisateur(membre=self, signature=signature)
             param.save()
 

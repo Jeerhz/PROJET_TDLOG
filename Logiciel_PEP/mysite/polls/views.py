@@ -2075,7 +2075,7 @@ def modifier_je(request, id):
         je.save()
 
         # Redirection vers la page je_detail après la sauvegarde
-        return HttpResponseRedirect(reverse('details'))
+        return HttpResponseRedirect(reverse('je_detail'))
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 

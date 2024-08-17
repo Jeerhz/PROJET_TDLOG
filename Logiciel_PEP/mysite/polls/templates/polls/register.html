@@ -36,7 +36,7 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">S'inscrire</h1>
                             </div>
-                            <form class="user" method="post" action="{% url 'register' %}" enctype="multipart/form-data">
+                            <form class="user" id="registerForm" method="post" action="{% url 'register' %}" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 {% if form.errors %}
                                 <div class="alert alert-danger">
@@ -157,6 +157,42 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- Custom script to validate form fields -->
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            let form = event.target;
+            let valid = true;
+            let requiredFields = [
+                'first_name', 'last_name', 'titre', 'mail', 'password', 
+                'password_confirmation', 'phone_number', 'adress', 'code_postal', 
+                'ville', 'country', 'promotion', 'identifiant_je', 'poste', 'photo'
+            ];
+            
+            requiredFields.forEach(function(fieldName) {
+                let field = form.querySelector(`[name="${fieldName}"]`);
+                if (field && field.value.trim() === '') {
+                    valid = false;
+                    field.classList.add('is-invalid');
+                    let errorElement = document.createElement('div');
+                    errorElement.className = 'invalid-feedback';
+                    errorElement.innerText = 'Ce champ est requis';
+                    field.parentElement.appendChild(errorElement);
+                } else if (field) {
+                    field.classList.remove('is-invalid');
+                    let errorMessages = field.parentElement.querySelectorAll('.invalid-feedback');
+                    errorMessages.forEach(function(msg) {
+                        msg.remove();
+                    });
+                }
+            });
+
+            if (!valid) {
+                event.preventDefault();
+                alert("Veuillez remplir tous les champs requis avant de soumettre le formulaire.");
+            }
+        });
+    </script>
 
 </body>
 

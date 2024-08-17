@@ -846,32 +846,6 @@
 
                                 <!-- End Modify Modal -->
 
-                                <div class="col-lg-13 mb-3">
-                                    <div class="card shadow">
-                                        <table class="table_budget">
-                                            <thead>
-                                                <tr style="text-align: center;">
-                                                    <th></th>
-                                                    <th>JEH</th>
-                                                    <th>Prix H.T. / JEH</th>
-                                                    <th>Total H.T.</th>
-                                                </tr>
-                                            </thead>
-                                            {% if phases %}
-                                            <tbody>
-                                                {% for phase in phases %}
-                                                <tr>
-                                                    <td >Phase {{phase.numero}} - {{phase.titre}} </td>
-                                                    <td  style="text-align:center;">{{phase.nb_JEH}}</td>
-                                                    <td  style="text-align:center;">{{phase.montant_HT_par_JEH}} €</td>
-                                                    <td  style="text-align:center;">{{phase.calcul_mt_HT}} €&nbsp;</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                            {% endif %}
-                                        </table>
-                                    </div>
-                                </div>
                                 <!-- Content Rows -->
                                 <div class="row mt-3">
 
@@ -927,7 +901,7 @@
                                     <!-- Fin de la Card avec les infos -->
                                     <!-- Pie Chart -->
                                     <div class="col-lg-5">
-                                        <div class="card shadow">
+                                        <div class="card shadow mt-4">
                                             <div class="card-header">
                                                 <h6 class="text font-weight-bold primary center">Répartition du budget</h6>
                                             </div>
@@ -2807,9 +2781,9 @@
                     var debut = document.querySelector('input[name="debut"]').value;
                     var fin = document.querySelector('input[name="fin"]').value;
 
-                    if (!debut) {
+                    if (!debut || !fin) {
                         event.preventDefault();  // Prevent form submission
-                        alert('Veuillez renseigner la date de début.');  // Display alert
+                        alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
                         return false;
                     }
                 });
