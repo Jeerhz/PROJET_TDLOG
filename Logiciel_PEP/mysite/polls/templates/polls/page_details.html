@@ -2779,9 +2779,8 @@
                 // Validate form before submission
                 document.getElementById('etude-f-form').addEventListener('submit', function(event) {
                     var debut = document.querySelector('input[name="debut"]').value;
-                    var fin = document.querySelector('input[name="fin"]').value;
 
-                    if (!debut || !fin) {
+                    if (!debut) {
                         event.preventDefault();  // Prevent form submission
                         alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
                         return false;

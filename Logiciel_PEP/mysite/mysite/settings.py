@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
-from decouple import config
+from decouple import config, Csv
 from pathlib import Path
 from celery.schedules import crontab
 
@@ -49,7 +49,7 @@ AWS_S3_FILE_OVERWRITE = config('AWS_S3_FILE_OVERWRITE')
 AWS_DEFAULT_ACL = None
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS = ['13.38.119.68', 'sylex-software.com', 'www.sylex-software.com']
 
 AUTH_USER_MODEL = config('AUTH_USER_MODEL')
 
@@ -85,8 +85,8 @@ MIDDLEWARE = [
     "csp.middleware.CSPMiddleware",
 ]
 
-# SECURE_SSL_REDIRECT = True
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSP_DEFAULT_SRC = ("'none'",)  # Aucune source par défaut
 CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdn.jsdelivr.net",)  # Permet les scripts du même domaine et inline

@@ -735,7 +735,7 @@ def delete_client(request, pk):
             read=False,
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
-        client = get_object_or_404(Student, pk=pk)
+        client = get_object_or_404(Client, pk=pk)
         if request.method == 'POST':
             client.delete()
         return redirect('annuaire')
@@ -1287,7 +1287,7 @@ def editer_pv(request, iD):
             representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
             representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
             #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
-            date = datetime.datetime.now()
+            date = datetime.now()
             annee = date.strftime('%Y')
 
 
@@ -1556,7 +1556,7 @@ def editer_devis(request, iD):
             filename = 'tab_planning.png'
             time1.sleep(1)
             hti = Html2Image()
-            hti.size = (2000, 100+ 50*instance.nb_phases())
+            hti.size = (2000, 200+ 50*instance.nb_phases())
             hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
             image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
             time1.sleep(1)
