@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR</title>
+    <title>BIBI JR</title> 
 
     {% load static %}
     {% load format_duration %}
@@ -638,8 +638,8 @@
 
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 text-center">
-                        <h2 style="font-size: 25px;">{{ etude.id|RefMission }} - {{ etude.client.nom_societe }} : <span style="font-size: 20px;">{{ etude.titre }} </span> </h2>
-                        <h5>{{ etude.problematique}}</h5>
+                        <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.id|RefMission }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
+                        <h5 style="font-size: 16px;">{{ etude.problematique}}</h5>
                     </div>
                     <div class="card-body">
                         <!-- Navigation Tabs -->
@@ -658,10 +658,25 @@
                             <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                                 <!-- Responsable and Statut -->
                                 <div class="mt-3 d-flex justify-content-between">
-                                    <h4 style="font-size: 20px;" style="padding-left: 30px;"> Responsable : {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</h4>
+                                    <h4 style="font-size: 16px;" style="padding-left: 30px;"> 
+                                        <table >
+                                            <tr >
+                                                <td style="padding-bottom: 10px;">
+                                                    {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}
+                                                </td>
+                                                
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    {{ etude.client_interlocuteur }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                    </h4>
 
-                                    <div style="padding-right: 50px;">
-                                        <h4 class="mb-2">
+                                    <div style="padding-right: 0px; text-align: center;">
+                                        <h4 class="mb-2" style="font-size: 16px;">
                                             Statut:
                                             {% if etude.status == 'TERMINEE' %}
                                                 <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
@@ -669,13 +684,12 @@
                                                 <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
                                             {% endif %}
                                         </h4>
-                                        <div class="col-auto right">
+                                        <div class="col-auto right" >
                                             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalEtude">Supprimer l'étude</button>
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modifyModalEtude">Modifier l'étude</button>
                                         </div>
                                     </div>
                                 </div>
-                                <h4 style="font-size: 20px;" style="padding-left: 30px;">Interlocuteur : {{ etude.client_interlocuteur }}</h4>
                                 <!--Fin Responsable et statut-->
                                 
                                 <!-- Modify Modal -->
@@ -697,11 +711,7 @@
                                                         <input type="text" class="form-control" id="titre" name="titre" value="{{ etude.titre }}">
                                                     </div>
                                 
-                                                    <!-- Numéro -->
-                                                    <div class="form-group">
-                                                        <label for="numero">Numéro</label>
-                                                        <input type="number" class="form-control" id="numero" name="numero" value="{{ etude.numero }}">
-                                                    </div>
+                                                    
                                 
                                                     <!-- Description -->
                                                     <div class="form-group">
@@ -773,6 +783,19 @@
                                                         </select>
                                                     </div>
 
+                                                    <!-- Qualite -->
+                                                    <div class="form-group">
+                                                        <label for="responsable">Qualité</label>
+                                                        <select class="form-control" id="qualite" name="qualite">
+                                                            <option value="">Sélectionnez un qualité</option>
+                                                            {% for member in members %}
+                                                                <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
+                                                                    {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+
                                                     <!-- Frais de Dossier -->
                                                     <div class="form-group">
                                                         <label for="frais_dossier">Frais de Dossier</label>
@@ -810,6 +833,13 @@
                                                         <label for="remarque">Remarque</label>
                                                         <textarea class="form-control" id="remarque" name="remarque">{{ etude.remarque }}</textarea>
                                                     </div>
+                                                    
+                                
+                                                    <div class="form-group">
+                                                        <label for="remarque">Raison du contact (Devis)</label>
+                                                        <textarea class="form-control" id="raison_contact" name="raison_contact">{{ etude.raison_contact }}</textarea>
+                                                    </div>
+                                                    
                                 
                                                 </div>
                                                 <div class="modal-footer">
@@ -861,7 +891,7 @@
                                                         <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
                                                         <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
                                                         <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
-                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <span id="etude-frais">{{ etude.remarque }}</span> </li>
+                                                        <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
 
                                                     </ul>
                                                     <!-- Modify Button -->
@@ -875,10 +905,11 @@
                                                         {% csrf_token %}
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut }}"></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.fin }}" readonly></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin }}" readonly></li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
 
                                                         </ul>
                                                         <!-- Save and Cancel Buttons -->
@@ -1190,13 +1221,14 @@
                                         <!-- Card -->
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             {% if phase.modif_duree.exists or phase.modif_debut.exists or phase.modif_jeh.exists %}
-                                            <span class="text-warning">Phase {{ phase.numero }}</span>
+                                            <span class="text-warning">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>                                      
+
                                             <span><i class="fas fa-exclamation-circle fa-2x text-warning mr-2"></i></span>
                                             {% elif phase.suppression.exists %}
-                                            <span class="text-danger">Phase {{ phase.numero }}</span>
+                                            <span class="text-danger">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>
                                             <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
                                             {% else %}
-                                            <span>Phase {{ phase.numero }}</span>
+                                            <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
                                             {% endif %}
                                             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
                                                  Supprimer la phase
@@ -1423,6 +1455,7 @@
                                             </div>
                                         </form>
                                     </div>
+                                    
                                 </div>
                             </div>                            
                             <!-- Fin de l'Onglet Phase-->  
@@ -1519,7 +1552,7 @@
                                                                 <form action="{% url 'ajouter_avenant_ce' id_etude=iD %}" method="post">
                                                                     <div class="modal-body">
                                                                         {% csrf_token %}
-                                                                        {% for phase in etude.phases.all %}
+                                                                        {% for phase in phases %}
                                                                         <h6>Phase {{ phase.numero }}</h6>
                                                                         <ul class="list-group list-group-flush">
                                                                             <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Suppression :</strong> <input type="checkbox" name="suppression{{ phase.id }}" class="form-control" value="{{phase.supprimee}}"></li>
@@ -1593,6 +1626,68 @@
                                         </div>
                                     </div>
                                 </div>
+                                    
+                                <br>
+                                <div class="tab-content" id="verifier_info" style="width: 100%;">
+                                    <div class="dropdown">
+                                        
+                                        <a class="nav-link collapsed" data-toggle="collapse" data-target="#info_devis"
+                                                aria-expanded="true" aria-controls="info_devis">Informations Devis
+                                        </a>
+                                        <div id="info_devis" class="collapse"  data-parent="#accordionSidebar" style="padding:30px; line-height: normal;">
+                                            <div>Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
+                                                client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
+                                            </div>
+                                            <div>
+                                                Votre structure : <span id="verifier-client_description" style="color:#000">{% if client.description %} {{ client.description }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                            </div>
+                                            <div>
+                                                Context de l'étude : <span id="verifier-contexte" style="color:#000">{% if etude.contexte  %} {{ etude.contexte  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                            </div>
+                                            <div>
+                                                Problématique : <span id="verifier-problematique" style="color:#000">{% if etude.problematique  %} {{ etude.problematique  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                            </div>
+                                            <div>
+                                                Vos interlocuteurs : 
+                                                <li>{{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} {{poste}} {{etude.responsable.student.mail}}</li> 
+                                                <li>{{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} Qualité {{etude.resp_qualite.student.mail}}</li> 
+
+                                            </div>
+                                            <div>
+                                                Nos intervenants : <span id="verifier-paragraphe_intervenant_devis" style="color:#000">{{ etude.paragraphe_intervenant_devis }}</span>
+                                            </div>
+                                            <br>
+                                            {% for phase in phases %}
+                                            <div> 
+                                                Phase  <span id="verifier-phase-{{id}}-numero" style="color:#000">{{phase.numero}}</span> <span id="verifier-phase-{{id}}-nb_JEH" style="color:#000">{{ phase.nb_JEH }} </span>{% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH}}, débute {{ phase.debut_relatif }} semaines après la signature et dure {{phase.duree_semaine}} semaines.  
+                                            </div>
+                                            <div>
+                                                Description : {% if phase.description  %} <span id="verifier-phase-{{id}}-description" style="color:#000">{{ phase.description  }}</span> {% else %}<span style="color: red;"> manquant</span> {% endif %}
+                                            </div>
+                                            <br>
+                                            {% endfor %}
+                                           
+                                            <div>
+                                                 Rappel : 
+                                            <li>ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</li>
+                                            <li>Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
+                                                Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
+                                                </li>
+                                            <li>Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</li>
+                                            </div>
+                                           
+
+                                            
+                               
+                                        </div>
+                                        
+                                    </div>
+                                        
+                                </div>
+                                    
+                                <br>
+                                    
+                                
                             </div>
                             <!-- Fin de l'Onglet Documents -->
 
@@ -1742,7 +1837,7 @@
                                         <form action="{% url 'ajouter_facture' id_etude=iD %}" method="post">
                                             <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
                                                 <i class="fas fa-plus"></i>
-                                                <strong>Facturation</strong>
+                                                <strong>Ajouter une facture</strong>
                                             </div>
                                             <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
                                                 <div class="card-body">
@@ -1822,12 +1917,12 @@
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    <td  > {{facture.type_facture}}  </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <td  > {{facture.type_facture}} ({{facture.pourcentage_JEH|FormatNombres}} %) </td>
+                                                    <td  > {{facture.type_facture}}  </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                       

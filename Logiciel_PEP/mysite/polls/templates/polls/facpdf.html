@@ -13,6 +13,8 @@
 			content="width=device-width, initial-scale=1"
 		/>
 		<!-- html2pdf CDN link -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
 			integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
@@ -349,11 +351,10 @@
 	</head>
 	<body>
         <div class="page-wrapper">
-            <button type="button" class=" bouton_pdf" id="download-button">Télécharger</button>
+            <button type="button" class=" bouton_pdf" id="download_pdf">Télécharger</button>
         </div>
         
-        
-        <div id = "invoice" class="container">
+        <div id = "invoice" class="container" style="width: 210mm; height: 297mm;">
             <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
             
             <div class="section2">
@@ -432,7 +433,7 @@
                 <tbody>
                     {% if etude.frais_dossier %}
                         <tr>
-                            <td class="align-left"><span>Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} % de {{etude.frais_dossier|FormatNombres}} EUR.) </span></td>
+                            <td class="align-left" contenteditable="true"><span>Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} % de {{etude.frais_dossier|FormatNombres}} EUR.) </span></td>
                             <td class="align-right" contenteditable="true">{{facture.fac_frais|FormatNombres}}</td>
                         </tr>
                     {% endif %}
@@ -557,4 +558,43 @@
             document.getElementById('future-date').textContent = formattedFutureDate;
             </script>
         </body>
+        <script>
+            document.getElementById('download_pdf').addEventListener('click', async () => {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+            
+                // Capture the HTML content
+                const content = document.getElementById('invoice');
+                const canvas = await html2canvas(content, { scale: 2 }); // Adjust the scale for better quality
+                const imgData = canvas.toDataURL('image/png');
+            
+                // Calculate dimensions for A4
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width; // Image height calculated proportionally
+                let heightLeft = imgHeight;
+                let position = 0;
+            
+                // Add the first page
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            
+                // Add more pages if necessary
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+            
+                // Correctly finalize and save the PDF, avoiding an extra blank page
+                if (heightLeft < 0) {
+                    pdf.deletePage(pdf.getNumberOfPages());
+                }
+            
+                pdf.save('{{facture}}.pdf');
+            });
+        </script>
+            
+        
 </html>

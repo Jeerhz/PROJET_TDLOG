@@ -121,7 +121,7 @@ class Client(models.Model):
     rue = models.CharField(max_length = 300)
     ville = models.CharField(max_length = 100)
     code_postal = models.CharField(max_length = 20)
-    country = models.CharField(max_length = 100)
+    country = models.CharField(max_length = 100,verbose_name='pays')
     #titre_representant_legale = models.CharField(max_length = 5, choices=TITRE_CHOIX)
     #nom_representant_legale = models.CharField(max_length = 100)
     #prenom_representant_legale = models.CharField(max_length = 100)
@@ -183,10 +183,10 @@ class Representant(models.Model):
 
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
-    first_name = models.CharField(max_length = 200)
-    last_name = models.CharField(max_length = 200)
+    first_name = models.CharField(max_length = 200,verbose_name='prénom')
+    last_name = models.CharField(max_length = 200,verbose_name='nom')
     mail = models.EmailField(max_length = 200)
-    phone_number = models.CharField(max_length=200, blank=True, null=True)
+    phone_number = models.CharField(max_length=200, blank=True, null=True,verbose_name='téléphone')
     #je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
@@ -281,18 +281,18 @@ class Student(models.Model):
         AUTRE = 'AUTRE', 'Autre'
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     titre= models.CharField(max_length = 5, choices=TITRE_CHOIX)
-    first_name = models.CharField(max_length = 200)
-    last_name = models.CharField(max_length = 200)
+    first_name = models.CharField(max_length = 200,verbose_name='prénom')
+    last_name = models.CharField(max_length = 200,verbose_name='nom')
     mail = models.EmailField(max_length = 200)
-    phone_number = models.CharField(max_length=200, blank=True, null=True)
-    adress = models.CharField(max_length = 300, null=True)
+    phone_number = models.CharField(max_length=200, blank=True, null=True,verbose_name='téléphone')
+    adress = models.CharField(max_length = 300, null=True,verbose_name='rue')
     ville = models.CharField(max_length = 300, null=True, default ="Champs-sur-Marne")
     code_postal=  models.CharField(max_length = 10, null=True, default = "77420")
-    country = models.CharField(max_length = 100, null=True)
+    country = models.CharField(max_length = 100, null=True,verbose_name='pays')
     promotion = models.CharField(max_length = 200, choices=Promotion.choices, default=Promotion.P026)
     departement = models.CharField(max_length=20, choices=Departement.choices, default=Departement.AUTRE)
     je = models.ForeignKey(JE, on_delete=models.CASCADE, null=True)
-    numero_ss = models.CharField(max_length=14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits'))], default="0")
+    numero_ss = models.CharField(max_length=14, validators=[RegexValidator(r'^[0-9]+$', _('This field must only contain digits'))], default="0",verbose_name='n° de sécurité sociale')
     remarque = models.TextField(blank=True, null=True, default="")
 
 
@@ -506,21 +506,30 @@ class Etude(models.Model):
     description = models.TextField(max_length=500, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
     debut = models.DateField(default=timezone.now, blank=True, null=True)
-    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes")
-    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes")
+    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes",verbose_name='qualité')
+    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes",verbose_name='suiveur')
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     client_interlocuteur= models.ForeignKey(Representant, on_delete=models.CASCADE, related_name='client_interlocuteur')
     client_representant_legale= models.ForeignKey(Representant, on_delete=models.CASCADE,related_name='client_representant_legale')
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
-    frais_dossier = models.FloatField(default=0)
-    taux_tva = models.FloatField(default=20)
+    frais_dossier = models.FloatField(default=0,verbose_name='frais de dossier')
+    taux_tva = models.FloatField(default=20,verbose_name='% TVA')
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
     remarque = models.TextField(blank=True, null=True, default="")
+    raison_contact = models.TextField(blank=True, null=True, default="")
+    contexte= models.TextField(blank=True, null=True, default="")
+    objectifs = models.TextField(blank=True, null=True, default="")
+    periode_de_garantie = models.IntegerField(default=90)
 
+    methodologie= models.TextField(blank=True, null=True, default="")
+    element_a_fournir= models.TextField(blank=True, null=True, default="",verbose_name ="éléments à fournir du client")
+    
+    paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
+    
     def __str__(self):
         return self.titre
     
@@ -629,7 +638,7 @@ class Etude(models.Model):
             except :
                 new_ce = ConventionEtude(etude=self)
                 new_ce.save()
-        elif(self.type_convention == "Convention d'étude"):
+        elif(self.type_convention == "Convention cadre"):
             try :
                 ConventionCadre.objects.get(etude=self)
             except :
@@ -653,6 +662,10 @@ class Etude(models.Model):
 
     def nombre_phases(self):
         return Phase.objects.filter(etude=self).count()
+    
+    def phases(self):
+        phases = Phase.objects.filter(etude=self).order_by('numero')
+        return phases
 
     def ce_editable(self):
         return self.responsable is not None and self.resp_qualite is not None
@@ -824,7 +837,6 @@ class ConventionEtude(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="conventions_etude")
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
-
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
@@ -974,7 +986,15 @@ class ModificationPhaseRDM(models.Model):
 
 
 class Phase(models.Model):
-    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='phases')
+    bon_de_commande = models.ForeignKey(
+        'BonCommande',  # Reference to the related model
+        null=True,      # Allow the ForeignKey field to be None in the database
+        blank=True,     # Allow the field to be empty in forms
+        default=None,   # Set the default value to None
+        on_delete=models.CASCADE,  # Define behavior when the related object is deleted
+        related_name='bdc'  # Related name for reverse lookup
+    )
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='etude')
     debut_relatif = models.IntegerField(default = 0)
     duree_semaine = models.IntegerField(default = 2)
     date_debut = models.DateField(default=date.today)
@@ -1327,7 +1347,7 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie']
 
     def __str__(self):
         return "Informations de l'étude"
@@ -1368,9 +1388,7 @@ class AddEtude(forms.ModelForm):
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs['class'] = 'form-control'
-
-
-    
+ 
 class AddClient(forms.ModelForm):
     class Meta:
         model = Client
@@ -1400,7 +1418,7 @@ class AddClient(forms.ModelForm):
 class AddRepresentant(forms.ModelForm):
     class Meta:
         model = Representant
-        exclude = ['je','contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage']
+        exclude = ['je','contact_rec','contenu_mail','date_mail','date_reponse','contenu_reponse','demarchage','client','contact_recent']
     def __str__(self):
         return "Informations du représentant"
     def name(self):
@@ -1420,7 +1438,7 @@ class AddRepresentant(forms.ModelForm):
 class AddPhase(forms.ModelForm):
     class Meta:
         model = Phase
-        exclude = ['etude', 'date_debut','date_fin', 'supprimee']
+        exclude = ['etude', 'date_debut', 'date_fin', 'supprimee']
     def __str__(self):
         return "Information de la Phase"
     def name(self):
