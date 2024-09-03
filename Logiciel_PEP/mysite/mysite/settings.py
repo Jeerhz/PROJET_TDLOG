@@ -81,11 +81,11 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylex',
-        'USER': 'edgar_admin',
-        'PASSWORD': '/Tito1905',
+        'NAME': 'db_sylog',
+        'USER': 'postgres',
+        'PASSWORD': 'sylog',
         'HOST': 'localhost',  
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 
@@ -131,8 +131,7 @@ DATETIME_FORMAT = 'd/m/Y H:i:s'
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "polls/static")
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'polls/')
-MEDIA_URL = '/polls/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Default primary key field type

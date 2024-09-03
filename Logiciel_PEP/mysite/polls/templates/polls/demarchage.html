@@ -366,7 +366,7 @@
                                 {% if liste_messages.0 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_1.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -382,7 +382,7 @@
                                 {% if liste_messages.1 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_2.svg' %}"
                                             alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
@@ -396,7 +396,7 @@
                                 {% if liste_messages.2 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="{% static 'polls/img/undraw_profile_3.svg' %}"
                                             alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
@@ -410,7 +410,7 @@
                                 {% if liste_messages.3 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
                                             alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -432,7 +432,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
+                                    src="{% static 'polls/img/undraw_profile.svg' %}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -595,63 +595,6 @@
                                                         <button type="submit" class="btn btn-primary">supprimer</button>
                                                     </form>
                                                 </td>
-                                                <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
-                                                                <div class="modal-body p-4">
-                                                                    <div class="row">
-                                                                        {% if request.user.je.mail_templates.exists %}
-                                                                            {% for template in request.user.je.mail_templates.all %}
-                                                                                <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
-                                                                            {% endfor %}
-                                                                        {% else %}
-                                                                        <p>Aucun template</p>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                    <hr>
-                                                                    {% csrf_token %}
-                                                                    <div class="row">
-                                                                        <div class="input-group">
-                                                                            <div class="input-group-prepend">
-                                                                                <span class="input-group-text">Destinataire</span>
-                                                                            </div>
-                                                                            <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
-                                                                        </div>
-                                                                        <div class="input-group">
-                                                                            <div class="input-group-prepend">
-                                                                                <span class="input-group-text">Objet</span>
-                                                                            </div>
-                                                                            <input type="text" class="form-control" name="subject" value="Mission">
-                                                                        </div>
-                                                                    </div>
-                                                                    <hr>
-                                                                    <div class="row">
-                                                                        <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
-                                                                    </div>
-                                                                    <hr>
-                                                                    <div class="row">
-                                                                        <div class="col-6">
-                                                                            <strong>Signature</strong>
-                                                                            <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
-                                                                            <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                                                    <button type="submit" class="btn btn-primary">Envoyer</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </tr>
                                         {% endif %}
                                         {% endfor %} 
@@ -704,65 +647,6 @@
 
                                                 </td>
                                             </tr>
-                                            <!-- Visualisation mail -->
-            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
-                            <div class="modal-body p-4">
-                                <div class="row">
-                                    {% if request.user.je.mail_templates.exists %}
-                                        {% for template in request.user.je.mail_templates.all %}
-                                            <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
-                                        {% endfor %}
-                                    {% else %}
-                                    <p>Aucun template</p>
-                                    {% endif %}
-                                </div>
-                                <hr>
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Destinataire</span>
-                                        </div>
-                                        <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
-                                    </div>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Objet</span>
-                                        </div>
-                                        <input type="text" class="form-control" name="subject" value="Mission">
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <strong>Signature</strong>
-                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
-                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                <button type="submit" class="btn btn-primary">Envoyer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <!-- Fin formulaire envoi mail -->
                                             {% endif %}
                                         {% endfor %}
                                     {% endfor %}
