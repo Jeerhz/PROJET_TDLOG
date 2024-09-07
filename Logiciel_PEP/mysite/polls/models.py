@@ -934,6 +934,13 @@ class BonCommande(models.Model):
             self.numero = self.convention_cadre.etude.numero*100 + max(self.convention_cadre.bons_commande.all())+1
         super(BonCommande, self).save(*args, **kwargs)
 
+    def __str__(self):
+        return str(self.numero).zfill(3)
+
+class AssociationPhaseBDC(models.Model):
+    bon_de_commande = models.ForeignKey('BonCommande', on_delete=models.CASCADE, related_name="associations_phase")
+    phase = models.ForeignKey('Phase', on_delete=models.CASCADE, related_name="associations_bdc")
+
     
 class RDM(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="rdm")
@@ -986,14 +993,6 @@ class ModificationPhaseRDM(models.Model):
 
 
 class Phase(models.Model):
-    bon_de_commande = models.ForeignKey(
-        'BonCommande',  # Reference to the related model
-        null=True,      # Allow the ForeignKey field to be None in the database
-        blank=True,     # Allow the field to be empty in forms
-        default=None,   # Set the default value to None
-        on_delete=models.CASCADE,  # Define behavior when the related object is deleted
-        related_name='bdc'  # Related name for reverse lookup
-    )
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='etude')
     debut_relatif = models.IntegerField(default = 0)
     duree_semaine = models.IntegerField(default = 2)
@@ -1065,6 +1064,10 @@ class Phase(models.Model):
     def get_assignations_JEH(self):
         assignations_JEH = AssignationJEH.objects.filter(phase=self)
         return assignations_JEH
+    
+    def bon(self):
+        association_bdc = self.associations_bdc
+        return association_bdc.first().bon_de_commande if association_bdc.exists() else None
     
 
 class AssignationJEH(models.Model):

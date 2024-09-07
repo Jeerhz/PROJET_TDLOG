@@ -48,7 +48,7 @@ urlpatterns = [
     path("editer_convention/<int:iD>", views.editer_convention, name="editer_convention"),
     path("editer_devis/<int:iD>", views.editer_devis, name="editer_devis"),
     path("editer_avenant_ce/<int:iD>", views.editer_avenant_ce, name="editer_avenant_ce"),
-    path("editer_bon/<int:iD>", views.editer_bon, name="editer_bon"),
+    path("editer_bon/<int:id_bon>", views.editer_bon, name="editer_bon"),
     path("add_intervenant/<int:id_etude>/<int:id_student>", views.add_intervenant, name="add_intervenant"),
     path("search_suggestions_student/<int:id_etude>", views.search_suggestions_student, name='search_suggestions_student'),
     path("demarchage/", views.demarchage, name='demarchage'),
@@ -67,6 +67,8 @@ urlpatterns = [
     path("BVs/", views.BVs, name="BVs"),
     path("create_mail_template/", views.create_mail_template, name="create_mail_template"),
     path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
+    path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
+    path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
 
 
 

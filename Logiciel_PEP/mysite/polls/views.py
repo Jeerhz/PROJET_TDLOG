@@ -82,7 +82,26 @@ from .models import (
     AjouterRemarqueRepresentant,
     CustomMailTemplate,
     CreateMailTemplate,
+    AssociationPhaseBDC,
 )
+
+def general_context(request):
+    liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")
+    message_count = liste_messages.count()
+    all_notifications = request.user.notifications.order_by("-date_effet")
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
+    context = {
+        "liste_messages": liste_messages,
+        "message_count": message_count,
+        "notification_list":notification_list,
+        "notification_count":notification_count,
+    }
+    return context
 
 def my_view(request):
     return render(request, 'polls/facpdf.html')
@@ -1678,16 +1697,15 @@ def editer_avenant_ce(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
-def editer_bon(request, iD):
+def editer_bon(request, id_bon):
     if request.user.is_authenticated:
         try:
-            instance = Etude.objects.get(id=iD)
-            client = instance.client
             template = DocxTemplate("polls\\templates\\polls\\Bon_de_Commande.docx")
-            bon = BonCommande(cc=instance.convention())
-            bon.save()
-            responsable = instance.responsable
-            context = {"etude": instance, "client": client, "responsable":responsable}
+            bon = BonCommande.objects.get(id=id_bon)
+            etude = bon.convention_cadre.etude
+            responsable = etude.responsable
+            client = etude.client
+            context = {"etude": etude, "client": client, "responsable":responsable}
             # Load the template
 
             # Render the document
@@ -1700,7 +1718,7 @@ def editer_bon(request, iD):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"Devis_{bon.__str__()}.docx"
+            filename = f"Bon_de_commande_{bon.__str__()}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
@@ -1713,6 +1731,53 @@ def editer_bon(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
+def get_object_info(request, model_name, object_id):
+    if request.user.is_authenticated:
+        try:
+            model = apps.get_model(app_label="polls", model_name=model_name)
+            object = model.objects.get(id=object_id)
+            fields = {}
+            for field in object._meta.fields:
+                field_name = field.name
+                field_value = getattr(object, field_name)
+                if field.is_relation and field.many_to_one:
+                    # For ForeignKey, return the related object's primary key or other attribute
+                    related_obj = getattr(object, field_name)
+                    fields[field_name] = related_obj.pk if related_obj else None
+                else:
+                    fields[field_name] = field_value
+
+            fields["success"] = True
+            return JsonResponse(fields)
+        except :
+            return JsonResponse({"success" : False, "error_message" : "Un problème a été détecté dans la base de données."})
+
+    else:
+        return JsonResponse({"success" : False, "error_message" : "You have been identified as not logged in."})
+    
+def modifier_bon_commande(request, id_etude, id_bon):
+    if request.user.is_authenticated:
+        try:
+            etude = Etude.objects.get(id=id_etude)
+            if(id_bon == 0):
+                bon = BonCommande(convention_cadre=etude.convention(), remarque=request.POST["remarque_bdc"], numero=request.POST["numero_bdc"]).save()
+            else:
+                bon = BonCommande.objects.get(id=id_bon)
+                bon.remarque = request.POST["remarque_bdc"]
+                bon.numero = request.POST["numero_bdc"]
+                bon.save()
+            
+            return redirect('details', modelName="Etude", iD=id_etude)
+        except :
+            context = general_context(request)
+            template = loader.get_template("polls/page_error.html")
+            context["error_message"] = "Un problème a été détecté dans la base de données."
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 #---- FONCTIONS POUR STATISTIQUES ------------
 
@@ -1904,8 +1969,26 @@ def ajouter_phase(request, id_etude):
             fetchform = AddPhase(request.POST)
             if fetchform.is_valid():
                 etude = Etude.objects.get(id=id_etude)
+                numero_bdc = request.POST.get("numero_bdc", None)
                 count_phase = Phase.objects.filter(etude=etude).count()
-                fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
+                new_phase = fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
+                if etude.type_convention == "Convention cadre" and numero_bdc:
+                    bdcs = BonCommande.objects.filter(convention_cadre__etude=etude, numero=numero_bdc)
+                    bdc = None
+                    if(bdcs.exists()):
+                        bdc = bdcs[0]
+                    else:
+                        gen_context = general_context(request)
+                        gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                        template = loader.get_template("polls/page_error.html")
+                        return HttpResponse(template.render(gen_context, request))
+                    new_ass_phase_bdc = AssociationPhaseBDC(phase=new_phase, bon_de_commande=bdc)
+                    new_ass_phase_bdc.save()
+            else :
+                gen_context = general_context(request)
+                gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                template = loader.get_template("polls/page_error.html")
+                return HttpResponse(template.render(gen_context, request))
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
