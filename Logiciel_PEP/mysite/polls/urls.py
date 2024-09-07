@@ -67,6 +67,10 @@ urlpatterns = [
     path("BVs/", views.BVs, name="BVs"),
     path("create_mail_template/", views.create_mail_template, name="create_mail_template"),
     path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
+    path('upload_students/', views.upload_students, name='upload_students'),
+    path('verifier_etude/<int:iD>/', views.verifier_etude, name='verifier_etude'),
+
+    
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
 

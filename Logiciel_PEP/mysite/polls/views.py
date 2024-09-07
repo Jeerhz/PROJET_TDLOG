@@ -1,6 +1,9 @@
 import json
 import os
 import openpyxl
+import csv
+from io import StringIO
+
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
@@ -82,6 +85,7 @@ from .models import (
     AjouterRemarqueRepresentant,
     CustomMailTemplate,
     CreateMailTemplate,
+    StudentCSVUploadForm,
     AssociationPhaseBDC,
 )
 
@@ -383,6 +387,7 @@ def details(request, modelName, iD):
                 members = Member.objects.all()
                 respo = instance.responsable.student
                 poste = "Chef de Projet"
+                
                 if respo.titre =='Mme':
                     poste= "Cheffe de Projet"
                 # If a client is selected, get the relevant representants
@@ -848,6 +853,75 @@ def input(request, modelName, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def upload_students(request):
+    if request.method == 'POST':
+        form = StudentCSVUploadForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            csv_file = request.FILES.get('csv_file')
+
+            # Check if the file is a CSV
+            if not csv_file.name.endswith('.csv'):
+                print('This is not a CSV file.')
+                return redirect('upload_students')
+
+            try:
+                # Decode the uploaded file and read its content with correct delimiter
+                data = csv_file.read().decode('utf-8')
+                # Use csv.Sniffer to detect the delimiter
+                sniffer = csv.Sniffer()
+                detected_dialect = sniffer.sniff(data)
+                delimiter = detected_dialect.delimiter
+
+                # Read the file using the detected delimiter
+                reader = csv.reader(StringIO(data), delimiter=delimiter)
+                # Skip the header row if present
+                header = next(reader, None)
+                
+                # Check if header matches the expected columns
+                if len(header) != 11:
+                    print(f'Unexpected header format. Expected 9 columns, got {len(header)}.')
+                    return redirect('upload_students')
+                
+                # Iterate through each row in the CSV
+                for row in reader:
+                    if len(row) != 11:
+                        print(f"Error processing row: {row}. Incorrect number of columns.")
+                        continue
+                    
+                    # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
+                    try:
+                        titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays, depart, promo = row
+                        je = request.user.je
+                        # Create or update the student record
+                        Student.objects.get_or_create(
+                            je=je,
+                            first_name=first_name.strip(),
+                            last_name=last_name.strip(),
+                            mail=mail.strip(),
+                            titre=titre.strip(),
+                            phone_number=phone_number.strip(),
+                            adress=rue.strip(),
+                            ville=ville.strip(),
+                            code_postal=code_postal.strip(),
+                            country=pays.strip(),
+                            departement=depart.strip(),
+                            promotion=promo.strip()
+
+                        )
+                    except Exception as e:
+                        print(f"Error processing row {row}: {e}")
+            except Exception as e:
+                print(f"Error reading file: {e}")  # Debugging statement
+
+            print('Students have been successfully added!')
+            return redirect('upload_students')
+    else:
+        form = StudentCSVUploadForm()
+
+
+    return redirect('annuaire')
+    #return render(request, 'polls/annuaire.html', {'form': form})
 
 def facture(request, id_facture):
     if request.user.is_authenticated:
@@ -916,7 +990,8 @@ def ba(request, iD):
         try:
             eleve= Student.objects.get(id=iD)
             template = loader.get_template("polls/ba.html")
-            context={"eleve":eleve}
+            president={"first_name" : "Thomas", "last_name" : "Debray"}
+            context={"eleve":eleve,"president":president}
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -2207,6 +2282,55 @@ def modifier_etude(request, iD):
         etude.frais_dossier = frais_dossier
         etude.remarque=remarque
         etude.save()
+
+        # Redirect to the details page with the correct modelName
+        modelName = 'Etude'  
+        return HttpResponseRedirect(reverse('details', args=[modelName, iD]))
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+def verifier_etude(request, iD):
+    # Fetch the Etude instance using the provided iD
+    etude = get_object_or_404(Etude, id=iD)
+    
+    client=etude.client
+    if request.method == 'POST':
+        # Get the form data from the request
+        debut = request.POST.get('debut')
+        frais_dossier = request.POST.get('frais_dossier')
+        remarque= request.POST.get('remarque')
+        client_description= request.POST.get('client_description')
+        etude_contexte= request.POST.get('etude_contexte')
+        paragraphe_intervenant_devis= request.POST.get('paragraphe_intervenant_devis')
+        cdp_mail = request.POST.get('chefdep')
+        cdp = Member.objects.filter(email=cdp_mail).first()
+        quali_mail = request.POST.get('qualite')
+        quali=Member.objects.filter(email=quali_mail).first()
+        garantie = request.POST.get('per_gara')
+    
+
+        # Allow 'debut' to be null, and only update if it's provided
+        if debut:
+            etude.debut = debut
+        client.description=client_description
+            
+
+        # 'fin' should not be updated, as it's set to readonly in the form
+
+        # Update the other fields
+        etude.frais_dossier = frais_dossier
+        etude.remarque=remarque
+        etude.contexte=etude_contexte
+        etude.paragraphe_intervenant_devis=paragraphe_intervenant_devis
+        etude.responsable=cdp
+        etude.resp_qualite=quali
+        etude.periode_de_garantie= garantie
+
+        etude.save()
+        client.description= client_description
+        client.save()
+        
 
         # Redirect to the details page with the correct modelName
         modelName = 'Etude'  

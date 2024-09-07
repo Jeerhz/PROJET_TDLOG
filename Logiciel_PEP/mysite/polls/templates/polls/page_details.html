@@ -1673,58 +1673,156 @@
                                 </div>
                                     
                                 <br>
-                                <div class="tab-content" id="verifier_info" style="width: 100%;">
+                                <div >
+                                    <div class="card shadow">
+                                        <div class="card-body">
+                                            <div class="tab-content" id="verifier_info">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
+                                                        client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
+                                                    </li>
+                                                    
+                                                    <li class="list-group-item"> Frais de dossier : <span style="color:#000" id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
+                                                    <li class="list-group-item">
+                                                        Votre structure : <span id="verifier-client_description" style="color:#000">{% if etude.client.description %} {{ etude.client.description }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        Context de l'étude : <span id="verifier-contexte" style="color:#000">{% if etude.contexte  %} {{ etude.contexte  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        Problématique : <span id="verifier-problematique" style="color:#000">{% if etude.problematique  %} {{ etude.problematique  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        Vos interlocuteurs : 
+                                                        <div style="color:#000">{{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} {{poste}} {{etude.responsable.student.mail}}</div> 
+                                                        <div style="color:#000">{{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} Qualité {{etude.resp_qualite.student.mail}}</div> 
+        
+                                                    </li>
+                                                    
+                                                    <li class="list-group-item">
+                                                        Nos intervenants : <span id="verifier-paragraphe_intervenant_devis" style="color:#000">{{ etude.paragraphe_intervenant_devis }}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                    {% for phase in phases %}
+                                                    
+                                                    <div> 
+                                                        Phase  <span id="verifier-phase-{{id}}-numero" style="color:#000">{{phase.numero}}</span> : <span id="verifier-phase-{{id}}-nb_JEH" style="color:#000">{{ phase.nb_JEH }} </span>{% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €, qui débute {{ phase.debut_relatif }} semaines après la signature et dure {{phase.duree_semaine}} semaines.  
+                                                    </div>
+                                                    <div>
+                                                        Description : {% if phase.description  %} <span id="verifier-phase-{{id}}-description" style="color:#000">{{ phase.description  }}</span> {% else %}<span style="color: red;"> manquant</span> {% endif %}
+                                                    </div>
+                                                    <br>
+                                                    {% endfor %}
+                                                    </li>
+                                                    
+                                                    <li class="list-group-item">
+                                                        L’étude prendra fin <span style="color:#000">{{etude.duree_semaine}}</span> semaines après la date de signature de la Convention d’Étude sous réserve de fourniture des documents nécessaires à la réalisation de l’étude tels que précisés dans le cahier des charges. L’ensemble des documents devront être remis au Client et/ou signés avant la fin.
+Si l’étude se termine dans un délai plus court, la signature du document d’acceptation du livrable la clôture. Si l’étude dure plus longtemps, elle pourra faire l’objet d’avenants de délai.
+Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</span> jours à partir de la livraison, délai durant lequel le Client pourra demander à PEP des modifications.
+
+                                                    </li>
+                                                    <br>
+                                                    
+                                                   
+                                                    <div style="border: 20px; margin: 20px;">
+                                                        <strong>Rappel : </strong> 
+                                                    <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
+                                                    <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
+                                                        Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
+                                                        </div>
+                                                    <div> - Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</div>
+                                                    </div>
+
+                                                </ul>
+                                                <!-- Modify Button -->
+                                                <div class="text-right">
+                                                    <button type="button" class="btn btn-outline-secondary mt-3" id="modifier_verif-etude">Modifier</button>
+                                                </div>
+                                                <!-- End Modify Button -->
+                                            </div>
+                                            <div class="tab-content d-none" id="verifier_info-form">
+                                                <form action="{% url 'verifier_etude' iD=etude.id %}" method="post" id="verifier_info-f-form">
+                                                    {% csrf_token %}
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                        <li class="list-group-item">
+                                                            Votre structure : <input type="char" name="client_description" class="form-control" value="{{ etude.client.description }}">
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Context de l'étude : 
+                                                            <input type="char" name="etude_contexte" class="form-control" value="{{ etude.contexte}}">
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Problématique :
+                                                            <input type="char" name="problematique" class="form-control" value="{{ etude.problematique }}">
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Suiveur :
+                                                            <select name="chefdep" class="form-control">
+                                                                <option value="">Sélectionnez un suiveur</option>
+                                                                    {% for member in members %}
+                                                                        <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
+                                                                            {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
+                                                                        </option>
+                                                                    {% endfor %}
+                                                            </select>
+                                                        </li>
+                                                        
+                                                        <li class="list-group-item">
+                                                            Qualité :
+                                                            <select name="qualite" class="form-control">
+                                                                <option value="">Sélectionnez un suiveur</option>
+                                                                    {% for member in members %}
+                                                                        <option value="{{ member.email }}" {% if etude.resp_qualite and etude.resp_qualite.email == member.email %}selected{% endif %}>
+                                                                            {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
+                                                                        </option>
+                                                                    {% endfor %}
+                                                            </select>
+                                                        </li>
+                                                    
+                                                        <li class="list-group-item">
+                                                            Nos intervenants :
+                                                            <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}">
+
+                                                        </li>
+                                                        
+                                                        <li class="list-group-item">
+                                                            Période de garantie :
+                                                            <input type="char" name="per_gara" class="form-control" value="{{ etude.periode_de_garantie }}">
+
+                                                        </li>
+                                                            
+                                                           
+                
+                                                            
+                                               
+                                                       
+                                                    </ul>
+                                                    <!-- Save and Cancel Buttons -->
+                                                    <div class="row justify-content-between">
+                                                        <div class="col-auto">
+                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-modif_etude">Annuler</button>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Save and Cancel Buttons -->
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    
+                                </div>
+                                <div class="tab-content"  style="width: 100%;">
                                     <div class="dropdown">
                                         
                                         <a class="nav-link collapsed" data-toggle="collapse" data-target="#info_devis"
                                                 aria-expanded="true" aria-controls="info_devis">Informations Devis
                                         </a>
-                                        <div id="info_devis" class="collapse"  data-parent="#accordionSidebar" style="padding:30px; line-height: normal;">
-                                            <div>Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
-                                                client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
-                                            </div>
-                                            <div>
-                                                Votre structure : <span id="verifier-client_description" style="color:#000">{% if client.description %} {{ client.description }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                            </div>
-                                            <div>
-                                                Context de l'étude : <span id="verifier-contexte" style="color:#000">{% if etude.contexte  %} {{ etude.contexte  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                            </div>
-                                            <div>
-                                                Problématique : <span id="verifier-problematique" style="color:#000">{% if etude.problematique  %} {{ etude.problematique  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                            </div>
-                                            <div>
-                                                Vos interlocuteurs : 
-                                                <li>{{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} {{poste}} {{etude.responsable.student.mail}}</li> 
-                                                <li>{{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} Qualité {{etude.resp_qualite.student.mail}}</li> 
-
-                                            </div>
-                                            <div>
-                                                Nos intervenants : <span id="verifier-paragraphe_intervenant_devis" style="color:#000">{{ etude.paragraphe_intervenant_devis }}</span>
-                                            </div>
-                                            <br>
-                                            {% for phase in phases %}
-                                            <div> 
-                                                Phase  <span id="verifier-phase-{{id}}-numero" style="color:#000">{{phase.numero}}</span> <span id="verifier-phase-{{id}}-nb_JEH" style="color:#000">{{ phase.nb_JEH }} </span>{% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH}}, débute {{ phase.debut_relatif }} semaines après la signature et dure {{phase.duree_semaine}} semaines.  
-                                            </div>
-                                            <div>
-                                                Description : {% if phase.description  %} <span id="verifier-phase-{{id}}-description" style="color:#000">{{ phase.description  }}</span> {% else %}<span style="color: red;"> manquant</span> {% endif %}
-                                            </div>
-                                            <br>
-                                            {% endfor %}
-                                           
-                                            <div>
-                                                 Rappel : 
-                                            <li>ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</li>
-                                            <li>Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
-                                                Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
-                                                </li>
-                                            <li>Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</li>
-                                            </div>
-                                           
-
-                                            
-                               
-                                        </div>
+                                        
+                                        
                                         
                                     </div>
                                         
@@ -2925,6 +3023,32 @@
                         alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
                         return false;
                     }
+                });
+            });
+        </script>
+         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var modifier_etude = document.getElementById('modifier_verif-etude');
+                var etude_info = document.getElementById('verifier_info');
+                var etude_form = document.getElementById('verifier_info-form');
+
+                // Toggle between info view and form view when the Modify button is clicked
+                modifier_etude.addEventListener('click', function() {
+                    etude_info.classList.toggle('d-none');
+                    etude_form.classList.toggle('d-none');
+                });
+
+                var annuler_etude = document.getElementById('annuler-modif_etude');
+                annuler_etude.addEventListener('click', function() {
+                    etude_info.classList.toggle('d-none');
+                    etude_form.classList.toggle('d-none');
+                });
+
+                // Validate form before submission
+                document.getElementById('verifier_info-f-form').addEventListener('submit', function(event) {
+                    var debut = document.querySelector('input[name="debut"]').value;
+
+                    
                 });
             });
         </script>

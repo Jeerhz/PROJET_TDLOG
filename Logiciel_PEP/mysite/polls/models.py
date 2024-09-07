@@ -172,6 +172,17 @@ class Client(models.Model):
         return AddClient(instance=instance)  
     
     
+
+    def save(self, *args, **kwargs):
+        # Save the instance using the parent class method
+        print("Calling save method...")  # Debugging statement
+        super(Client, self).save(*args, **kwargs)
+        print("Save method completed.")  # Debuggin
+
+    def modifier_description(self, nv_description):
+        self.description=nv_description
+        self.save()
+    
     
 class Representant(models.Model):
     class Demarchage(models.TextChoices):
@@ -354,6 +365,8 @@ class Student(models.Model):
             je=default_je,
         )
 
+class StudentCSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label="Upload CSV File")
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, je=None, student=None, titre=None, **extra_fields):
