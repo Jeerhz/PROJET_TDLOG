@@ -1230,6 +1230,7 @@
                                             {% else %}
                                             <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
                                             {% endif %}
+                                            {% if phase.bon %} <small>Bon de commande n°{{phase.bon.numero}}</small> {% endif %}
                                             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
                                                  Supprimer la phase
                                             </button>
@@ -1446,7 +1447,15 @@
                                                                 {% endif %}
                                                             </div>
                                                         </div>
-                                                        {% endfor %}                             
+                                                        {% endfor %}
+                                                        {% if etude.type_convention == "Convention cadre" %}
+                                                        <div class="form-group row mb-3">
+                                                            <label for="numero_bdc" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="number" name="numero_bdc" class="form-control" id="numero_bdc">
+                                                            </div>
+                                                        </div>     
+                                                        {% endif %}               
                                                     </dl>
                                                 </div>
                                                 <div class="card-footer text-center">
@@ -1593,7 +1602,8 @@
                                                             <tr>
                                                                 <td>Bon n°{{bon.numero}}</td>
                                                                 <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
-                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-pen"></i></button></td>
+                                                                <td><button button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button></td>
+                                                                <td><a href="{% url 'editer_bon' bon.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i></a></td>
                                                                 <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
                                                             </tr>
                                                             {% endfor %}
@@ -1602,10 +1612,45 @@
                                                     <hr>
                                                     {% endif %}
                                                     <p class="card-text">Ajouter un bon de commande à la convention cadre</p>
-                                                    <a href="{% url 'editer_bon' iD %}" class="btn btn-primary" target="_blank"><i class="fas fa-download mr-2"></i>Ajout bon de commande</a>
+                                                    <button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-plus mr-2"></i>Ajouter un bon de commande</button>
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- Début formulaire ajout bon de commande -->
+                                        <div class="modal fade" id="ajoutBDC" tabindex="-1" role="dialog" aria-labelledby="titreBDC" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="titreBDC">Nouveau bon de commande</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <form id="formAjoutBDC" method="post">
+                                                        <div class="modal-body">
+                                                            {% csrf_token %}
+                                                            <div class="form-group row mb-3">
+                                                                <label for="numeroBDC" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="number" name="numero_bdc" class="form-control" id="numeroBDC">
+                                                                </div>
+                                                            </div> 
+                                                            <div class="form-group row mb-3">
+                                                                <label for="remarqueBDC" class="col-sm-4 col-form-label">Remarque :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="text" name="remarque_bdc" class="form-control" id="remarqueBDC">
+                                                                </div>
+                                                            </div> 
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                            <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Fin formaulaire avenant CE -->
                                         {% endif %}
                                         <div class="col-md-6">
                                             <div class="card">
@@ -3109,15 +3154,41 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
 
     <!-- Fonction pour gérer les boutons-->
     <script>
-        function modifierMission() {
-            // Code pour gérer la modification de la mission
-            alert("Fonction de modification de la mission à implémenter.");
+        document.addEventListener("DOMContentLoaded", () => {
+        // Function to make formIntervenant appear
+        var formAjoutBDC = document.getElementById("formAjoutBDC");
+        var champ_remarque = document.getElementById("remarqueBDC");
+        var champ_numero = document.getElementById("numeroBDC");
+        var titre_bdc = document.getElementById("titreBDC");
+        function formForBDC(href, getinfohref, new_object) {
+            if(new_object){
+                formAjoutBDC.setAttribute('action', href);
+                champ_numero.value = "";
+                champ_remarque.value = "";
+                titre_bdc.textContent = "Nouveau bon de commande";
+            }
+            else{
+                $.get(getinfohref, function(data) {
+                    if(data.success){
+                        formAjoutBDC.setAttribute('action', href);
+                        champ_numero.value = data.numero;
+                        champ_remarque.value = data.remarque;
+                        titre_bdc.textContent = "Bon de commande n°"+(data.numero).toString();
+                    }
+                    else{
+                        showAlert(data.error_message);
+                    }
+                });
+            }
         }
-    
-        function genererFacture() {
-            // Code pour générer la facture
-            alert("Fonction de génération de la facture à implémenter.");
-        }
+        // Add a click event listener to the document
+        document.addEventListener("click", (event) => {
+            // Check if the clicked element has the class
+            if (event.target.classList.contains("bouton-modifier-bdc")) {
+                formForBDC(event.target.dataset.href, event.target.dataset.getinfohref, event.target.dataset.new == "true");
+            }
+        });
+        });
     </script>
     <!--
     <script>
