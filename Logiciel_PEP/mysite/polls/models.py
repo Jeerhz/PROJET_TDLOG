@@ -542,7 +542,8 @@ class Etude(models.Model):
     element_a_fournir= models.TextField(blank=True, null=True, default="",verbose_name ="éléments à fournir du client")
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
-    
+    cahier_des_charges = models.JSONField(default=dict)
+
     def __str__(self):
         return self.titre
     
@@ -1360,7 +1361,7 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
 
     def __str__(self):
         return "Informations de l'étude"

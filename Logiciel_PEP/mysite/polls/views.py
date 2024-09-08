@@ -1477,6 +1477,40 @@ def editer_rdm(request, id_etude, id_eleve):
     return HttpResponse(template.render(context, request))
 
 
+def editer_ba(request, id_eleve):
+    if request.user.is_authenticated:
+        #try :
+            eleve = Student.objects.get(id=id_eleve)
+            je_president_nom="Debray"
+            je_president_prenom="Thomas"
+            date = timezone.now()
+            general_date_creation= date.strftime('%d %B %Y')
+            num_conv_etudiant="CE_20231017"
+            template = DocxTemplate("polls/templates/polls/BA_026.docx")
+            #model = RDM
+            context = {"etudiant":eleve, "je_president_nom":je_president_nom,"je_president_prenom" :je_president_prenom, "general_date_creation":general_date_creation,"num_conv_etudiant":num_conv_etudiant}
+
+            env = Environment()
+            template.render(context, env)
+
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            filename = f"{eleve.last_name.upper()}_BA.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        #except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def editer_devis(request, iD):
     if request.user.is_authenticated:
         #try:
@@ -2225,8 +2259,18 @@ def verifier_etude(request, iD):
         quali_mail = request.POST.get('qualite')
         quali=Member.objects.filter(email=quali_mail).first()
         garantie = request.POST.get('per_gara')
+        objectifs=request.POST.get('objectifs')
+        methodologie=request.POST.get('methodologie')
+        element_a_fournir= request.POST.get('element_a_fournir')
     
+        keys = request.POST.getlist('keys[]')
+        values = request.POST.getlist('values[]')
 
+        # Create a new dictionary from the submitted keys and values
+        cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+
+        # Update the JSONField with the new dictionary
+        etude.cahier_des_charges = cahier_des_charges
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
@@ -2243,6 +2287,9 @@ def verifier_etude(request, iD):
         etude.responsable=cdp
         etude.resp_qualite=quali
         etude.periode_de_garantie= garantie
+        etude.objectifs=objectifs
+        etude.methodologie=methodologie
+        etude.element_a_fournir=element_a_fournir
 
         etude.save()
         client.description= client_description

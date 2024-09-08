@@ -1633,6 +1633,7 @@
                                         <div class="card-body">
                                             <div class="tab-content" id="verifier_info">
                                                 <ul class="list-group list-group-flush">
+                                                    <div style="text-align: center; color: #000;">Informations Devis</div>
                                                     <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
                                                         client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
                                                     </li>
@@ -1687,6 +1688,35 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         </div>
                                                     <div> - Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</div>
                                                     </div>
+                                                    <br>
+                                                    <div style="text-align: center; color: #000;">Informations Convention</div>
+                                                    
+                                                    <div>
+                                                        Responsable client
+                                                    </div>
+                                                    <li class="list-group-item">
+                                                        Objectifs de l'étude : <span id="verifier-objectifs" style="color:#000">{% if etude.objectifs  %} {{ etude.objectifs  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        Méthodologie : <span id="verifier-methodologie" style="color:#000">{% if etude.methodologie  %} {{ etude.methodologie  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        ...sous réserve de fourniture des éléments suivants, indispensables à la réalisation de l’étude, au plus tard le jour de la signature de la Convention d’Étude :  
+                                                        <span id="verifier-element_a_fournir" style="color:#000">{% if etude.element_a_fournir  %} {{ etude.element_a_fournir  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        Cahier des charges : 
+                                                        {% if etude.cahier_des_charges %}
+                                                        <ul>
+                                                            {% for key, value in etude.cahier_des_charges.items %}
+                                                                <li style="color:#000">{{ value }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <span style="color: red;"> manquant</span>
+                                                    {% endif %}
+                                                    </li>
+                                                    
 
                                                 </ul>
                                                 <!-- Modify Button -->
@@ -1746,6 +1776,33 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                             <input type="char" name="per_gara" class="form-control" value="{{ etude.periode_de_garantie }}">
 
                                                         </li>
+                                                        <div>Convention</div>
+                                                        <li class="list-group-item">
+                                                            Objectifs :
+                                                            <input type="char" name="objectifs" class="form-control" value="{{ etude.objectifs }}">
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Méthodologie :
+                                                            <input type="char" name="methodologie" class="form-control" value="{{ etude.methodologie }}">
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            Éléments que le client doit fournir :
+                                                            <input type="char" name="element_a_fournir" class="form-control" value="{{ etude.element_a_fournir }}">
+                                                        </li>
+                                                        
+                                                        <li id="json-fields">
+                                                            {% for key, value in etude.cahier_des_charges.items %}
+                                                            <div class="input-group mb-2" data-key="{{ key }}">
+                                                                <input type="text" name="keys[]" class="form-control" placeholder="Key" value="{{ key }}">
+                                                                <input type="text" name="values[]" class="form-control" placeholder="Value" value="{{ value }}">
+                                                                <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                            </div>
+                                                            {% endfor %}
+                                                        </li>
+                                                    
+                                                        <!-- Button to add new key-value pair inputs -->
+                                                        <button type="button" class="btn btn-secondary" id="add-field-btn">Add New Key</button>
+                                                    
                                                             
                                                            
                 
@@ -1764,24 +1821,34 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                     </div>
                                                     <!-- End Save and Cancel Buttons -->
                                                 </form>
+                                                <script>
+                                                    document.getElementById('add-field-btn').addEventListener('click', function () {
+                                                        // Create a new input group for key-value pairs
+                                                        const newField = document.createElement('div');
+                                                        newField.className = 'input-group mb-2';
+                                                        newField.innerHTML = `
+                                                            <input type="text" name="keys[]" class="form-control" placeholder="Key">
+                                                            <input type="text" name="values[]" class="form-control" placeholder="Value">
+                                                            <button type="button" class="btn btn-danger btn-remove">Remove</button>
+                                                        `;
+                                                        document.getElementById('json-fields').appendChild(newField);
+                                                    });
+                                                
+                                                    // Event delegation to handle removal of dynamically added fields
+                                                    document.getElementById('json-fields').addEventListener('click', function (event) {
+                                                        if (event.target.classList.contains('btn-remove')) {
+                                                            event.target.parentElement.remove();
+                                                        }
+                                                    });
+                                                </script>
                                             </div>
                                         </div>
                                     </div>
                                     <br>
                                     
                                 </div>
-                                <div class="tab-content"  style="width: 100%;">
-                                    <div class="dropdown">
+                                
                                         
-                                        <a class="nav-link collapsed" data-toggle="collapse" data-target="#info_devis"
-                                                aria-expanded="true" aria-controls="info_devis">Informations Devis
-                                        </a>
-                                        
-                                        
-                                        
-                                    </div>
-                                        
-                                </div>
                                     
                                 <br>
                                     
@@ -2832,6 +2899,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                             <div class="col-12 mb-4">
                                 <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
                                 <a href="{% url 'ba' iD=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Bulletin d'adhésion</a>
+                                <a href="{% url 'editer_ba' id_eleve=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le Bulletin d'adhésion</a>
 
                                 <div class="nav-item">
                                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"

@@ -69,6 +69,8 @@ urlpatterns = [
     path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
     path('upload_students/', views.upload_students, name='upload_students'),
     path('verifier_etude/<int:iD>/', views.verifier_etude, name='verifier_etude'),
+    path("editer_ba/<int:id_eleve>", views.editer_ba, name="editer_ba"),
+
 
     
 
