@@ -977,6 +977,7 @@ class RDM(models.Model):
     def signe(self):
         return (self.date_signature is not None)
     
+    
 class AvenantRuptureRDM(models.Model):
     rdm = models.ForeignKey('RDM', on_delete=models.CASCADE, related_name="avenants")
     date_signature = models.DateField(blank=True, null=True)
@@ -1005,6 +1006,9 @@ class ModificationPhaseRDM(models.Model):
     ancien_nombre_JEH = models.IntegerField()
     nouveau_nombre_JEH = models.IntegerField()
 
+class BA(models.Model):
+    eleve = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="ba")
+    number = models.IntegerField(default = 604)
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='etude')

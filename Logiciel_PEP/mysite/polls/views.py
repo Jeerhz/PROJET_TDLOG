@@ -87,6 +87,7 @@ from .models import (
     CreateMailTemplate,
     StudentCSVUploadForm,
     AssociationPhaseBDC,
+    BA,
 )
 
 def general_context(request):
@@ -1506,8 +1507,19 @@ def editer_ba(request, id_eleve):
             general_date_creation= date.strftime('%d %B %Y')
             num_conv_etudiant="CE_20231017"
             template = DocxTemplate("polls/templates/polls/BA_026.docx")
-            #model = RDM
-            context = {"etudiant":eleve, "je_president_nom":je_president_nom,"je_president_prenom" :je_president_prenom, "general_date_creation":general_date_creation,"num_conv_etudiant":num_conv_etudiant}
+            model = BA
+            dernier_ba = BA.objects.order_by('-number').first()
+
+            # Get the highest number
+            if dernier_ba:
+                number=dernier_ba.number+1
+            else:
+                number=605
+            ba = model( eleve=eleve, number=number)
+            ba.save()
+
+            ref =f"20240{number}"
+            context = {"etudiant":eleve, "je_president_nom":je_president_nom,"je_president_prenom" :je_president_prenom, "general_date_creation":general_date_creation,"num_conv_etudiant":ref}
 
             env = Environment()
             template.render(context, env)
