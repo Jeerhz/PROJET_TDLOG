@@ -503,6 +503,15 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <form method="post" action="{% url 'upload_clients' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                                    {% csrf_token %}
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <!-- File input -->
+                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-control" style="max-width: 500px; border:10px;">
+                                        <!-- Submit button -->
+                                        <button type="submit" class="btn btn-primary" style="margin:15px; ">Ajouter</button>
+                                    </div>
+                                </form>
                         </div>
 
                         <!-- Onglet Annuaire Représentants -->

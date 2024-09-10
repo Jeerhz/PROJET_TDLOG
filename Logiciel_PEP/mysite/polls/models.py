@@ -129,7 +129,7 @@ class Client(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to="static/polls/img/", default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     remarque = models.TextField(blank=True, null=True, default="")
-    description = models.TextField(max_length=500, null=True)
+    description = models.TextField(max_length=10000, null=True)
     secteur = models.CharField(
         max_length=20,
         choices=Secteur.choices,
@@ -368,6 +368,9 @@ class Student(models.Model):
 class StudentCSVUploadForm(forms.Form):
     csv_file = forms.FileField(label="Upload CSV File")
 
+class ClientCSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label="Upload CSV File")
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, je=None, student=None, titre=None, **extra_fields):
         if not email:
@@ -514,9 +517,9 @@ class Etude(models.Model):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
 
-    titre = models.CharField(max_length=200)
+    titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
-    description = models.TextField(max_length=500, blank=True)
+    description = models.TextField(max_length=10000, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
     debut = models.DateField(default=timezone.now, blank=True, null=True)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes",verbose_name='qualité')
@@ -939,13 +942,30 @@ class ModificationJEHPhase(models.Model):
 
 
 class BonCommande(models.Model):
-    convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
     numero = models.IntegerField()
     remarque = models.TextField(blank=True, null=True)
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="etude_bdc")
+    objectifs = models.TextField(blank=True, null=True, default="")
+    cahier_des_charges = models.JSONField(default=dict)
+
+    #methode phase, duree
+    def phases(self):
+        asso_bdc = AssociationPhaseBDC.objects.filter(bon_de_commande=self).order_by('phase__numero').all()
+        phases = [association.phase for association in asso_bdc]
+        return phases
+    
+    def duree_semaine(self):
+        phases = self.phases()
+        if phases:
+            duree = max(phase.duree_semaine + phase.debut_relatif for phase in phases if phase.duree_semaine is not None and phase.debut_relatif is not None)
+            return duree
+        else:
+            return 0
+        
 
     def save(self, *args, **kwargs):
         if (self.numero is None):
-            self.numero = self.convention_cadre.etude.numero*100 + max(self.convention_cadre.bons_commande.all())+1
+            self.numero = self.etude.numero*100 
         super(BonCommande, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -1106,10 +1126,10 @@ class AssignationJEH(models.Model):
     
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude', None)
-        numero_phase = kwargs.pop('numero_phase', None)
-        if(id_etude is not None and numero_phase is not None):
+        id_phase = kwargs.pop('id_phase', None)
+        if(id_etude is not None and id_phase is not None):
             etude = Etude.objects.get(id=id_etude)
-            phase = Phase.objects.get(etude=etude, numero=numero_phase)
+            phase = Phase.objects.get(id=id_phase)
             self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
     

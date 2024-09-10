@@ -646,6 +646,9 @@
                         <div class="btn-group d-flex mb-2" role="group">
                             <a href="#general" class="btn btn-primary flex-grow-1 active" data-toggle="tab" id="general-tab" aria-controls="general" aria-selected="true">Général</a>
                             <a href="#phases" class="btn btn-primary flex-grow-1" data-toggle="tab" id="phases-tab" aria-controls="phases" aria-selected="false">Phases</a>
+                            {% if etude.type_convention == "Convention cadre" %}
+                            <a href="#bons" class="btn btn-primary flex-grow-1" data-toggle="tab" id="bons-tab" aria-controls="bons" aria-selected="false">BDCs</a>
+                            {% endif %}
                             <a href="#documents" class="btn btn-primary flex-grow-1" data-toggle="tab" id="documents-tab" aria-controls="documents" aria-selected="false">Documents</a>
                             <a href="#intervenants" class="btn btn-primary flex-grow-1" data-toggle="tab" id="intervenants-tab" aria-controls="intervenants" aria-selected="false">Intervenants</a>
                             <a href="#facturation" class="btn btn-primary flex-grow-1" data-toggle="tab" id="facturation-tab" aria-controls="facturation" aria-selected="false">Facturation</a>
@@ -1212,7 +1215,211 @@
                             <!--Fin de l'Onglet Général -->
                                 
                             <!-- Début de l'Onglet Phases -->
+
                             <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab" style=" margin: 0px;">
+                                {% if etude.type_convention == "Convention cadre" %}
+
+                                {% if bons %}
+                                
+
+                                {% for bon in bons %}
+                                <div style = "color: #000; text-align: center;">Bon de Commande {{bon.numero}}</div> 
+                                {% for phase in bon.phases %}
+                                <div class="card mb-3">
+                                    <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
+                                        <!-- Card -->
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            {% if phase.modif_duree.exists or phase.modif_debut.exists or phase.modif_jeh.exists %}
+                                            <span class="text-warning">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>                                      
+
+                                            <span><i class="fas fa-exclamation-circle fa-2x text-warning mr-2"></i></span>
+                                            {% elif phase.suppression.exists %}
+                                            <span class="text-danger">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>
+                                            <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
+                                            {% else %}
+                                            <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
+                                            {% endif %}
+                                            
+                                            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
+                                                 Supprimer la phase
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="deleteModalPhase" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel">Supprimer la phase</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Êtes-vous sûr de vouloir supprimer cette phase ?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <form id="deletePhaseForm" method="POST" action="{% url 'delete_phase' phase.id etude.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <br>
+                                        <div class="nav-item" >
+                                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
+                                                aria-expanded="true" aria-controls="intervenants_phase{{ phase.id }}">
+                                                <i style="color: #2E3653;" class="fas fa-caret-down"></i>
+                                                <span style="color: #2E3653;">Intervenants</span>
+                                            </a>
+                                            <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
+                                                <div class="bg-white py-2 collapse-inner rounded">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Intervenant</th>
+                                                                <th scope="col">Nombre de JEH</th>
+                                                                <th scope="col">Pourcentage de rétribution</th>
+                                                                <th scope="col">Rétribution brute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if phase.li_eleves %}
+                                                                {% for assignation_JEH in phase.get_assignations_JEH %}
+                                                                <tr>
+                                                                    <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                    <td>{{ assignation_JEH.nombre_JEH }}</td>
+                                                                    <td>{{ assignation_JEH.pourcentage_retribution }}</td>
+                                                                    <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                            <tr>
+                                                                <td>Aucun</td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            {% endif %}                                  
+                                                        </tbody>
+                                                    </table>
+                                                    
+                                                    <!-- Bouton et formulaire pour ajouter une assignation JEH -->
+                                                    <a class="btn btn-primary" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}">Ajouter une Assignation JEH</a>
+                                                    <div class="modal fade" id="formAssignationJEHModal{{ phase.numero }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ phase.numero }}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="modalLabel{{ phase.numero }}">Ajouter un intervenant</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form action="{% url 'ajouter_assignation_jeh' id_etude=iD id_phase=phase.id %}" method="post">
+                                                                    <div class="modal-body">
+                                                                        {% csrf_token %}
+                                                                        {% for field in intervenant_form %}
+                                                                        <div class="form-group">
+                                                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                                            {{ field }}
+                                                                            {% if field.errors %}
+                                                                                <div class="text-danger">
+                                                                                    {% for error in field.errors %}
+                                                                                        {{ error }}
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Fin formulaire assignation JEH-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </div>
+                                {% endfor %}    
+                                {% endfor %}
+                                {%else%}
+                                Aucune phase
+                                {% endif %}
+                                 <!-- Début Planning avec graphe-->
+                                <!--tableau planing-->
+                                <div class="col-lg-13 mb-3">
+                                    <div class="card shadow">
+                                        <div class="card-header">
+                                            <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude :</h6>
+                                        </div>
+                                        <table class="table_planning">
+                                            <thead>
+                                                <tr>
+                                                    <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
+                                                    <th class="th_planning"></th>
+                                                    <th class="th_planning">
+                                                        <div class="semaines_plan">
+                                                            {% for i in 1|Range_boucle:etude.duree_semaine %}
+                                                            <span>{{ i }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for phase in phases %}
+                                                <tr>
+                                                    <td class="td_planning">Phase {{phase.numero}} </td>
+                                                    <td class="td_planning" style="text-align: center;">{{phase.nb_JEH}} JEHs</td>
+                                                    <td class="td_planning" style="width: 70%;">
+                                                        <div class="bar_container_plan" >
+                                                            <div class="bar_plan" id="bar_plan-{{ phase.numero }}">
+                                                                <div class="label_plan"> {{phase.duree_semaine}} semaines</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                                
+                                            </tbody>
+                                        </table>
+                                        
+                                        <script>
+                                            function setBarWidth(barId, duree_phase, debut_phase, duree_total) {
+                                                var bar = document.getElementById(barId);
+                                                if (bar) {
+                                                    bar.style.width = (duree_phase / duree_total) * 100 + '%';
+                                                    bar.style.left = (debut_phase / duree_total) * 100 + '%';
+                                                } else {
+                                                    console.error('Element with ID ' + barId + ' not found.');
+                                                }
+                                                
+                                            }
+                                    
+                                            // Set width of bars based on database values
+                                            {% if phases %}
+                                                {% for phase in phases %}
+                                                    setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
+                                                {% endfor %}
+                                            {% endif %}
+                                        </script>
+    
+                                    </div>
+                                </div>
+                                <!--Fin planning avec graphe--> 
+                                {% else %}
+
                                 {% if phases %}
 
                                 {% for phase in phases %}
@@ -1311,7 +1518,7 @@
                                                                         <span aria-hidden="true">&times;</span>
                                                                     </button>
                                                                 </div>
-                                                                <form action="{% url 'ajouter_assignation_jeh' id_etude=iD numero_phase=phase.numero %}" method="post">
+                                                                <form action="{% url 'ajouter_assignation_jeh' id_etude=iD id_phase=phase.id %}" method="post">
                                                                     <div class="modal-body">
                                                                         {% csrf_token %}
                                                                         {% for field in intervenant_form %}
@@ -1409,6 +1616,8 @@
                                     </div>
                                 </div>
                                 <!--Fin planning avec graphe--> 
+                                {% endif %}
+
                                 <br>
                                 <div class="col-md-8">
                                     <div class="card shadow">
@@ -1468,6 +1677,130 @@
                                 </div>
                             </div>                            
                             <!-- Fin de l'Onglet Phase-->  
+
+
+                            <!-- Début de l'Onglet Bons -->
+
+                            {% if etude.type_convention == "Convention cadre" %}
+                            <div class="tab-pane fade" id="bons" role="tabpanel" aria-labelledby="bons-tab">
+                                <div class="card mb-3">
+                                    <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
+                                
+                                        <button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-plus mr-2"></i>Ajouter un bon de commande</button>
+                                        {% if bons %}
+                                        {% for bon in bons %}
+                                        <br>
+                                        <br>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Bon de commande {{bon.numero}}</h5>
+                                                    <div>objectifs : {{bon.objectifs}}</div>
+                                                    <div>
+                                                        Cahier des charges : 
+                                                        {% if bon.cahier_des_charges %}
+                                                        <ul>
+                                                            {% for key, value in bon.cahier_des_charges.items %}
+                                                                <li style="color:#000">{{ value }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <span style="color: red;"> manquant</span>
+                                                    {% endif %}
+                                                    </div>
+                                                    <div></div>
+                                                    <div>
+                                                        <button button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button>
+
+                                                    </div>
+                                                    
+                                                <hr>
+                                                
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <!-- Début formulaire ajout bon de commande -->
+                                    <div class="modal fade" id="ajoutBDC" tabindex="-1" role="dialog" aria-labelledby="titreBDC" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="titreBDC">Nouveau bon de commande</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <form id="formAjoutBDC" method="post">
+                                                    <div class="modal-body">
+                                                        {% csrf_token %}
+                                                        <div class="form-group row mb-3">
+                                                            <label for="numeroBDC" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="number" name="numero_bdc" class="form-control" id="numeroBDC">
+                                                            </div>
+                                                        </div> 
+                                                        <div class="form-group row mb-3">
+                                                            <label for="remarqueBDC" class="col-sm-4 col-form-label">Remarque :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="text" name="remarque_bdc" class="form-control" id="remarqueBDC">
+                                                            </div>
+                                                        </div> 
+                                                        <div class="form-group row mb-3">
+                                                            <label for="objectifsBDC" class="col-sm-4 col-form-label">Objectifs :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="text" name="objectifs_bdc" class="form-control" id="objectifsBDC">
+                                                            </div>
+                                                        </div> 
+                                                        <li id="livrable_bdc">
+                                                            {% for key, value in bon.cahier_des_charges.items %}
+                                                            <div class="input-group mb-2" data-key="{{ key }}">
+                                                                <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                                <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                                <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                            </div>
+                                                            {% endfor %}
+                                                        </li>
+                                                    
+                                                        <!-- Button to add new key-value pair inputs -->
+                                                        <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                    </div>
+                                                </form>
+                                                <script>
+                                                    document.getElementById('add-field-btn').addEventListener('click', function () {
+                                                        // Create a new input group for key-value pairs
+                                                        const newField = document.createElement('div');
+                                                        newField.className = 'input-group mb-2';
+                                                        newField.innerHTML = `
+                                                            <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                            <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                            <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                        `;
+                                                        document.getElementById('livrable_bdc').appendChild(newField);
+                                                    });
+                                                
+                                                    // Event delegation to handle removal of dynamically added fields
+                                                    document.getElementById('livrable_bdc').addEventListener('click', function (event) {
+                                                        if (event.target.classList.contains('btn-remove')) {
+                                                            event.target.parentElement.remove();
+                                                        }
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                    </div>
+                                        <!-- Fin formaulaire avenant CE -->
+                                </div>
+                            </div>
+                                
+                                        
+                            {% endif %}
+
+
+                            <!-- Fin de l'Onglet Bons-->  
 
                             <!-- Début de l'Onglet Documents -->
                             <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
@@ -1595,10 +1928,10 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h5 class="card-title">Bons de commande</h5>
-                                                    {% if etude.convention.bons_commande %}
+                                                    {% if bons %}
                                                     <table class="table">
                                                         <tbody>
-                                                            {% for bon in etude.convention.bons_commande.all %}
+                                                            {% for bon in bons %}
                                                             <tr>
                                                                 <td>Bon n°{{bon.numero}}</td>
                                                                 <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
@@ -1727,14 +2060,18 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                    
                                                     <div style="border: 20px; margin: 20px;">
                                                         <strong>Rappel : </strong> 
+                                                    <div> Attention aux nombres de pages sur la dernière page</div>
                                                     <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
                                                     <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
                                                         Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
                                                         </div>
                                                     <div> - Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</div>
                                                     </div>
+                                                    <div>
+                                                        Si une phase intermédiaire, ajoutez une colonne
+                                                    </div>
                                                     <br>
-                                                    <div style="text-align: center; color: #000;">Informations Convention</div>
+                                                    <div style="text-align: center; color: #000;">Informations Convention Cadre</div>
                                                     
                                                     <div>
                                                         Responsable client
@@ -1761,7 +2098,19 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </li>
-                                                    
+
+                                                    <div style="border: 20px; margin: 20px;">
+                                                        <strong>Rappel : </strong> 
+                                                    <div> Attention aux nombres de pages sur la dernière page</div>
+                                                    <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
+                                                    <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
+                                                        Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
+                                                        </div>
+                                                    <div> - Le paragraphe 2 de <strong>l'article 14 (CE) ou 16 (CC)</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention. pour CC 
+                                                        [Ce paragraphe peut être supprimé si aucune base de données nominative n'est collectée au cours de la prestation. En cas de doute, nous vous conseillons de le laisser dans la Convention-Cadre.]</div>
+                                                    </div>
+                                                    <div>[Dans le cas où il y a un rendu intermédiaire et donc un PVRI ajouter une colonne «  A la remise du livrable XXXX » dénomination « Intermédiaire » et préciser les montants HT et TTC</div>
+                                                    <div>délai péiement automatiquement mis à 30 jours</div>
 
                                                 </ul>
                                                 <!-- Modify Button -->
@@ -1779,7 +2128,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                             Votre structure : <input type="char" name="client_description" class="form-control" value="{{ etude.client.description }}">
                                                         </li>
                                                         <li class="list-group-item">
-                                                            Context de l'étude : 
+                                                            Contexte de l'étude : 
                                                             <input type="char" name="etude_contexte" class="form-control" value="{{ etude.contexte}}">
                                                         </li>
                                                         <li class="list-group-item">
@@ -1838,15 +2187,14 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         <li id="json-fields">
                                                             {% for key, value in etude.cahier_des_charges.items %}
                                                             <div class="input-group mb-2" data-key="{{ key }}">
-                                                                <input type="text" name="keys[]" class="form-control" placeholder="Key" value="{{ key }}">
-                                                                <input type="text" name="values[]" class="form-control" placeholder="Value" value="{{ value }}">
+                                                                <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                                <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
                                                                 <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
                                                             </div>
                                                             {% endfor %}
                                                         </li>
                                                     
-                                                        <!-- Button to add new key-value pair inputs -->
-                                                        <button type="button" class="btn btn-secondary" id="add-field-btn">Add New Key</button>
+                                                        <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
                                                     
                                                             
                                                            
@@ -1872,9 +2220,9 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         const newField = document.createElement('div');
                                                         newField.className = 'input-group mb-2';
                                                         newField.innerHTML = `
-                                                            <input type="text" name="keys[]" class="form-control" placeholder="Key">
-                                                            <input type="text" name="values[]" class="form-control" placeholder="Value">
-                                                            <button type="button" class="btn btn-danger btn-remove">Remove</button>
+                                                            <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                            <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                            <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
                                                         `;
                                                         document.getElementById('json-fields').appendChild(newField);
                                                     });

@@ -86,6 +86,7 @@ from .models import (
     CustomMailTemplate,
     CreateMailTemplate,
     StudentCSVUploadForm,
+    ClientCSVUploadForm,
     AssociationPhaseBDC,
     BA,
 )
@@ -428,6 +429,8 @@ def details(request, modelName, iD):
                 context["representants_legaux"] = representants_legaux
                 context["members"] = members
                 context["poste"] = poste
+                if etude.type_convention == "Convention cadre":
+                    context["bons"]= BonCommande.objects.filter(etude=etude).order_by('numero')
 
 
             if client is not None:
@@ -924,6 +927,73 @@ def upload_students(request):
     return redirect('annuaire')
     #return render(request, 'polls/annuaire.html', {'form': form})
 
+def upload_clients(request):
+    if request.method == 'POST':
+        form = ClientCSVUploadForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            csv_file = request.FILES.get('csv_file')
+
+            # Check if the file is a CSV
+            if not csv_file.name.endswith('.csv'):
+                print('This is not a CSV file.')
+                return redirect('upload_students')
+
+            try:
+                # Decode the uploaded file and read its content with correct delimiter
+                data = csv_file.read().decode('utf-8')
+                # Use csv.Sniffer to detect the delimiter
+                sniffer = csv.Sniffer()
+                detected_dialect = sniffer.sniff(data)
+                delimiter = detected_dialect.delimiter
+
+                # Read the file using the detected delimiter
+                reader = csv.reader(StringIO(data), delimiter=delimiter)
+                # Skip the header row if present
+                header = next(reader, None)
+                
+                # Check if header matches the expected columns
+                if len(header) != 6:
+                    print(f'Unexpected header format. Expected 9 columns, got {len(header)}.')
+                    return redirect('upload_students')
+                
+                # Iterate through each row in the CSV
+                for row in reader:
+                    if len(row) != 6:
+                        print(f"Error processing row: {row}. Incorrect number of columns.")
+                        continue
+                    
+                    # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
+                    try:
+                        nom_societe, raison_sociale, rue, ville, code_postal, country = row
+                        je = request.user.je
+                        # Create or update the student record
+                        Client.objects.get_or_create(
+                            je=je,
+                            nom_societe=nom_societe.strip(),
+                            raison_sociale=raison_sociale.strip(),
+                            rue=rue.strip(),
+                            ville=ville.strip(),
+                            code_postal=code_postal.strip(),
+                            country=country.strip(),
+                            
+
+                        )
+                    except Exception as e:
+                        print(f"Error processing row {row}: {e}")
+            except Exception as e:
+                print(f"Error reading file: {e}")  # Debugging statement
+
+            print('Students have been successfully added!')
+            return redirect('upload_students')
+    else:
+        form = ClientCSVUploadForm()
+
+
+    return redirect('annuaire')
+    #return render(request, 'polls/annuaire.html', {'form': form})
+
+
 def facture(request, id_facture):
     if request.user.is_authenticated:
         try:
@@ -1285,7 +1355,7 @@ def register(request):
 
 def editer_convention(request, iD):
     if request.user.is_authenticated:
-        try:
+        #try:
             instance = Etude.objects.get(id=iD)
             je= instance.je
             client = instance.client
@@ -1296,7 +1366,7 @@ def editer_convention(request, iD):
                 nom_doc ="Convention_Etude_"
             elif instance.type_convention == "Convention cadre":
                 model = ConventionCadre
-                template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
+                template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
                 nom_doc ="Convention_Cadre_"
             else:
                 raise ValueError("Type de convention non défini.")
@@ -1336,7 +1406,7 @@ def editer_convention(request, iD):
 
             context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
                        "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
-                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde,"poste":poste}
+                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde,"poste":poste,"factures":factures}
             # Load the template
 
             env = Environment()
@@ -1360,10 +1430,10 @@ def editer_convention(request, iD):
             return response
         
             
-        except ValueError as ve:
+        #except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1514,7 +1584,7 @@ def editer_ba(request, id_eleve):
             if dernier_ba:
                 number=dernier_ba.number+1
             else:
-                number=605
+                number=636
             ba = model( eleve=eleve, number=number)
             ba.save()
 
@@ -1823,7 +1893,7 @@ def editer_bon(request, id_bon):
         try:
             template = DocxTemplate("polls\\templates\\polls\\Bon_de_Commande.docx")
             bon = BonCommande.objects.get(id=id_bon)
-            etude = bon.convention_cadre.etude
+            etude = bon.etude
             responsable = etude.responsable
             client = etude.client
             context = {"etude": etude, "client": client, "responsable":responsable}
@@ -1879,18 +1949,29 @@ def get_object_info(request, model_name, object_id):
     
 def modifier_bon_commande(request, id_etude, id_bon):
     if request.user.is_authenticated:
-        try:
+        #try:
             etude = Etude.objects.get(id=id_etude)
             if(id_bon == 0):
-                bon = BonCommande(convention_cadre=etude.convention(), remarque=request.POST["remarque_bdc"], numero=request.POST["numero_bdc"]).save()
+                bon = BonCommande(etude=etude, remarque=request.POST["remarque_bdc"], numero=request.POST["numero_bdc"],objectifs = request.POST["objectifs_bdc"]).save()
             else:
                 bon = BonCommande.objects.get(id=id_bon)
                 bon.remarque = request.POST["remarque_bdc"]
                 bon.numero = request.POST["numero_bdc"]
+                if request.POST["objectifs_bdc"]:
+                    bon.objectifs = request.POST["objectifs_bdc"]
+
+                keys = request.POST.getlist('keys_bdc[]')
+                values = request.POST.getlist('values_bdc[]')
+                if keys:
+                    cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+                    bon.cahier_des_charges = cahier_des_charges
+
+
+                bon.etude= etude
                 bon.save()
             
             return redirect('details', modelName="Etude", iD=id_etude)
-        except :
+        #except :
             context = general_context(request)
             template = loader.get_template("polls/page_error.html")
             context["error_message"] = "Un problème a été détecté dans la base de données."
@@ -2094,7 +2175,7 @@ def ajouter_phase(request, id_etude):
                 count_phase = Phase.objects.filter(etude=etude).count()
                 new_phase = fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
                 if etude.type_convention == "Convention cadre" and numero_bdc:
-                    bdcs = BonCommande.objects.filter(convention_cadre__etude=etude, numero=numero_bdc)
+                    bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
                     bdc = None
                     if(bdcs.exists()):
                         bdc = bdcs[0]
@@ -2193,14 +2274,14 @@ def BV(request, id_etude, id_eleve):
         return HttpResponse(template.render(context, request))
 
 
-def ajouter_assignation_jeh(request, id_etude, numero_phase):
+def ajouter_assignation_jeh(request, id_etude, id_phase):
     if request.user.is_authenticated:
         if request.method == 'POST':
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
                 #try :
                     etude = Etude.objects.get(id=id_etude)
-                    phase = Phase.objects.get(etude=etude, numero=numero_phase)
+                    phase = Phase.objects.get(id=id_phase)
                     eleve = fetchform.cleaned_data['eleve']
                     ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
                     if (ass_jeh.exists()):
@@ -2209,7 +2290,7 @@ def ajouter_assignation_jeh(request, id_etude, numero_phase):
                         only_ass_jeh.pourcentage_retribution = fetchform.cleaned_data['pourcentage_retribution']
                         only_ass_jeh.save()
                     else :
-                        fetchform.save(commit=True, id_etude=id_etude, numero_phase=numero_phase)
+                        fetchform.save(commit=True, id_etude=id_etude, id_phase=id_phase)
                 #except:
                     pass
         return redirect('details', modelName='Etude', iD=id_etude)
