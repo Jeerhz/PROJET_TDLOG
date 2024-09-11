@@ -1694,7 +1694,7 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Bon de commande {{bon.numero}}</h5>
-                                                    <div> Objectifs :{% if bon.objectifs %} {{bon.objectifs}}{% else %}
+                                                    <div> Objectifs :{% if bon.objectifs %} <span style="color:#000">{{bon.objectifs}}</span>  {% else %}
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </div>
@@ -1711,11 +1711,11 @@
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </div>
-                                                    <div> Période de garantie :{% if bon.periode_de_garantie %} {{bon.periode_de_garantie}}{% else %}
+                                                    <div> Période de garantie : {% if bon.periode_de_garantie %}<span style="color:#000">{{bon.periode_de_garantie}} jours</span>   {% else %}
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </div>
-                                                    <div> Pourcentage de l'acompte :{% if bon.acompte_pourcentage %} {{bon.acompte_pourcentage}}% {% else %}
+                                                    <div> Pourcentage de l'acompte :{% if bon.acompte_pourcentage %} <span style="color:#000">{{bon.acompte_pourcentage}}%</span>  {% else %}
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </div>
