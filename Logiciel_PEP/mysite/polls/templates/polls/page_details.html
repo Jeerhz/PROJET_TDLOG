@@ -1694,7 +1694,11 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Bon de commande {{bon.numero}}</h5>
-                                                    <div>objectifs : {{bon.objectifs}}</div>
+                                                    <div> Objectifs :{% if bon.objectifs %} {{bon.objectifs}}{% else %}
+                                                        <span style="color: red;"> manquant</span>
+                                                    {% endif %}
+                                                    </div>
+                                                    
                                                     <div>
                                                         Cahier des charges : 
                                                         {% if bon.cahier_des_charges %}
@@ -1707,11 +1711,21 @@
                                                         <span style="color: red;"> manquant</span>
                                                     {% endif %}
                                                     </div>
+                                                    <div> Période de garantie :{% if bon.periode_de_garantie %} {{bon.periode_de_garantie}}{% else %}
+                                                        <span style="color: red;"> manquant</span>
+                                                    {% endif %}
+                                                    </div>
+                                                    <div> Pourcentage de l'acompte :{% if bon.acompte_pourcentage %} {{bon.acompte_pourcentage}}% {% else %}
+                                                        <span style="color: red;"> manquant</span>
+                                                    {% endif %}
+                                                    </div>
                                                     <div></div>
                                                     <div>
                                                         <button button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button>
 
                                                     </div>
+                                                    
+                                                    
                                                     
                                                 <hr>
                                                 
@@ -1736,7 +1750,7 @@
                                                         <div class="form-group row mb-3">
                                                             <label for="numeroBDC" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
                                                             <div class="col-sm-8 justify-content-center">
-                                                                <input type="number" name="numero_bdc" class="form-control" id="numeroBDC">
+                                                                <input type="number" name="numero_bdc" class="form-control" id="numeroBDC" >
                                                             </div>
                                                         </div> 
                                                         <div class="form-group row mb-3">
@@ -1748,7 +1762,7 @@
                                                         <div class="form-group row mb-3">
                                                             <label for="objectifsBDC" class="col-sm-4 col-form-label">Objectifs :</label>
                                                             <div class="col-sm-8 justify-content-center">
-                                                                <input type="text" name="objectifs_bdc" class="form-control" id="objectifsBDC">
+                                                                <input type="text" name="objectifs_bdc" class="form-control" id="objectifsBDC" value="{{bon.objectifs}}">
                                                             </div>
                                                         </div> 
                                                         <li id="livrable_bdc">
@@ -1760,6 +1774,19 @@
                                                             </div>
                                                             {% endfor %}
                                                         </li>
+                                                        <div class="form-group row mb-3">
+                                                            <label for="periode_de_garantieBDC" class="col-sm-4 col-form-label">Période de garantie  :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="number" name="periode_de_garantie_bdc" class="form-control" id="periode_de_garantieBDC" value="{{bon.periode_de_garantie}}">
+                                                            </div>
+                                                        </div> 
+                                                        <div class="form-group row mb-3">
+                                                            <label for="acompte_pourcentageBDC" class="col-sm-4 col-form-label">Pourcentage de l'acompte :</label>
+                                                            <div class="col-sm-8 justify-content-center">
+                                                                <input type="number" name="acompte_pourcentage_bdc" class="form-control" id="acompte_pourcentageBDC" value="{{bon.acompte_pourcentage}}">
+                                                            </div>
+                                                        </div> 
+                                                        
                                                     
                                                         <!-- Button to add new key-value pair inputs -->
                                                         <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
@@ -1908,7 +1935,7 @@
                                                                         <ul class="list-group list-group-flush">
                                                                             <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Nouveau frais dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{etude.frais_dossier}}"></li>
                                                                             <li class="list-group-item"><i class="fas fa-exclamation-circle"></i><strong>Numero :</strong> <input type="number" name="numero" class="form-control" value="{{etude.nouveau_num_avenant_ce}}"></li>
-                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Remarque :</strong> <input type="text" name="remarque" class="form-control" value=""></li>
+                                                                            <li class="list-group-item"><i class="fas fa-business-time"></i> <strong>Objet :</strong> <input type="text" name="objet" class="form-control" value=""></li>
                                                                         </ul>
                                                                     </div>
                                                                     <div class="modal-footer">
@@ -1944,8 +1971,6 @@
                                                     </table>
                                                     <hr>
                                                     {% endif %}
-                                                    <p class="card-text">Ajouter un bon de commande à la convention cadre</p>
-                                                    <button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-plus mr-2"></i>Ajouter un bon de commande</button>
                                                 </div>
                                             </div>
                                         </div>

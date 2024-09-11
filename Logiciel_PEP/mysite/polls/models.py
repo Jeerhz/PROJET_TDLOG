@@ -892,12 +892,15 @@ class AvenantConventionEtude(models.Model):
     ancien_frais_dossier = models.FloatField(blank=True, null=True)
     nouveau_frais_dossier = models.FloatField(blank=True, null=True)
     date_signature = models.DateField(blank=True, null=True)
-    remarque = models.TextField(blank=True, null=True)
+    objet = models.TextField(blank=True, null=True)
+    avenant_budget = models.BooleanField(blank=True, null=True, default=False)
+    avenant_delais = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero}"
+        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero:02d}"
+
     
     def save(self, *args, **kwargs):
         if self.numero is None :
@@ -947,6 +950,9 @@ class BonCommande(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="etude_bdc")
     objectifs = models.TextField(blank=True, null=True, default="")
     cahier_des_charges = models.JSONField(default=dict)
+    debut = models.DateField(default=timezone.now, blank=True, null=True)
+    acompte_pourcentage = models.IntegerField(default=30)
+    periode_de_garantie = models.IntegerField(default=90)
 
     #methode phase, duree
     def phases(self):
@@ -962,11 +968,19 @@ class BonCommande(models.Model):
         else:
             return 0
         
-
+    def fin(self):
+        if self.debut and self.duree_semaine():
+            return self.debut + datetime.timedelta(weeks=self.duree_semaine())
+        else:
+            return None
+        
     def save(self, *args, **kwargs):
         if (self.numero is None):
             self.numero = self.etude.numero*100 
         super(BonCommande, self).save(*args, **kwargs)
+
+    def ref(self):
+        return str(f"{self.etude.ref()}bc{self.numero}")
 
     def __str__(self):
         return str(self.numero).zfill(3)

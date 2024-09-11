@@ -1362,6 +1362,7 @@ def editer_convention(request, iD):
             phases= Phase.objects.filter(etude=instance).order_by('numero')
             if instance.type_convention == "Convention d'étude":
                 model = ConventionEtude
+
                 template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
                 nom_doc ="Convention_Etude_"
             elif instance.type_convention == "Convention cadre":
@@ -1832,6 +1833,22 @@ def editer_avenant_ce(request, iD):
         #try:
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce= instance.ce
+            avenants =  AvenantConventionEtude.objects.filter(ce=ce).order_by('numero')
+            dernier_avenant = avenants[len(avenants) - 2] if avenants else None
+            
+
+            for avenant in avenants:
+                if avenant.avenant_budget:
+                    avenant_budget=True
+                if avenant.avenant_delais:
+                    avenant_delais=True
+
+            objet=instance.objet
+            num_del=1
+            num_bud = 2
+            if not avenant_delais:
+                num_bud=1
+
             etude = ce.etude
             client = etude.client
             representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
@@ -1861,7 +1878,8 @@ def editer_avenant_ce(request, iD):
             context = {"avenant": instance, "etude": etude, "client": client, "president":president, "ref_m":ref_m,"ce":ce,"repr_legale": representant_legale_client, "semaine_fin":semaine_fin,
                        "semaine_fin":semaine_fin,"semaine_fin_lettres":semaine_fin_lettres,"nb_JEH":nb_JEH,"nb_JEH_lettres":nb_JEH_lettres,
                        "phase_montant_HT":phase_montant_HT,"phase_montant_HT_lettres":phase_montant_HT_lettres,"frais_HT":frais_HT, "frais_HT_lettres":frais_HT_lettres,
-                       "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres
+                       "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres,
+                       "avenant_delais":avenant_delais,"avenant_budget":avenant_budget,"num_del":num_del,"num_bud":num_bud,"objet":objet,"dernier_avenant":dernier_avenant
                        }
             # Load the template
 
@@ -1890,30 +1908,44 @@ def editer_avenant_ce(request, iD):
 
 def editer_bon(request, id_bon):
     if request.user.is_authenticated:
-        try:
-            template = DocxTemplate("polls\\templates\\polls\\Bon_de_Commande.docx")
+        #try:
+            template = DocxTemplate("polls/templates/polls/BDC_026.docx")
+
             bon = BonCommande.objects.get(id=id_bon)
             etude = bon.etude
             responsable = etude.responsable
             client = etude.client
-            context = {"etude": etude, "client": client, "responsable":responsable}
+            
+            phases=bon.phases()
+            repr= etude.client_interlocuteur 
+            repr_legale = etude.client_representant_legale 
+            quali = etude.resp_qualite.student
+            respo = etude.responsable.student
+            poste = "Chef de Projet"
+            if respo.titre =='Mme':
+                poste= "Cheffe de Projet"
+            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+
+            context = {"etude": etude, "client": client, "responsable":responsable, "bon":bon,"repr":repr,"repr_legale":repr_legale,
+                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste}
             # Load the template
-
+            env = Environment()
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
             # Render the document
-            template.render(context)
-
-
+            template.render(context, env) 
             # Create a temporary in-memory file
             output = BytesIO()
             template.save(output)
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"Bon_de_commande_{bon.__str__()}.docx"
+            filename = f"{bon.ref()}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except :
+        #except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1957,6 +1989,11 @@ def modifier_bon_commande(request, id_etude, id_bon):
                 bon = BonCommande.objects.get(id=id_bon)
                 bon.remarque = request.POST["remarque_bdc"]
                 bon.numero = request.POST["numero_bdc"]
+                if request.POST["acompte_pourcentage_bdc"]:
+                    bon.acompte_pourcentage = request.POST["acompte_pourcentage_bdc"]
+                if request.POST["periode_de_garantie_bdc"]:
+                    bon.periode_de_garantie = request.POST["periode_de_garantie_bdc"]
+
                 if request.POST["objectifs_bdc"]:
                     bon.objectifs = request.POST["objectifs_bdc"]
 
@@ -2252,8 +2289,17 @@ def BV(request, id_etude, id_eleve):
             feuille['I15'] = je.base_urssaf
             feuille['F23'] = je.taux_ATMP
             # Sauvegarder les modifications dans le fichier Excel
-            classeur.save(chemin_absolu)
-            return FileResponse(open(chemin_absolu, 'rb'), as_attachment=True)
+            output = BytesIO()
+            classeur.save(output)
+            output.seek(0)
+
+            # Specify a new name for the downloaded file
+            download_filename = f"BV_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
+
+            # Return the file with the new filename
+            response = FileResponse(output, as_attachment=True, filename=download_filename)
+
+            return response
         #except :
             liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -2683,9 +2729,22 @@ def ajouter_avenant_ce(request, id_etude):
             #try:
                 etude = Etude.objects.get(id=id_etude)
                 signature = None
+                modif_budget=False
+                modif_delais=False
+                for phase in etude.phases():
+                    if('suppression'+str(phase.id)):
+                        modif_budget=True
+                    if(request.POST['nb_jeh'+str(phase.id)] != phase.nb_JEH):
+                        modif_budget=True
+                    if request.POST['debut'+str(phase.id)]+request.POST['duree'+str(phase.id)] != etude.duree_semaine():
+                        modif_delais=True
                 
-                nouveau_frais_dossier = request.POST['frais_dossier']              
-                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, remarque=request.POST['remarque'])
+                nouveau_frais_dossier = request.POST['frais_dossier']     
+                if nouveau_frais_dossier != etude.frais_dossier:
+                    modif_budget=True    
+
+                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, objet=request.POST['objet'],
+                avenant_budget=modif_budget,avenant_delais=modif_delais)
                 if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
                     new_avenant.nouveau_frais_dossier = nouveau_frais_dossier
                     new_avenant.ancien_frais_dossier = etude.frais_dossier
@@ -2706,7 +2765,7 @@ def ajouter_avenant_ce(request, id_etude):
                         dur_phase = ModificationDureePhase(avenant_ce=new_avenant, phase=phase, nouvelle_duree=n_duree, ancienne_duree=phase.duree_semaine)
                         dur_phase.save()
                         phase.duree_semaine = n_duree
-                    if(request.POST['nb_jeh'+str(phase.id)] != phase.duree_semaine):
+                    if(request.POST['nb_jeh'+str(phase.id)] != phase.nb_JEH):
                         n_jeh = request.POST['nb_jeh'+str(phase.id)]
                         jeh_phase = ModificationJEHPhase(avenant_ce=new_avenant, phase=phase, nouveau_nombre_JEH=n_jeh, ancien_nombre_JEH=phase.nb_JEH)
                         jeh_phase.save()
