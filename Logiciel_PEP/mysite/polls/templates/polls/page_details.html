@@ -1437,7 +1437,8 @@
                                             {% else %}
                                             <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
                                             {% endif %}
-                                            {% if phase.bon %} <small>Bon de commande n°{{phase.bon.numero}}</small> {% endif %}
+
+                                            {% if etude.type_convention == "Convention cadre" %} <small>Bon de commande n°{{phase.bon.numero}}</small> {% endif %}
                                             <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
                                                  Supprimer la phase
                                             </button>
@@ -2648,7 +2649,6 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                     </div>
                                                 </div>
                                             </div>
-                                        
                                             <!-- Début de la table avec pourcentage de Facturation--> 
                                             <table class="table table-striped" style="color: #000; font-weight: 300;">
                                                 <thead>
@@ -2693,15 +2693,9 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                             </table>
                                             <!-- Fin de la table-->
                                             <a class="btn btn-primary" target="_blank" href="{% url 'facture' facture.id %}">Générer la Facture</a>
-                                            
                                         </div>
-                                                                            
                                     <br>
                                     {% endfor %}    
-                                
-
-                                
-                                
                                     {%else%}
                                     Aucune facture
                                     <br>

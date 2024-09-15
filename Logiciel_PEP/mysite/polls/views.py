@@ -1378,7 +1378,7 @@ def editer_convention(request, iD):
                 ce = model(etude=instance)
                 ce.save()
 
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1456,7 +1456,7 @@ def editer_pv(request, iD):
             template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
             
 
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
@@ -1507,7 +1507,7 @@ def editer_rdm(request, id_etude, id_eleve):
             client= etude.client
             assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
             date_fin= timezone.now().date()
             for assignation in assignations:
@@ -1629,7 +1629,7 @@ def editer_devis(request, iD):
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
             date_creation= date.strftime('%d %B %Y')
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             phases= Phase.objects.filter(etude=instance).order_by('numero')
             nb_JEH=instance.nb_JEH()
             tot_HT_phase = format_nombres(instance.montant_phase_HT())
@@ -1842,7 +1842,7 @@ def editer_avenant_ce(request, iD):
             client = etude.client
             representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
 
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             ref_m = etude.ref()
 
             if etude.fin():
@@ -1910,13 +1910,14 @@ def editer_bon(request, id_bon):
             repr_legale = etude.client_representant_legale 
             quali = etude.resp_qualite.student
             respo = etude.responsable.student
+            tot_HT_phase=sum(phase.calcul_mt_HT() for phase in phases)
             poste = "Chef de Projet"
             if respo.titre =='Mme':
                 poste= "Cheffe de Projet"
-            president = {"tire":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
 
             context = {"etude": etude, "client": client, "responsable":responsable, "bon":bon,"repr":repr,"repr_legale":repr_legale,
-                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste}
+                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste,"nombre_phases":bon.nb_phases()}
             # Load the template
             env = Environment()
             env.filters['FormatNombres'] = format_nombres

@@ -990,6 +990,9 @@ class BonCommande(models.Model):
         asso_bdc = AssociationPhaseBDC.objects.filter(bon_de_commande=self).order_by('phase__numero').all()
         phases = [association.phase for association in asso_bdc]
         return phases
+
+    def nb_phases(self):
+        return len(self.phases())
     
     def duree_semaine(self):
         phases = self.phases()
