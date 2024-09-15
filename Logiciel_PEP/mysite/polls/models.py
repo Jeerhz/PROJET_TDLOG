@@ -763,18 +763,39 @@ class Facture(models.Model):
         return f"{current_year_last_two_digits}e{self.numero_facture:02d}"
     
     
-    
+    def bdc(self):
+        if self.etude.type_convention == "Convention cadre" :
+            asso_bdc_fac = AssociationFactureBDC.objects.filter(facture=self).first()
+            
+            return asso_bdc_fac.bon_de_commande
+        else: 
+            return None
+             
 
     def fac_JEH(self):
-        return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        if self.etude.type_convention == "Convention cadre" :
+            bdc= self.bdc()
+            return bdc.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        else:
+            return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        
     def fac_frais(self):
-        return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        if self.etude.type_convention == "Convention cadre" :
+            return self.bdc().frais_dossier * (self.pourcentage_frais / 100)
+        else:
+            return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        
 
     def phases_fac(self):
-        return Phase.objects.filter(etude=self.etude).order_by('numero')
+        if self.etude.type_convention == "Convention cadre" :
+            return self.bdc().phases()
+        else:
+            return Phase.objects.filter(etude=self.etude).order_by('numero')
+        
     
     def montant_HT(self):
         return self.fac_JEH()+self.fac_frais()
+    
     def montant_TVA(self):
         return self.TVA_per*(self.montant_HT())/100
     def montant_TTC(self):
@@ -790,6 +811,13 @@ class Facture(models.Model):
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         self.numero_facture = len(Facture.objects.filter(etude=etude))+1
         super(Facture, self).save(*args, **kwargs)
+
+
+class AssociationFactureBDC(models.Model):
+    bon_de_commande = models.ForeignKey('BonCommande', on_delete=models.CASCADE, related_name="associations_facture")
+    facture = models.ForeignKey('Facture', on_delete=models.CASCADE, related_name="associations_bdc_fac")
+
+
 
 class Devis(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="devis")
@@ -948,11 +976,14 @@ class BonCommande(models.Model):
     numero = models.IntegerField()
     remarque = models.TextField(blank=True, null=True)
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="etude_bdc")
+    frais_dossier = models.FloatField(default=0,verbose_name='frais de dossier')
     objectifs = models.TextField(blank=True, null=True, default="")
     cahier_des_charges = models.JSONField(default=dict)
     debut = models.DateField(default=timezone.now, blank=True, null=True)
     acompte_pourcentage = models.IntegerField(default=30)
     periode_de_garantie = models.IntegerField(default=90)
+    
+
 
     #methode phase, duree
     def phases(self):
@@ -973,6 +1004,20 @@ class BonCommande(models.Model):
             return self.debut + datetime.timedelta(weeks=self.duree_semaine())
         else:
             return None
+        
+    def factures(self):
+        asso_bdc_facs = AssociationFactureBDC.objects.filter(bon_de_commande=self).all()
+            
+        return [asso_bdc_fac.facture for asso_bdc_fac in asso_bdc_facs]
+        
+        
+    def montant_phase_HT(self):
+        phases = self.phases()
+        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None) if phases[0] else 0
+        return total_montant_HT
+
+    def montant_HT_total(self):
+        return self.frais_dossier + self.montant_phase_HT()
         
     def save(self, *args, **kwargs):
         if (self.numero is None):
@@ -1119,7 +1164,7 @@ class Phase(models.Model):
     
     def bon(self):
         association_bdc = self.associations_bdc
-        return association_bdc.first().bon_de_commande if association_bdc.exists() else None
+        return association_bdc.first().bon_de_commande if association_bdc.first().exists() else None
     
 
 class AssignationJEH(models.Model):

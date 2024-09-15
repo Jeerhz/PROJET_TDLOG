@@ -2053,8 +2053,8 @@
                                                     </li>
                                                     <li class="list-group-item">
                                                         Vos interlocuteurs : 
-                                                        <div style="color:#000">{{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} {{poste}} {{etude.responsable.student.mail}}</div> 
-                                                        <div style="color:#000">{{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} Qualité {{etude.resp_qualite.student.mail}}</div> 
+                                                        <div style="color:#000">{% if etude.responsable.student %} {{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} - {{poste}} - {{etude.responsable.student.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
+                                                        <div style="color:#000">{% if etude.resp_qualite.student %} {{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} - Qualité - {{etude.resp_qualite.student.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
         
                                                     </li>
                                                     
@@ -2096,7 +2096,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         Si une phase intermédiaire, ajoutez une colonne
                                                     </div>
                                                     <br>
-                                                    <div style="text-align: center; color: #000;">Informations Convention Cadre</div>
+                                                    <div style="text-align: center; color: #000;">Informations Convention </div>
                                                     
                                                     <div>
                                                         Responsable client
@@ -2451,6 +2451,14 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                         {% endfor %}
                                                     </dl>
                                                 </div>
+                                                {% if etude.type_convention == "Convention cadre" %}
+                                                <div class="form-group row mb-3">
+                                                    <label for="numero_bdc_fac" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                    <div class="col-sm-8 justify-content-center">
+                                                        <input type="number" name="numero_bdc_fac" class="form-control" id="numero_bdc_fac">
+                                                    </div>
+                                                </div>     
+                                                {% endif %}     
                                                 <div class="card-footer text-center">
                                                     <button type="submit" class="btn btn-primary">Sauvegarder</button>
                                                 </div>
@@ -2594,6 +2602,115 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                     </div>
                                 </div>            
                                 <!-- facture créé dans longlet général qui n'ont pas encoré été générés-->
+                                {% if etude.type_convention == "Convention cadre" %} 
+                                <div class="container mt-3">
+                                    {% if bons %}
+                                    {% for bon in bons %}
+                                    <div style="text-align: center; color: #000;">Bon de Commande {{bon.numero}}</div>
+                                    {% if bon.factures %}
+                                    
+                                        {% for facture in bon.factures %}
+                                    
+                                        <div class="card border border-primary border-5 mb-3">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-book-open mr-2"></i>
+                                                    <span>{{facture.type_facture}}</span>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
+                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture">
+                                                        Supprimer la facture
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Modal -->
+                                            <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="deleteModalLabel">Supprimer la facture</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            Êtes-vous sûr de vouloir supprimer cette facture ?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                            <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id etude.id %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        
+                                            <!-- Début de la table avec pourcentage de Facturation--> 
+                                            <table class="table table-striped" style="color: #000; font-weight: 300;">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Objet</th>
+                                                        <th scope="col"> Montant </th>
+                                                        <th scope="col">%</th>
+                                                        <th scope="col">Facturé</th>
+                                                        
+                                                    </tr>
+                                                    </thead>
+                                                <tbody>
+                                                    
+                                                    {% if bon.phases %}
+                                                    {% for phase in bon.phases %}
+                                                <tr>
+                                                    <th scope="row">Phase {{ phase.numero }}</th>
+                                                    <td>{{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</td>
+                                                    <td> {{ facture.pourcentage_JEH|FormatNombres }} </td>
+                                                    <td> {{ phase.calcul_mt_HT|FormatNombres }} € </td>
+                                                    
+                                                </tr>
+                                                    {% endfor %} 
+                                                    {% endif %} 
+                                                
+                                                <tr>
+                                                    <th scope="col">Frais de dossier</th>
+                                                    <td scope="col">{{bon.frais_dossier|FormatNombres}} €</td>
+                                                    <td scope="col">{{facture.pourcentage_frais|FormatNombres}}</td>
+                                                    <td scope="col">{{facture.fac_frais|FormatNombres}} €</td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Total</th>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td><strong>{{facture.montant_HT|FormatNombres}}€</strong></td>
+                                                    
+                                                    
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <!-- Fin de la table-->
+                                            <a class="btn btn-primary" target="_blank" href="{% url 'facture' facture.id %}">Générer la Facture</a>
+                                            
+                                        </div>
+                                                                            
+                                    <br>
+                                    {% endfor %}    
+                                
+
+                                
+                                
+                                    {%else%}
+                                    Aucune facture
+                                    <br>
+                                    {% endif %}
+                                    <br>
+                                    {% endfor %}
+                                    {% endif %}
+                                </div>  
+                                {% else %}
                                 <div class="container mt-3">
                                     {% if factures %}
                                     
@@ -2692,7 +2809,8 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                     {%else%}
                                     Aucune facture
                                     {% endif %}
-                                </div>  
+                                </div> 
+                                {% endif %}
                                 <!-- Fin container mt-3 -->          
                             </div>
                             <!-- Fin de l'Onglet Facturation-->

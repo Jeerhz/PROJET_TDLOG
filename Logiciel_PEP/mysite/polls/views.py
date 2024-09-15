@@ -89,6 +89,7 @@ from .models import (
     ClientCSVUploadForm,
     AssociationPhaseBDC,
     BA,
+    AssociationFactureBDC,
 )
 
 def general_context(request):
@@ -1500,10 +1501,9 @@ def editer_pv(request, iD):
 
 def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        #try :
+        try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            #phases= Phase.objects.filter(etude=etude)
             client= etude.client
             assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
             je= eleve.je
@@ -1522,43 +1522,27 @@ def editer_rdm(request, id_etude, id_eleve):
             else :
                 rdm = model(etude=etude, eleve=eleve)
                 rdm.save()
-            
-            
             ref_m = etude.ref()
             ref_d = rdm
             ce = etude.convention()
             date = timezone.now().date()
             annee = date.strftime('%Y')
-            # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
-            
-            
-
-
             context = {"etude": etude,"client": client, "rdm": rdm, "ref_d":ref_d, "etudiant": eleve, "ref_m":ref_m, "assignations":assignations,"annee":annee,"president" :president,"etudiant_nb_JEH":etudiant_nb_JEH,"date_fin":date_fin,
                        "remuneration":remuneration,"ce":ce}
-            # Load the template
 
             env = Environment()
-
             env.filters['FormatNombres'] = format_nombres
             env.filters['EnLettres'] = en_lettres
             env.filters['ChiffreLettre'] = chiffre_lettres
-        
-            
-
             template.render(context, env)
-
-            # Create a temporary in-memory file
             output = BytesIO()
             template.save(output)
             output.seek(0)
-
-            # Save the "fichier" field of the CE
             filename = f"RDM_{ref_m}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1581,7 +1565,6 @@ def editer_ba(request, id_eleve):
             model = BA
             dernier_ba = BA.objects.order_by('-number').first()
 
-            # Get the highest number
             if dernier_ba:
                 number=dernier_ba.number+1
             else:
@@ -1615,7 +1598,7 @@ def editer_ba(request, id_eleve):
 
 def editer_devis(request, iD):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
             template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
@@ -1628,10 +1611,16 @@ def editer_devis(request, iD):
                 devis.save()
             
             responsable = instance.responsable.student
+            if responsable is None:
+                raise ValueError("Définir un suiveur")
+                
             poste = "Chef de Projet"
             if responsable.titre =='Mme':
                 poste= "Cheffe de Projet"
             qualite = instance.resp_qualite.student
+            if qualite is None:
+                raise ValueError("Définir un qualité")
+                
             ref_m = instance.ref()
             ref_d = ref_m + "pv"
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
@@ -1648,13 +1637,13 @@ def editer_devis(request, iD):
             factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
             
             fac_acom=factures.first()
-            #fac_solde=factures.first()
+            fac_solde=None
             for facture in factures:
                 if facture.type_facture==facture.Status.ACOMPTE:
                     fac_acom = facture
                 elif facture.type_facture==facture.Status.SOLDE:
                     fac_solde = facture
-            if not fac_solde:
+            if fac_solde is None:
                 raise ValueError("Définir la facturation de solde pour l'échéancier")
 
             css_planning = """
@@ -1815,10 +1804,10 @@ def editer_devis(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        #except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        #except :
+        except Exception as e:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2238,13 +2227,33 @@ def ajouter_facture(request, id_etude):
         if request.method == 'POST':
             fetchform = AddFacture(request.POST)
             if fetchform.is_valid():
-                fetchform.save(commit=True, id_etude=id_etude)
+                etude = Etude.objects.get(id=id_etude)
+                numero_bdc = request.POST.get("numero_bdc_fac", None)
+                new_facture = fetchform.save(commit=True, id_etude=id_etude)
+                if etude.type_convention == "Convention cadre" and numero_bdc:
+                    bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                    bdc = None
+                    if(bdcs.exists()):
+                        bdc = bdcs[0]
+                    else:
+                        gen_context = general_context(request)
+                        gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                        template = loader.get_template("polls/page_error.html")
+                        return HttpResponse(template.render(gen_context, request))
+                    new_ass_fac_bdc = AssociationFactureBDC(facture=new_facture, bon_de_commande=bdc)
+                    new_ass_fac_bdc.save()
+            else :
+                gen_context = general_context(request)
+                gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                template = loader.get_template("polls/page_error.html")
+                return HttpResponse(template.render(gen_context, request))
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
     
+
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
         #try :
