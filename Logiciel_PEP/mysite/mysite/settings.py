@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_celery_beat",
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -109,6 +110,38 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    # other backends
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "162876035246-14ukf5eahlqccekrf1sv4lm7npb77vs3.apps.googleusercontent.com"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/gmail.send',
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1:8000/polls/complete/google-oauth1/'
+""" SOCIAL_AUTH_LOGIN_REDIRECT_URI = '/polls/google_login'
+LOGIN_REDIRECT_URI = '/polls/google_login'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+            'send',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'redirect_uri': 'http://127.0.0.1:8000/polls/google_login/'
+        }
+    }
+} """
+
+LOGIN_REDIRECT_URL = '/polls/google-login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

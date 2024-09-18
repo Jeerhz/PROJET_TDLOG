@@ -11,6 +11,7 @@ from jinja2 import Environment
 import math
 from html2image import Html2Image
 import time as time1 
+from social_django.models import UserSocialAuth
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -135,12 +136,18 @@ def index(request):
         user_je = request.user.je
         monthly_sums = calculate_monthly_sums(user_je)
         chiffre_affaire = monthly_sums[-1]
-        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')[:5]
-        nombre_mission_terminee = Etude.objects.filter(je=user_je, status='TERMINEE').count()
-        nombre_mission_en_cours = Etude.objects.filter(je=user_je, status='EN_COURS').count()
-        etudes_en_discussion = Etude.objects.filter(je=user_je, status='EN_NEGOCIATION')
-        nombre_mission_en_negociation = etudes_en_discussion.count()
-        etudes_en_discussion = etudes_en_discussion.order_by('-debut')[:5]
+        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')
+        etudes_terminees = etudes_recentes.filter(status='TERMINEE')
+        nombre_mission_terminee = etudes_terminees.count()
+        etudes_terminees = etudes_terminees[:5]
+
+        etudes_en_cours = etudes_recentes.filter(status='EN_COURS')
+        nombre_mission_en_cours = etudes_en_cours.count()
+        etudes_en_cours = etudes_en_cours[:5]
+
+        etudes_en_negociation = etudes_recentes.filter(status='EN_NEGOCIATION')
+        nombre_mission_en_negociation = etudes_en_negociation.count()
+        etudes_en_negociation = etudes_en_negociation[:5]
         template = loader.get_template("polls/index.html")
         context = {
             "nombre_mission_en_cours": nombre_mission_en_cours,
@@ -152,8 +159,9 @@ def index(request):
             "notification_list":notification_list,
             "notification_count":notification_count,
             "chiffre_affaire": chiffre_affaire,
-            "etudes_recentes":etudes_recentes,
-            "etudes_en_discussion":etudes_en_discussion,
+            "etudes_en_cours":etudes_en_cours,
+            "etudes_en_negociation":etudes_en_negociation,
+            "etudes_terminees":etudes_terminees,
         }
 
     else:
@@ -181,6 +189,8 @@ def custom_login(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
+def google_login(request):
+    return redirect('settings')
 
 def custom_logout(request):
     logout(request)
@@ -573,6 +583,19 @@ def modify_etude(request, pk):
     
     else:
         return redirect('login')
+    
+def object_suppression(request, model_name, object_id):
+    if request.user.is_authenticated:
+        try :
+            model = apps.get_model(app_label="polls", model_name=model_name)
+            object = model.objects.get(id=object_id)
+            # Attention checker la cohérence des JE
+            object.delete()
+            return JsonResponse({'success':True})
+        except:
+            return JsonResponse({'success':False, 'error_message':"Une erreur a été détectée dans la base de données."})
+    else:
+        return JsonResponse({'success':False, 'error_message':"Il semblerait que vous ayez été déconnecté."})
     
 
 def get_client_representants(request):
@@ -2418,51 +2441,34 @@ def send_mail_demarchage(request,iD):
 
 def settings(request):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        
+        context = general_context(request)
+        try :
+            google_user = request.user.social_auth.get(provider='google-oauth2')
+            context['google_user'] = google_user
+            print(google_user.extra_data)
+            context['google_email'] = google_user.extra_data['email']
+        except UserSocialAuth.DoesNotExist:
+            context['google_user'] = None
+            context['alert_message'] = "L'authentification a échoué!"
+        except:
+            context['alert_message'] = "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations."
         template = loader.get_template("polls/settings.html")
         if request.method == 'GET':
-            context = {
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list":notification_list,
-                "notification_count":notification_count,
-                "user": request.user,
-                "form_param": SetParametresUtilisateur(instance=request.user.parametres)
-            }
+            context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
         else :
             try:
                 fetchform = request.POST
                 param = SetParametresUtilisateur(fetchform, instance=request.user.parametres)
-                param.save()
-                context = {
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
-                    "user": request.user,
-                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
-                    "alert_message":"Modifications enregistrées!"
-                }
+                if param.is_valid():
+                    param.save()
+                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                    context['alert_message'] = "Modifications enregistrées!"
+                else:
+                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                    context['alert_message'] = "La modification n'a pas aboutie!"
             except:
-                context = {
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
-                    "user": request.user,
-                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
-                    "alert_message":"La modification n'a pas aboutie!"
-                }
+                context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                context['alert_message'] = "La modification n'a pas aboutie!"
         return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")

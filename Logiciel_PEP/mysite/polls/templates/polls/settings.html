@@ -539,10 +539,10 @@
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><i class="fas fa-venus-mars mr-2"></i><strong>Titre:</strong> {{ user.titre }}</li>
-                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ user.student }}</li>
-                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ user.email }}</li>
-                                        <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Photo:</strong> <img class="img-profile rounded-circle" style="width:40px; height:40px;" src="{{user.photo.url}}"></li>
+                                        <li class="list-group-item"><i class="fas fa-venus-mars mr-2"></i><strong>Titre:</strong> {{ request.user.titre }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ request.user.student }}</li>
+                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ request.user.email }}</li>
+                                        <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Photo:</strong> <img class="img-profile rounded-circle" style="width:40px; height:40px;" src="{{request.user.photo.url}}"></li>
                                     </ul>
                                 </div>
                             </div>
@@ -555,11 +555,22 @@
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
                                     <div class="container">
-                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Réception:</strong></h5>
+                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Envoi/Réception de mails:</strong></h5>
                                         <div class="card border-left-primary pt-3 pb-3">
                                             <div class="text-center">
-                                                <span><strong>Email:</strong> {{ user.email }}</span>
+                                                <span {% if not google_email %}class="text-danger"{% endif %}><strong>Email:</strong>{% if google_email %} {{ google_email }}{% else %} Vous n'avez pas connecté votre compte Gmail{% endif %}</span>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div class="container row">
+                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Connexion à votre boîte Gmail:</strong></h5>
+                                        <div class="col-5">
+                                            <a href="{% url 'social:begin' 'google-oauth2' %}" type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+                                                <i class="fab fa-google"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-5">
+                                            <p class="text-gray-400">La connexion par google vous permet d'envoyer et de recevoir des mails depuis votre boîte mail personnelle.</p>
                                         </div>
                                     </div>
                                     <hr>
