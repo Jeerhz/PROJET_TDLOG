@@ -32,7 +32,7 @@ urlpatterns = [
     path('fetch_data/', views.fetch_data, name='fetch_data'),
     path("messagerie/", views.messages, name='messagerie'),
     path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
-    path("ajouter_assignation_jeh/<int:id_etude>/<int:numero_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
+    path("ajouter_assignation_jeh/<int:id_etude>/<int:id_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
     path("BV/<int:id_etude>/<int:id_eleve>", views.BV, name='BV'),
     path("ndf/", views.ndf, name="ndf"),
     path("ba/<int:iD>", views.ba, name="ba"),
@@ -69,6 +69,8 @@ urlpatterns = [
     path("delete_mail_template/", views.delete_mail_template, name="delete_mail_template"),
     path('upload_students/', views.upload_students, name='upload_students'),
     path('verifier_etude/<int:iD>/', views.verifier_etude, name='verifier_etude'),
+    path("editer_ba/<int:id_eleve>", views.editer_ba, name="editer_ba"),
+    path('upload_clients/', views.upload_clients, name='upload_clients'),
 
     path('object_suppression/<str:model_name>/<int:object_id>', views.object_suppression, name="object_suppression"),
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),

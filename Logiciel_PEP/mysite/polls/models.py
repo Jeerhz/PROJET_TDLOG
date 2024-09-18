@@ -129,7 +129,7 @@ class Client(models.Model):
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     logo = models.ImageField(upload_to="static/polls/img/", default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png")
     remarque = models.TextField(blank=True, null=True, default="")
-    description = models.TextField(max_length=500, null=True)
+    description = models.TextField(max_length=10000, null=True)
     secteur = models.CharField(
         max_length=20,
         choices=Secteur.choices,
@@ -368,6 +368,9 @@ class Student(models.Model):
 class StudentCSVUploadForm(forms.Form):
     csv_file = forms.FileField(label="Upload CSV File")
 
+class ClientCSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label="Upload CSV File")
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, je=None, student=None, titre=None, **extra_fields):
         if not email:
@@ -514,9 +517,9 @@ class Etude(models.Model):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
 
-    titre = models.CharField(max_length=200)
+    titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
-    description = models.TextField(max_length=500, blank=True)
+    description = models.TextField(max_length=10000, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
     debut = models.DateField(default=timezone.now, blank=True, null=True)
     resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes",verbose_name='qualité')
@@ -542,7 +545,8 @@ class Etude(models.Model):
     element_a_fournir= models.TextField(blank=True, null=True, default="",verbose_name ="éléments à fournir du client")
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
-    
+    cahier_des_charges = models.JSONField(default=dict)
+
     def __str__(self):
         return self.titre
     
@@ -759,18 +763,39 @@ class Facture(models.Model):
         return f"{current_year_last_two_digits}e{self.numero_facture:02d}"
     
     
-    
+    def bdc(self):
+        if self.etude.type_convention == "Convention cadre" :
+            asso_bdc_fac = AssociationFactureBDC.objects.filter(facture=self).first()
+            
+            return asso_bdc_fac.bon_de_commande
+        else: 
+            return None
+             
 
     def fac_JEH(self):
-        return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        if self.etude.type_convention == "Convention cadre" :
+            bdc= self.bdc()
+            return bdc.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        else:
+            return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
+        
     def fac_frais(self):
-        return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        if self.etude.type_convention == "Convention cadre" :
+            return self.bdc().frais_dossier * (self.pourcentage_frais / 100)
+        else:
+            return self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        
 
     def phases_fac(self):
-        return Phase.objects.filter(etude=self.etude).order_by('numero')
+        if self.etude.type_convention == "Convention cadre" :
+            return self.bdc().phases()
+        else:
+            return Phase.objects.filter(etude=self.etude).order_by('numero')
+        
     
     def montant_HT(self):
         return self.fac_JEH()+self.fac_frais()
+    
     def montant_TVA(self):
         return self.TVA_per*(self.montant_HT())/100
     def montant_TTC(self):
@@ -786,6 +811,13 @@ class Facture(models.Model):
         self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais/ 100)
         self.numero_facture = len(Facture.objects.filter(etude=etude))+1
         super(Facture, self).save(*args, **kwargs)
+
+
+class AssociationFactureBDC(models.Model):
+    bon_de_commande = models.ForeignKey('BonCommande', on_delete=models.CASCADE, related_name="associations_facture")
+    facture = models.ForeignKey('Facture', on_delete=models.CASCADE, related_name="associations_bdc_fac")
+
+
 
 class Devis(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="devis")
@@ -888,12 +920,15 @@ class AvenantConventionEtude(models.Model):
     ancien_frais_dossier = models.FloatField(blank=True, null=True)
     nouveau_frais_dossier = models.FloatField(blank=True, null=True)
     date_signature = models.DateField(blank=True, null=True)
-    remarque = models.TextField(blank=True, null=True)
+    objet = models.TextField(blank=True, null=True)
+    avenant_budget = models.BooleanField(blank=True, null=True, default=False)
+    avenant_delais = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero}"
+        return f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero:02d}"
+
     
     def save(self, *args, **kwargs):
         if self.numero is None :
@@ -938,14 +973,62 @@ class ModificationJEHPhase(models.Model):
 
 
 class BonCommande(models.Model):
-    convention_cadre = models.ForeignKey('ConventionCadre', on_delete=models.CASCADE, related_name="bons_commande")
     numero = models.IntegerField()
     remarque = models.TextField(blank=True, null=True)
+    etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="etude_bdc")
+    frais_dossier = models.FloatField(default=0,verbose_name='frais de dossier')
+    objectifs = models.TextField(blank=True, null=True, default="")
+    cahier_des_charges = models.JSONField(default=dict)
+    debut = models.DateField(default=timezone.now, blank=True, null=True)
+    acompte_pourcentage = models.IntegerField(default=30)
+    periode_de_garantie = models.IntegerField(default=90)
+    
 
+
+    #methode phase, duree
+    def phases(self):
+        asso_bdc = AssociationPhaseBDC.objects.filter(bon_de_commande=self).order_by('phase__numero').all()
+        phases = [association.phase for association in asso_bdc]
+        return phases
+
+    def nb_phases(self):
+        return len(self.phases())
+    
+    def duree_semaine(self):
+        phases = self.phases()
+        if phases:
+            duree = max(phase.duree_semaine + phase.debut_relatif for phase in phases if phase.duree_semaine is not None and phase.debut_relatif is not None)
+            return duree
+        else:
+            return 0
+        
+    def fin(self):
+        if self.debut and self.duree_semaine():
+            return self.debut + datetime.timedelta(weeks=self.duree_semaine())
+        else:
+            return None
+        
+    def factures(self):
+        asso_bdc_facs = AssociationFactureBDC.objects.filter(bon_de_commande=self).all()
+            
+        return [asso_bdc_fac.facture for asso_bdc_fac in asso_bdc_facs]
+        
+        
+    def montant_phase_HT(self):
+        phases = self.phases()
+        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None) if phases[0] else 0
+        return total_montant_HT
+
+    def montant_HT_total(self):
+        return self.frais_dossier + self.montant_phase_HT()
+        
     def save(self, *args, **kwargs):
         if (self.numero is None):
-            self.numero = self.convention_cadre.etude.numero*100 + max(self.convention_cadre.bons_commande.all())+1
+            self.numero = self.etude.numero*100 
         super(BonCommande, self).save(*args, **kwargs)
+
+    def ref(self):
+        return str(f"{self.etude.ref()}bc{self.numero}")
 
     def __str__(self):
         return str(self.numero).zfill(3)
@@ -976,6 +1059,7 @@ class RDM(models.Model):
     def signe(self):
         return (self.date_signature is not None)
     
+    
 class AvenantRuptureRDM(models.Model):
     rdm = models.ForeignKey('RDM', on_delete=models.CASCADE, related_name="avenants")
     date_signature = models.DateField(blank=True, null=True)
@@ -1004,6 +1088,9 @@ class ModificationPhaseRDM(models.Model):
     ancien_nombre_JEH = models.IntegerField()
     nouveau_nombre_JEH = models.IntegerField()
 
+class BA(models.Model):
+    eleve = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="ba")
+    number = models.IntegerField(default = 604)
 
 class Phase(models.Model):
     etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name='etude')
@@ -1080,7 +1167,7 @@ class Phase(models.Model):
     
     def bon(self):
         association_bdc = self.associations_bdc
-        return association_bdc.first().bon_de_commande if association_bdc.exists() else None
+        return association_bdc.first().bon_de_commande if association_bdc.first().exists() else None
     
 
 class AssignationJEH(models.Model):
@@ -1101,10 +1188,10 @@ class AssignationJEH(models.Model):
     
     def save(self, *args, **kwargs):
         id_etude = kwargs.pop('id_etude', None)
-        numero_phase = kwargs.pop('numero_phase', None)
-        if(id_etude is not None and numero_phase is not None):
+        id_phase = kwargs.pop('id_phase', None)
+        if(id_etude is not None and id_phase is not None):
             etude = Etude.objects.get(id=id_etude)
-            phase = Phase.objects.get(etude=etude, numero=numero_phase)
+            phase = Phase.objects.get(id=id_phase)
             self.phase = phase
         super(AssignationJEH, self).save(*args, **kwargs)
     
@@ -1363,7 +1450,7 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
 
     def __str__(self):
         return "Informations de l'étude"
