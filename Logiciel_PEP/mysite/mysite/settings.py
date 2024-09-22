@@ -82,11 +82,11 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylog2',
-        'USER': 'postgres',
-        'PASSWORD': 'sylog',
+        'NAME': 'db_sylex',
+        'USER': 'edgar_admin',
+        'PASSWORD': '/Tito1905',
         'HOST': 'localhost',  
-        'PORT': '5433',
+        'PORT': '5432',
     }
 }
 
@@ -123,23 +123,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/gmail.send',
 ]
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1:8000/polls/complete/google-oauth1/'
-""" SOCIAL_AUTH_LOGIN_REDIRECT_URI = '/polls/google_login'
-LOGIN_REDIRECT_URI = '/polls/google_login'
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-            'send',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-            'redirect_uri': 'http://127.0.0.1:8000/polls/google_login/'
-        }
-    }
-} """
 
 LOGIN_REDIRECT_URL = '/polls/google-login'
 
@@ -171,11 +154,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USERNAME = "titoduc1905@gmail.com"
-EMAIL_PASSWORD = "qrorvjgmtunxthpg"
 
 
 CELERY_BEAT_SCHEDULE = {

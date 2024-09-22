@@ -12,6 +12,10 @@ import math
 from html2image import Html2Image
 import time as time1 
 from social_django.models import UserSocialAuth
+import base64
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from email.mime.text import MIMEText
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -264,18 +268,7 @@ def je_detail(request):
 
 def demarchage(request):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        
-
+        context = general_context(request)
         template = loader.get_template("polls/demarchage.html")
         je = request.user.je
         representants= Representant.objects.filter(client__je=je)
@@ -284,18 +277,23 @@ def demarchage(request):
         mail_templates = je.mail_templates
         mail_templates_ids = list(mail_templates.values_list('id', flat=True))
         mail_template_contents = list(mail_templates.values_list('message', flat=True))
-        context = {
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
-            'representants': representants,
-            'clients':clients,
-            'secteurs':secteurs,
-            'mail_template_form': CreateMailTemplate(),
-            'mail_template_ids' : mail_templates_ids,
-            'mail_template_contents' : mail_template_contents,
-        }
+        context['client']=clients
+        context['secteurs']=secteurs
+        context['mail_template_form']=CreateMailTemplate()
+        context['mail_template_ids']=mail_templates_ids
+        context['mail_template_contents']=mail_template_contents
+        try :
+            google_user = request.user.social_auth.get(provider='google-oauth2')
+            context['google_user'] = google_user
+            context['google_email'] = google_user.extra_data['email']
+            context['connecté'] = True
+        except UserSocialAuth.DoesNotExist:
+            context['google_user'] = None
+            context['alert_message'] = "Vous n'êtes pas connecté à votre compte Google. Vous ne pouvez pas envoyer de mail. (voir paramètres)"
+            context['connecté'] = False
+        except:
+            context['alert_message'] = "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations Google nécessaires."
+            context['connecté'] = False
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -2597,35 +2595,46 @@ def send_mail_demarchage(request,iD):
         }
         if request.method == 'POST':
             try :
-                host = None
-                port = None
-                username = None
-                email_host = host if host else conf_settings.EMAIL_HOST
-                email_port = port if port else conf_settings.EMAIL_PORT
-                username = None
-                username = username if username else conf_settings.EMAIL_USERNAME
-                password = None
-                password = password if password else conf_settings.EMAIL_PASSWORD
-                connection = get_connection(host=email_host, port=email_port, username=username,
-                    password=password,
-                    use_tls=True,)
-                subject = request.POST['subject']
-                print(request.POST['message'])
+                google_user = request.user.social_auth.get(provider='google-oauth2')
+                context['google_user'] = google_user
+                # Extract OAuth2 tokens
+                credentials = Credentials(
+                    token=google_user.extra_data['access_token'],
+                    refresh_token=google_user.extra_data['refresh_token'],
+                    token_uri='https://oauth2.googleapis.com/token',
+                    client_id=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+                    client_secret=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET,
+                )
+
+                # Build Gmail API service
+                service = build('gmail', 'v1', credentials=credentials)
+
+                # Create the email message
                 html_message = loader.render_to_string('polls/mail_template.html', {'message': request.POST['message'], 'name': request.POST['name'], 'signature': request.POST['signature']})
-                from_email = conf_settings.EMAIL_USERNAME
-                recipient_list = [request.POST['destinataire']]
-                mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=recipient_list, connection=connection)
-                mail.content_subtype = 'html'
-                mail.send()
+                message = MIMEText(html_message, 'html')
+                message['to'] = request.POST['destinataire']
+                message['subject'] = request.POST['subject']
+                raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+                content = {'raw': raw}
+
+                # Send the email using the Gmail API
+                send_message = service.users().messages().send(userId='me', body=content).execute()
+
                 #representant = Representant.objects.get(id=iD)
                 #representant.contenu_mail=request.POST['message']
                 #representant.demarchage="ATTENTE_REPONSE"
                 #representant.save()
                 return redirect('demarchage')
+            except UserSocialAuth.DoesNotExist:
+                context = general_context(request)
+                context['error_message'] = "Vous n'êtes pas connecté avec votre compte Google. (voir paramètres)"
+                template = loader.get_template("polls/page_error.html")
             except:
+                context = general_context(request)
                 context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
                 template = loader.get_template("polls/page_error.html")
         else :
+            context = general_context(request)
             context['error_message'] = "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
             template = loader.get_template("polls/page_error.html")
     else:
@@ -2645,9 +2654,9 @@ def settings(request):
             context['google_email'] = google_user.extra_data['email']
         except UserSocialAuth.DoesNotExist:
             context['google_user'] = None
-            context['alert_message'] = "L'authentification a échoué!"
+            context['alert_message'] = "L'authentification Google a échoué!"
         except:
-            context['alert_message'] = "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations."
+            context['alert_message'] = "L'authentification Google a fonctionné, mais vous n'avez pas accordé les autorisations."
         template = loader.get_template("polls/settings.html")
         if request.method == 'GET':
             context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
