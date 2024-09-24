@@ -277,7 +277,7 @@ def demarchage(request):
         mail_templates = je.mail_templates
         mail_templates_ids = list(mail_templates.values_list('id', flat=True))
         mail_template_contents = list(mail_templates.values_list('message', flat=True))
-        context['client']=clients
+        context['clients']=clients
         context['secteurs']=secteurs
         context['mail_template_form']=CreateMailTemplate()
         context['mail_template_ids']=mail_templates_ids
@@ -2577,22 +2577,7 @@ def remarque_etude(request, iD):
 
 def send_mail_demarchage(request,iD):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-            ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        context = {
-        "liste_messages": liste_messages,
-        "message_count": message_count,
-        "notification_list":notification_list,
-        "notification_count":notification_count,
-        }
+        context = general_context(request)
         if request.method == 'POST':
             try :
                 google_user = request.user.social_auth.get(provider='google-oauth2')

@@ -122,8 +122,13 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/gmail.send',
+    'openid',
 ]
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline',
+    'prompt': 'consent',  # Force Google to ask the user to re-consent
+}
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['email', 'name', 'refresh_token', 'expires_in']
 LOGIN_REDIRECT_URL = '/polls/google-login'
 
 # Internationalization
