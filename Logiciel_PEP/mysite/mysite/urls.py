@@ -24,6 +24,7 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/polls/")),
     path("admin/", admin.site.urls),
     path("polls/", include("polls.urls")),
+    path('polls/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:

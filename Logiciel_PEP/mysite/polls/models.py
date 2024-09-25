@@ -481,8 +481,8 @@ class Member(AbstractUser):
 class ParametresUtilisateur(models.Model):
     membre = models.OneToOneField(Member, on_delete=models.CASCADE, related_name="parametres")
     param_statut_etude_ec = models.BooleanField(default=True, verbose_name="En cours")
-    param_statut_etude_ed = models.BooleanField(default=False, verbose_name="En discussion")
-    param_statut_etude_t = models.BooleanField(default=False, verbose_name="Terminée")
+    param_statut_etude_ed = models.BooleanField(default=True, verbose_name="En discussion")
+    param_statut_etude_t = models.BooleanField(default=True, verbose_name="Terminée")
     param_col_etude_numero = models.BooleanField(default=True, verbose_name="Numéro")
     param_col_etude_titre = models.BooleanField(default=True, verbose_name="Titre")
     param_col_etude_client = models.BooleanField(default=True, verbose_name="Client")
@@ -490,7 +490,7 @@ class ParametresUtilisateur(models.Model):
     param_col_etude_montant_HT = models.BooleanField(default=False, verbose_name="Montant HT")
     param_col_etude_remarque = models.BooleanField(default=True, verbose_name="Remarque")
     param_col_etude_avancement = models.BooleanField(default=True, verbose_name="Avancement")
-    signature = models.TextField(max_length=200, default="", verbose_name="Signature Mail")
+    signature = models.TextField(max_length=200, default="", blank=True, verbose_name="Signature Mail")
 
     def __str__(self):
         return "Paramètres "+self.membre.__str__()

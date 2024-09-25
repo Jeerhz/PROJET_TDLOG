@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_celery_beat",
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -81,11 +82,11 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylog2',
-        'USER': 'postgres',
-        'PASSWORD': 'sylog',
+        'NAME': 'db_sylex',
+        'USER': 'edgar_admin',
+        'PASSWORD': '/Tito1905',
         'HOST': 'localhost',  
-        'PORT': '5433',
+        'PORT': '5432',
     }
 }
 
@@ -109,6 +110,26 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    # other backends
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "162876035246-14ukf5eahlqccekrf1sv4lm7npb77vs3.apps.googleusercontent.com"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/gmail.send',
+    'openid',
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline',
+    'prompt': 'consent',  # Force Google to ask the user to re-consent
+}
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['email', 'name', 'refresh_token', 'expires_in']
+LOGIN_REDIRECT_URL = '/polls/google-login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -132,17 +153,13 @@ STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "polls/static")
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "media/"
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USERNAME = "titoduc1905@gmail.com"
-EMAIL_PASSWORD = "qrorvjgmtunxthpg"
 
 
 CELERY_BEAT_SCHEDULE = {

@@ -339,20 +339,21 @@
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-            <div class="toast-container position-fixed w-100 top-0 start-0 p-3 justify-content-center" style="z-index:1050;">
+            
+            <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:1050;">
                 <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" id="alert">
                     <div class="toast-header">
-                    <strong class="mr-auto">Formulaire</strong>
-                    <small>maintenant</small>
-                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                        <strong class="mr-auto">Formulaire</strong>
+                        <small>maintenant</small>
+                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
                     <div class="toast-body" id="alert-content">
                     </div>
                 </div>
-              </div>
-
+            </div>
+            
             <!-- Main Content -->
             <div id="content">
                 <!-- Topbar -->
@@ -574,8 +575,6 @@
                 </nav>
                 <!-- End of Topbar -->
 
-            
-            <!-- Begin Main Content -->
 
             <!-- Formulaire intervenant général -->
             <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
@@ -607,6 +606,29 @@
                 </div>
             </div>
             <!-- Fin formulaire intervenant -->
+
+            <!-- Modal de suppression général -->
+            <div class="modal fade" id="suppressionModal" tabindex="-1" role="dialog" aria-labelledby="suppressionModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="suppressionModalLabel">Suppression</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="suppression-modal-body">
+                            <p>Êtes-vous sûr de vouloir supprimer cet objet ?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <form id="suppression-modal-form" method="GET">
+                                <button type="button" class="btn btn-danger" id="suppression-modal-button">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Début formulaire BV onglet Eleve -->
             <div class="modal fade" id="bv-modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -1963,9 +1985,9 @@
                                                             <tr>
                                                                 <td>Bon n°{{bon.numero}}</td>
                                                                 <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
-                                                                <td><button button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button></td>
+                                                                <td><button button class="btn btn-primary" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button></td>
                                                                 <td><a href="{% url 'editer_bon' bon.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i></a></td>
-                                                                <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
+                                                                <td><button class="btn btn-danger bouton-suppression" data-objectname="Bon n°{{bon.numero}}" data-href="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}" data-toggle="modal" data-target="#suppressionModal"><i class="fas fa-times"></i></button></td>
                                                             </tr>
                                                             {% endfor %}
                                                         </tbody>
@@ -2284,7 +2306,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text">Ajouter intervenant</span>
                                                 </div>
-                                                <input type="text" id="specialid" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
+                                                <input type="text" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
                                                     aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
                                             </div>
                                             <div class="list-group w-100" id="suggestions-results-student"></div>
@@ -3459,23 +3481,23 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
             </div>
             <!-- End of Card Header-->
 
-          </div> <!-- BECAUSE SEARCH BAR NOT WORKING-->
+            </div> <!-- End of main content -->
 
 
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white" style="margin-top: auto;">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; SYLOG 2024</span>
-                    </div>
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white" style="margin-top: auto;">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; SYLOG 2024</span>
                 </div>
-            </footer>
-            <!-- End of Footer -->
+            </div>
+        </footer>
+        <!-- End of Footer -->
 
         </div>
-        <!-- End of Wrapper colomn -->
+        <!-- End of Content Wrapper -->
     </div>
-    <!-- End of Page Wrapper column -->
+    <!-- End of Page Wrapper -->
 
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -3525,6 +3547,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
     <!-- Script pour utiliser les boutons comme des liens-->
     <script>
@@ -3634,8 +3657,8 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
     <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
 
-
     <script src="{% static 'polls/js/modal-BV.js' %}"></script>
+    <script src="{% static 'polls/js/suppression.js' %}"></script>
 
     <!-- Fonction pour gérer les boutons-->
     <script>
@@ -3650,7 +3673,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                 formAjoutBDC.setAttribute('action', href);
                 champ_numero.value = "";
                 champ_remarque.value = "";
-                titre_bdc.textContent = "Nouveau bon de commande";
+                titre_bdc.innerHTML = "Nouveau bon de commande";
             }
             else{
                 $.get(getinfohref, function(data) {
@@ -3658,7 +3681,7 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
                         formAjoutBDC.setAttribute('action', href);
                         champ_numero.value = data.numero;
                         champ_remarque.value = data.remarque;
-                        titre_bdc.textContent = "Bon de commande n°"+(data.numero).toString();
+                        titre_bdc.innerHTML = "Bon de commande n°"+(data.numero).toString();
                     }
                     else{
                         showAlert(data.error_message);
@@ -3667,12 +3690,9 @@ Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</
             }
         }
         // Add a click event listener to the document
-        document.addEventListener("click", (event) => {
-            // Check if the clicked element has the class
-            if (event.target.classList.contains("bouton-modifier-bdc")) {
-                formForBDC(event.target.dataset.href, event.target.dataset.getinfohref, event.target.dataset.new == "true");
-            }
-        });
+        $('#ajoutBDC').on('show.bs.modal', function (e) {
+            formForBDC(e.relatedTarget.dataset.href, e.relatedTarget.dataset.getinfohref, e.relatedTarget.dataset.new == "true")
+        })
         });
     </script>
     <!--

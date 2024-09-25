@@ -11,6 +11,11 @@ from jinja2 import Environment
 import math
 from html2image import Html2Image
 import time as time1 
+from social_django.models import UserSocialAuth
+import base64
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from email.mime.text import MIMEText
 
 import logging #pour gérer plus facilement les erreurs
 logging.basicConfig(level=logging.ERROR)
@@ -146,12 +151,18 @@ def index(request):
         user_je = request.user.je
         monthly_sums = calculate_monthly_sums(user_je)
         chiffre_affaire = monthly_sums[-1]
-        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')[:5]
-        nombre_mission_terminee = Etude.objects.filter(je=user_je, status='TERMINEE').count()
-        nombre_mission_en_cours = Etude.objects.filter(je=user_je, status='EN_COURS').count()
-        etudes_en_discussion = Etude.objects.filter(je=user_je, status='EN_NEGOCIATION')
-        nombre_mission_en_negociation = etudes_en_discussion.count()
-        etudes_en_discussion = etudes_en_discussion.order_by('-debut')[:5]
+        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')
+        etudes_terminees = etudes_recentes.filter(status='TERMINEE')
+        nombre_mission_terminee = etudes_terminees.count()
+        etudes_terminees = etudes_terminees[:5]
+
+        etudes_en_cours = etudes_recentes.filter(status='EN_COURS')
+        nombre_mission_en_cours = etudes_en_cours.count()
+        etudes_en_cours = etudes_en_cours[:5]
+
+        etudes_en_negociation = etudes_recentes.filter(status='EN_NEGOCIATION')
+        nombre_mission_en_negociation = etudes_en_negociation.count()
+        etudes_en_negociation = etudes_en_negociation[:5]
         template = loader.get_template("polls/index.html")
         context = {
             "nombre_mission_en_cours": nombre_mission_en_cours,
@@ -163,8 +174,9 @@ def index(request):
             "notification_list":notification_list,
             "notification_count":notification_count,
             "chiffre_affaire": chiffre_affaire,
-            "etudes_recentes":etudes_recentes,
-            "etudes_en_discussion":etudes_en_discussion,
+            "etudes_en_cours":etudes_en_cours,
+            "etudes_en_negociation":etudes_en_negociation,
+            "etudes_terminees":etudes_terminees,
         }
 
     else:
@@ -192,6 +204,8 @@ def custom_login(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
+def google_login(request):
+    return redirect('settings')
 
 def custom_logout(request):
     logout(request)
@@ -262,18 +276,7 @@ def je_detail(request):
 
 def demarchage(request):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        
-
+        context = general_context(request)
         template = loader.get_template("polls/demarchage.html")
         je = request.user.je
         representants= Representant.objects.filter(client__je=je)
@@ -282,18 +285,23 @@ def demarchage(request):
         mail_templates = je.mail_templates
         mail_templates_ids = list(mail_templates.values_list('id', flat=True))
         mail_template_contents = list(mail_templates.values_list('message', flat=True))
-        context = {
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
-            'representants': representants,
-            'clients':clients,
-            'secteurs':secteurs,
-            'mail_template_form': CreateMailTemplate(),
-            'mail_template_ids' : mail_templates_ids,
-            'mail_template_contents' : mail_template_contents,
-        }
+        context['clients']=clients
+        context['secteurs']=secteurs
+        context['mail_template_form']=CreateMailTemplate()
+        context['mail_template_ids']=mail_templates_ids
+        context['mail_template_contents']=mail_template_contents
+        try :
+            google_user = request.user.social_auth.get(provider='google-oauth2')
+            context['google_user'] = google_user
+            context['google_email'] = google_user.extra_data['email']
+            context['connecté'] = True
+        except UserSocialAuth.DoesNotExist:
+            context['google_user'] = None
+            context['alert_message'] = "Vous n'êtes pas connecté à votre compte Google. Vous ne pouvez pas envoyer de mail. (voir paramètres)"
+            context['connecté'] = False
+        except:
+            context['alert_message'] = "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations Google nécessaires."
+            context['connecté'] = False
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -586,6 +594,19 @@ def modify_etude(request, pk):
     
     else:
         return redirect('login')
+    
+def object_suppression(request, model_name, object_id):
+    if request.user.is_authenticated:
+        try :
+            model = apps.get_model(app_label="polls", model_name=model_name)
+            object = model.objects.get(id=object_id)
+            # Attention checker la cohérence des JE
+            object.delete()
+            return JsonResponse({'success':True})
+        except:
+            return JsonResponse({'success':False, 'error_message':"Une erreur a été détectée dans la base de données."})
+    else:
+        return JsonResponse({'success':False, 'error_message':"Il semblerait que vous ayez été déconnecté."})
     
 
 def get_client_representants(request):
@@ -2143,8 +2164,8 @@ def search_suggestions(request):
         suggestions_client = Client.objects.filter(je=request.user.je)
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
-            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword))
-            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant_legale__icontains=keyword))
+            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword) | Q(resp_qualite__student__first_name__icontains=keyword) | Q(resp_qualite__student__last_name__icontains=keyword))
+            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(raison_sociale__icontains=keyword))
             suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
         count_client = suggestions_client.count()
         count_student = suggestions_student.count()
@@ -2197,8 +2218,8 @@ def search(request):
         combined_res_client = Client.objects.none()
         combined_res_student = Student.objects.none()
         for keyword in keywords:
-            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword)))
-            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(nom_representant_legale__icontains=keyword)))
+            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword) | Q(resp_qualite__student__first_name__icontains=keyword) | Q(resp_qualite__student__last_name__icontains=keyword)))
+            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(raison_sociale__icontains=keyword)))
             liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
         for i in range(len(liste_res_etude)):
             combined_res_etude |= liste_res_etude[i]
@@ -2582,53 +2603,49 @@ def remarque_etude(request, iD):
 
 def send_mail_demarchage(request,iD):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-            ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        context = {
-        "liste_messages": liste_messages,
-        "message_count": message_count,
-        "notification_list":notification_list,
-        "notification_count":notification_count,
-        }
+        context = general_context(request)
         if request.method == 'POST':
             try :
-                host = None
-                port = None
-                username = None
-                email_host = host if host else conf_settings.EMAIL_HOST
-                email_port = port if port else conf_settings.EMAIL_PORT
-                username = None
-                username = username if username else conf_settings.EMAIL_USERNAME
-                password = None
-                password = password if password else conf_settings.EMAIL_PASSWORD
-                connection = get_connection(host=email_host, port=email_port, username=username,
-                    password=password,
-                    use_tls=True,)
-                subject = request.POST['subject']
-                print(request.POST['message'])
+                google_user = request.user.social_auth.get(provider='google-oauth2')
+                context['google_user'] = google_user
+                # Extract OAuth2 tokens
+                credentials = Credentials(
+                    token=google_user.extra_data['access_token'],
+                    refresh_token=google_user.extra_data['refresh_token'],
+                    token_uri='https://oauth2.googleapis.com/token',
+                    client_id=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+                    client_secret=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET,
+                )
+
+                # Build Gmail API service
+                service = build('gmail', 'v1', credentials=credentials)
+
+                # Create the email message
                 html_message = loader.render_to_string('polls/mail_template.html', {'message': request.POST['message'], 'name': request.POST['name'], 'signature': request.POST['signature']})
-                from_email = conf_settings.EMAIL_USERNAME
-                recipient_list = [request.POST['destinataire']]
-                mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=recipient_list, connection=connection)
-                mail.content_subtype = 'html'
-                mail.send()
+                message = MIMEText(html_message, 'html')
+                message['to'] = request.POST['destinataire']
+                message['subject'] = request.POST['subject']
+                raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+                content = {'raw': raw}
+
+                # Send the email using the Gmail API
+                send_message = service.users().messages().send(userId='me', body=content).execute()
+
                 #representant = Representant.objects.get(id=iD)
                 #representant.contenu_mail=request.POST['message']
                 #representant.demarchage="ATTENTE_REPONSE"
                 #representant.save()
                 return redirect('demarchage')
+            except UserSocialAuth.DoesNotExist:
+                context = general_context(request)
+                context['error_message'] = "Vous n'êtes pas connecté avec votre compte Google. (voir paramètres)"
+                template = loader.get_template("polls/page_error.html")
             except:
+                context = general_context(request)
                 context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
                 template = loader.get_template("polls/page_error.html")
         else :
+            context = general_context(request)
             context['error_message'] = "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
             template = loader.get_template("polls/page_error.html")
     else:
@@ -2640,51 +2657,34 @@ def send_mail_demarchage(request,iD):
 
 def settings(request):
     if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-        
+        context = general_context(request)
+        try :
+            google_user = request.user.social_auth.get(provider='google-oauth2')
+            context['google_user'] = google_user
+            print(google_user.extra_data)
+            context['google_email'] = google_user.extra_data['email']
+        except UserSocialAuth.DoesNotExist:
+            context['google_user'] = None
+            context['alert_message'] = "L'authentification Google a échoué!"
+        except:
+            context['alert_message'] = "L'authentification Google a fonctionné, mais vous n'avez pas accordé les autorisations."
         template = loader.get_template("polls/settings.html")
         if request.method == 'GET':
-            context = {
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list":notification_list,
-                "notification_count":notification_count,
-                "user": request.user,
-                "form_param": SetParametresUtilisateur(instance=request.user.parametres)
-            }
+            context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
         else :
             try:
                 fetchform = request.POST
                 param = SetParametresUtilisateur(fetchform, instance=request.user.parametres)
-                param.save()
-                context = {
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
-                    "user": request.user,
-                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
-                    "alert_message":"Modifications enregistrées!"
-                }
+                if param.is_valid():
+                    param.save()
+                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                    context['alert_message'] = "Modifications enregistrées!"
+                else:
+                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                    context['alert_message'] = "La modification n'a pas aboutie!"
             except:
-                context = {
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                    "notification_list":notification_list,
-                    "notification_count":notification_count,
-                    "user": request.user,
-                    "form_param": SetParametresUtilisateur(instance=request.user.parametres),
-                    "alert_message":"La modification n'a pas aboutie!"
-                }
+                context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
+                context['alert_message'] = "La modification n'a pas aboutie!"
         return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")

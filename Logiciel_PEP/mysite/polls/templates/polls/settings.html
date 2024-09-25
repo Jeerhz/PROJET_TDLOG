@@ -530,6 +530,8 @@
                             </li>
                         </ul>
                     </div>
+                    <form action="{% url 'settings' %}" id="modif-affichage" method="post">
+                        {% csrf_token %}
                     <div class="tab-content mt-2" style="background-color: #FFFFFF;">
                         <div class="tab-pane fade show active" id="pills-general">
                             <div class="card shadow mb-4 w-100">
@@ -539,10 +541,10 @@
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><i class="fas fa-venus-mars mr-2"></i><strong>Titre:</strong> {{ user.titre }}</li>
-                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ user.student }}</li>
-                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ user.email }}</li>
-                                        <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Photo:</strong> <img class="img-profile rounded-circle" style="width:40px; height:40px;" src="{{user.photo.url}}"></li>
+                                        <li class="list-group-item"><i class="fas fa-venus-mars mr-2"></i><strong>Titre:</strong> {{ request.user.titre }}</li>
+                                        <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ request.user.student }}</li>
+                                        <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ request.user.email }}</li>
+                                        <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Photo:</strong> <img class="img-profile rounded-circle" style="width:40px; height:40px;" src="{{request.user.photo.url}}"></li>
                                     </ul>
                                 </div>
                             </div>
@@ -555,20 +557,38 @@
                                 <div class="card-body w-100">
                                     <!-- Détails spécifiques à l'élève -->
                                     <div class="container">
-                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Réception:</strong></h5>
+                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Envoi/Réception de mails:</strong></h5>
                                         <div class="card border-left-primary pt-3 pb-3">
                                             <div class="text-center">
-                                                <span><strong>Email:</strong> {{ user.email }}</span>
+                                                <span {% if not google_email %}class="text-danger"{% endif %}><strong>Email:</strong>{% if google_email %} {{ google_email }}{% else %} Vous n'avez pas connecté votre compte Gmail{% endif %}</span>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="container">
+                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Connexion à votre boîte Gmail:</strong></h5>
+                                        <div class="col-5">
+                                            <a href="{% url 'social:begin' 'google-oauth2' %}" type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+                                                <i class="fab fa-google"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-5">
+                                            <p class="text-gray-400">La connexion par google vous permet d'envoyer et de recevoir des mails depuis votre boîte mail personnelle.</p>
                                         </div>
                                     </div>
                                     <hr>
                                     <br>
                                     <div class="container">
-                                        <h5><i class="fas fa-file mr-2"></i><strong>Emission de documents:</strong></h5>
+                                        <h5><i class="fas fa-file mr-2"></i><strong>Alertes:</strong></h5>
+                                        
                                         <div class="card border-left-secondary">
                                             <ul class="list-group list-group-flush">
-
+                                                <li class="list-group-item">
+                                                    <div>
+                                                        Prochainement
+                                                    </div>
+                                                </li>
+                                                <!--
                                                 <li class="list-group-item">
                                                     <div class="custom-control custom-checkbox">
                                                         <input type="checkbox" class="custom-control-input" id="customCheck1">
@@ -587,6 +607,7 @@
                                                         <label class="custom-control-label" for="customCheck3"><strong>Facture</strong></label>
                                                         </div>
                                                 </li>
+                                                -->
                                             </ul>
                                         </div>
                                         
@@ -601,8 +622,6 @@
                                     <h5 class="m-1 font-weight-bold text-primary">Affichage</h5>
                                 </div>
                                 <div class="card-body w-100">
-                                <form action="{% url 'settings' %}" id="modif-affichage" method="post">
-                                    {% csrf_token %}
                                     <!-- Détails spécifiques à l'élève -->
                                     <div class="container mb-5">
                                         <h5><i class="fas fa-exclamation-circle mr-2"></i><strong>Statut des études:</strong></h5>
@@ -645,7 +664,6 @@
                                     <div class="container align-items-center justify-content-center">
                                         <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
                                     </div>
-                                </form>
                                 </div>
                             </div>
                         </div>
@@ -655,34 +673,31 @@
                                     <h5 class="m-1 font-weight-bold text-primary">Démarchage</h5>
                                 </div>
                                 <div class="card-body w-100">
-                                    <!-- Détails spécifiques à l'élève -->
-                                    <form action="{% url 'settings' %}" id="modif-demarchage" method="post">
-                                        {% csrf_token %}
-                                            {% for field in form_param %}
-                                                {% if field.name in form_param.demarchage %}
-                                                        <div class="form-group row mb-3">
-                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                                <div class="col-sm-8 justify-content-center">
-                                                                    {{ field }}
-                                                                {% if field.errors %}
-                                                                    <div class="text-danger">
-                                                                        {% for error in field.errors %}
-                                                                            {{ error }}
-                                                                        {% endfor %}
-                                                                    </div>
-                                                                {% endif %}
-                                                                </div>
+                                    {% for field in form_param %}
+                                        {% if field.name in form_param.demarchage %}
+                                            <div class="form-group row mb-3">
+                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                    <div class="col-sm-8 justify-content-center">
+                                                        {{ field }}
+                                                    {% if field.errors %}
+                                                        <div class="text-danger">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
                                                         </div>
-                                                {% endif %}
-                                            {% endfor %}
-                                        <div class="container align-items-center justify-content-center">
-                                            <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
-                                        </div>
-                                    </form>
+                                                    {% endif %}
+                                                    </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <div class="container align-items-center justify-content-center">
+                                        <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </form>
                 </div>                
             <!-- /.container-fluid -->
             </div>
@@ -727,7 +742,6 @@
             </div>
         </div>
     </div>
-    {% csrf_token %}
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>

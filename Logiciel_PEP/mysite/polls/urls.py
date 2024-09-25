@@ -72,9 +72,10 @@ urlpatterns = [
     path("editer_ba/<int:id_eleve>", views.editer_ba, name="editer_ba"),
     path('upload_clients/', views.upload_clients, name='upload_clients'),
 
-    
+    path('object_suppression/<str:model_name>/<int:object_id>', views.object_suppression, name="object_suppression"),
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
+    path("google-login", views.google_login, name="google-login"),
 
 
 
