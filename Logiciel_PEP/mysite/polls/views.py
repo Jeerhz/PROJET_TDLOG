@@ -41,6 +41,7 @@ from .templatetags.format_duration import format_nombres, chiffre_lettres, en_le
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
+
 #from weasyprint import HTML
 #from wand.image import Image
 
@@ -91,6 +92,13 @@ from .models import (
     BA,
     AssociationFactureBDC,
 )
+
+#flemme d'import format durations
+def format_nombres(nombre):
+    arrondi = round(nombre, 2)
+    nbre_virg = f"{arrondi:.2f}".replace('.', ',')
+    return nbre_virg
+
 
 def general_context(request):
     liste_messages = Message.objects.filter(
@@ -1601,7 +1609,7 @@ def editer_devis(request, iD):
         try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
-            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
+            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/template.docx')
             template = DocxTemplate(template_path)
             model = Devis
             if instance.devis_edited() :
@@ -1611,6 +1619,8 @@ def editer_devis(request, iD):
                 devis.save()
             
             responsable = instance.responsable.student
+            if responsable is None:
+                raise ValueError("Définir un suiveur")
             if responsable is None:
                 raise ValueError("Définir un suiveur")
                 
@@ -1636,15 +1646,30 @@ def editer_devis(request, iD):
             
             factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
             
-            fac_acom=factures.first()
+            fac_acom=None
+            fac_inter = None
             fac_solde=None
             for facture in factures:
                 if facture.type_facture==facture.Status.ACOMPTE:
                     fac_acom = facture
                 elif facture.type_facture==facture.Status.SOLDE:
                     fac_solde = facture
+                elif facture.type_facture==facture.Status.INTERMEDIAIRE:
+                    fac_inter= facture
+            
+
+            ac_inter=[]
+            if fac_acom or fac_inter:
+                if fac_acom:
+                    ac_inter.append({'modal': "A la signature de la Convention d'Étude", 'denom': "Acompte", 'sht':format_nombres(fac_acom.montant_HT()), 'sttc':format_nombres(fac_acom.montant_TTC())})
+                if fac_inter:
+                    ac_inter.append({'modal': "A la remise du livrable intermédiaire", 'denom': "Intermédiaire", 'sht':format_nombres(fac_inter.montant_HT()), 'sttc':format_nombres(fac_inter.montant_TTC())})
+
             if fac_solde is None:
                 raise ValueError("Définir la facturation de solde pour l'échéancier")
+            else:
+                ac_inter.append({'modal': "A la remise du livrable final", 'denom': "Solde", 'sht':format_nombres(fac_solde.montant_HT()), 'sttc':format_nombres(fac_solde.montant_TTC())})
+
 
             css_planning = """
             .table_planning {
@@ -1782,7 +1807,7 @@ def editer_devis(request, iD):
             time1.sleep(1)
             context = {"planning_pre":image, "president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
                        "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation, "poste":poste,
-                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures}
+                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures, "ac_inter":ac_inter}
             
 
             env = Environment()
@@ -2045,7 +2070,8 @@ def calculate_chiffre_affaire_par_departement(user_je):
             
             for student in students:
                 for phase in phases:
-                    revenues[department_index[student.departement]] += phase.get_montant_HT(student)
+                    if student.departement:
+                        revenues[department_index[student.departement]] += phase.get_montant_HT(student)
 
     return revenues
 
