@@ -28,7 +28,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.core.mail import send_mail, get_connection, EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
-from django.urls import reverse
+from django.urls import reverse, resolve
+from urllib.parse import urlparse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -125,6 +126,11 @@ def generate_pdf(request):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="page.pdf"'
     return response
+
+def confidentialite_donnees(request):
+    template = loader.get_template("polls/confidentialite_donnees.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def index(request):
@@ -1350,9 +1356,16 @@ def messages(request):
 
 def register(request):
     if request.method == "GET":
-        form = AddMember()
-        context = {"form": form}
-        template = loader.get_template("polls/register.html")
+        referer = request.META.get('HTTP_REFERER')
+        referer_path = urlparse(referer).path
+        try:
+            match = resolve(referer_path)
+            assert match.view_name == "confidentialite-donnees"
+            form = AddMember()
+            context = {"form": form}
+            template = loader.get_template("polls/register.html")
+        except:
+            return redirect('confidentialite-donnees')
     else:
         fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
