@@ -279,6 +279,7 @@ class Student(models.Model):
         _1A = '1A', '1A'
         GCC = 'GCC', 'GCC'
         VET = 'VET', 'VET'
+        GI = 'GI', 'GI'
         AUTRE = 'AUTRE', 'Autre'
     class Promotion(models.TextChoices):
         P022 = '2022', '2022'
