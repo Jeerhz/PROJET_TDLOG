@@ -115,3 +115,8 @@ def superieur_a(value, arg):
         return int(value) > int(arg)
     except (ValueError, TypeError):
         return False
+
+@register.filter(name='dateJJMM')
+def datejjmm(date):
+    return date.strftime("%d/%m")
+    

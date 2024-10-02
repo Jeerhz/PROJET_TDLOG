@@ -517,6 +517,11 @@ class Etude(models.Model):
     class TypeConvention(models.TextChoices):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
+    
+    class Mandat(models.TextChoices):
+        M025 = '025', '025'
+        M026 = '026', '026'
+        M027 = '027', '027'
 
     titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
@@ -533,6 +538,8 @@ class Etude(models.Model):
     taux_tva = models.FloatField(default=20,verbose_name='% TVA')
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
+    mandat = models.CharField(max_length=30, choices=Mandat.choices, default=Mandat.M026, blank=True, verbose_name="mandat")
+
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
     date_fin_recrutement = models.DateField(blank=True, null=True, verbose_name="Fin du recrutement")
@@ -776,7 +783,10 @@ class Facture(models.Model):
     def fac_JEH(self):
         if self.etude.type_convention == "Convention cadre" :
             bdc= self.bdc()
-            return bdc.montant_phase_HT() * (self.pourcentage_JEH / 100)
+            if bdc is not None :
+                return bdc.montant_phase_HT() * (self.pourcentage_JEH / 100)
+            else:
+                return 0
         else:
             return self.etude.montant_phase_HT() * (self.pourcentage_JEH / 100)
         
@@ -980,7 +990,7 @@ class BonCommande(models.Model):
     frais_dossier = models.FloatField(default=0,verbose_name='frais de dossier')
     objectifs = models.TextField(blank=True, null=True, default="")
     cahier_des_charges = models.JSONField(default=dict)
-    debut = models.DateField(default=timezone.now, blank=True, null=True)
+    debut = models.DateField(default=timezone.now, blank=True, null=True) 
     acompte_pourcentage = models.IntegerField(default=30)
     periode_de_garantie = models.IntegerField(default=90)
     
@@ -989,8 +999,14 @@ class BonCommande(models.Model):
     #methode phase, duree
     def phases(self):
         asso_bdc = AssociationPhaseBDC.objects.filter(bon_de_commande=self).order_by('phase__numero').all()
-        phases = [association.phase for association in asso_bdc]
-        return phases
+        if asso_bdc:
+            phases = [association.phase for association in asso_bdc]
+            if len(phases)>0:
+                return phases
+            else:
+                return None
+        else:
+            return None
 
     def nb_phases(self):
         return len(self.phases())
@@ -1017,8 +1033,11 @@ class BonCommande(models.Model):
         
     def montant_phase_HT(self):
         phases = self.phases()
-        total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None) if phases[0] else 0
-        return total_montant_HT
+        if phases is None:
+            return 0
+        else:
+            total_montant_HT = sum(phase.montant_HT_par_JEH * phase.nb_JEH for phase in phases if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None) if phases[0] else 0
+            return total_montant_HT
 
     def montant_HT_total(self):
         return self.frais_dossier + self.montant_phase_HT()

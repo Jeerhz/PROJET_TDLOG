@@ -4,6 +4,10 @@ import openpyxl
 import csv
 from io import StringIO
 
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from bs4 import BeautifulSoup
+
 import pytz #pour CA dynamique
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
@@ -45,6 +49,7 @@ from django.core.files.base import ContentFile
 from .templatetags.format_duration import format_nombres, chiffre_lettres, en_lettres, assignation
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 
 
 #from weasyprint import HTML
@@ -367,8 +372,6 @@ def page_detail_etude(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
-
 
 
 
@@ -1022,6 +1025,52 @@ def upload_clients(request):
 
     return redirect('annuaire')
     #return render(request, 'polls/annuaire.html', {'form': form})
+
+
+
+def generate_facture_pdf(request, id_facture):
+    if request.user.is_authenticated:
+        try:
+            # Fetch the required facture data
+            facture = Facture.objects.get(id=id_facture)
+            etude = facture.etude
+            client = etude.client
+            phases = Phase.objects.filter(etude=etude).order_by('numero')
+            res = facture.montant_TTC()
+            facture.date_emission = timezone.now().strftime('%d/%m/%Y')
+            date_30 = timezone.now() + timedelta(30)
+            facture.date_echeance = date_30.strftime('%d/%m/%Y')
+            logo_url = request.build_absolute_uri(static('polls/img/bdc.png'))
+
+            # Context for the invoice
+            context = {
+                "facture": facture,
+                "etude": etude,
+                "client": client,
+                "phases": phases,
+                "res": res,
+                "date_emission": facture.date_emission,
+                "date_echeance": facture.date_echeance,
+                "logo_url": logo_url
+            }
+
+            # Render the full HTML of the invoice page (with full HTML structure and CSS link)
+            html_string = render_to_string('polls/facpdfhtml.html', context)
+
+            # Optionally replace static URLs with absolute URLs (if required)
+            
+            # Generate PDF from the full HTML
+            pdf_file = HTML(string=html_string).write_pdf()
+
+            # Serve the PDF as a download
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="facture.pdf"'
+            return response
+
+        except Exception as e:
+            return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
+
+    return HttpResponse("Unauthorized", status=401)
 
 
 def facture(request, id_facture):
@@ -1937,7 +1986,7 @@ def editer_avenant_ce(request, iD):
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
     else:
-        template = loader.get_template("polls/login.html")
+        template = loader.get_template("polls/login.html") 
         context = {}
     return HttpResponse(template.render(context, request))
 
@@ -2270,37 +2319,69 @@ def ajouter_phase(request, id_etude):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+    
+
 def ajouter_facture(request, id_etude):
     if request.user.is_authenticated:
         if request.method == 'POST':
-            fetchform = AddFacture(request.POST)
-            if fetchform.is_valid():
-                etude = Etude.objects.get(id=id_etude)
-                numero_bdc = request.POST.get("numero_bdc_fac", None)
-                new_facture = fetchform.save(commit=True, id_etude=id_etude)
-                if etude.type_convention == "Convention cadre" and numero_bdc:
-                    bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
-                    bdc = None
-                    if(bdcs.exists()):
-                        bdc = bdcs[0]
-                    else:
-                        gen_context = general_context(request)
-                        gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
-                        template = loader.get_template("polls/page_error.html")
-                        return HttpResponse(template.render(gen_context, request))
-                    new_ass_fac_bdc = AssociationFactureBDC(facture=new_facture, bon_de_commande=bdc)
-                    new_ass_fac_bdc.save()
-            else :
-                gen_context = general_context(request)
-                gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+            try:
+                fetchform = AddFacture(request.POST)
+                if fetchform.is_valid():
+                    etude = Etude.objects.get(id=id_etude)
+                    numero_bdc = request.POST.get("numero_bdc_fac", None)
+
+                    # Check if `numero_bdc` is None and raise an error if necessary
+                    if etude.type_convention == "Convention cadre":
+                        if not numero_bdc:
+                            raise ValueError("Veuillez préciser le bon de commande de la facture.")
+                        else:
+                            bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                            if not bdcs.exists():
+                                raise ValueError("Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant.")
+
+
+                    # Proceed to save the new facture if numero_bdc is not None
+                    new_facture = fetchform.save(commit=True, id_etude=id_etude)
+
+                    # Handle the BDC association
+                    if numero_bdc:
+                        bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                        bdc = None
+                        if bdcs.exists():
+                            bdc = bdcs[0]
+                        else:
+                            gen_context = general_context(request)
+                            gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            template = loader.get_template("polls/page_error.html")
+                            return HttpResponse(template.render(gen_context, request))
+
+                        # Associate facture with BDC
+                        new_ass_fac_bdc = AssociationFactureBDC(facture=new_facture, bon_de_commande=bdc)
+                        new_ass_fac_bdc.save()
+                    return redirect('details', modelName='Etude', iD=id_etude)
+
+                else:
+                    # Handle form errors
+                    gen_context = general_context(request)
+                    gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                    template = loader.get_template("polls/page_error.html")
+                    return HttpResponse(template.render(gen_context, request))
+
+            except ValueError as ve:
+                # Handle any ValueError, including the case when `numero_bdc` is None
                 template = loader.get_template("polls/page_error.html")
-                return HttpResponse(template.render(gen_context, request))
+                context = {"error_message": str(ve)}
+                return HttpResponse(template.render(context, request))
+
+        # Redirect to details page if everything went smoothly
         return redirect('details', modelName='Etude', iD=id_etude)
+
     else:
+        # Redirect to login if not authenticated
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
+ 
 
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
@@ -2599,6 +2680,7 @@ def remarque_etude(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
+    
 
 
 def send_mail_demarchage(request,iD):
