@@ -495,7 +495,8 @@
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details_clients' client.id %}&quot;">
+
+                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Student' iD=request.user.student.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.secteur }} </td>
                                             </tr>
@@ -539,7 +540,7 @@
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details_clients' client.id %}&quot;">
+                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Student' iD=request.user.student.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.secteur }}</td>
                                                 <td class="text-center"> {{ client.country }} </td>
