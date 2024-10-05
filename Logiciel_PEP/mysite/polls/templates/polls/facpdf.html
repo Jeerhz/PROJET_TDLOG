@@ -351,9 +351,15 @@
 	</head>
 	<body>
         <div class="page-wrapper">
-            <button type="button" class=" bouton_pdf" id="download_pdf">Télécharger</button>
+            <button type="button" class=" bouton_pdf" id="generate-invoice" onclick="generateInvoice()">Télécharger</button>
         </div>
-        
+        <script>
+            function generateInvoice() {
+                // Replace 'id_facture' with the actual invoice ID from your context
+                window.location.href = '{% url "generate_facture_pdf" facture.id %}';
+            }
+        </script>
+
         <div id = "invoice" class="container" style="width: 210mm; height: 297mm;">
             <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
             
@@ -361,7 +367,7 @@
                 <p></p>
             </div>
             <div class="numero_facture">
-                <p class="gras">Facture n° <span contenteditable="true"> {{facture.numero_facture|RefFacture}}</span></p>
+                <p class="gras">Facture N° <span contenteditable="true"> {{facture.numero_facture|RefFacture}}</span></p>
                 <br>
                 <br>
                 <br>
@@ -369,7 +375,7 @@
                 <p class="gris_clair">A l'attention de : </p>
                 <br>
                 <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
-                <p><span class="gras" contenteditable="true" >{{etude.representant_client.titre}} {{etude.representant_client.last_name}}</span></p> 
+                <p><span class="gras" contenteditable="true" >{{etude.client_representant_legale.titre}} {{etude.client_representant_legale.last_name}}</span></p> 
                 <p><span  contenteditable="true" >{{client.rue}}</span></p> 
                 <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
                 <p><span contenteditable="true" >{{client.country}}</span></p> 
@@ -383,9 +389,9 @@
                 <p>Champs-sur-Marne</p>
                 <p>77455 Marne-la-Vallée Cedex 2</p>
                 <br>
-                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">{{etude.je.siret}}</span></p>
-                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >{{etude.je.APE}}</span></p>
-                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">{{etude.je.TVA}}</span></p>
+                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
+                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
+                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
                 <p></p>
             
             </div>
@@ -440,7 +446,7 @@
                     {% if facture.phases_fac %}
                         {% for phase in facture.phases_fac %}
                         <tr class="{% cycle 'even' 'odd' %}">
-                            <td contenteditable="True" class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
+                            <td contenteditable="True" class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
                             <td  class="align-right" contenteditable="true">{{facture|montantFacturePhase:phase|FormatNombres}}</td>
                         </tr>
                         {% endfor %}
@@ -507,11 +513,11 @@
                     </tr>
                     <tr>
                         <td class="align-left gris_clair italique">et numéro de facture</td>
-                        <td class="align-left">IBAN : {{etude.je.IBAN}}</td>
+                        <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
                     </tr>
                     <tr>
                         <td class="align-left"></td>
-                        <td class="align-left">BIC : {{etude.je.BIC}}</td>
+                        <td class="align-left">BIC : SOGEFRPP</td>
                     </tr>
                     <br>
                     <br>
@@ -595,6 +601,7 @@
                 pdf.save('{{facture}}.pdf');
             });
         </script>
+        
             
         
 </html>

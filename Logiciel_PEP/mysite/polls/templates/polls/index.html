@@ -736,7 +736,7 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
+                                        <td class="align-middle"><strong>{{etude.ref}}</strong></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_titre %}
                                         <td class="align-middle">{{etude.titre}}</td>
@@ -746,7 +746,7 @@
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle">
-                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
+                                            {% if etude.responsable %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
@@ -757,8 +757,20 @@
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_avancement %}
                                         <td class="align-middle">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="color: #333; width: {{ etude.progress_percentage }}%; " aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100" ></div>{{ etude.progress_percentage }}%</div>
+                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
+                                                <!-- Centered text on top of the progress bar -->
+                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
+                                                    {{ etude.progress_percentage }}% {% if etude.fin %}: {{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                                </span>
+                                        
+                                                <!-- Progress bar itself -->
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ etude.progress_percentage }}%;" 
+                                                     aria-valuenow="{{ etude.progress_percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
                                             </div>
                                         </td>
                                         {% endif %}
@@ -843,7 +855,7 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.numero}}</strong></td>
+                                        <td class="align-middle"><strong>{{etude.ref}}</strong></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_titre %}
                                         <td class="align-middle">{{etude.titre}}</td>

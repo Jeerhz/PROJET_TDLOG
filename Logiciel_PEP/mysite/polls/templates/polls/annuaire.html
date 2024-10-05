@@ -13,7 +13,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR</title>
+    <title>BIBI JR</title> 
 
     {% load static %}
     {% load format_duration %}
@@ -495,7 +495,8 @@
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
+
+                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=request.user.student.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.secteur }} </td>
                                             </tr>
@@ -539,7 +540,7 @@
                                         <tbody id="clientTableBody">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' 'Client' client.id %}&quot;">
+                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.secteur }}</td>
                                                 <td class="text-center"> {{ client.country }} </td>
@@ -565,6 +566,7 @@
                                 <table class="table table-borderless table-hover">
                                     <thead class="thead-dark">
                                         <tr>
+                                            <th class="text-center">Numéro</th>
                                             <th class="text-center">Titre</th>
                                             <th class="text-center">Client</th>
                                             <th class="text-center">Debut</th>
@@ -575,6 +577,7 @@
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
+                                                <td class="text-center"> {{ etude.titre }} </td>
                                                 <td class="text-center"> {{ etude.titre }} </td>
                                                 <td class="text-center"> {{ etude.client }} </td>
                                                 <td class="text-center"> {{ etude.debut }} </td>

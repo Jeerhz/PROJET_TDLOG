@@ -20,7 +20,7 @@ urlpatterns = [
     path("input/<str:modelName>/<int:iD>", views.input, name="input"),
     path("logout/", views.custom_logout, name="custom_logout"),
     path("annuaire/", views.annuaire, name="annuaire"),
-    path("facture/<int:id_facture>", views.facture, name="facture"),
+    path("facture/<int:id_facture>", views.facture, name="facture"), 
     path("messages/", views.messages, name="messages"),
     path("register/", views.register, name="register"),
     path("charts/", views.charts, name="charts"),
@@ -76,9 +76,14 @@ urlpatterns = [
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
     path("google-login", views.google_login, name="google-login"),
+<<<<<<< HEAD
     path("confidentialite-donnees", views.confidentialite_donnees, name="confidentialite-donnees"),
     path("client-suggestions", views.client_suggestions, name="client-suggestions"),
     path('get_representants/', views.get_representants, name='get_representants'),
+=======
+    path("facture/<int:id_facture>/generate-pdf/", views.generate_facture_pdf, name='generate_facture_pdf'),
+
+>>>>>>> b4bbaff64b701d2e5d8835e3d1cdef5bb89f5c4d
 
 
 

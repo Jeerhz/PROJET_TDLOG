@@ -70,6 +70,10 @@ def default():
 default()
 ```
 
+# les paquets google a installer (jai tous mis jsp sils servent tous a qlq chose):
+google-auth social-auth-app-django google-auth-oauthlib google-auth-httplib2 google-api-python-client 
++ bien sur Django Pillow docxtpl openpyxl celery django_celery_beat psycopg psycopg2-binary pytz num2words django-crispy_forms html2image python-decouple
+
 # Guide d'utilisation de l'Application
 
 ## Connexion à l'Application
