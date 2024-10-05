@@ -629,6 +629,23 @@ def get_client_representants(request):
         })
     return JsonResponse({'error': 'Invalid client ID'}, status=400)
 
+def get_representants(request):
+    if(request.user.is_authenticated):
+        client_id = request.GET.get('client_id')
+        if client_id:
+            client = get_object_or_404(Client, id=client_id)
+            representants = client.representants()
+            
+            results = [
+                {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
+                for r in representants
+            ]
+
+            return JsonResponse({
+                'results':results
+            })
+        return JsonResponse({'error': 'Invalid client ID'}, status=400)
+
 def edit_client(request, pk):
     if request.user.is_authenticated:
         # Fetch messages and notifications
@@ -2179,6 +2196,19 @@ def search_suggestions_student(request, id_etude):
         return JsonResponse({'suggestions_student': [[student.first_name, student.last_name, student.id, student.phases_etude(etude).count(), student.nb_etudes_realisees()] for student in suggestions_student.all()]})
     else :
         return JsonResponse({'suggestions_student': []})
+    
+def client_suggestions(request):
+    if request.user.is_authenticated:
+        query = request.GET.get('q', '')
+        if query:
+            results = Client.objects.filter(nom_societe__icontains=query)
+            results_list = [{'id': obj.id, 'name': obj.__str__()} for obj in results]
+        else:
+            results_list = []
+        
+        return JsonResponse({'results': results_list})
+    else:
+        return JsonResponse({'results': []})
 
 
 def search(request):

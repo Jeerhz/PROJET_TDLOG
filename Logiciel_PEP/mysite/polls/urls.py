@@ -77,6 +77,8 @@ urlpatterns = [
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
     path("google-login", views.google_login, name="google-login"),
     path("confidentialite-donnees", views.confidentialite_donnees, name="confidentialite-donnees"),
+    path("client-suggestions", views.client_suggestions, name="client-suggestions"),
+    path('get_representants/', views.get_representants, name='get_representants'),
 
 
 

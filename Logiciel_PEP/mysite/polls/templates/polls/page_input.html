@@ -408,20 +408,11 @@
                                 {% csrf_token %}
         
                                 {% for field in form %}
+                                {% if field.name == 'client' %}<div id='cond_client' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_interlocuteur' %}<div id='dep_interlocuteur' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_representant_legale' %}<div id='dep_rep_leg' data-id="{{field.id_for_label}}" hidden></div>{% endif %}
                                 <div class="form-group row mb-3">
                                 <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
                                     <div class="col-sm-8 justify-content-center">
-                                    {% if field.field.widget.input_type == 'select_multiple' %}
-
-                                        <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
-                                            {% for choice in field.choices %}
-                                                <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
-                                            {% endfor %}
-                                        </select>
-                        
-                                    {% else %}
                                         {{ field }}
-                                    {% endif %}
                                     {% if field.errors %}
                                         <div class="text-danger">
                                             {% for error in field.errors %}
@@ -512,6 +503,61 @@
         var href_student = str.substring(0, str.length - 1);
     </script>
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+    <script src="{% static 'polls/js/select-search.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(event){
+            var cond_client = document.getElementById('cond_client');
+            var dep_interlocuteur = document.getElementById('dep_interlocuteur');
+            var dep_rep_leg = document.getElementById('dep_rep_leg');
+            var client_select = $('#'+cond_client.dataset.id);
+            var interlocuteur_select = $('#'+dep_interlocuteur.dataset.id);
+            var rep_leg_select = $('#'+dep_rep_leg.dataset.id);
+            interlocuteur_select.prop('disabled', true);
+            rep_leg_select.prop('disabled', true);
+            client_select.on('change', function(event) {
+                // Get the selected option
+                const selectedValue = event.target.value;
+                if (selectedValue){
+                    interlocuteur_select.prop('disabled', false);
+                    rep_leg_select.prop('disabled', false);
+                    $.ajax({
+                        url: "{% url 'get_representants' %}",  // Django URL that will handle the search
+                        data: {
+                            'client_id': selectedValue
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            // Clear current options
+                            interlocuteur_select.empty();  
+                            interlocuteur_select.append('<option value="">Select an option</option>');
+                            rep_leg_select.empty(); 
+                            rep_leg_select.append('<option value="">Select an option</option>');
+
+                            // Check if results exist
+                            if (data.results && data.results.length) {
+                                // Populate select with new options from AJAX response
+                                data.results.forEach(function(item) {
+                                    interlocuteur_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                    rep_leg_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                });
+                            } else {
+                                // If no results found
+                                interlocuteur_select.append('<option value="">No results found</option>');
+                                rep_leg_select.append('<option value="">No results found</option>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX error:", status, error);
+                        }
+                    });
+                }
+                else{
+                    interlocuteur_select.prop('disabled', true);
+                    rep_leg_select.prop('disabled', true);
+                }
+            });
+        })
+    </script>
 
 </body>
 
