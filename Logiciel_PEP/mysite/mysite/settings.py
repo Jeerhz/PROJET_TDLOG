@@ -10,29 +10,52 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from decouple import config, Csv
 from pathlib import Path
 from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Security settings fetched from environment variables
+DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY="+mlztai==j1=dnvmpmtvqg5cvhjbiu64R576879O8Puvjgezdvedcd:!&ée,ezf^$$v!=4u13ha%&rra+f76j=!^^"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# Email settings
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&p-+mlztai==j1=dnvmpmtvqg5$v!=4u13ha%&rra+f76j=!^^"
+# Security settings
+SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=86400, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=86400, cast=int)
+SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
+X_FRAME_OPTIONS = config('X_FRAME_OPTIONS', default='DENY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_SIGNATURE_VERSION = config('AWS_S3_SIGNATURE_VERSION')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
+AWS_S3_FILE_OVERWRITE = config('AWS_S3_FILE_OVERWRITE')
+AWS_DEFAULT_ACL = None
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+ALLOWED_HOSTS = ['13.38.119.68', 'sylex-software.com', 'www.sylex-software.com']
+
+AUTH_USER_MODEL = config('AUTH_USER_MODEL')
+
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-AUTH_USER_MODEL = "polls.Member"
-
-
 # Application definition
-
 INSTALLED_APPS = [
     "polls.apps.PollsConfig",
     "django.contrib.admin",
@@ -42,8 +65,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_celery_beat",
-    "social_django",
+    "whitenoise.runserver_nostatic",
+    "rest_framework",
+    "drf_yasg",
+    "storages",
+    "csp",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -53,14 +81,31 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
+
+
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSP_DEFAULT_SRC = ("'none'",)  # Aucune source par défaut
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdn.jsdelivr.net",)  # Permet les scripts du même domaine et inline
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com",)  # Permet les styles du même domaine et inline
+CSP_IMG_SRC = ("'self'", 'data:', 'https://sylogbucket.s3.amazonaws.com')  # Ajoute le S3 bucket aux sources d'images autorisées
+CSP_CONNECT_SRC = ("'self'",)  # Permet les connexions AJAX au même domaine
+CSP_FONT_SRC = (
+    "'self'",
+    "https://fonts.gstatic.com",
+)
+
 
 ROOT_URLCONF = "mysite.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -73,6 +118,29 @@ TEMPLATES = [
     },
 ]
 
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    # other backends
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/gmail.send',
+    'openid',
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline',
+    'prompt': 'consent',  # Force Google to ask the user to re-consent
+}
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['email', 'name', 'refresh_token', 'expires_in']
+LOGIN_REDIRECT_URL = '/polls/google-login'
+
+
 WSGI_APPLICATION = "mysite.wsgi.application"
 
 
@@ -82,11 +150,11 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_sylog',
-        'USER': 'postgres',
-        'PASSWORD': 'sylog',
-        'HOST': 'localhost',  
-        'PORT': '5432',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', cast=int),
     }
 }
 
@@ -110,37 +178,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-    # other backends
-)
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "162876035246-14ukf5eahlqccekrf1sv4lm7npb77vs3.apps.googleusercontent.com"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/gmail.send',
-    'openid',
-]
-SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
-    'access_type': 'offline',
-    'prompt': 'consent',  # Force Google to ask the user to re-consent
-}
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['email', 'name', 'refresh_token', 'expires_in']
-LOGIN_REDIRECT_URL = '/polls/google-login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
+# Internationalization settings
+LANGUAGE_CODE = config('LANGUAGE_CODE', default='en-us')
+TIME_ZONE = config('TIME_ZONE', default='UTC')
+USE_I18N = config('USE_I18N', default=True, cast=bool)
+USE_TZ = config('USE_TZ', default=True, cast=bool)
 
 # Définir le format de date et d'heure
 DATE_FORMAT = 'd/m/Y'
@@ -149,11 +195,15 @@ DATETIME_FORMAT = 'd/m/Y H:i:s'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "polls/static")
-
+# Configuration pour les fichiers statiques (CSS, JavaScript, images utilisées dans les templates)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'polls', 'static')
+MEDIA_URLS ='/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = "media/"
+
+
+# FILE_UPLOAD_PERMISSIONS = 0o640
+# FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750
 
 
 # Default primary key field type
@@ -162,9 +212,10 @@ MEDIA_URL = "media/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+
 CELERY_BEAT_SCHEDULE = {
     'send-reminder-emails-every-day': {
         'task': 'polls.tasks.send_reminder_emails',
-        'schedule': crontab(hour=8, minute=0),  # Adjust this according to your needs
+        'schedule': crontab(hour=8, minute=0),
     },
 }
