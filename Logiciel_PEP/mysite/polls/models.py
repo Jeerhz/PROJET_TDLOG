@@ -113,9 +113,15 @@ class Client(models.Model):
         SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur Public'
         CONSEIL = 'CONSEIL', 'Conseil'
         TRANSPORT = 'TRANSPORT', 'Transport'
-        NUMERIQUE = 'NUMERIQUE', 'Numerique'
+        NUMERIQUE = 'NUMERIQUE', 'Numérique'
         BTP = 'BTP', 'BTP'
+        ENERGIE = 'ENERGIE', 'Énergie'
+        ADMINISTRATIF = 'ADMINISTRATIF', 'Administratif'
+        RECHERCHE = 'RECHERCHE', 'Recherche'
+        TELECOM = 'TELECOM', 'Télécom'
+        FINANCECOMPTA = 'FINANCECOMPTA', 'Finance-compta'
         AUTRE = 'AUTRE', 'Autre'
+     
 
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     nom_societe = models.CharField(max_length = 200)
@@ -511,6 +517,15 @@ class ParametresUtilisateur(models.Model):
         
 
 class Etude(models.Model):
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        GI = 'GI', 'GI'
+        AUTRE = 'AUTRE', 'Autre'
     class Status(models.TextChoices):
         EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
         EN_COURS = 'EN_COURS', 'En cours'
@@ -524,6 +539,7 @@ class Etude(models.Model):
         M025 = '025', '025'
         M026 = '026', '026'
         M027 = '027', '027'
+    
 
     titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
@@ -556,6 +572,11 @@ class Etude(models.Model):
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
     cahier_des_charges = models.JSONField(default=dict)
+    departments = forms.MultipleChoiceField(
+        choices=Departement.choices,
+        widget=forms.CheckboxSelectMultiple, 
+        initial=['IMI']
+    )
 
     def __str__(self):
         return self.titre
