@@ -1823,7 +1823,7 @@
                                                             <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
                                                             {% endif %}
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
-                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
+                                                            <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
@@ -2321,6 +2321,7 @@
                                                             <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                                             <a class="btn btn-success">Ajouter un avenant au RdM</a>
+                                                            <a href="{% url 'editer_acf' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
                                                         </div>
                                                     </div>
                                                     <br>

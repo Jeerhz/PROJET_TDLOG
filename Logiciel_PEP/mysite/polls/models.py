@@ -578,6 +578,45 @@ class Etude(models.Model):
         initial=['IMI']
     )
 
+    class Etat_Doc:
+        EN_COURS = 'En cours'
+        PAS_NECESSAIRE = 'Pas nécessaire'
+        TROP_TOT = 'Trop tôt'
+        CONFIDENTIEL = 'Confidentiel'
+        SIGNE = 'Signé'
+        SUR_DRIVE = 'Sur Drive'
+        PAS_SUR_DRIVE = 'Pas sur Drive'
+        PAS_FAIT = 'Pas Fait'
+        SANS_SUITE = 'Sans suite'
+        PAYEE = 'Payée'
+        EMISE = 'Emise'
+        PLUS_NECESSAIRE = 'Plus nécessaire'
+        A_VERIFIER = 'A vérifier'
+        PAS_A_JOUR = 'Pas à jour'
+        DOCUMENTS_LEGAUX = 'Documents légaux ?'
+        FAIT = 'Fait'
+
+
+    # Define a function to return the default dictionary for 'suivi_document'
+    def default_suivi_document():
+        return {
+            'Devis': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'CE': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'Validation des Intervenants': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'RDM': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Facture d'Acompte": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'PVRF': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Facture de Solde": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "QS Etudiant": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "QS Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "BV (Etudiants payés)": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Echange Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Livrables": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+
+        }
+
+    suivi_document = models.JSONField(default=default_suivi_document)
+
     def __str__(self):
         return self.titre
     
@@ -1493,7 +1532,7 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges','suivi_document']
         widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')})}
 
     def __str__(self):

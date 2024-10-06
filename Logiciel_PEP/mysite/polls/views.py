@@ -1053,8 +1053,35 @@ def upload_clients(request):
     return redirect('annuaire')
     #return render(request, 'polls/annuaire.html', {'form': form})
 
+def update_etude(request, id):
+    etude = get_object_or_404(Etude, id=id)
+
+    if request.method == 'POST':
+        suivi_document = etude.suivi_document  # Get the existing suivi_document
+
+        # Loop through the keys in suivi_document and update both status and date
+        for key in suivi_document.keys():
+            new_status = request.POST.get(f'suivi_document_{key}_status')
+            new_date = request.POST.get(f'suivi_document_{key}_date')
+
+            if new_status:
+                suivi_document[key]['status'] = new_status
+
+            if new_date:
+                suivi_document[key]['date'] = new_date
+
+        etude.suivi_document = suivi_document  # Update the dictionary
+        etude.save()  
+
+    return redirect('index')  # Redirect to a relevant page after saving
 
 
+
+def ref_facture(numero):
+    date = datetime.now()
+    annee = str(date.year)
+    an =annee[-2:]
+    return f"{an}{numero:03d}"
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
         try:
@@ -1068,6 +1095,9 @@ def generate_facture_pdf(request, id_facture):
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.strftime('%d/%m/%Y')
             logo_url = request.build_absolute_uri(static('polls/img/bdc.png'))
+            bdc=""
+            if etude.type_convention == "Convention cadre":
+                bdc=facture.bdc()
 
             # Context for the invoice
             context = {
@@ -1078,7 +1108,7 @@ def generate_facture_pdf(request, id_facture):
                 "res": res,
                 "date_emission": facture.date_emission,
                 "date_echeance": facture.date_echeance,
-                "logo_url": logo_url
+                "logo_url": logo_url, "bdc": bdc
             }
 
             # Render the full HTML of the invoice page (with full HTML structure and CSS link)
@@ -1088,16 +1118,20 @@ def generate_facture_pdf(request, id_facture):
             
             # Generate PDF from the full HTML
             pdf_file = HTML(string=html_string).write_pdf()
-
+            ref1=ref_facture(facture.numero_facture)
+            refFA=f"FA{ref1}.pdf"
             # Serve the PDF as a download
             response = HttpResponse(pdf_file, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="facture.pdf"'
+            response['Content-Disposition'] = f'attachment; filename="{refFA}.pdf"'
             return response
 
         except Exception as e:
             return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
     return HttpResponse("Unauthorized", status=401)
+
+
+
 
 
 def facture(request, id_facture):
@@ -1112,6 +1146,9 @@ def facture(request, id_facture):
             facture.date_emission = timezone.now().strftime('%d/%m/%Y')
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.strftime('%d/%m/%Y')
+            bdc=""
+            if etude.type_convention == "Convention cadre":
+                bdc=facture.bdc()
             context = {
                 "facture": facture,
                 "etude": etude,
@@ -1119,7 +1156,7 @@ def facture(request, id_facture):
                 "phases": phases,
                 "res": res,
                 "date_emission": facture.date_emission,
-                "date_echeance": facture.date_echeance
+                "date_echeance": facture.date_echeance, "bdc":bdc
             }
             template = loader.get_template("polls/facpdf.html")
 
@@ -1507,20 +1544,39 @@ def editer_convention(request, iD):
             nb_JEH=instance.nb_JEH()
             tot_HT_phase = format_nombres(instance.montant_phase_HT())
             factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
-            fac_acom=factures.first()
-            fac_solde=factures.first()
+            
+            fac_acom=None
+            fac_inter = None
+            fac_solde=None
             for facture in factures:
-                if facture.type_facture=="ACOMPTE":
+                if facture.type_facture==facture.Status.ACOMPTE:
                     fac_acom = facture
-                elif facture.type_facture=="SOLDE":
+                elif facture.type_facture==facture.Status.SOLDE:
                     fac_solde = facture
+                elif facture.type_facture==facture.Status.INTERMEDIAIRE:
+                    fac_inter= facture
+            
+
+            ac_inter=[]
+            if fac_acom or fac_inter:
+                if fac_acom:
+                    ac_inter.append({'modal': "A la signature de la Convention d'Étude", 'denom': "Acompte", 'sht':format_nombres(fac_acom.montant_HT()), 'sttc':format_nombres(fac_acom.montant_TTC())})
+                if fac_inter:
+                    ac_inter.append({'modal': "A la remise du livrable intermédiaire", 'denom': "Intermédiaire", 'sht':format_nombres(fac_inter.montant_HT()), 'sttc':format_nombres(fac_inter.montant_TTC())})
+
+            if fac_solde is None:
+                raise ValueError("Définir la facturation de solde pour l'échéancier")
+            else:
+                ac_inter.append({'modal': "A la remise du livrable final", 'denom': "Solde", 'sht':format_nombres(fac_solde.montant_HT()), 'sttc':format_nombres(fac_solde.montant_TTC())})
+
 
             #acompte_HT= format_nombres(fac_acom.montant_HT())
             #solde_HT= format_nombres(fac_solde.montant_HT())
 
             context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
                        "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
-                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde,"poste":poste,"factures":factures}
+                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde, "fac_inter":fac_inter, "ac_inter":ac_inter,
+                       "poste":poste,"factures":factures}
             # Load the template
 
             env = Environment()
@@ -1555,6 +1611,80 @@ def editer_convention(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+def editer_convention_cadre(request, iD):
+    if request.user.is_authenticated:
+        #try:
+            instance = Etude.objects.get(id=iD)
+            je= instance.je
+            client = instance.client
+            phases= Phase.objects.filter(etude=instance).order_by('numero')
+            
+            model = ConventionCadre
+            template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
+            nom_doc ="Convention_Cadre_"
+            if instance.convention_edited() :
+                ce = instance.convention()
+            else :
+                ce = model(etude=instance)
+                ce.save()
+
+            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
+            duree = instance.duree_semaine()
+            nb_phases = instance.nb_phases()
+            respo = instance.responsable.student
+            poste = "Chef de Projet"
+            if respo.titre =='Mme':
+                poste= "Cheffe de Projet"
+            qualite = instance.resp_qualite.student
+            ref_m = instance.ref()
+            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
+            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            date = timezone.now()
+            annee = date.strftime('%Y')
+            
+            
+            
+
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
+                       "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
+                       "quali":qualite,"ref_m":ref_m,"annee":annee, "poste":poste}
+            # Load the template
+
+            env = Environment()
+
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+
+            
+
+            template.render(context, env)
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+
+            # Save the "fichier" field of the CE
+            filename = f"{nom_doc}{ref_m}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            instance.status='EN_COURS'
+            instance.save()
+            return response
+        
+            
+        #except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+        #except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 def editer_pv(request, iD):
     if request.user.is_authenticated:
@@ -1664,6 +1794,49 @@ def editer_rdm(request, id_etude, id_eleve):
     return HttpResponse(template.render(context, request))
 
 
+def editer_acf(request, id_etude, id_eleve):
+    if request.user.is_authenticated:
+        try :
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_eleve)
+            client= etude.client.nom_societe
+            president_titre ="M." 
+            president_prenom="Thomas"
+            president_nom ="Debray"
+            num_etude= etude.ref()
+            titre = eleve.titre
+            nom = eleve.last_name
+            prenom = eleve.first_name
+            etude_titre=etude.titre
+            date = timezone.now().date()
+            annee = date.strftime('%Y')
+            template = DocxTemplate("polls/templates/polls/ACF_etudiant_026.docx")
+            
+            context = {"etude": etude,"client": client, "president_titre": president_titre, "president_prenom":president_prenom, "president_nom": president_nom, "num_etude":num_etude, 
+                       "titre":titre,"annee":annee,"nom" :nom,"prenom":prenom,"etude_titre":etude_titre}
+
+            env = Environment()
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+            template.render(context, env)
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+            filename = f"ACF_{num_etude}{nom}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
         #try :
@@ -1713,7 +1886,7 @@ def editer_devis(request, iD):
         try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
-            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/template.docx')
+            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
             template = DocxTemplate(template_path)
             model = Devis
             if instance.devis_edited() :
