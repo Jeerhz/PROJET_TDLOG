@@ -77,6 +77,8 @@ urlpatterns = [
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
     path("google-login", views.google_login, name="google-login"),
     path("facture/<int:id_facture>/generate-pdf/", views.generate_facture_pdf, name='generate_facture_pdf'),
+    path("signature_document/<str:model>/<int:iD>", views.signature_document, name="signature_document"),
+
 
 
 

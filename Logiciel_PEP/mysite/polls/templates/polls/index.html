@@ -756,11 +756,11 @@
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
+                                        <td class="align-middle" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
                                                 <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
-                                                    {{ etude.progress_percentage }}% {% if etude.fin %}: {{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
                                                 </span>
                                         
                                                 <!-- Progress bar itself -->
@@ -781,15 +781,16 @@
                                         <table class="table table-bordered">
                                             <tbody>
                                             <tr>
+                                                <td>Devis</td>
+                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Envoyé le {{ etude.devis.date_signature }}{% else %}Pas envoyé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
+                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
+                                            </tr>   
+                                            <tr>
                                                 <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
                                                 <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
                                                 <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
                                             </tr>
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
+                                            
                                             {% for facture in etude.factures.all %}
                                             <tr>
                                                 <td>{{ facture.type_facture }}</td>
@@ -1042,7 +1043,7 @@
                 }
             });
         });
-      </script>
+    </script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";

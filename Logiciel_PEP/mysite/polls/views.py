@@ -2291,29 +2291,43 @@ def search(request):
 def ajouter_phase(request, id_etude):
     if request.user.is_authenticated:
         if request.method == 'POST':
-            fetchform = AddPhase(request.POST)
-            if fetchform.is_valid():
-                etude = Etude.objects.get(id=id_etude)
-                numero_bdc = request.POST.get("numero_bdc", None)
-                count_phase = Phase.objects.filter(etude=etude).count()
-                new_phase = fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
-                if etude.type_convention == "Convention cadre" and numero_bdc:
-                    bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
-                    bdc = None
-                    if(bdcs.exists()):
-                        bdc = bdcs[0]
-                    else:
-                        gen_context = general_context(request)
-                        gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
-                        template = loader.get_template("polls/page_error.html")
-                        return HttpResponse(template.render(gen_context, request))
-                    new_ass_phase_bdc = AssociationPhaseBDC(phase=new_phase, bon_de_commande=bdc)
-                    new_ass_phase_bdc.save()
-            else :
-                gen_context = general_context(request)
-                gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+            try:
+                fetchform = AddPhase(request.POST)
+                if fetchform.is_valid():
+                    etude = Etude.objects.get(id=id_etude)
+                    numero_bdc = request.POST.get("numero_bdc", None)
+                    if etude.type_convention == "Convention cadre":
+                            if not numero_bdc:
+                                raise ValueError("Veuillez préciser le bon de commande de la phase.")
+                            else:
+                                bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                                if not bdcs.exists():
+                                    raise ValueError("Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant.")
+                    count_phase = Phase.objects.filter(etude=etude).count()
+                    new_phase = fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
+                    if etude.type_convention == "Convention cadre" and numero_bdc:
+                        bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                        bdc = None
+                        if(bdcs.exists()):
+                            bdc = bdcs[0]
+                        else:
+                            gen_context = general_context(request)
+                            gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            template = loader.get_template("polls/page_error.html")
+                            return HttpResponse(template.render(gen_context, request))
+                        new_ass_phase_bdc = AssociationPhaseBDC(phase=new_phase, bon_de_commande=bdc)
+                        new_ass_phase_bdc.save()
+                else :
+                    gen_context = general_context(request)
+                    gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                    template = loader.get_template("polls/page_error.html")
+                    return HttpResponse(template.render(gen_context, request))
+            except ValueError as ve:
+                # Handle any ValueError, including the case when `numero_bdc` is None
                 template = loader.get_template("polls/page_error.html")
-                return HttpResponse(template.render(gen_context, request))
+                context = {"error_message": str(ve)}
+                return HttpResponse(template.render(context, request))
+
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
@@ -2680,8 +2694,35 @@ def remarque_etude(request, iD):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
 
+def signature_document(request, model, iD):
+    if request.user.is_authenticated:
+        
+        if request.method == 'POST':
+            try:
+                raw_data = request.body
+                data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
+                content = data.get('content', '')
+                if model == 'CE':
+                    convention = ConventionEtude.objects.get(id=iD)
+                    if not content:
+                        convention.date_signature = None
+                    else:
+                        try:
+                            date_signature = datetime.strptime(content, "%d/%m/%Y").date()
+                        except ValueError:
+                            # Return a message if the date format is invalid
+                            return JsonResponse({'success': False, 'message': 'mettre la date au format JJ/MM/AAAA'})
+
+                        convention.date_signature=date_signature
+                    convention.save()
+                return JsonResponse({'success':True})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
 
 def send_mail_demarchage(request,iD):
     if request.user.is_authenticated:
