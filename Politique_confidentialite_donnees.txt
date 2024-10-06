@@ -1,0 +1,44 @@
+Politique de Confidentialité des Données
+
+Date d'entrée en vigueur : 27/09/2024
+
+Cette Politique de Confidentialité décrit comment Sylog (ci-après dénommé "nous", "notre" ou "nos") collecte, utilise et protège les informations personnelles des utilisateurs de notre application de gestion de la relation client (CRM) ("l'Application"). En utilisant l'Application, vous acceptez les pratiques décrites dans cette politique.
+
+1. Collecte des Informations
+Nous collectons différentes catégories d'informations personnelles dans le cadre de l'utilisation de notre Application, y compris mais sans s'y limiter :
+
+Informations des Utilisateurs : Prénom, nom, adresse e-mail, mot de passe, Junior-Entreprise, sexe, numéro de téléphone, et adresse.
+Informations sur les Tiers : Prénom, nom, adresse e-mail, adresse, entreprise, sexe, numéro de téléphone, numéro de sécurité sociale, et autres données personnelles soumises via les formulaires de l'Application.
+Les tiers regroupent les personnes impliquées dans le fonctionnement d'une Junior-Entreprise, comme les élèves de l'école qui s'y rattachent et les représentants des cients.
+Données de Connexion via Google : Lorsque vous choisissez de vous connecter à l'Application via votre compte Google, nous collectons des informations de profil, votre adresse e-mail, et des autorisations pour lire et envoyer des e-mails en votre nom.
+2. Utilisation des Informations
+Les informations collectées sont utilisées uniquement pour les finalités suivantes :
+
+Fonctionnement de l'Application : Permettre l'accès sécurisé à l'Application et fournir les services associés, y compris le stockage et la gestion des données saisies par les utilisateurs.
+Statistiques Internes : Effectuer des analyses statistiques pour améliorer nos services. Ces statistiques sont affichées uniquement aux utilisateurs de la même entreprise et sont anonymisées autant que possible.
+Authentification et Autorisations : Gérer les connexions des utilisateurs via leur compte Google, y compris l'accès aux e-mails si nécessaire pour les fonctionnalités de l'Application.
+3. Partage des Informations
+Nous ne partageons les informations personnelles des utilisateurs et des tiers avec aucune entité extérieure, sauf dans les cas suivants :
+
+Obligations Légales : Si cela est requis par la loi, une ordonnance de tribunal, ou toute autre demande gouvernementale.
+Protection de Nos Droits : Pour protéger et défendre nos droits ou ceux de nos utilisateurs.
+4. Sécurité des Données
+Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées pour protéger les informations personnelles contre toute perte, utilisation abusive, accès non autorisé, divulgation, altération ou destruction. Cela inclut, mais n'est pas limité à :
+
+Chiffrement des Données : Toutes les données sont chiffrées en transit et au repos.
+Contrôles d'Accès : Seuls les utilisateurs de la même Junior-Entreprise peuvent accéder aux informations saisies par les membres de leur Junior-Entreprise.
+5. Accès et Contrôle des Informations
+Chaque utilisateur peut accéder à ses informations personnelles, les modifier ou les supprimer via l'interface de l'Application. Les utilisateurs peuvent également, à tout moment, demander la suppression de leur compte et de leurs données personnelles en contactant notre support.
+
+6. Conservation des Données
+Nous conservons les informations personnelles aussi longtemps que nécessaire pour fournir les services décrits dans cette politique ou pour se conformer à nos obligations légales.
+
+7. Modifications de la Politique de Confidentialité
+Nous nous réservons le droit de modifier cette Politique de Confidentialité à tout moment. Toute modification sera publiée sur cette page avec une mise à jour de la date d'entrée en vigueur. Nous vous encourageons à consulter régulièrement cette page pour être informé des mises à jour.
+
+8. Contact
+Si vous avez des questions ou des préoccupations concernant cette Politique de Confidentialité, veuillez nous contacter à sylex-softwares@gmail.com.
+
+En utilisant notre Application, vous reconnaissez avoir lu et compris cette Politique de Confidentialité et acceptez les conditions énoncées ci-dessus.
+
+Sylog

@@ -1,5 +1,10 @@
 import json
 import os
+#### UTILISATEUR WINDOWS ####
+# Installer MSYS2 puis à l'aide du terminal installer GTK puis gobject
+# Après installation de gobject, chercher le répertoire des dll et les mettre en variable d'environnement
+os.add_dll_directory(r"C:\msys64\mingw64\bin")
+os.environ['PATH'] = r"C:\msys64\mingw64\bin"
 import openpyxl
 import csv
 from io import StringIO
@@ -32,7 +37,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.core.mail import send_mail, get_connection, EmailMessage
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
-from django.urls import reverse
+from django.urls import reverse, resolve
+from urllib.parse import urlparse
 from django.apps import apps
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -138,6 +144,11 @@ def generate_pdf(request):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="page.pdf"'
     return response
+
+def confidentialite_donnees(request):
+    template = loader.get_template("polls/confidentialite_donnees.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def index(request):
@@ -633,6 +644,23 @@ def get_client_representants(request):
             'legaux': ''.join([f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux])
         })
     return JsonResponse({'error': 'Invalid client ID'}, status=400)
+
+def get_representants(request):
+    if(request.user.is_authenticated):
+        client_id = request.GET.get('client_id')
+        if client_id:
+            client = get_object_or_404(Client, id=client_id)
+            representants = client.representants()
+            
+            results = [
+                {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
+                for r in representants
+            ]
+
+            return JsonResponse({
+                'results':results
+            })
+        return JsonResponse({'error': 'Invalid client ID'}, status=400)
 
 def edit_client(request, pk):
     if request.user.is_authenticated:
@@ -1407,9 +1435,16 @@ def messages(request):
 
 def register(request):
     if request.method == "GET":
-        form = AddMember()
-        context = {"form": form}
-        template = loader.get_template("polls/register.html")
+        referer = request.META.get('HTTP_REFERER')
+        referer_path = urlparse(referer).path
+        try:
+            match = resolve(referer_path)
+            assert match.view_name == "confidentialite-donnees"
+            form = AddMember()
+            context = {"form": form}
+            template = loader.get_template("polls/register.html")
+        except:
+            return redirect('confidentialite-donnees')
     else:
         fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
@@ -2241,6 +2276,19 @@ def search_suggestions_student(request, id_etude):
         return JsonResponse({'suggestions_student': [[student.first_name, student.last_name, student.id, student.phases_etude(etude).count(), student.nb_etudes_realisees()] for student in suggestions_student.all()]})
     else :
         return JsonResponse({'suggestions_student': []})
+    
+def client_suggestions(request):
+    if request.user.is_authenticated:
+        query = request.GET.get('q', '')
+        if query:
+            results = Client.objects.filter(nom_societe__icontains=query)
+            results_list = [{'id': obj.id, 'name': obj.__str__()} for obj in results]
+        else:
+            results_list = []
+        
+        return JsonResponse({'results': results_list})
+    else:
+        return JsonResponse({'results': []})
 
 
 def search(request):

@@ -76,6 +76,9 @@ urlpatterns = [
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
     path("get_object_info/<str:model_name>/<int:object_id>", views.get_object_info, name="get_object_info"),
     path("google-login", views.google_login, name="google-login"),
+    path("confidentialite-donnees", views.confidentialite_donnees, name="confidentialite-donnees"),
+    path("client-suggestions", views.client_suggestions, name="client-suggestions"),
+    path('get_representants/', views.get_representants, name='get_representants'),
     path("facture/<int:id_facture>/generate-pdf/", views.generate_facture_pdf, name='generate_facture_pdf'),
     path("signature_document/<str:model>/<int:iD>", views.signature_document, name="signature_document"),
 

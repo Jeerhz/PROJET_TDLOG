@@ -15,7 +15,9 @@ from django.db.migrations.serializer import BaseSerializer
 from django.db.migrations.writer import MigrationWriter
 from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
+from django.urls import reverse_lazy
 from django.conf import settings
+from .widgets import SelectSearch
 from datetime import date 
 from datetime import timedelta
 import os
@@ -1471,6 +1473,7 @@ class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
         exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
+        widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')})}
 
     def __str__(self):
         return "Informations de l'étude"
