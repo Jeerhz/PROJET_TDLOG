@@ -96,6 +96,54 @@
             border-top-right-radius: .35rem;
             font-weight: bold;
         }
+        .status-select {
+            color: white;
+            appearance: none; /* Remove the dropdown arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: transparent; /* Make the background transparent */
+            border: none; /* Remove the border */
+            width: 100%; /* Make sure it expands to fill the container */
+            padding: 5px;
+            font-weight: bold; /* Make the text bold if desired */
+        }
+
+                /* Define background colors for each document status */
+        .status-cell {
+            color: white; /* Optional: Set text color to white for contrast */
+            padding: 10px; /* Optional: Add padding */
+            text-align: center;
+        }
+
+        .status-encours {
+            background-color: rgb(255, 182, 18);
+        }
+
+        .status-pasfait {
+            background-color: red;
+        }
+
+        .status-termine {
+            background-color: blue;
+        }
+
+        .status-confidentiel {
+            background-color: brown;
+        }
+
+        .status-payee {
+            background-color: green;
+        }
+
+        /* Default style if no specific class is matched */
+        .status-default {
+            background-color: grey;
+        }
+        .status-troptot {
+            background-color: paleturquoise;
+        }
+        
+
 
         .tableau_mission {
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -469,7 +517,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{request.user.photo.url}}">
+                                    src="{{request.user.photo.url}}"/>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -663,8 +711,8 @@
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
-                                        <td class="align-middle">
-                                            {% if etude.responsable %} <img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;"> {% else %}Aucun{% endif %}
+                                        <td class="align-middle" style=" padding: 6px;">
+                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
@@ -674,39 +722,83 @@
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="color: #333;width: {{ etude.progress_percentage }}%;" aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100" >{{ etude.progress_percentage }}%</div>
+                                        <td class="align-middle" style="padding:0px;">
+                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
+                                                <!-- Centered text on top of the progress bar -->
+                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
+                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                                </span>
+                                        
+                                                <!-- Progress bar itself -->
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ etude.progress_percentage }}%;" 
+                                                     aria-valuenow="{{ etude.progress_percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
                                             </div>
                                         </td>
                                         {% endif %}
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ec_{{etude.id}}">
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
-                                            <table class="table table-bordered">
-                                                <tbody>
-                                                <tr>
-                                                    <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
-                                                    <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                    <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Devis</td>
-                                                    <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                    <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                                </tr>
-                                                {% for facture in etude.factures.all %}
-                                                <tr>
-                                                    <td>{{ facture.type_facture }}</td>
-                                                    <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
-                                                    <td>{{facture.remarque}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                      </tr>
+                                        <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                            {% csrf_token %}
+                                            <td colspan="{{user.parametres.nombre_colonnes}}">
+                                                <table class="table table-bordered">
+                                                    <colgroup>
+                                                        <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                                        <col style="width: 30%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                                        <col style="width: 50%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    </colgroup>
+                                                    <tbody>
+                                                        {% for key, value in etude.suivi_document.items %}
+                                                        <tr>
+                                                            <td style="text-align: left;">{{ key }}</td>
+                                                            <td>date de signature si document</td>
+                                                            <td class="status-cell {% if value == 'En cours' %}status-encours
+                                                                                {% elif value == 'Pas fait' %}status-pasfait
+                                                                                {% elif value == 'Terminé' %}status-termine
+                                                                                {% elif value == 'Confidentiel' %}status-confidentiel
+                                                                                {% elif value == 'Payée' %}status-payee
+                                                                                {% elif value == 'Trop tôt' %}status-troptot
+                                                                                {% else %}status-default
+                                                                                {% endif %}">
+                                                                <!-- Dropdown for selecting status, styled to show just the name with color -->
+                                                                <select name="suivi_document_{{ key }}" class="form-control status-select" style="padding: 2px; background-color: transparent; border: none; text-align: center;">
+                                                                    <option value="En cours" {% if value == "En cours" %}selected{% endif %}>En cours</option>
+                                                                    <option value="Pas nécessaire" {% if value == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                                    <option value="Trop tôt" {% if value == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                                    <option value="Confidentiel" {% if value == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                                    <option value="Signé" {% if value == "Signé" %}selected{% endif %}>Signé</option>
+                                                                    <option value="Sur Drive" {% if value == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                                    <option value="Pas sur Drive" {% if value == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                                    <option value="Pas Fait" {% if value == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                                    <option value="Sans suite" {% if value == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                                    <option value="Payée" {% if value == "Payée" %}selected{% endif %}>Payée</option>
+                                                                    <option value="Emise" {% if value == "Emise" %}selected{% endif %}>Emise</option>
+                                                                    <option value="Plus nécessaire" {% if value == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                                    <option value="A vérifier" {% if value == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                                    <option value="Pas à jour" {% if value == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                                    <option value="Documents légaux ?" {% if value == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                                    <option value="Fait" {% if value == "Fait" %}selected{% endif %}>Fait</option>
+                                                                </select>
+                                                            </td>
+
+                                                        </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <td colspan="3" class="text-center">
+                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                            </td>
+                                                        </tr>
+                                            
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </form>
+                                    </tr>
     
                                     {% endfor %}
                                 </tbody>
@@ -769,9 +861,12 @@
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
-                                        <td class="align-middle">
-                                            {% if etude.responsable %}<img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{ etude.responsable }}{% else %}Aucun{% endif %}
+                                        <td class="align-middle" style=" padding: 6px;">
+                                            
+                                                
+                                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
+                                                
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
                                         <td class="align-middle">{{etude.montant_phase_HT}}€</td>
@@ -780,11 +875,11 @@
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
+                                        <td class="align-middle" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
                                                 <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
-                                                    {{ etude.progress_percentage }}% {% if etude.fin %}: {{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
                                                 </span>
                                         
                                                 <!-- Progress bar itself -->
@@ -801,29 +896,62 @@
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
-                                        <table class="table table-bordered">
-                                            <tbody>
-                                            <tr>
-                                                <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            {% for facture in etude.factures.all %}
-                                            <tr>
-                                                <td>{{ facture.type_facture }}</td>
-                                                <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
-                                                <td>{{facture.remarque}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                        </td>
+                                        <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                            {% csrf_token %}
+                                            <td colspan="{{user.parametres.nombre_colonnes}}">
+                                                <table class="table table-bordered">
+                                                    <colgroup>
+                                                        <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                                        <col style="width: 30%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                                        <col style="width: 50%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    </colgroup>
+                                                    <tbody>
+                                                        {% for key, value in etude.suivi_document.items %}
+                                                        <tr>
+                                                            <td style="text-align: left;">{{ key }}</td>
+                                                            <td>
+                                                                <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
+                                                            </td>                                                            
+                                                            <td class="status-cell {% if value.status == 'En cours' %}status-encours
+                                                                                {% elif value.status == 'Pas fait' %}status-pasfait
+                                                                                {% elif value.status == 'Terminé' %}status-termine
+                                                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                                                {% elif value.status == 'Payée' %}status-payee
+                                                                                {% elif value.status == 'Trop tôt' %}status-troptot
+                                                                                {% else %}status-default
+                                                                                {% endif %}">
+                                                                <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: transparent; border: none; color: white; text-align: center; font-weight: 600;">
+                                                                    <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
+                                                                    <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                                    <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                                    <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                                    <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
+                                                                    <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                                    <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                                    <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                                    <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                                    <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
+                                                                    <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
+                                                                    <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                                    <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                                    <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                                    <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                                    <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
+                                                                </select>
+                                                            </td>
+
+                                                        </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <td colspan="3" class="text-center">
+                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                            </td>
+                                                        </tr>
+                                            
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </form>
                                     </tr>
 
                                     {% endfor %}
@@ -877,7 +1005,7 @@
                                 <tbody>
                                     {% for etude in etudes_terminees %}
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
                                         <td class="align-middle"><strong>{{etude.ref}}</strong></td>
                                         {% endif %}
@@ -888,8 +1016,8 @@
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
-                                        <td class="align-middle">
-                                            {% if etude.responsable.exists %}<img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{ etude.responsable}}{% else %}Aucun{% endif %}
+                                        <td class="align-middle" style=" padding: 6px;">
+                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
@@ -899,40 +1027,85 @@
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_avancement %}
-                                        <td class="align-middle">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" role="progressbar" style="color: #333; width: {{ etude.progress_percentage }}%; " aria-valuenow="{{ etude.progress_percentage }}" aria-valuemin="0" aria-valuemax="100" ></div>{{ etude.progress_percentage }}%</div>
+                                        <td class="align-middle" style="padding:0px;">
+                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
+                                                <!-- Centered text on top of the progress bar -->
+                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
+                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                                </span>
+                                        
+                                                <!-- Progress bar itself -->
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ etude.progress_percentage }}%;" 
+                                                     aria-valuenow="{{ etude.progress_percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
                                             </div>
+                                        </td>
                                         </td>
                                         {% endif %}
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
-                                    <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
-                                        <table class="table table-bordered">
-                                            <tbody>
-                                            <tr>
-                                                <td>{% if etude.type_convention %}{{etude.type_convention}}{% else %}Convention{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{% if etude.convention.date_signature %}Signé le {{ etude.convention.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.convention_edited %}{{etude.convention.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Devis</td>
-                                                <td>{% if etude.devis_edited %}{% if etude.devis.date_signature %}Signé le {{ etude.devis.date_signature }}{% else %}Non signé{% endif %}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Non édité</span>{% endif %}</td>
-                                                <td>{% if etude.devis_edited %}{{etude.devis.remarque}}{% else %}<i class="fas fa-ban mr-2"></i><span class="card-text">Remarque indisponible</span>{% endif %}</td>
-                                            </tr>
-                                            {% for facture in etude.factures.all %}
-                                            <tr>
-                                                <td>{{ facture.type_facture }}</td>
-                                                <td>{% if facture.facturé %}<i class="fas fa-check mr-2"></i><span class="card-text">Facturé</span>{% else %}Non facturé{% endif %}</td>
-                                                <td>{{facture.remarque}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                        </td>
-                                    </tr>
+                                    <tr class="collapse" id="sec_table_t_{{etude.id}}">
+                                        <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                            {% csrf_token %}
+                                            <td colspan="{{user.parametres.nombre_colonnes}}">
+                                                <table class="table table-bordered">
+                                                    <colgroup>
+                                                        <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                                        <col style="width: 30%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                                        <col style="width: 50%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    </colgroup>
+                                                    <tbody>
+                                                        {% for key, value in etude.suivi_document.items %}
+                                                        <tr>
+                                                            <td style="text-align: left;">{{ key }}</td>
+                                                            <td>
+                                                                <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
+                                                            </td>                                                            
+                                                            <td class="status-cell {% if value.status == 'En cours' %}status-encours
+                                                                                {% elif value.status == 'Pas fait' %}status-pasfait
+                                                                                {% elif value.status == 'Terminé' %}status-termine
+                                                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                                                {% elif value.status == 'Payée' %}status-payee
+                                                                                {% elif value.status == 'Trop tôt' %}status-troptot
+                                                                                {% else %}status-default
+                                                                                {% endif %}">
+                                                                <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: transparent; border: none; color: white; text-align: center; font-weight: 600;">
+                                                                    <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
+                                                                    <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                                    <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                                    <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                                    <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
+                                                                    <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                                    <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                                    <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                                    <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                                    <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
+                                                                    <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
+                                                                    <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                                    <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                                    <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                                    <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                                    <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
+                                                                </select>
+                                                            </td>
 
+                                                        </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <td colspan="3" class="text-center">
+                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                            </td>
+                                                        </tr>
+                                            
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </form>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -1066,7 +1239,7 @@
                 }
             });
         });
-      </script>
+    </script>
     <script type="text/javascript">
         var url_suggestions = '{% url "search_suggestions" %}';
         let str = "{% url 'details' modelName='Etude' iD=0 %}";

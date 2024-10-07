@@ -114,9 +114,15 @@ class Client(models.Model):
         SECTEUR_PUBLIC = 'SECTEUR_PUBLIC', 'Secteur Public'
         CONSEIL = 'CONSEIL', 'Conseil'
         TRANSPORT = 'TRANSPORT', 'Transport'
-        NUMERIQUE = 'NUMERIQUE', 'Numerique'
+        NUMERIQUE = 'NUMERIQUE', 'Numérique'
         BTP = 'BTP', 'BTP'
+        ENERGIE = 'ENERGIE', 'Énergie'
+        ADMINISTRATIF = 'ADMINISTRATIF', 'Administratif'
+        RECHERCHE = 'RECHERCHE', 'Recherche'
+        TELECOM = 'TELECOM', 'Télécom'
+        FINANCECOMPTA = 'FINANCECOMPTA', 'Finance-compta'
         AUTRE = 'AUTRE', 'Autre'
+     
 
     TITRE_CHOIX = (('M.', 'M.'), ('Mme', 'Mme'))
     nom_societe = models.CharField(max_length = 200)
@@ -512,6 +518,15 @@ class ParametresUtilisateur(models.Model):
         
 
 class Etude(models.Model):
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        GI = 'GI', 'GI'
+        AUTRE = 'AUTRE', 'Autre'
     class Status(models.TextChoices):
         EN_NEGOCIATION = 'EN_NEGOCIATION', 'En négociation'
         EN_COURS = 'EN_COURS', 'En cours'
@@ -535,6 +550,7 @@ class Etude(models.Model):
         M025 = '025', '025'
         M026 = '026', '026'
         M027 = '027', '027'
+    
 
     titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
@@ -568,6 +584,50 @@ class Etude(models.Model):
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
     cahier_des_charges = models.JSONField(default=dict)
+    departments = forms.MultipleChoiceField(
+        choices=Departement.choices,
+        widget=forms.CheckboxSelectMultiple, 
+        initial=['IMI']
+    )
+
+    class Etat_Doc:
+        EN_COURS = 'En cours'
+        PAS_NECESSAIRE = 'Pas nécessaire'
+        TROP_TOT = 'Trop tôt'
+        CONFIDENTIEL = 'Confidentiel'
+        SIGNE = 'Signé'
+        SUR_DRIVE = 'Sur Drive'
+        PAS_SUR_DRIVE = 'Pas sur Drive'
+        PAS_FAIT = 'Pas Fait'
+        SANS_SUITE = 'Sans suite'
+        PAYEE = 'Payée'
+        EMISE = 'Emise'
+        PLUS_NECESSAIRE = 'Plus nécessaire'
+        A_VERIFIER = 'A vérifier'
+        PAS_A_JOUR = 'Pas à jour'
+        DOCUMENTS_LEGAUX = 'Documents légaux ?'
+        FAIT = 'Fait'
+
+
+    # Define a function to return the default dictionary for 'suivi_document'
+    def default_suivi_document():
+        return {
+            'Devis': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'CE': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'Validation des Intervenants': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'RDM': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Facture d'Acompte": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'PVRF': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Facture de Solde": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "QS Etudiant": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "QS Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "BV (Etudiants payés)": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Echange Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            "Livrables": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+
+        }
+
+    suivi_document = models.JSONField(default=default_suivi_document)
 
     def __str__(self):
         return self.titre
@@ -1496,7 +1556,7 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges','suivi_document']
         widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')})}
 
     def __str__(self):

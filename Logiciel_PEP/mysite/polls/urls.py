@@ -80,6 +80,16 @@ urlpatterns = [
     path("client-suggestions", views.client_suggestions, name="client-suggestions"),
     path('get_representants/', views.get_representants, name='get_representants'),
     path("facture/<int:id_facture>/generate-pdf/", views.generate_facture_pdf, name='generate_facture_pdf'),
+    path("signature_document/<str:model>/<int:iD>", views.signature_document, name="signature_document"),
+    path("update_etude/<int:id>", views.update_etude, name="update_etude"),
+    path("editer_acf/<int:id_etude>/<int:id_eleve>", views.editer_acf, name='editer_acf'),
+    path("editer_convention_cadre/<int:iD>", views.editer_convention_cadre, name="editer_convention_cadre"),
+
+    
+
+
+
+
 
 
 

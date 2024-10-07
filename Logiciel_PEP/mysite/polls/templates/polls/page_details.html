@@ -667,17 +667,24 @@
                                 <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                                     <!-- Responsable and Statut -->
                                     <div class="mt-3 d-flex justify-content-between">
-                                        <h4 style="font-size: 16px;" style="padding-left: 30px;"> 
-                                            <table >
+                                        <h4 style="font-size: 16px; width: 80%; padding-left: 30px;" > 
+                                            <table style="width: 80%;">
                                                 <tr >
                                                     <td style="padding-bottom: 10px;">
-                                                        {{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}
+                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</span>
+
+                                                    </td>
+                                                    <td style="padding-bottom: 10px; text-align: right;">
+                                                        <span style="font-style: italic;">Qualité : </span> <span style="color: #000;">{{ etude.resp_qualite.student.last_name }} {{ etude.resp_qualite.student.first_name }}</span>
                                                     </td>
                                                     
                                                 </tr>
-                                                <tr>
+                                                <tr >
                                                     <td>
-                                                        {{ etude.client_interlocuteur }}
+                                                       <span style="font-style: italic;">Interlocuteur client :</span> <span style="color: #000;">{{ etude.client_interlocuteur }}</span>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <span style="font-style: italic;">Responsable légale :</span> <span style="color: #000;">{{ etude.client_representant_legale }}</span>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -1680,26 +1687,78 @@
                                                             <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
                                                             {% endif %}
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
-                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
+                                                            <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
                                                     </div>
-                                                    <table style = "text-align: center;">
+                                                    <table style = " table-layout: fixed;">
+                                                        
                                                         <tr>
-                                                            <th>date de signature</th>
-                                                            <th contenteditable="True">01/01/1979</th>
-                                                
-                                                        </tr>
-                                                        <tr>
-                                                            <td contenteditable="True">remarque</td>
-                                                            <td contenteditable="True">remarque</td>
+                                                            <td style="word-wrap: break-word;text-align: left;" >date de signature (jj/mm/aaaa)</td>
+                                                            <td style="word-wrap: break-word;"  ><span contenteditable="True" data-url="{% url 'signature_document' model='CE' iD=etude.convention.id %}" class="editableDiv">{% if etude.convention.date_signature %} {{etude.convention.date_signature}} {% else %} JJ/MM/AAAA {% endif %} </span></td>
+
                                                         </tr>
 
                                                     </table>
                                                 </div>
                                             </div>
                                         </div>
+                                        <script>
+                                            // Function to send AJAX request to Django
+                                            function saveContent(elem) {
+                                              var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                              var content = elem.innerText;
+                                              var url = elem.dataset.url;
+                                              
+                                              // AJAX request using fetch API
+                                                fetch(url, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': csrfToken
+                                                    },
+                                                    body: JSON.stringify({ content: content }),
+                                                })
+                                                .then(response => {
+                                                    if (!response.ok) {
+                                                    throw new Error('Network response was not ok');
+                                                    }
+                                                    return response.json();
+                                                })
+                                                .then(data => {
+                                                    if(data.success){
+                                                        alert("The modification was taken into account.");
+                                                    }
+                                                    else{
+                                                        alert("The modification wasn't taken into account.");
+                                                    }
+                                                })
+                                                .catch(error => {
+                                                    console.error('There was a problem with the fetch operation:', error.message);
+                                                });
+                                            }
+                                            document.addEventListener("DOMContentLoaded", function() {
+                                                // Event listener to detect when user clicks outside the div
+                                                var allEditableDiv = document.getElementsByClassName('editableDiv');
+                                                var arrayEditDiv = Array.from(allEditableDiv);
+                                                var arrayDivContent = [];
+                                                arrayEditDiv.forEach(elem => {
+                                                    arrayDivContent.push(elem.textContent);
+                                                });
+                                    
+                                                window.addEventListener('click', function(event) {
+                                                    if (!event.target.closest('.editableDiv')) {
+                                                        arrayEditDiv.forEach((elem, index) => {
+                                                            if(elem.textContent !== arrayDivContent[index]){
+                                                                saveContent(elem);
+                                                                arrayDivContent[index] = elem.textContent;
+                                                            }
+                                                        })
+                                                    }
+                                                });
+                                            });
+                                        </script>
                                         <div class="row">
                                             {% if etude.type_convention == "Convention d'étude" %}
                                             <div class="col-md-6">
@@ -2126,6 +2185,7 @@
                                                             <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                                             <a class="btn btn-success">Ajouter un avenant au RdM</a>
+                                                            <a href="{% url 'editer_acf' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
                                                         </div>
                                                     </div>
                                                     <br>
@@ -2729,9 +2789,9 @@
                             <div class="card-body mb-3">
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong></li>
-                                    <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité:</strong> {{ client.secteur }}</li>
-                                    <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue:</strong> {{ client.rue }} {{ client.code_postal }} {{ client.ville }} {{ client.country }}</li>
-                                    <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Logo:</strong><img class="ml-3" src="{{ client.logo.url }}" alt="Logo" style="width: 100px; height: 100px;"></li>
+                                    <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité :</strong> {{ client.secteur }}</li>
+                                    <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue :</strong> {{ client.rue }} {{ client.code_postal }} {{ client.ville }} {{ client.country }}</li>
+                                    <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Logo :</strong><img class="ml-3" src="{{ client.logo.url }}" alt="Logo" style="width: 100px; height: 100px;"></li>
                                 </ul>
                             </div>
                         </div>
@@ -2749,13 +2809,13 @@
                                                 <i class="fas fa-user-tag mr-2"></i><strong>{{ representant.first_name }} {{representant.last_name}}</strong>
                                             </div>
                                             <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-briefcase mr-2"></i><strong>Fonction: </strong> {{ representant.fonction }}
+                                                <i class="fas fa-briefcase mr-2"></i><strong>Fonction : </strong> {{ representant.fonction }}
                                             </div>
                                             <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-envelope mr-2"></i><strong>Email: </strong> <a href="mailto:{{ representant.email }}">{{ representant.mail }}</a>
+                                                <i class="fas fa-envelope mr-2"></i><strong>Email  </strong> <a href="mailto:{{ representant.email }}"> : {{ representant.mail }}</a>
                                             </div>
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-phone mr-2"></i><strong>Téléphone: </strong> <a href="tel:{{ representant.telephone }}">{{ representant.phone_number }}</a>
+                                                <i class="fas fa-phone mr-2"></i><strong>Téléphone : </strong> <a href="tel:{{ representant.telephone }}"> {{ representant.phone_number }}</a>
                                             </div>
                                         </div>
                                         <div>
