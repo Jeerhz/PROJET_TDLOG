@@ -584,11 +584,6 @@ class Etude(models.Model):
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
     cahier_des_charges = models.JSONField(default=dict)
-    departments = forms.MultipleChoiceField(
-        choices=Departement.choices,
-        widget=forms.CheckboxSelectMultiple, 
-        initial=['IMI']
-    )
 
     class Etat_Doc:
         EN_COURS = 'En cours'
@@ -1557,7 +1552,7 @@ class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
         exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges','suivi_document']
-        widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')})}
+        widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')}), 'departement': forms.SelectMultiple}
 
     def __str__(self):
         return "Informations de l'étude"
