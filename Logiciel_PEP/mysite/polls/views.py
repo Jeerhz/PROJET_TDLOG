@@ -167,19 +167,29 @@ def index(request):
         user_je = request.user.je
         monthly_sums = calculate_monthly_sums(user_je)
         chiffre_affaire = monthly_sums[-1]
+        mandat_select = request.POST.getlist('mandat-select')          
+        if mandat_select:
+            mandat_default=[choice for choice in Etude.Mandat.choices if choice[0] in mandat_select]
+        else:
+            mandat_default=Etude.Mandat.choices
+            mandat_select = [choice[0] for choice in mandat_default]
         etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')
-        etudes_terminees = etudes_recentes.filter(status='TERMINEE')
+        etudes_terminees = etudes_recentes.filter(status='TERMINEE', mandat__in=mandat_select)
         nombre_mission_terminee = etudes_terminees.count()
-        etudes_terminees = etudes_terminees[:5]
+        # etudes_terminees = etudes_terminees[:5]
+        etudes_terminees = etudes_terminees
 
-        etudes_en_cours = etudes_recentes.filter(status='EN_COURS')
+        etudes_en_cours = etudes_recentes.filter(status='EN_COURS', mandat__in=mandat_select)
         nombre_mission_en_cours = etudes_en_cours.count()
-        etudes_en_cours = etudes_en_cours[:5]
+        # etudes_en_cours = etudes_en_cours[:5]
+        etudes_en_cours = etudes_en_cours
 
-        etudes_en_negociation = etudes_recentes.filter(status='EN_NEGOCIATION')
+        etudes_en_negociation = etudes_recentes.filter(status='EN_NEGOCIATION', mandat__in=mandat_select)
         nombre_mission_en_negociation = etudes_en_negociation.count()
-        etudes_en_negociation = etudes_en_negociation[:5]
+        # etudes_en_negociation = etudes_en_negociation[:5]
+        etudes_en_negociation = etudes_en_negociation
         template = loader.get_template("polls/index.html")
+        mandat_choices = Etude.Mandat.choices
         context = {
             "nombre_mission_en_cours": nombre_mission_en_cours,
             "nombre_mission_terminee": nombre_mission_terminee,
@@ -193,6 +203,8 @@ def index(request):
             "etudes_en_cours":etudes_en_cours,
             "etudes_en_negociation":etudes_en_negociation,
             "etudes_terminees":etudes_terminees,
+            "mandat_choices": mandat_choices,
+            "mandat_default": mandat_default,
         }
 
     else:
@@ -456,6 +468,7 @@ def details(request, modelName, iD):
                 context["phase_form"] = AddPhase()
                 context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
+                context["etude_form"] = AddEtude(instance=etude)
                 context["representants_interlocuteurs"] = representants_interlocuteurs
                 context["representants_legaux"] = representants_legaux
                 context["members"] = members
@@ -551,60 +564,19 @@ def edit_student(request, pk):
 
 def modify_etude(request, pk):
     if request.user.is_authenticated:
-        # Fetch messages and notifications
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
 
         # Retrieve the etude instance, or return a 404 if not found
         etude = get_object_or_404(Etude, pk=pk)
-        clients = Client.objects.all()
-        members = Member.objects.all()
-
-        # If a client is selected, get the relevant representants
-        if etude.client:
-            representants_interlocuteurs = etude.client.representants()
-            representants_legaux = etude.client.representants()
-        else:
-            representants_interlocuteurs = []
-            representants_legaux = []
 
         if request.method == 'POST':
             form = AddEtude(request.POST, instance=etude)
             if form.is_valid():
                 form.save()  # Save changes to the database
-                return redirect('details', modelName="Etude", iD=etude.id)
             else:
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
-        else:
-            form = AddEtude(instance=etude)
 
-        context = {
-            'etude': etude,
-            'clients': clients,
-            'representants_interlocuteurs': representants_interlocuteurs,
-            'representants_legaux': representants_legaux,
-            'members': members,
-            'form': form,
-            'liste_messages': liste_messages,
-            'message_count': message_count,
-            'notification_list': notification_list,
-            'notification_count': len(notification_list),
-            'modelName': "Etude",
-            'iD': etude.id,
-        }
-
-        return render(request, 'polls/page_details.html', context)
+        return redirect('details', modelName='Etude', iD=pk)
     
     else:
         return redirect('login')

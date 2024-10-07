@@ -17,6 +17,7 @@ from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.urls import reverse_lazy
 from django.conf import settings
+from multiselectfield import MultiSelectField
 from .widgets import SelectSearch
 from datetime import date 
 from datetime import timedelta
@@ -519,6 +520,16 @@ class Etude(models.Model):
     class TypeConvention(models.TextChoices):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
+
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        GI = 'GI', 'GI'
+        AUTRE = 'AUTRE', 'Autre'
     
     class Mandat(models.TextChoices):
         M025 = '025', '025'
@@ -541,6 +552,7 @@ class Etude(models.Model):
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     mandat = models.CharField(max_length=30, choices=Mandat.choices, default=Mandat.M026, blank=True, verbose_name="mandat")
+    departement = MultiSelectField(choices=Departement.choices, default=Departement.AUTRE)
 
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
@@ -1054,6 +1066,18 @@ class BonCommande(models.Model):
 
     def __str__(self):
         return str(self.numero).zfill(3)
+    
+    def delete(self, *args, **kwargs):
+        all_assoc_phase = self.associations_phase.all()
+        for assoc in all_assoc_phase:
+            assoc.phase.delete()
+
+        all_assoc_facture = self.associations_facture.all()
+        for assoc in all_assoc_facture:
+            assoc.facture.delete()
+
+        # Call the original delete() method
+        super().delete(*args, **kwargs)
 
 class AssociationPhaseBDC(models.Model):
     bon_de_commande = models.ForeignKey('BonCommande', on_delete=models.CASCADE, related_name="associations_phase")

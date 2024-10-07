@@ -586,7 +586,31 @@
                     </div>
                 </div>
                     
-
+                <div class="col-12 mt-3 mb-3">
+                    <form action="{% url 'index'%}" method="post" class="row">
+                        {% csrf_token %}
+                        <div class="col-3">
+                            
+                        </div>
+                        <div class="col-5">
+                            <div class="dl-horizontal">
+                            <div class="form-group row">
+                                <label for="mandat-select" class="col-sm-4 col-form-label">Mandat</label>
+                                <div class="col-sm-8 justify-content-center">
+                                    <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                        {% for choice in mandat_choices %}
+                                        <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>{{ choice.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <button type="submit" class="btn btn-primary">Choisir</button>
+                        </div>
+                    </form>
+                </div>
                 {% if user.parametres.param_statut_etude_ec %}
                 <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
@@ -640,7 +664,7 @@
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle">
-                                            {% if etude.responsable %} {{etude.responsable}} {% else %}Aucun{% endif %}
+                                            {% if etude.responsable %} <img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;"> {% else %}Aucun{% endif %}
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
@@ -746,7 +770,7 @@
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle">
-                                            {% if etude.responsable %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
+                                            {% if etude.responsable %}<img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{ etude.responsable }}{% else %}Aucun{% endif %}
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
@@ -865,7 +889,7 @@
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle">
-                                            {% if etude.responsable.exists %}<img src="/static/polls/img/undraw_profile_1.svg" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{% for responsable in etude.responsable.all %}{{responsable}}, {% endfor %}{% else %}Aucun{% endif %}
+                                            {% if etude.responsable.exists %}<img src="{{etude.responsable.photo.url}}" alt="Profile de Mark" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">{{ etude.responsable}}{% else %}Aucun{% endif %}
                                         </td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
