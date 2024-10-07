@@ -1,5 +1,7 @@
 import json
 import os
+os.add_dll_directory(r'C:\msys64\mingw64\bin')
+os.environ['PATH'] = r'C:\msys64\mingw64\bin'
 import openpyxl
 import csv
 from io import StringIO
