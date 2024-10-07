@@ -634,7 +634,31 @@
                     </div>
                 </div>
                     
-
+                <div class="col-12 mt-3 mb-3">
+                    <form action="{% url 'index'%}" method="post" class="row">
+                        {% csrf_token %}
+                        <div class="col-3">
+                            
+                        </div>
+                        <div class="col-5">
+                            <div class="dl-horizontal">
+                            <div class="form-group row">
+                                <label for="mandat-select" class="col-sm-4 col-form-label">Mandat</label>
+                                <div class="col-sm-8 justify-content-center">
+                                    <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                        {% for choice in mandat_choices %}
+                                        <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>{{ choice.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <button type="submit" class="btn btn-primary">Choisir</button>
+                        </div>
+                    </form>
+                </div>
                 {% if user.parametres.param_statut_etude_ec %}
                 <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
