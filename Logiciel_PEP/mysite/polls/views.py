@@ -1,10 +1,5 @@
 import json
 import os
-#### UTILISATEUR WINDOWS ####
-# Installer MSYS2 puis à l'aide du terminal installer GTK puis gobject
-# Après installation de gobject, chercher le répertoire des dll et les mettre en variable d'environnement
-os.add_dll_directory(r"C:\msys64\mingw64\bin")
-os.environ["PATH"] = r"C:\msys64\mingw64\bin"
 import openpyxl
 import csv
 from io import StringIO
@@ -1823,6 +1818,64 @@ def editer_acf(request, id_etude, id_eleve):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
+
+def editer_acf_client(request, iD):
+    if request.user.is_authenticated:
+        try :
+            etude = Etude.objects.get(id=iD)
+            client= etude.client
+            je_president_titre ="M." 
+            je_president_prenom="Thomas"
+            je_president_nom ="Debray"
+            num_etude= etude.ref()
+            client_adresse= client.rue
+            client_code_postal= client.code_postal
+            client_ville = client.ville
+            client_pays=client.country
+            client_titre = etude.client_representant_legale.titre
+            client_prenom = etude.client_representant_legale.first_name
+            client_nom = etude.client_representant_legale.last_name
+            client_fonction = etude.client_representant_legale.fonction
+            client=client.nom_societe
+
+            etude_titre=etude.titre
+            date = timezone.now().date()
+            mois = [
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ]
+
+            # Format the date
+            general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
+            annee = date.strftime('%Y')
+            template = DocxTemplate("polls/templates/polls/ACF_Client_026.docx")
+            
+            context = {"etude": etude,"client": client, "je_president_titre": je_president_titre, "je_president_prenom":je_president_prenom, "je_president_nom": je_president_nom, "num_etude":num_etude, 
+                       "general_date_creation":general_date_creation,"annee":annee,"client_adresse" :client_adresse,"client_code_postal":client_code_postal,"etude_titre":etude_titre,"client_ville":client_ville,
+                       "client_pays":client_pays,"client_titre":client_titre,"client_prenom":client_prenom,"client_nom":client_nom, "client_fonction":client_fonction}
+
+            env = Environment()
+            env.filters['FormatNombres'] = format_nombres
+            env.filters['EnLettres'] = en_lettres
+            env.filters['ChiffreLettre'] = chiffre_lettres
+            template.render(context, env)
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+            filename = f"ACF_{num_etude}{client}.docx"
+            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except :
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": "Un problème a été détecté dans la base de données."}
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 def editer_ba(request, id_eleve):
