@@ -572,7 +572,7 @@ class Etude(models.Model):
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
     cahier_des_charges = models.JSONField(default=dict)
-    departments = forms.MultipleChoiceField(
+    departements = forms.MultipleChoiceField(
         choices=Departement.choices,
         widget=forms.CheckboxSelectMultiple, 
         initial=['IMI']

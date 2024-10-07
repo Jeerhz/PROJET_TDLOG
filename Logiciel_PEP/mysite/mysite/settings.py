@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "whitenoise.runserver_nostatic",
     "rest_framework",
+    "social_django",
     "drf_yasg",
     "storages",
     "csp",

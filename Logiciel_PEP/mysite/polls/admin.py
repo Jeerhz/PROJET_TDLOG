@@ -20,6 +20,3 @@ admin.site.register(BonCommande)
 admin.site.register(Devis)
 admin.site.register(ParametresUtilisateur)
 admin.site.register(AssociationPhaseBDC)
-
-
-
