@@ -1,10 +1,5 @@
 import json
 import os
-#### UTILISATEUR WINDOWS ####
-# Installer MSYS2 puis à l'aide du terminal installer GTK puis gobject
-# Après installation de gobject, chercher le répertoire des dll et les mettre en variable d'environnement
-os.add_dll_directory(r"C:\msys64\mingw64\bin")
-os.environ["PATH"] = r"C:\msys64\mingw64\bin"
 import openpyxl
 import csv
 from io import StringIO
