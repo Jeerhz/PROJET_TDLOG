@@ -84,7 +84,9 @@ urlpatterns = [
     path("update_etude/<int:id>", views.update_etude, name="update_etude"),
     path("editer_acf/<int:id_etude>/<int:id_eleve>", views.editer_acf, name='editer_acf'),
     path("editer_convention_cadre/<int:iD>", views.editer_convention_cadre, name="editer_convention_cadre"),
+    path("editer_acf_client/<int:iD>", views.editer_acf_client, name='editer_acf_client'),
 
+    
     
 
 
