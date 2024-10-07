@@ -3571,11 +3571,16 @@
             var client_select = $('#'+cond_client.dataset.id);
             var interlocuteur_select = $('#'+dep_interlocuteur.dataset.id);
             var rep_leg_select = $('#'+dep_rep_leg.dataset.id);
-            interlocuteur_select.prop('disabled', true);
-            rep_leg_select.prop('disabled', true);
+            var selectedValue = client_select.val();
+            console.log(client_select);
+            if(!selectedValue){
+                interlocuteur_select.prop('disabled', true);
+                rep_leg_select.prop('disabled', true);
+            }
+            
             client_select.on('change', function(event) {
                 // Get the selected option
-                const selectedValue = event.target.value;
+                selectedValue = event.target.value;
                 if (selectedValue){
                     interlocuteur_select.prop('disabled', false);
                     rep_leg_select.prop('disabled', false);
