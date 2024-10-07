@@ -120,3 +120,33 @@ def superieur_a(value, arg):
 def datejjmm(date):
     return date.strftime("%d/%m")
     
+
+@register.filter
+def order_dict_by_keys(dictionary):
+    """
+    Custom template filter to order a dictionary by a predefined list of keys.
+    :param dictionary: The dictionary to be ordered (e.g., etude.suivi_document)
+    :return: A list of tuples (key, value) in the specified order
+    """
+
+    # Define the hardcoded order of keys
+    ordered_keys = [
+        'Devis', 'CE', 'Validation des Intervenants', 'RDM', 
+        "Facture d'Acompte", 'PVRF', "Facture de Solde", 
+        "QS Etudiant", "QS Client", "BV (Etudiants payés)", 
+        "Echange Client", "Livrables"
+    ]
+    
+    # Get the set of keys from the dictionary
+    dict_keys = set(dictionary.keys())
+    
+    # Find missing keys (those in the dictionary but not in ordered_keys)
+    missing_keys = dict_keys - set(ordered_keys)
+    
+    # Append missing keys to the ordered list of keys
+    full_ordered_keys = ordered_keys + list(missing_keys)
+
+    # Create a list of tuples ordered by the full ordered keys
+    ordered_dict = [(key, dictionary.get(key, {'status': None, 'date': None})) for key in full_ordered_keys]
+    
+    return ordered_dict

@@ -1054,26 +1054,52 @@ def upload_clients(request):
     #return render(request, 'polls/annuaire.html', {'form': form})
 
 def update_etude(request, id):
-    etude = get_object_or_404(Etude, id=id)
+    etude = Etude.objects.get(id=id)
 
     if request.method == 'POST':
         suivi_document = etude.suivi_document  # Get the existing suivi_document
-
+        
         # Loop through the keys in suivi_document and update both status and date
         for key in suivi_document.keys():
             new_status = request.POST.get(f'suivi_document_{key}_status')
             new_date = request.POST.get(f'suivi_document_{key}_date')
-
+            new_remarque =request.POST.get(f'suivi_document_{key}_remarque')
             if new_status:
                 suivi_document[key]['status'] = new_status
-
             if new_date:
                 suivi_document[key]['date'] = new_date
+            else:
+                suivi_document[key]['date'] = None 
+         
+            if new_remarque:
+                suivi_document[key]['remarque'] = new_remarque
+        etude.suivi_document = suivi_document
+        etude.save()
+        suivi_document = etude.suivi_document 
+        # Check if the form is adding a new document (new_document_name is filled)
+        new_document_name = request.POST.get('new_document_name')
+        new_document_status = request.POST.get('new_document_status')
+        new_document_date = request.POST.get('new_document_date')
+        new_remarque_name = request.POST.get('new_remarque_name')
+        
 
-        etude.suivi_document = suivi_document  # Update the dictionary
-        etude.save()  
+        if new_document_name and new_document_status:
+            suivi_document[new_document_name] = {
+                'status': new_document_status,
+                'date': new_document_date, 'remarque':new_remarque_name
+            }
+           
 
-    return redirect('index')  # Redirect to a relevant page after saving
+        etude.suivi_document = suivi_document  # Update the dictionary with new entries
+        etude.save() 
+         # Save the changes
+        
+       
+        return redirect('index')  # Redirect after saving
+
+    # Render the template with the existing data (in case you need GET logic)
+    return render(request, 'your_template.html', {'etude': etude})
+
 
 
 

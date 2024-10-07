@@ -878,13 +878,16 @@
                                                 <table class="table table-bordered">
                                                     <colgroup>
                                                         <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
-                                                        <col style="width: 30%;"> <!-- Column 2 takes up 40% of the table's width -->
-                                                        <col style="width: 50%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                        <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                                        <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                        <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
                                                     </colgroup>
                                                     <tbody>
-                                                        {% for key, value in etude.suivi_document.items %}
+                                                        {% for key, value in etude.suivi_document|order_dict_by_keys %}
                                                         <tr>
-                                                            <td style="text-align: left;">{{ key }}</td>
+                                                            <td>
+                                                                <div>{{key}}</div>
+                                                            </td> 
                                                             <td>
                                                                 <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
                                                             </td>                                                            
@@ -915,17 +918,58 @@
                                                                     <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
                                                                 </select>
                                                             </td>
+                                                            <td>
+                                                                <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
+                                                            </td> 
+                                                            
 
                                                         </tr>
                                                         {% endfor %}
                                                         <tr>
-                                                            <td colspan="3" class="text-center">
+                                                            <td colspan="4" class="text-center">
                                                                 <button type="submit" class="btn btn-primary">Modifier</button>
                                                             </td>
                                                         </tr>
+                                                        
+                                                            
                                             
                                                     </tbody>
+                                                    
                                                 </table>
+                                                <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                                    {% csrf_token %}
+                                                    
+                                                    <!-- New document name (key) -->
+                                                    <div class="form-group">
+                                                        <label for="new_document_name"></label>
+                                                        <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
+                                                    </div>
+
+                                                    <!-- Status (from Etat_Doc) -->
+                                                    <div class="form-group">
+                                                        <select name="new_document_status" id="new_document_status" class="form-control" required>
+                                                            <option value="En cours">En cours</option>
+                                                            <option value="Pas fait">Pas fait</option>
+                                                            <option value="Terminé">Terminé</option>
+                                                            <option value="Confidentiel">Confidentiel</option>
+                                                            <option value="Payée">Payée</option>
+                                                            <option value="Trop tôt">Trop tôt</option>
+                                                            <!-- Add other values from Etat_Doc if necessary -->
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Date -->
+                                                    <div class="form-group">
+                                                        <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="new_remarque_name"></label>
+                                                        <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
+                                                    </div>
+
+                                                    <!-- Submit Button -->
+                                                    <button type="submit" class="btn btn-primary">Ajouter un document</button>
+                                                </form>
                                             </td>
                                         </form>
                                     </tr>
