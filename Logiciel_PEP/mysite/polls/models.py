@@ -607,18 +607,18 @@ class Etude(models.Model):
     # Define a function to return the default dictionary for 'suivi_document'
     def default_suivi_document():
         return {
-            'Devis': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            'CE': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            'Validation des Intervenants': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            'RDM': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "Facture d'Acompte": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            'PVRF': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "Facture de Solde": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "QS Etudiant": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "QS Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "BV (Etudiants payés)": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "Echange Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
-            "Livrables": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None},
+            'Devis': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'CE': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'Validation des Intervenants': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'RDM': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Facture d'Acompte": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'PVRF': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Facture de Solde": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "QS Etudiant": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "QS Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "BV (Etudiants payés)": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Echange Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Livrables": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
 
         }
 
