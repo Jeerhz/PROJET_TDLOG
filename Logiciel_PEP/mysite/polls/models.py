@@ -17,6 +17,7 @@ from django.db.models import Sum, Max
 from django.core.mail import send_mail, get_connection
 from django.urls import reverse_lazy
 from django.conf import settings
+from multiselectfield import MultiSelectField
 from .widgets import SelectSearch
 from datetime import date 
 from datetime import timedelta
@@ -534,6 +535,16 @@ class Etude(models.Model):
     class TypeConvention(models.TextChoices):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
+
+    class Departement(models.TextChoices):
+        IMI = 'IMI', 'IMI'
+        SEGF = 'SEGF', 'SEGF'
+        GMM = 'GMM', 'GMM'
+        _1A = '1A', '1A'
+        GCC = 'GCC', 'GCC'
+        VET = 'VET', 'VET'
+        GI = 'GI', 'GI'
+        AUTRE = 'AUTRE', 'Autre'
     
     class Mandat(models.TextChoices):
         M025 = '025', '025'
@@ -557,6 +568,7 @@ class Etude(models.Model):
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.EN_NEGOCIATION)
     type_convention = models.CharField(max_length=30, choices=TypeConvention.choices, blank=True, verbose_name="Type de convention")
     mandat = models.CharField(max_length=30, choices=Mandat.choices, default=Mandat.M026, blank=True, verbose_name="mandat")
+    departement = MultiSelectField(choices=Departement.choices, default=Departement.AUTRE)
 
     id_url = models.UUIDField(primary_key=False, editable=True, unique=False)
     date_debut_recrutement = models.DateField(blank=True, null=True, verbose_name="Debut du recrutement")
@@ -572,11 +584,45 @@ class Etude(models.Model):
     
     paragraphe_intervenant_devis= models.TextField(default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client].")
     cahier_des_charges = models.JSONField(default=dict)
-    departements = forms.MultipleChoiceField(
-        choices=Departement.choices,
-        widget=forms.CheckboxSelectMultiple, 
-        initial=['IMI']
-    )
+
+    class Etat_Doc:
+        EN_COURS = 'En cours'
+        PAS_NECESSAIRE = 'Pas nécessaire'
+        TROP_TOT = 'Trop tôt'
+        CONFIDENTIEL = 'Confidentiel'
+        SIGNE = 'Signé'
+        SUR_DRIVE = 'Sur Drive'
+        PAS_SUR_DRIVE = 'Pas sur Drive'
+        PAS_FAIT = 'Pas Fait'
+        SANS_SUITE = 'Sans suite'
+        PAYEE = 'Payée'
+        EMISE = 'Emise'
+        PLUS_NECESSAIRE = 'Plus nécessaire'
+        A_VERIFIER = 'A vérifier'
+        PAS_A_JOUR = 'Pas à jour'
+        DOCUMENTS_LEGAUX = 'Documents légaux ?'
+        FAIT = 'Fait'
+
+
+    # Define a function to return the default dictionary for 'suivi_document'
+    def default_suivi_document():
+        return {
+            'Devis': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'CE': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'Validation des Intervenants': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'RDM': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Facture d'Acompte": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            'PVRF': {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Facture de Solde": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "QS Etudiant": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "QS Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "BV (Etudiants payés)": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Echange Client": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+            "Livrables": {'status': Etude.Etat_Doc.TROP_TOT, 'date': None, 'remarque':"remarque"},
+
+        }
+
+    suivi_document = models.JSONField(default=default_suivi_document)
 
     def __str__(self):
         return self.titre
@@ -1075,6 +1121,18 @@ class BonCommande(models.Model):
 
     def __str__(self):
         return str(self.numero).zfill(3)
+    
+    def delete(self, *args, **kwargs):
+        all_assoc_phase = self.associations_phase.all()
+        for assoc in all_assoc_phase:
+            assoc.phase.delete()
+
+        all_assoc_facture = self.associations_facture.all()
+        for assoc in all_assoc_facture:
+            assoc.facture.delete()
+
+        # Call the original delete() method
+        super().delete(*args, **kwargs)
 
 class AssociationPhaseBDC(models.Model):
     bon_de_commande = models.ForeignKey('BonCommande', on_delete=models.CASCADE, related_name="associations_phase")
@@ -1493,8 +1551,8 @@ class AddStudent(forms.ModelForm):
 class AddEtude(forms.ModelForm):
     class Meta:
         model = Etude
-        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges']
-        widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')})}
+        exclude = ['numero', 'je', 'id_url', 'remarque', 'debut', 'date_fin_recrutement', 'date_debut_recrutement', 'raison_contact', 'contexte', 'objectifs','methodologie', 'periode_de_garantie','element_a_fournir','paragraphe_intervenant_devis','periode_de_garantie','cahier_des_charges','suivi_document']
+        widgets = {'client': SelectSearch({'data-hrefajax':reverse_lazy('client-suggestions')}), 'departement': forms.SelectMultiple}
 
     def __str__(self):
         return "Informations de l'étude"

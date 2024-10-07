@@ -721,140 +721,26 @@
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <!-- Titre -->
-                                                        <div class="form-group">
-                                                            <label for="titre">Titre</label>
-                                                            <input type="text" class="form-control" id="titre" name="titre" value="{{ etude.titre }}">
-                                                        </div>
+                                                        <dl class="dl-horizontal">
+                                                            {% csrf_token %}
                                     
-                                                        
-                                    
-                                                        <!-- Description -->
-                                                        <div class="form-group">
-                                                            <label for="description">Description</label>
-                                                            <textarea class="form-control" id="description" name="description">{{ etude.description }}</textarea>
-                                                        </div>
-                                    
-                                                        <!-- Problématique -->
-                                                        <div class="form-group">
-                                                            <label for="problematique">Problématique</label>
-                                                            <textarea class="form-control" id="problematique" name="problematique">{{ etude.problematique }}</textarea>
-                                                        </div>
-                                    
-                                                        <!-- Date de début -->
-                                                        <div class="form-group">
-                                                            <label for="debut">Date de début</label>
-                                                            <input type="date" class="form-control" id="debut" name="debut" value="{{ etude.debut|date:'Y-m-d' }}">
-                                                        </div>
-                                    
-                                                        <!-- Client -->
-                                                        <div class="form-group">
-                                                            <label for="client">Client</label>
-                                                            <select class="form-control" id="client" name="client" onchange="updateRepresentants(this.value)">
-                                                                <option value="">Sélectionnez un client</option>
-                                                                {% for client in clients %}
-                                                                    <option value="{{ client.id }}" {% if etude.client.id == client.id %}selected{% endif %}>
-                                                                        {{ client.nom_societe }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <!-- Interlocuteur du Client -->
-                                                        <div class="form-group">
-                                                            <label for="client_interlocuteur">Interlocuteur du Client</label>
-                                                            <select class="form-control" id="client_interlocuteur" name="client_interlocuteur">
-                                                                <option value="">Sélectionnez un interlocuteur</option>
-                                                                {% for representant in representants_interlocuteurs %}
-                                                                    <option value="{{ representant.id }}" {% if etude.client_interlocuteur.id == representant.id %}selected{% endif %}>
-                                                                        {{ representant.first_name }} {{ representant.last_name }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <!-- Représentant Légal du Client -->
-                                                        <div class="form-group">
-                                                            <label for="client_representant_legale">Représentant Légal du Client</label>
-                                                            <select class="form-control" id="client_representant_legale" name="client_representant_legale">
-                                                                <option value="">Sélectionnez un représentant légal</option>
-                                                                {% for representant in representants_legaux %}
-                                                                    <option value="{{ representant.id }}" {% if etude.client_representant_legale.id == representant.id %}selected{% endif %}>
-                                                                        {{ representant.first_name }} {{ representant.last_name }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <!-- Responsable de l'Étude -->
-                                                        <div class="form-group">
-                                                            <label for="responsable">Responsable de l'étude</label>
-                                                            <select class="form-control" id="responsable" name="responsable">
-                                                                <option value="">Sélectionnez un responsable</option>
-                                                                {% for member in members %}
-                                                                    <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
-                                                                        {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <!-- Qualite -->
-                                                        <div class="form-group">
-                                                            <label for="responsable">Qualité</label>
-                                                            <select class="form-control" id="resp_qualite" name="resp_qualite">
-                                                                <option value="">Sélectionnez un qualité</option>
-                                                                {% for member in members %}
-                                                                    <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
-                                                                        {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-
-                                                        <!-- Frais de Dossier -->
-                                                        <div class="form-group">
-                                                            <label for="frais_dossier">Frais de Dossier</label>
-                                                            <input type="number" class="form-control" id="frais_dossier" name="frais_dossier" value="{{ etude.frais_dossier }}">
-                                                        </div>
-                                    
-                                                        <!-- Taux de TVA -->
-                                                        <div class="form-group">
-                                                            <label for="taux_tva">Taux de TVA (%)</label>
-                                                            <input type="number" step="0.01" class="form-control" id="taux_tva" name="taux_tva" value="{{ etude.taux_tva }}">
-                                                        </div>
-                                    
-                                                        <!-- Statut -->
-                                                        <div class="form-group">
-                                                            <label for="status">Statut</label>
-                                                            <select class="form-control" id="status" name="status">
-                                                                {% for key, value in etude.Status.choices %}
-                                                                    <option value="{{ key }}" {% if etude.status == key %}selected{% endif %}>{{ value }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                    
-                                                        <!-- Type de convention -->
-                                                        <div class="form-group">
-                                                            <label for="type_convention">Type de convention</label>
-                                                            <select class="form-control" id="type_convention" name="type_convention">
-                                                                {% for key, value in etude.TypeConvention.choices %}
-                                                                    <option value="{{ key }}" {% if etude.type_convention == key %}selected{% endif %}>{{ value }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                    
-                                                        <!-- Remarque -->
-                                                        <div class="form-group">
-                                                            <label for="remarque">Remarque</label>
-                                                            <textarea class="form-control" id="remarque" name="remarque">{{ etude.remarque }}</textarea>
-                                                        </div>
-                                                        
-                                    
-                                                        <div class="form-group">
-                                                            <label for="remarque">Raison du contact (Devis)</label>
-                                                            <textarea class="form-control" id="raison_contact" name="raison_contact">{{ etude.raison_contact }}</textarea>
-                                                        </div>
+                                                            {% for field in etude_form %}
+                                                            {% if field.name == 'client' %}<div id='cond_client' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_interlocuteur' %}<div id='dep_interlocuteur' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_representant_legale' %}<div id='dep_rep_leg' data-id="{{field.id_for_label}}" hidden></div>{% endif %}
+                                                            <div class="form-group row mb-3">
+                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    {{ field }}
+                                                                {% if field.errors %}
+                                                                    <div class="text-danger">
+                                                                        {% for error in field.errors %}
+                                                                            {{ error }}
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            {% endfor %}                             
+                                                        </dl>
                                                         
                                     
                                                     </div>
@@ -866,28 +752,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <script type="text/javascript">
-                                        function updateRepresentants(clientId) {
-                                            if (!clientId) {
-                                                $('#client_interlocuteur').html('<option value="">Sélectionnez un interlocuteur</option>');
-                                                $('#client_representant_legale').html('<option value="">Sélectionnez un représentant légal</option>');
-                                                return;
-                                            }
-                                    
-                                            // AJAX call to update the legal representative and interlocutor fields based on selected client
-                                            $.ajax({
-                                                url: "{% url 'get_client_representants' %}",
-                                                data: {
-                                                    'client_id': clientId
-                                                },
-                                                success: function (data) {
-                                                    $('#client_interlocuteur').html(data.interlocuteurs);
-                                                    $('#client_representant_legale').html(data.legaux);
-                                                }
-                                            });
-                                        }
-                                    </script>
                                     
 
                                     <!-- End Modify Modal -->
@@ -912,7 +776,7 @@
                                                         </ul>
                                                         <!-- Modify Button -->
                                                         <div class="text-right">
-                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifierdd</button>
+                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
                                                         </div>
                                                         <!-- End Modify Button -->
                                                     </div>
@@ -1823,7 +1687,7 @@
                                                             <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
                                                             {% endif %}
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
-                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CC</a>
+                                                            <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
@@ -2003,6 +1867,18 @@
 
                                                             <br>
                                                             <p class="card-text">Mission pas terminé</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Accord de confidentialité client</h5>
+                                                            <br>
+                                                            <a href="{% url 'editer_acf_client' iD %}"  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer</a>
+
+
+                                                            <br>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2321,6 +2197,7 @@
                                                             <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                                             <a class="btn btn-success">Ajouter un avenant au RdM</a>
+                                                            <a href="{% url 'editer_acf' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
                                                         </div>
                                                     </div>
                                                     <br>
@@ -3697,6 +3574,66 @@
                     });
             }
           </script>
+    <script src="{% static 'polls/js/select-search.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(event){
+            var cond_client = document.getElementById('cond_client');
+            var dep_interlocuteur = document.getElementById('dep_interlocuteur');
+            var dep_rep_leg = document.getElementById('dep_rep_leg');
+            var client_select = $('#'+cond_client.dataset.id);
+            var interlocuteur_select = $('#'+dep_interlocuteur.dataset.id);
+            var rep_leg_select = $('#'+dep_rep_leg.dataset.id);
+            var selectedValue = client_select.val();
+            console.log(client_select);
+            if(!selectedValue){
+                interlocuteur_select.prop('disabled', true);
+                rep_leg_select.prop('disabled', true);
+            }
+            
+            client_select.on('change', function(event) {
+                // Get the selected option
+                selectedValue = event.target.value;
+                if (selectedValue){
+                    interlocuteur_select.prop('disabled', false);
+                    rep_leg_select.prop('disabled', false);
+                    $.ajax({
+                        url: "{% url 'get_representants' %}",  // Django URL that will handle the search
+                        data: {
+                            'client_id': selectedValue
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            // Clear current options
+                            interlocuteur_select.empty();  
+                            interlocuteur_select.append('<option value="">Select an option</option>');
+                            rep_leg_select.empty(); 
+                            rep_leg_select.append('<option value="">Select an option</option>');
+
+                            // Check if results exist
+                            if (data.results && data.results.length) {
+                                // Populate select with new options from AJAX response
+                                data.results.forEach(function(item) {
+                                    interlocuteur_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                    rep_leg_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                });
+                            } else {
+                                // If no results found
+                                interlocuteur_select.append('<option value="">No results found</option>');
+                                rep_leg_select.append('<option value="">No results found</option>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX error:", status, error);
+                        }
+                    });
+                }
+                else{
+                    interlocuteur_select.prop('disabled', true);
+                    rep_leg_select.prop('disabled', true);
+                }
+            });
+        })
+    </script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     
 </body>

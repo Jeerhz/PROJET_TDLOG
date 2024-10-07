@@ -18,7 +18,7 @@ from celery.schedules import crontab
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings fetched from environment variables
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = True
 SECRET_KEY="+mlztai==j1=dnvmpmtvqg5cvhjbiu64R576879O8Puvjgezdvedcd:!&ée,ezf^$$v!=4u13ha%&rra+f76j=!^^"
 
 # Email settings
