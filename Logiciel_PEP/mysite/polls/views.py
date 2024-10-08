@@ -745,6 +745,41 @@ def delete_phase(request, pk, iD):
             return redirect('details', modelName="Etude", iD=etude.id)
     else:
         return redirect('login')
+    
+def delete_assignation(request, pk, etude_id):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        assignation = get_object_or_404(AssignationJEH, pk=pk)
+        etude = get_object_or_404(Etude, pk=etude_id)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        if request.method == 'POST':
+            assignation.delete()
+            return redirect('details', modelName="Etude", iD=etude.id)
+    else:
+        return redirect('login')
 
 def delete_facture(request, pk, iD):
     if request.user.is_authenticated:
