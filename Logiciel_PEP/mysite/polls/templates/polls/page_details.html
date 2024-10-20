@@ -1103,10 +1103,10 @@
                                                 </a>
                                                 <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
                                                     <div class="bg-white py-2 collapse-inner rounded">
-                                                        <table class="table table-striped">
+                                                        <table class="table table-striped clearfix">
                                                             <thead>
                                                                 <tr>
-                                                                    <th scope="col">Intervenant</th>
+                                                                    <th scope="col">Intervenant </th>
                                                                     <th scope="col">Nombre de JEH</th>
                                                                     <th scope="col">Pourcentage de rétribution</th>
                                                                     <th scope="col">Rétribution brute</th>
@@ -1305,43 +1305,53 @@
                                                     <div class="bg-white py-2 collapse-inner rounded">
                                                         <table class="table table-striped">
                                                             <thead>
-                                                                <tr>{% if phase.li_eleves %}
+                                                                <tr>
+                                                                    <th scope="col">Intervenant </th>
+                                                                    <th scope="col">Nombre de JEH</th>
+                                                                    <th scope="col">Pourcentage de rétribution</th>
+                                                                    <th scope="col">Rétribution brute</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% if phase.li_eleves %}
                                                                     {% for assignation_JEH in phase.get_assignations_JEH %}
-                                                                    <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
-                                                                    <td>{{ assignation_JEH.nombre_JEH }}</td>
-                                                                    <td>{{ assignation_JEH.pourcentage_retribution }}</td>
-                                                                    <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
-                                                                    <td>
-                                                                        
-                                                                        <!-- Delete Button -->
-                                                                        <button type="button" class="close" data-toggle="modal" data-target="#deleteModalAssignation{{ assignation_JEH.id }}" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                
-                                                                        <!-- Modal for Deleting Assignation -->
-                                                                        <div class="modal fade" id="deleteModalAssignation{{ assignation_JEH.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ assignation_JEH.id }}" aria-hidden="true">
-                                                                            <div class="modal-dialog" role="document">
-                                                                                <div class="modal-content">
-                                                                                    <div class="modal-header">
-                                                                                        <h5 class="modal-title" id="deleteModalLabel{{ assignation_JEH.id }}">Supprimer l'assignation</h5>
-                                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                                            <span aria-hidden="true">&times;</span>
-                                                                                        </button>
-                                                                                    </div>
-                                                                                    <div class="modal-body">
-                                                                                        Êtes-vous sûr de vouloir supprimer cette assignation ?
-                                                                                    </div>
-                                                                                    <div class="modal-footer">
-                                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                                        <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
-                                                                                            {% csrf_token %}
-                                                                                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                                                        </form>
+                                                                    <tr>
+                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                        <td>{{ assignation_JEH.nombre_JEH }}</td>
+                                                                        <td>{{ assignation_JEH.pourcentage_retribution }}</td>
+                                                                        <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
+                                                                        <td>
+                                                                            
+                                                                            <!-- Delete Button -->
+                                                                            <button type="button" class="close" data-toggle="modal" data-target="#deleteModalAssignation{{ assignation_JEH.id }}" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                    
+                                                                            <!-- Modal for Deleting Assignation -->
+                                                                            <div class="modal fade" id="deleteModalAssignation{{ assignation_JEH.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ assignation_JEH.id }}" aria-hidden="true">
+                                                                                <div class="modal-dialog" role="document">
+                                                                                    <div class="modal-content">
+                                                                                        <div class="modal-header">
+                                                                                            <h5 class="modal-title" id="deleteModalLabel{{ assignation_JEH.id }}">Supprimer l'assignation</h5>
+                                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        <div class="modal-body">
+                                                                                            Êtes-vous sûr de vouloir supprimer cette assignation ?
+                                                                                        </div>
+                                                                                        <div class="modal-footer">
+                                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                            <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
+                                                                                                {% csrf_token %}
+                                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                            </form>
+                                                                                        </div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    </td>
+                                                                        </td>
+                                                                    <tr>
                                                                     {% endfor %}
                                                                 {% else %}
                                                                 <tr>
