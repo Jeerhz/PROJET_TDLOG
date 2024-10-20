@@ -644,7 +644,7 @@
 
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 text-center">
-                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.id|RefMission }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
+                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.ref }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
                             <h5 style="font-size: 16px;">{{ etude.problematique}}</h5>
                         </div>
                         <div class="card-body">
@@ -771,7 +771,9 @@
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
+
 
                                                         </ul>
                                                         <!-- Modify Button -->
@@ -789,7 +791,8 @@
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
 
                                                             </ul>
                                                             <!-- Save and Cancel Buttons -->
@@ -865,6 +868,11 @@
                                                 if (!debut) {
                                                     event.preventDefault();  // Prevent form submission
                                                     alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
+                                                    return false;
+                                                }
+                                                if (!numero) {
+                                                    event.preventDefault();  // Prevent form submission
+                                                    alert('Veuillez renseigner un numéro');  // Display alert
                                                     return false;
                                                 }
                                             });
@@ -1713,11 +1721,11 @@
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
                                                     </div>
-                                                    <table style = " table-layout: fixed;">
+                                                    <table style = " table-layout: fixed; padding:15px;">
                                                         
-                                                        <tr>
-                                                            <td style="word-wrap: break-word;text-align: left;" >date de signature (jj/mm/aaaa)</td>
-                                                            <td style="word-wrap: break-word;"  ><span contenteditable="True" data-url="{% url 'signature_document' model='CE' iD=etude.convention.id %}" class="editableDiv">{% if etude.convention.date_signature %} {{etude.convention.date_signature}} {% else %} JJ/MM/AAAA {% endif %} </span></td>
+                                                        <tr >
+                                                            <td style="word-wrap: break-word;text-align: left; padding-left:15px; padding-bottom:15px;" >date de signature (jj/mm/aaaa)</td>
+                                                            <td style="word-wrap: break-word; padding-right:15px; padding-bottom:15px;"  ><span contenteditable="True" data-url="{% url 'signature_document' model='CE' iD=etude.convention.id %}" class="editableDiv">{% if etude.convention.date_signature %} {{etude.convention.date_signature}} {% else %} JJ/MM/AAAA {% endif %} </span></td>
 
                                                         </tr>
 

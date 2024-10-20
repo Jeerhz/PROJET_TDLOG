@@ -1249,6 +1249,7 @@ def ba(request, iD):
 
 
 
+
 def stat_KPI(request):
     if request.user.is_authenticated:
         start_date = request.GET.get('start_date')
@@ -1259,15 +1260,14 @@ def stat_KPI(request):
             end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
         else:
             now = timezone.now()
-            end_date_obj = now.date()
-            start_date_obj = (now - timedelta(days=1000)).date()
+            end_date_obj = (now + timedelta(days=150)).date()
+            start_date_obj = (now - timedelta(days=100)).date()
             start_date = start_date_obj.strftime('%Y-%m-%d')
             end_date = end_date_obj.strftime('%Y-%m-%d')
 
         # Filtrer les études en fonction des dates
         etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
-        print(f"Initial Etudes count: {etudes.count()}")  # Debug print
-
+        print(etudes)
         # Calculer les montants par mois et les labels
         date_labels = []
         cumulated_CA = []
@@ -1275,6 +1275,20 @@ def stat_KPI(request):
         current_year = start_date_obj.year
         current_sum = 0
         total_sum = 0
+
+        ca_026 = 0 #ca du mandat 026
+        ca_026_cutoff =0
+        ca_en_nego =0
+        nb_etudes_ec =0
+        nb_etude_ed =0
+        dictionaire_dep_eleve={}
+        nb_intervenants_026 =0
+      
+        dico_nb_intervenants_diff_026={}
+        taux_ouverture=0
+        retributions_etudes026=0
+        nb_etudes_026_avec_interv=0
+        dico_genre_inter={'M.':0, 'Mme':0}
 
         for etude in etudes:
             etude_month = etude.debut.month
@@ -1292,7 +1306,64 @@ def stat_KPI(request):
                 current_month = etude_month
                 current_year = etude_year
                 current_sum = etude.montant_HT_total()
+            if (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '026':
+                ca_026+=etude.montant_HT_total()
+                if etude.status == 'TERMINEE':
+                    ca_026_cutoff+=etude.montant_HT_total()
+                else:
+                    if etude.fin()<date(2025, 5, 1):
+                        ca_026_cutoff+=etude.montant_HT_total()
+                    elif etude.duree_semaine():
+                        ca_026_cutoff+=etude.montant_HT_total()*((date(2025, 5, 1) - etude.debut).days/7)/etude.duree_semaine()
+            elif (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '025':
+                if etude.debut>date(2024, 5, 1):
+                    ca_026_cutoff+=etude.montant_HT_total()
+                elif etude.fin()>date(2024, 5, 1):
+                    ca_026_cutoff+=etude.montant_HT_total()*((etude.fin() - date(2024, 5, 1)).days/7)/etude.duree_semaine()
+            if etude.status == 'EN_NEGOCIATION':
+                ca_en_nego+=etude.montant_HT_total()
+                nb_etude_ed+=1
+            if etude.status == 'EN_COURS':
+                nb_etudes_ec+=1
+            if etude.mandat =='026':
+                if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
+                    print(f"oui une etude num {etude.numero}")
+                    print(etude.get_li_students())
+                    if etude.get_li_students() :
+                        nb_etudes_026_avec_interv+=1
+                        for student in etude.get_li_students():
+                            dico_genre_inter[student.titre]+=1
+                            nb_intervenants_026+=1
+                            dico_nb_intervenants_diff_026[f"{student.first_name}{student.last_name}"]=1
+                            if student.departement in  dictionaire_dep_eleve:
+                                dictionaire_dep_eleve[student.departement]+=1
+                            else: 
+                                dictionaire_dep_eleve[student.departement]=1
+                        
+                            
+                            assignations  = list(AssignationJEH.objects.filter(eleve=student, phase__etude=etude))
+                            remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
+                            if student.is_member():
+                                taux_ouverture+=remuneration
+                            retributions_etudes026+=remuneration
+                                
 
+                
+            
+        
+        nb_intervenants_diff_026= len(dico_nb_intervenants_diff_026)
+        if retributions_etudes026>0:
+            taux_ouverture=1-taux_ouverture/retributions_etudes026
+        else:
+            taux_ouverture=0
+        if nb_etudes_026_avec_interv>0:
+            retrib_moye_etude = retributions_etudes026/nb_etudes_026_avec_interv
+        else:
+            retrib_moye_etude=0
+        if nb_intervenants_026>0:
+            retrib_moye_etudiant = retributions_etudes026/nb_intervenants_026
+        else:
+            retrib_moye_etudiant=0
         # Ajouter les données pour le dernier mois
         date_labels.append(f"{current_year}-{current_month:02d}")
         total_sum += current_sum
@@ -1313,11 +1384,15 @@ def stat_KPI(request):
         chiffres_affaires = request.user.chiffres_affaires()
         chiffre_affaire_total = cumulated_CA[-1]
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
+        nb_ca_etudes= nb_etudes_ed_ec_term(user_je)
+        repartition_CA_etudes= repartition_CA_etudes_ec_term(user_je)
+        repartition_nb_etudes =repartition_nb_etudes_ec_term(user_je)
         chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
         chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
         nombre_eleve = Student.objects.filter(je=user_je).count()
         nombre_client = Client.objects.filter(je=user_je).count()
         nombre_etude = Etude.objects.filter(je=user_je).count()
+
 
         dictionnaire_CA_par_dept = {
             'IMI': chiffre_affaire_par_departement[0],
@@ -1385,6 +1460,13 @@ def stat_KPI(request):
         pourcentage_par_secteur = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_secteur.items()}
         pourcentage_par_type = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_type.items()}
 
+
+        if nb_etudes_026_avec_interv>0:
+            moyen_int_etude= nb_intervenants_026/nb_etudes_026_avec_interv
+        else:
+            moyen_int_etude=0
+
+
         template = loader.get_template("polls/stat_KPI.html")
         context = {
             "nombre_eleve": nombre_eleve,
@@ -1408,7 +1490,11 @@ def stat_KPI(request):
             "notification_count":notification_count,
             "chiffre_affaires": chiffres_affaires,
             "start_date": start_date,
-            "end_date": end_date
+            "end_date": end_date, "nb_ca_etudes":nb_ca_etudes, 
+            "repartition_CA_etudes":repartition_CA_etudes, "repartition_nb_etudes":repartition_nb_etudes,"ca_026":ca_026,"ca_026_cutoff":ca_026_cutoff,"ca_potentiel":ca_en_nego+ca_026_cutoff,
+            "nb_etudes_ec" :nb_etudes_ec,"nb_etude_ed" :nb_etude_ed,"dictionaire_dep_eleve":dictionaire_dep_eleve,"nb_intervenants_diff_026":nb_intervenants_diff_026,"nb_intervenants_026":nb_intervenants_026,
+            "taux_ouverture" :taux_ouverture*100,"retrib_moye_etude":retrib_moye_etude,"retrib_moye_etudiant":retrib_moye_etudiant,"retributions_etudes026":retributions_etudes026, "moyen_int_etude": moyen_int_etude,
+            "dico_genre_inter":dico_genre_inter
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -2432,6 +2518,50 @@ def calculate_chiffre_affaire_par_departement(user_je):
 
     return revenues
 
+def repartition_CA_etudes_ec_term(user_je):
+    etudes=Etude.objects.filter(je=user_je)
+    dictionaire = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
+    for etude in etudes:
+        if etude.mandat == '025':
+            if etude.status == 'EN_COURS':
+                dictionaire["025 en cours"]+=etude.montant_HT_total()
+            elif etude.status == 'TERMINEE':
+                if etude.fin()> datetime(2024, 5, 1):
+                    dictionaire["025 terminées 026"]+=etude.montant_HT_total()
+        elif etude.mandat == '026':
+            if etude.status == 'EN_COURS':
+                dictionaire["026 en cours"]+=etude.montant_HT_total()
+            elif etude.status == 'TERMINEE':
+                dictionaire["026 terminées 026"]+=etude.montant_HT_total()
+    return dictionaire
+
+def repartition_nb_etudes_ec_term(user_je):
+    etudes=Etude.objects.filter(je=user_je)
+    dictionaire = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
+    for etude in etudes:
+        if etude.mandat == '025':
+            if etude.status == 'EN_COURS':
+                dictionaire["025 en cours"]+=1
+            elif etude.status == 'TERMINEE':
+                if etude.fin()> datetime(2024, 5, 1):
+                    dictionaire["025 terminées 026"]+=1
+        elif etude.mandat == '026':
+            if etude.status == 'EN_COURS':
+                dictionaire["026 en cours"]+=1
+            elif etude.status == 'TERMINEE':
+                dictionaire["026 terminées 026"]+=1
+    return dictionaire
+
+
+def nb_etudes_ed_ec_term(user_je):
+    etudes=Etude.objects.filter(je=user_je)
+    dictionaire = {"EN_NEGOCIATION":{0:0, 1:0}, "EN_COURS":{0:0, 1:0},"TERMINEE":{0:0, 1:0}}
+    for etude in etudes:
+        dictionaire[etude.status][0]+=1
+        dictionaire[etude.status][1]+=etude.montant_HT_total()
+    return dictionaire
+
+
 def calculate_chiffre_affaire_par_type(user_je):
     revenues = [0]*6
     type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
@@ -2889,16 +3019,34 @@ def modifier_recrutement_etude(request, iD):
 def modifier_etude(request, iD):
     # Fetch the Etude instance using the provided iD
     etude = get_object_or_404(Etude, id=iD)
-
+    numero_ori = etude.numero
+    numero_list = list(Etude.objects.values_list('numero', flat=True))
+    numero_list.remove(numero_ori)
+    print(f"numero d'etudes {numero_list}")
     if request.method == 'POST':
         # Get the form data from the request
         debut = request.POST.get('debut')
         frais_dossier = request.POST.get('frais_dossier')
         remarque= request.POST.get('remarque')
+        numero = int(request.POST.get('numero'))
 
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
+        
+        if numero:
+            if numero not in numero_list:
+                print(numero==1)
+                print(f"numero : {numero}, numero_list: {numero_list}")
+                etude.numero=numero
+            
+            else:
+                etude.numero = numero_ori
+                
+                
+
+        
+
             
 
         # 'fin' should not be updated, as it's set to readonly in the form
@@ -2999,7 +3147,7 @@ def signature_document(request, model, iD):
     if request.user.is_authenticated:
         
         if request.method == 'POST':
-            try:
+            # try:
                 raw_data = request.body
                 data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
                 content = data.get('content', '')
@@ -3015,9 +3163,14 @@ def signature_document(request, model, iD):
                             return JsonResponse({'success': False, 'message': 'mettre la date au format JJ/MM/AAAA'})
 
                         convention.date_signature=date_signature
+                        if date_signature:
+                            etude=convention.etude
+                            
+                            etude.debut= date_signature
+                            etude.save()
                     convention.save()
                 return JsonResponse({'success':True})
-            except Exception as e:
+            # except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)})
     else:
         template = loader.get_template("polls/login.html")
