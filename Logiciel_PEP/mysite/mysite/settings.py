@@ -86,7 +86,7 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'sylog',
         'HOST': 'localhost',  
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 

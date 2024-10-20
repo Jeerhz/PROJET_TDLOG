@@ -13,7 +13,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BIBI JR</title>
+    <title>Sylog - Index</title>
 
     {% load static %}
     {% load format_duration %}
@@ -771,7 +771,7 @@
                                                                             {% elif value.status == 'Trop tôt' %}status-troptot
                                                                             {% else %}status-default
                                                                             {% endif %}">
-                                                            <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: transparent; border: none; color: white; text-align: center; font-weight: 600;">
+                                                            <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: #b0ecec; border: none; color: white; text-align: center; font-weight: 600;">
                                                                 <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                 <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                 <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>

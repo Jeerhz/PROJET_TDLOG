@@ -219,7 +219,7 @@ def custom_login(request):
             request, email=request.POST["email"], password=request.POST["password"]
         )
         if user:
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('index')
         else:
             error_message = "Nom d'utilisateur ou mot de passe incorrect."
@@ -744,6 +744,41 @@ def delete_phase(request, pk, iD):
 
         if request.method == 'POST':
             phase.delete()
+            return redirect('details', modelName="Etude", iD=etude.id)
+    else:
+        return redirect('login')
+    
+def delete_assignation(request, pk, etude_id):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        assignation = get_object_or_404(AssignationJEH, pk=pk)
+        etude = get_object_or_404(Etude, pk=etude_id)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        if request.method == 'POST':
+            assignation.delete()
             return redirect('details', modelName="Etude", iD=etude.id)
     else:
         return redirect('login')
@@ -1483,19 +1518,8 @@ def register(request):
         fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
             new_member = fetchform.save()
-            login(request, new_member)
-            liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-            ).order_by("date")
-            message_count = liste_messages.count()
-            liste_messages = liste_messages[:3]
-            all_notifications = request.user.notifications.order_by("-date_effet")
-            notification_list = [notif for notif in all_notifications if notif.active()]
-            notification_count = len(notification_list)
-            context = {"liste_messages": liste_messages, "message_count": message_count, "notification_list":notification_list, "notification_count":notification_count}
-            template = loader.get_template("polls/index.html")
+            login(request, new_member, backend='django.contrib.auth.backends.ModelBackend')
+            redirect('index')
         else:
             context = {"form": fetchform}
             template = loader.get_template("polls/register.html")

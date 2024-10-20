@@ -16,6 +16,7 @@ urlpatterns = [
     path("client/<int:pk>/delete/", views.delete_client, name='delete_client'),
     path("etude/<int:pk>/delete/", views.delete_etude, name='delete_etude'),
     path("etude/<int:pk>/<int:iD>/delete_phase/", views.delete_phase, name='delete_phase'),
+    path("phase/<int:pk>/<int:etude_id>/delete_assignation/", views.delete_assignation, name='delete_assignation'),
     path("etude/<int:pk>/<int:iD>/delete_facture/", views.delete_facture, name='delete_facture'),
     path("input/<str:modelName>/<int:iD>", views.input, name="input"),
     path("logout/", views.custom_logout, name="custom_logout"),
