@@ -464,10 +464,16 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Études signées en cours : {{ nb_etudes_ec }}</div>
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Études en discussion : {{ nb_etude_ed }}</div>
+                                            <div class="text-xs text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.0 }} </span>études signées en cours 
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.1 }} € </span></div>
+                                            <div class="text-xs  text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.0 }} </span>études en discussion 
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.1 }} € </span></div>
+                                            <div class="text-xs  text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.0 }} </span>études terminées 026
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.1 }} € </span></div>
+                                                   
                                             
                                         </div>
                                         
@@ -484,14 +490,21 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div style = "text-align: center;font-size: 12px;"> signées 026</div>
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Taux d'ouverture : {{taux_ouverture|FormatNombres}} %</div>
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Rétributions : {{retributions_etudes026|FormatNombres}} €</div>
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Rétribution moyenne par étude : {{retrib_moye_etude|FormatNombres}} €</div>
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Rétribution moyenne par étudiant : {{retrib_moye_etudiant|FormatNombres}} €</div>
+                                            <div class="text-xs  text-info text-uppercase mb-1">
+                                                Taux d'ouverture : <span style="font-weight: 1000; color: black;">{{taux_ouverture|FormatNombres}} % </span>
+                                             </div>
+                                                
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_etudes026|FormatNombres}} €</span>
+                                            </div>
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retrib_moye_etude|FormatNombres}} €</span>
+                                            </div>
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retrib_moye_etudiant|FormatNombres}} €</span>
+                                            </div>
+                                                
+                                           
                                                 
                                         </div>
                                       
@@ -508,37 +521,22 @@
                                         <div class="col mr-2">
                                             
                                             <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000;">{{nb_intervenants_026}} </span>intervenants 026 </div>
+                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_026}} </span>intervenants 026 </div>
                                             <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
+                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
                                             <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
+                                                <span style="font-weight: 1000; color: black;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
 
                                                 
                                            
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
+                                       
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    {% for key, value in nb_ca_etudes.items %}
-                                    <div> {% if key == 'EN_NEGOCIATION' %} en discussions {% elif key == 'EN_COURS' %} signées-en cours {% elif key == 'TERMINEE' %} terminées {% endif %} :  {{value.0}} {% if value.0 == 1 %} étude{% else %} études{% endif %}, {{value.1|FormatNombres}} HT </div>
-                                
-                                    {% endfor %}
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    
                     <!-- Content Row -->
 
                     <div class="row">

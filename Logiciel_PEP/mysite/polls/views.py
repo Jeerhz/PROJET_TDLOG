@@ -1279,8 +1279,9 @@ def stat_KPI(request):
         ca_026 = 0 #ca du mandat 026
         ca_026_cutoff =0
         ca_en_nego =0
-        nb_etudes_ec =0
-        nb_etude_ed =0
+        nb_etudes_ec ={0:0,1:0}
+        nb_etude_ed ={0:0,1:0}
+        nb_etudes_term_026= {0:0,1:0}
         dictionaire_dep_eleve={}
         nb_intervenants_026 =0
       
@@ -1310,6 +1311,8 @@ def stat_KPI(request):
                 ca_026+=etude.montant_HT_total()
                 if etude.status == 'TERMINEE':
                     ca_026_cutoff+=etude.montant_HT_total()
+                    nb_etudes_term_026[0]+=1
+                    nb_etudes_term_026[1]+=etude.montant_HT_total()
                 else:
                     if etude.fin()<date(2025, 5, 1):
                         ca_026_cutoff+=etude.montant_HT_total()
@@ -1322,9 +1325,11 @@ def stat_KPI(request):
                     ca_026_cutoff+=etude.montant_HT_total()*((etude.fin() - date(2024, 5, 1)).days/7)/etude.duree_semaine()
             if etude.status == 'EN_NEGOCIATION':
                 ca_en_nego+=etude.montant_HT_total()
-                nb_etude_ed+=1
+                nb_etude_ed[0]+=1
+                nb_etude_ed[1]+=etude.montant_HT_total()
             if etude.status == 'EN_COURS':
-                nb_etudes_ec+=1
+                nb_etudes_ec[0]+=1
+                nb_etudes_ec[1]+=etude.montant_HT_total()
             if etude.mandat =='026':
                 if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
                     print(f"oui une etude num {etude.numero}")
@@ -1494,7 +1499,7 @@ def stat_KPI(request):
             "repartition_CA_etudes":repartition_CA_etudes, "repartition_nb_etudes":repartition_nb_etudes,"ca_026":ca_026,"ca_026_cutoff":ca_026_cutoff,"ca_potentiel":ca_en_nego+ca_026_cutoff,
             "nb_etudes_ec" :nb_etudes_ec,"nb_etude_ed" :nb_etude_ed,"dictionaire_dep_eleve":dictionaire_dep_eleve,"nb_intervenants_diff_026":nb_intervenants_diff_026,"nb_intervenants_026":nb_intervenants_026,
             "taux_ouverture" :taux_ouverture*100,"retrib_moye_etude":retrib_moye_etude,"retrib_moye_etudiant":retrib_moye_etudiant,"retributions_etudes026":retributions_etudes026, "moyen_int_etude": moyen_int_etude,
-            "dico_genre_inter":dico_genre_inter
+            "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026
         }
     else:
         template = loader.get_template("polls/login.html")
