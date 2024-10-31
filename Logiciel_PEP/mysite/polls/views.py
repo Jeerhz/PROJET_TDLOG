@@ -1859,32 +1859,53 @@ def editer_convention_cadre(request, iD):
 
 def editer_pv(request, iD, type):
     if request.user.is_authenticated:
-        # try:
+        try:
             instance = Etude.objects.get(id=iD)
-            je= instance.je
-            client = instance.client
-            model = PV
-            pv = model(etude=instance, type=type)
-            phases= Phase.objects.filter(etude=instance).order_by('numero')
-            client_resp = instance.client_representant_legale
+
             convention = instance.convention()
             if not convention :
                 raise ValueError("pas de convention")
             
-            ce_ref=convention
-            avenants =  AvenantConventionEtude.objects.filter(ce=convention).order_by('numero')
-            avenant=None
-            num_avenant = None
-            if len(avenants)>0:
-                avenant= avenants[len(avenants)-1]
-                num_avenant = avenant
+            
+            je= instance.je
+            client = instance.client
+            model = PV
+            pv = model(etude=instance, type=type)
+            client_resp = instance.client_representant_legale
+            
+            
+            
 
             president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
-            duree = instance.duree_semaine()
-            nb_phases = instance.nb_phases()
+            
             respo = instance.responsable.student
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
+
+            if instance.type_convention == "Convention d'étude":
+                phases= Phase.objects.filter(etude=instance).order_by('numero')
+                
+                ce_ref=convention
+                duree = instance.duree_semaine()
+                nb_phases = instance.nb_phases()
+                avenants =  AvenantConventionEtude.objects.filter(ce=convention).order_by('numero')
+                avenant=None
+                num_avenant = None
+                if len(avenants)>0:
+                    avenant= avenants[len(avenants)-1]
+                    num_avenant = avenant
+                if type=='PVRF':
+                    template = DocxTemplate("polls/templates/polls/PVRF_026_CE.docx")
+                    filename = f"PVRF_{ref_m}.docx"
+                else:
+                    template = DocxTemplate("polls/templates/polls/PVRI_026_CE.docx")
+                    filename = f"PVRI_{ref_m}.docx"
+
+
+            else:
+                raise ValueError("Pas encore de pv pour les CCs")
+            
+            
             
             date = datetime.now()
 
@@ -1899,7 +1920,6 @@ def editer_pv(request, iD, type):
             annee = date.strftime('%Y')
             etude_periode_garantie = instance.periode_de_garantie
             
-            template = DocxTemplate("polls/templates/polls/PVRF_026_CE.docx")
             logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
 
             context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "je":je,  "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee,
@@ -1916,16 +1936,16 @@ def editer_pv(request, iD, type):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"PVRF_{ref_m}.docx"
+            
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
         
             
-        # except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        # except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
