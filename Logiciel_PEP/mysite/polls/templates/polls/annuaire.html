@@ -440,6 +440,7 @@
                                                 <th class="text-center">Prénom</th>
                                                 <th class="text-center">Nom</th>
                                                 <th class="text-center">Promotion</th>
+                                                <th class="text-center">Département</th>
                                             </tr>
                                         </thead>
                                         <tbody id="etudiantTableBody">
@@ -449,6 +450,7 @@
                                                 <td class="text-center"> {{ student.first_name }} </td>
                                                 <td class="text-center"> {{ student.last_name }} </td>
                                                 <td class="text-center"> {{ student.promotion }} </td>
+                                                <td class="text-center"> {{ student.departement }} </td>
 
                                             </tr>
                                             {% endfor %}
@@ -488,8 +490,9 @@
                                     <table class="table table-borderless table-hover">
                                         <thead class="thead-dark">
                                             <tr>
-                                                <th class="text-center">Nom de société </th>
-                                                <th class="text-center"> Secteur </th>
+                                                <th class="text-center">Société </th>
+                                                <th class="text-center">Secteur</th>
+                                                <th class="text-center">Type d'entreprise</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
@@ -498,7 +501,8 @@
 
                                             <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
                                                 <td class="text-center"> {{ client.nom_societe }} </td>
-                                                <td class="text-center"> {{ client.secteur }} </td>
+                                                <td class="text-center"> {{ client.get_secteur_display }} </td>
+                                                <td class="text-center"> {{ client.get_type_display }} </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -577,9 +581,9 @@
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
-                                                <td class="text-center"> {{ etude.titre }} </td>
-                                                <td class="text-center"> {{ etude.titre }} </td>
-                                                <td class="text-center"> {{ etude.client }} </td>
+                                                <td class="text-center"> {{ etude.ref }} </td>
+                                                <td class="text-center"> {{ etude.titre|slice:":50" }} </td>
+                                                <td class="text-center"> {{ etude.client|slice:":30" }} </td>
                                                 <td class="text-center"> {{ etude.debut }} </td>
                                                 <td class="text-center"> {{ etude.responsable }} </td>
                                             </tr>

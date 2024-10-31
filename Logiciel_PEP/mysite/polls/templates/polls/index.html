@@ -676,12 +676,11 @@
                                         {% if user.parametres.param_col_etude_numero %}
                                         <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <th scope="col">Titre</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
+                                        <th scope="col">Montant</th>
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
@@ -702,14 +701,13 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.ref}}</strong></td>
+                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <td class="align-middle">{{etude.titre}}</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
+                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
@@ -749,8 +747,9 @@
                                                 <colgroup>
                                                     <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
                                                     <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
-                                                    <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                    <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    <col style="width: 20%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    <col style="width: 40%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                    <col style="width: 5%;"> <!-- Column 3 takes up 30% of the table's width -->
                                                 </colgroup>
                                                 <tbody>
                                                     <form method="POST" action="{% url 'update_etude' etude.id %}">
@@ -794,6 +793,15 @@
                                                             <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
                                                         </td> 
                                                         
+                                                        <td>
+                                                            <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="delete_document_name" value="{{ key }}">
+                                                                <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
+                                                            </form>
+                                                        </td>
+                                        
+                                                        
 
                                                     </tr>
                                                     {% endfor %}
@@ -802,12 +810,13 @@
                                                             <button type="submit" class="btn btn-primary">Modifier</button>
                                                         </td>
                                                     </tr>
-                                                </form>
+                                                    </form>
                                                         
                                         
                                                 </tbody>
                                                 
                                             </table>
+                                            
                                             <form method="POST" action="{% url 'update_etude' etude.id %}">
                                                 {% csrf_token %}
                                                 
@@ -844,9 +853,10 @@
                                             </form>
                                         </td>
                                     
-                                </tr>
+                                    </tr>
     
                                     {% endfor %}
+                                    
                                 </tbody>
                             </table>
                         </div>
@@ -870,14 +880,14 @@
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Numéro</th>
+                                        <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <th scope="col">Titre</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
+                                        <th scope="col">Montant</th>
+
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
@@ -898,14 +908,13 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.ref}}</strong></td>
+                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <td class="align-middle">{{etude.titre}}</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
+                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             
@@ -992,6 +1001,13 @@
                                                             <td>
                                                                 <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
                                                             </td> 
+                                                            <td>
+                                                                <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="delete_document_name" value="{{ key }}">
+                                                                    <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
+                                                                </form>
+                                                            </td>
                                                             
 
                                                         </tr>
@@ -1070,14 +1086,13 @@
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Numéro</th>
+                                        <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <th scope="col">Titre</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
+                                        <th scope="col">Montant</th>
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
@@ -1098,14 +1113,13 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user.parametres.param_col_etude_numero %}
-                                        <td class="align-middle"><strong>{{etude.ref}}</strong></td>
+                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_titre %}
-                                        <td class="align-middle">{{etude.titre}}</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
+                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
@@ -1190,6 +1204,13 @@
                                                         <td>
                                                             <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
                                                         </td> 
+                                                        <td>
+                                                            <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="delete_document_name" value="{{ key }}">
+                                                                <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
+                                                            </form>
+                                                        </td>
                                                         
 
                                                     </tr>

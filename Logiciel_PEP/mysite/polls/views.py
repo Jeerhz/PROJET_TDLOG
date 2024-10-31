@@ -110,7 +110,7 @@ from .models import (
 
 #flemme d'import format durations
 def format_nombres(nombre):
-    arrondi = round(nombre, 2)
+    arrondi = round(float(nombre), 2)
     nbre_virg = f"{arrondi:.2f}".replace('.', ',')
     return nbre_virg
 
@@ -467,6 +467,7 @@ def details(request, modelName, iD):
                 context["phase_form"] = AddPhase()
                 context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
+                
                 context["etude_form"] = AddEtude(instance=etude)
                 context["representants_interlocuteurs"] = representants_interlocuteurs
                 context["representants_legaux"] = representants_legaux
@@ -1066,6 +1067,15 @@ def update_etude(request, id):
     if request.method == 'POST':
         suivi_document = etude.suivi_document  # Get the existing suivi_document
         
+        # Check if a delete request was made
+        delete_document_name = request.POST.get('delete_document_name')
+        if delete_document_name and delete_document_name in suivi_document:
+            del suivi_document[delete_document_name]  # Delete the document entry
+            etude.suivi_document = suivi_document
+            etude.save()
+            return redirect('index')  # Redirect after deletion to refresh
+
+        
         # Loop through the keys in suivi_document and update both status and date
         for key in suivi_document.keys():
             new_status = request.POST.get(f'suivi_document_{key}_status')
@@ -1290,8 +1300,50 @@ def stat_KPI(request):
         retributions_etudes026=0
         nb_etudes_026_avec_interv=0
         dico_genre_inter={'M.':0, 'Mme':0}
+        dico_ca_typeentreprise ={}
+        dico_ca_departement ={}
+        dico_ca_secteur ={}
 
+        liste_etudes_ec_term=[]
         for etude in etudes:
+            if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
+                liste_etudes_ec_term.append(etude)
+        
+        for etude in liste_etudes_ec_term:
+            secteur =etude.client.get_secteur_display()
+            if secteur in dico_ca_secteur:
+                dico_ca_secteur[secteur]+=etude.montant_HT_total()
+            else:
+                dico_ca_secteur[secteur]=etude.montant_HT_total()
+
+            if etude.client.get_type_display() in dico_ca_typeentreprise:
+                dico_ca_typeentreprise[etude.client.get_type_display()]+=etude.montant_HT_total()
+            else:
+                dico_ca_typeentreprise[etude.client.get_type_display()]=etude.montant_HT_total()
+            departements = etude.departement
+            for depart in departements:
+                if depart in dico_ca_departement:
+                    dico_ca_departement[depart]+=etude.montant_HT_total()
+                else:
+                    dico_ca_departement[depart]=etude.montant_HT_total()
+
+        bar_chart_CA={}
+        for etude in liste_etudes_ec_term:
+            
+            etude_month = etude.debut.month
+            etude_year = etude.debut.year
+            if etude_year in bar_chart_CA:
+                if etude_month in bar_chart_CA[etude_year]:
+                    bar_chart_CA[etude_year][etude_month]+=etude.montant_HT_total()
+                else:
+                    bar_chart_CA[etude_year][etude_month]=etude.montant_HT_total()
+            else:
+                bar_chart_CA[etude_year]={etude_month:etude.montant_HT_total()}
+
+        print(f"bar_chart_CA :{bar_chart_CA}")
+
+        for etude in liste_etudes_ec_term:
+
             etude_month = etude.debut.month
             etude_year = etude.debut.year
 
@@ -1307,6 +1359,9 @@ def stat_KPI(request):
                 current_month = etude_month
                 current_year = etude_year
                 current_sum = etude.montant_HT_total()
+
+        for etude in etudes:
+            
             if (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '026':
                 ca_026+=etude.montant_HT_total()
                 if etude.status == 'TERMINEE':
@@ -1373,7 +1428,6 @@ def stat_KPI(request):
         date_labels.append(f"{current_year}-{current_month:02d}")
         total_sum += current_sum
         cumulated_CA.append(total_sum)
-
         # Calcul des autres métriques
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -1390,8 +1444,7 @@ def stat_KPI(request):
         chiffre_affaire_total = cumulated_CA[-1]
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
         nb_ca_etudes= nb_etudes_ed_ec_term(user_je)
-        repartition_CA_etudes= repartition_CA_etudes_ec_term(user_je)
-        repartition_nb_etudes =repartition_nb_etudes_ec_term(user_je)
+        repartition_CA_etudes,repartition_nb_etudes, totale_CA_ecterm,totale_nb_ecterm=repartition_CA_etudes_ec_term(liste_etudes_ec_term)
         chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
         chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
         nombre_eleve = Student.objects.filter(je=user_je).count()
@@ -1499,8 +1552,12 @@ def stat_KPI(request):
             "repartition_CA_etudes":repartition_CA_etudes, "repartition_nb_etudes":repartition_nb_etudes,"ca_026":ca_026,"ca_026_cutoff":ca_026_cutoff,"ca_potentiel":ca_en_nego+ca_026_cutoff,
             "nb_etudes_ec" :nb_etudes_ec,"nb_etude_ed" :nb_etude_ed,"dictionaire_dep_eleve":dictionaire_dep_eleve,"nb_intervenants_diff_026":nb_intervenants_diff_026,"nb_intervenants_026":nb_intervenants_026,
             "taux_ouverture" :taux_ouverture*100,"retrib_moye_etude":retrib_moye_etude,"retrib_moye_etudiant":retrib_moye_etudiant,"retributions_etudes026":retributions_etudes026, "moyen_int_etude": moyen_int_etude,
-            "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026
+            "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026,"totale_nb_ecterm":totale_nb_ecterm,"totale_CA_ecterm":totale_CA_ecterm,"dico_ca_typeentreprise":dico_ca_typeentreprise,
+            "dico_ca_departement":dico_ca_departement,"dico_ca_secteur":dico_ca_secteur, "bar_chart_CA":bar_chart_CA
         }
+        print(f"dico ca entreprise :{dico_ca_typeentreprise}")
+        print(f"repartition_CA_etudes :{repartition_CA_etudes}")
+        
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -1685,11 +1742,12 @@ def editer_convention(request, iD):
 
             #acompte_HT= format_nombres(fac_acom.montant_HT())
             #solde_HT= format_nombres(fac_solde.montant_HT())
+            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
 
             context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
                        "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
                        "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde, "fac_inter":fac_inter, "ac_inter":ac_inter,
-                       "poste":poste,"factures":factures}
+                       "poste":poste,"factures":factures,"logo_client":logo_client}
             # Load the template
 
             env = Environment()
@@ -1799,17 +1857,27 @@ def editer_convention_cadre(request, iD):
     return HttpResponse(template.render(context, request))
 
 
-def editer_pv(request, iD):
+def editer_pv(request, iD, type):
     if request.user.is_authenticated:
-        try:
+        # try:
             instance = Etude.objects.get(id=iD)
             je= instance.je
             client = instance.client
             model = PV
-            pv = model(etude=instance)
+            pv = model(etude=instance, type=type)
             phases= Phase.objects.filter(etude=instance).order_by('numero')
-            template = DocxTemplate("polls/templates/polls/PVRI_026.docx")
+            client_resp = instance.client_representant_legale
+            convention = instance.convention()
+            if not convention :
+                raise ValueError("pas de convention")
             
+            ce_ref=convention
+            avenants =  AvenantConventionEtude.objects.filter(ce=convention).order_by('numero')
+            avenant=None
+            num_avenant = None
+            if len(avenants)>0:
+                avenant= avenants[len(avenants)-1]
+                num_avenant = avenant
 
             president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             duree = instance.duree_semaine()
@@ -1817,12 +1885,26 @@ def editer_pv(request, iD):
             respo = instance.responsable.student
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
-            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
-            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
-            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            
             date = datetime.now()
+
+            date_2 = timezone.now().date()
+            mois = [
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ]
+
+            # Format the date
+            general_date_creation = f"{date_2.day} {mois[date_2.month - 1]} {date_2.year}"
             annee = date.strftime('%Y')
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "repr":representant_client,"repr_legale":representant_legale_client, "je":je,  "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee}
+            etude_periode_garantie = instance.periode_de_garantie
+            
+            template = DocxTemplate("polls/templates/polls/PVRF_026_CE.docx")
+            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
+
+            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "je":je,  "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee,
+                       "avenant":avenant, "num_avenant":num_avenant,"ce":ce_ref,"general_date_creation":general_date_creation,"pv_ref":pv.ref(),"repr_legale":client_resp,"logo_client":logo_client,
+                       "etude_periode_garantie":etude_periode_garantie}
             # Load the template
 
             env = Environment()
@@ -1834,16 +1916,16 @@ def editer_pv(request, iD):
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            filename = f"PVRI_{ref_m}.docx"
+            filename = f"PVRF_{ref_m}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
         
             
-        except ValueError as ve:
+        # except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        # except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2054,17 +2136,18 @@ def editer_ba(request, id_eleve):
 
 def editer_devis(request, iD):
     if request.user.is_authenticated:
-        try:
+         # try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
             template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
             template = DocxTemplate(template_path)
             model = Devis
-            if instance.devis_edited() :
-                devis = instance.devis
+            if instance.get_devis() :
+                devis = instance.get_devis()
+            
             else :
                 devis = model(etude=instance)
-                devis.save()
+                
             
             responsable = instance.responsable.student
             if responsable is None:
@@ -2253,9 +2336,12 @@ def editer_devis(request, iD):
             image_stream = BytesIO(image_data)
             image = InlineImage(template, image_stream, width=Mm(173))
             time1.sleep(1)
+            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
+            photo_cdp = InlineImage(template, instance.responsable.photo, width=Mm(20))
             context = {"planning_pre":image, "president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
                        "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation, "poste":poste,
-                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures, "ac_inter":ac_inter}
+                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures, "ac_inter":ac_inter,
+                       "logo_client":logo_client,"photo_cdp":photo_cdp, "duree_semaine":duree_semaine}
             
 
             env = Environment()
@@ -2277,10 +2363,10 @@ def editer_devis(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        except ValueError as ve:
+         # except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except Exception as e:
+         # except Exception as e:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2296,9 +2382,13 @@ def editer_avenant_ce(request, iD):
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce= instance.ce
             avenants =  AvenantConventionEtude.objects.filter(ce=ce).order_by('numero')
-            dernier_avenant = avenants[len(avenants) - 2] if avenants else None
-            
 
+            dernier_avenant=None
+            if len(avenants)>1:
+                dernier_avenant = avenants[len(avenants) -2 ]
+            
+            avenant_budget=False
+            avenant_delais=False
             for avenant in avenants:
                 if avenant.avenant_budget:
                     avenant_budget=True
@@ -2317,6 +2407,8 @@ def editer_avenant_ce(request, iD):
 
             president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
             ref_m = etude.ref()
+            
+
 
             if etude.fin():
                 semaine_fin = math.ceil( (datetime.combine(etude.fin(),time(12, 0))  -datetime.today() ).days /7 )
@@ -2328,21 +2420,23 @@ def editer_avenant_ce(request, iD):
             nb_JEH= etude.nb_JEH()
             nb_JEH_lettres = en_lettres(nb_JEH)
 
-            phase_montant_HT=etude.montant_phase_HT()
-            phase_montant_HT_lettres = chiffre_lettres(phase_montant_HT)
-            frais_HT =etude.frais_dossier
-            frais_HT_lettres=chiffre_lettres(frais_HT)
-            total_HT= etude.montant_HT_total()
-            total_HT_lettres = chiffre_lettres(total_HT)
-            total_TTC= etude.total_ttc()
-            total_TTC_lettres= chiffre_lettres(total_TTC)
+            phase_montant_HT= format_nombres(etude.montant_phase_HT())
+            phase_montant_HT_lettres = chiffre_lettres(etude.montant_phase_HT())
+            frais_HT = format_nombres(etude.frais_dossier)
+            frais_HT_lettres=chiffre_lettres(etude.frais_dossier)
+            total_HT= format_nombres(etude.montant_HT_total())
+            total_HT_lettres = chiffre_lettres(etude.montant_HT_total())
+            total_TTC= format_nombres(etude.total_ttc())
+            total_TTC_lettres= chiffre_lettres(etude.total_ttc())
             template = DocxTemplate("polls/templates/polls/avenant_ce_026.docx")
+            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
             context = {"avenant": instance, "etude": etude, "client": client, "president":president, "ref_m":ref_m,"ce":ce,"repr_legale": representant_legale_client, "semaine_fin":semaine_fin,
                        "semaine_fin":semaine_fin,"semaine_fin_lettres":semaine_fin_lettres,"nb_JEH":nb_JEH,"nb_JEH_lettres":nb_JEH_lettres,
                        "phase_montant_HT":phase_montant_HT,"phase_montant_HT_lettres":phase_montant_HT_lettres,"frais_HT":frais_HT, "frais_HT_lettres":frais_HT_lettres,
                        "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres,
-                       "avenant_delais":avenant_delais,"avenant_budget":avenant_budget,"num_del":num_del,"num_bud":num_bud,"objet":objet,"dernier_avenant":dernier_avenant
+                       "avenant_delais":avenant_delais,"avenant_budget":avenant_budget,"num_del":num_del,"num_bud":num_bud,"objet":objet,"dernier_avenant":dernier_avenant,"logo_client":logo_client
                        }
+            print(f"avenant_delais : {avenant_delais}, avenant_budget: {avenant_budget}")
             # Load the template
 
             # Render the document
@@ -2523,39 +2617,38 @@ def calculate_chiffre_affaire_par_departement(user_je):
 
     return revenues
 
-def repartition_CA_etudes_ec_term(user_je):
-    etudes=Etude.objects.filter(je=user_je)
-    dictionaire = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
+def repartition_CA_etudes_ec_term(etudes):
+    dictionaire_CA = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
+    dictionaire_nb = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
+    totale_CA =0
+    totale_nb=0
     for etude in etudes:
         if etude.mandat == '025':
             if etude.status == 'EN_COURS':
-                dictionaire["025 en cours"]+=etude.montant_HT_total()
+                dictionaire_CA["025 en cours"]+=etude.montant_HT_total()
+                dictionaire_nb["025 en cours"]+=1
+                totale_CA+=etude.montant_HT_total()
+                totale_nb+=1
             elif etude.status == 'TERMINEE':
                 if etude.fin()> datetime(2024, 5, 1):
-                    dictionaire["025 terminées 026"]+=etude.montant_HT_total()
+                    dictionaire_CA["025 terminées 026"]+=etude.montant_HT_total()
+                    dictionaire_nb["025 terminées 026"]+=1
+                    totale_CA+=etude.montant_HT_total()
+                    totale_nb+=1
         elif etude.mandat == '026':
             if etude.status == 'EN_COURS':
-                dictionaire["026 en cours"]+=etude.montant_HT_total()
+                dictionaire_CA["026 en cours"]+=etude.montant_HT_total()
+                dictionaire_nb["026 en cours"]+=1
+                totale_CA+=etude.montant_HT_total()
+                totale_nb+=1
             elif etude.status == 'TERMINEE':
-                dictionaire["026 terminées 026"]+=etude.montant_HT_total()
-    return dictionaire
+                dictionaire_CA["026 terminées 026"]+=etude.montant_HT_total()
+                dictionaire_nb["026 terminées 026"]+=1
+                totale_CA+=etude.montant_HT_total()
+                totale_nb+=1
+    return dictionaire_CA,dictionaire_nb, totale_CA,totale_nb
 
-def repartition_nb_etudes_ec_term(user_je):
-    etudes=Etude.objects.filter(je=user_je)
-    dictionaire = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
-    for etude in etudes:
-        if etude.mandat == '025':
-            if etude.status == 'EN_COURS':
-                dictionaire["025 en cours"]+=1
-            elif etude.status == 'TERMINEE':
-                if etude.fin()> datetime(2024, 5, 1):
-                    dictionaire["025 terminées 026"]+=1
-        elif etude.mandat == '026':
-            if etude.status == 'EN_COURS':
-                dictionaire["026 en cours"]+=1
-            elif etude.status == 'TERMINEE':
-                dictionaire["026 terminées 026"]+=1
-    return dictionaire
+
 
 
 def nb_etudes_ed_ec_term(user_je):
@@ -3153,27 +3246,57 @@ def signature_document(request, model, iD):
         
         if request.method == 'POST':
             # try:
+                new_date = request.POST.get('new_date')
+                
+                if model == 'CE':
+                    convention = ConventionEtude.objects.get(id=iD)
+                    etude=convention.etude
+                    if new_date:
+                        convention.date_signature = new_date
+                        etude=convention.etude
+                        etude.debut= new_date
+                        etude.save()
+                    convention.save()
+                
+                elif model == 'Devis':
+                    devis = Devis.objects.get(id=iD)
+                    etude = devis.etude
+                    if new_date:
+                        devis.date_signature = new_date
+                    
+                        devis.save()
+
+                return redirect('details', modelName="Etude", iD=etude.id)
+            # except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
+
+def signature_devis(request, iD):
+    if request.user.is_authenticated:
+        
+        if request.method == 'POST':
+            # try:
                 raw_data = request.body
                 data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
                 content = data.get('content', '')
-                if model == 'CE':
-                    convention = ConventionEtude.objects.get(id=iD)
-                    if not content:
-                        convention.date_signature = None
-                    else:
-                        try:
-                            date_signature = datetime.strptime(content, "%d/%m/%Y").date()
-                        except ValueError:
-                            # Return a message if the date format is invalid
-                            return JsonResponse({'success': False, 'message': 'mettre la date au format JJ/MM/AAAA'})
+                
+                devis = Devis.objects.get(id=iD)
+                if not content:
+                    devis.date = None
+                else:
+                    try:
+                        date_signature = datetime.strptime(content, "%d/%m/%Y").date()
+                    except ValueError:
+                        # Return a message if the date format is invalid
+                        return JsonResponse({'success': False, 'message': 'mettre la date au format JJ/MM/AAAA'})
 
-                        convention.date_signature=date_signature
-                        if date_signature:
-                            etude=convention.etude
-                            
-                            etude.debut= date_signature
-                            etude.save()
-                    convention.save()
+                    devis.date=date_signature
+                    
+                    devis.save()
                 return JsonResponse({'success':True})
             # except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)})
@@ -3349,17 +3472,17 @@ def ajouter_avenant_ce(request, id_etude):
                 modif_budget=False
                 modif_delais=False
                 for phase in etude.phases():
-                    if('suppression'+str(phase.id)):
+                    suppression_key = f'suppression{phase.id}'
+                    if suppression_key in request.POST:
                         modif_budget=True
-                    if(request.POST['nb_jeh'+str(phase.id)] != phase.nb_JEH):
+                    if(float(request.POST['nb_jeh'+str(phase.id)]) != float(phase.nb_JEH)):
                         modif_budget=True
-                    if request.POST['debut'+str(phase.id)]+request.POST['duree'+str(phase.id)] != etude.duree_semaine():
+                    if float(request.POST['debut'+str(phase.id)]+request.POST['duree'+str(phase.id)]) != float(phase.duree_semaine)+float(phase.debut_relatif):
                         modif_delais=True
                 
-                nouveau_frais_dossier = request.POST['frais_dossier']     
-                if nouveau_frais_dossier != etude.frais_dossier:
+                nouveau_frais_dossier = request.POST['frais_dossier']
+                if float(nouveau_frais_dossier) != etude.frais_dossier:
                     modif_budget=True    
-
                 new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, objet=request.POST['objet'],
                 avenant_budget=modif_budget,avenant_delais=modif_delais)
                 if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
@@ -3368,7 +3491,9 @@ def ajouter_avenant_ce(request, id_etude):
                     etude.frais_dossier = nouveau_frais_dossier
                 new_avenant.save()
                 for phase in etude.phases():
-                    if( 'suppression'+str(phase.id) in request.POST and request.POST['suppression'+str(phase.id)] == "on" and not phase.supprimee):
+                    suppression_key = f'suppression{phase.id}'
+                    if suppression_key in request.POST:
+                        print(f"supprimer phase {phase.id}")
                         supp_phase = SuppressionPhase(avenant_ce=new_avenant, phase=phase)
                         supp_phase.save()
                         phase.supprimee=True
@@ -3388,6 +3513,7 @@ def ajouter_avenant_ce(request, id_etude):
                         jeh_phase.save()
                         phase.nb_JEH = n_jeh
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
+                    etude.save()
                 return redirect('details', modelName="Etude", iD=id_etude)
             #except:
                 template = loader.get_template("polls/page_error.html")

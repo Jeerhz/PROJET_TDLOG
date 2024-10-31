@@ -58,7 +58,7 @@ urlpatterns = [
     path('', views.my_view, name='my_view'),
     path('generate-pdf/', views.generate_pdf, name='generate_pdf'),
     path('supprimer_demarchage/<int:id_representant>', views.supprimer_demarchage, name='supprimer_demarchage'),
-    path("editer_pv/<int:iD>", views.editer_pv, name="editer_pv"),
+    path("editer_pv/<int:iD>/<str:type>", views.editer_pv, name="editer_pv"),
     path("ajouter_representant/<int:id_client>", views.ajouter_representant, name="ajouter_representant"),
     path("send_mail_demarchage/<int:iD>", views.send_mail_demarchage, name="send_mail_demarchage"),
     path('ajouter_representant/<int:id_client>/', views.ajouter_representant, name='ajouter_representant'),
@@ -82,6 +82,8 @@ urlpatterns = [
     path('get_representants/', views.get_representants, name='get_representants'),
     path("facture/<int:id_facture>/generate-pdf/", views.generate_facture_pdf, name='generate_facture_pdf'),
     path("signature_document/<str:model>/<int:iD>", views.signature_document, name="signature_document"),
+    path("signature_devis/<int:iD>", views.signature_devis, name="signature_devis"),
+    
     path("update_etude/<int:id>", views.update_etude, name="update_etude"),
     path("editer_acf/<int:id_etude>/<int:id_eleve>", views.editer_acf, name='editer_acf'),
     path("editer_convention_cadre/<int:iD>", views.editer_convention_cadre, name="editer_convention_cadre"),
