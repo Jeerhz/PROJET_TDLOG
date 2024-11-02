@@ -1129,6 +1129,7 @@ def ref_facture(numero):
     annee = str(date.year)
     an =annee[-2:]
     return f"{an}{numero:03d}"
+
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
         try:
@@ -1205,7 +1206,7 @@ def facture(request, id_facture):
                 "date_emission": facture.date_emission,
                 "date_echeance": facture.date_echeance, "bdc":bdc
             }
-            template = loader.get_template("polls/facpdf.html")
+            template = loader.get_template("polls/facpdfhtml.html")
 
         except Exception as e:
             template = loader.get_template("polls/page_error.html")
@@ -1309,6 +1310,66 @@ def stat_KPI(request):
         dico_ca_secteur ={}
 
         liste_etudes_ec_term=[]
+
+        dico_devis_envoye={} # key : devis , valeurs : date et si la mission a été signé
+        devis_envoye  = Devis.objects.filter(date_signature__isnull=False)
+
+
+        for devis in devis_envoye:
+            dico_devis_envoye[devis.id]={'date': f"{devis.date_signature.month}-{devis.date_signature.year}", 'mission':0 }
+            etude= devis.etude
+            if etude.status == 'TERMINEE' or etude.status == 'EN_COURS':
+                dico_devis_envoye[devis.id]['mission']=1
+        
+
+        dico_suivi_devis={}
+        derniere_date ='11-2002'
+        for devis in dico_devis_envoye:
+            mois = dico_devis_envoye[devis]['date']
+            if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
+                derniere_date=mois 
+            if mois in dico_suivi_devis:
+                dico_suivi_devis[mois]['envoyés']+=1
+                dico_suivi_devis[mois]['signées']+=dico_devis_envoye[devis]['mission']
+            else: 
+                dico_suivi_devis[mois]={}
+                dico_suivi_devis[mois]['envoyés']=1
+                dico_suivi_devis[mois]['signées']=dico_devis_envoye[devis]['mission']
+        if derniere_date:
+            if derniere_date[0:2]=='12':
+                derniere_date=f"01-{int(derniere_date[3:])+1}"
+            else:
+                derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+            dico_suivi_devis[derniere_date]={'envoyés': 0, 'signées': 0}
+
+
+        derniere_date ='11-2002'
+        dico_avenants_mois_ce={} # key : devis , valeurs : date et si la mission a été signé
+        avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+        for avenant in avenants_signes:
+            mois = f"{avenant.date_signature.month}-{avenant.date_signature.year}"
+            if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
+                derniere_date=mois 
+            if mois in dico_avenants_mois_ce:
+                dico_avenants_mois_ce[mois]+=1
+            else:
+                dico_avenants_mois_ce[mois]=1
+
+        if derniere_date:
+            if derniere_date[0:2]=='12':
+                derniere_date=f"01-{int(derniere_date[3:])+1}"
+            else:
+                derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+            dico_avenants_mois_ce[derniere_date]=0
+
+
+        print(f"dico_avenants_mois_ce : {dico_avenants_mois_ce}")
+
+
+
+
+
+
         for etude in etudes:
             if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
                 liste_etudes_ec_term.append(etude)
@@ -1373,14 +1434,14 @@ def stat_KPI(request):
                     nb_etudes_term_026[0]+=1
                     nb_etudes_term_026[1]+=etude.montant_HT_total()
                 else:
-                    if etude.fin()<date(2025, 5, 1):
+                    if etude.fin() is not None and etude.fin() <date(2025, 5, 1):
                         ca_026_cutoff+=etude.montant_HT_total()
                     elif etude.duree_semaine():
                         ca_026_cutoff+=etude.montant_HT_total()*((date(2025, 5, 1) - etude.debut).days/7)/etude.duree_semaine()
             elif (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '025':
                 if etude.debut>date(2024, 5, 1):
                     ca_026_cutoff+=etude.montant_HT_total()
-                elif etude.fin()>date(2024, 5, 1):
+                elif etude.fin() is not None and etude.fin() >date(2024, 5, 1):
                     ca_026_cutoff+=etude.montant_HT_total()*((etude.fin() - date(2024, 5, 1)).days/7)/etude.duree_semaine()
             if etude.status == 'EN_NEGOCIATION':
                 ca_en_nego+=etude.montant_HT_total()
@@ -1431,7 +1492,7 @@ def stat_KPI(request):
         # Ajouter les données pour le dernier mois
         date_labels.append(f"{current_year}-{current_month:02d}")
         total_sum += current_sum
-        cumulated_CA.append(total_sum)
+        
         # Calcul des autres métriques
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -1557,7 +1618,7 @@ def stat_KPI(request):
             "nb_etudes_ec" :nb_etudes_ec,"nb_etude_ed" :nb_etude_ed,"dictionaire_dep_eleve":dictionaire_dep_eleve,"nb_intervenants_diff_026":nb_intervenants_diff_026,"nb_intervenants_026":nb_intervenants_026,
             "taux_ouverture" :taux_ouverture*100,"retrib_moye_etude":retrib_moye_etude,"retrib_moye_etudiant":retrib_moye_etudiant,"retributions_etudes026":retributions_etudes026, "moyen_int_etude": moyen_int_etude,
             "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026,"totale_nb_ecterm":totale_nb_ecterm,"totale_CA_ecterm":totale_CA_ecterm,"dico_ca_typeentreprise":dico_ca_typeentreprise,
-            "dico_ca_departement":dico_ca_departement,"dico_ca_secteur":dico_ca_secteur, "bar_chart_CA":bar_chart_CA
+            "dico_ca_departement":dico_ca_departement,"dico_ca_secteur":dico_ca_secteur, "bar_chart_CA":bar_chart_CA, "dico_suivi_devis":dico_suivi_devis, "dico_avenants_mois_ce":dico_avenants_mois_ce
         }
         print(f"dico ca entreprise :{dico_ca_typeentreprise}")
         print(f"repartition_CA_etudes :{repartition_CA_etudes}")
@@ -1587,22 +1648,23 @@ def fetch_data(request):
         date_labels = [start_date_obj.strftime('%Y-%m')]
         cumulated_CA = [0]
         current_sum = 0
-
+        
         for etude in etudes:
-            etude_month = etude.debut.month
-            etude_year = etude.debut.year
-            date_label = f"{etude_year}-{etude_month:02d}"
+            if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
+                etude_month = etude.debut.month
+                etude_year = etude.debut.year
+                date_label = f"{etude_year}-{etude_month:02d}"
 
-            if date_labels and date_labels[-1] == date_label:
-                # Same month, add to current sum
-                current_sum += etude.montant_HT_total()
-            else:
-                # New month, append previous month data and start new sum
-                if date_labels:
-                    cumulated_CA[-1] = current_sum  # Update previous month sum
-                date_labels.append(date_label)
-                current_sum += etude.montant_HT_total()
-                cumulated_CA.append(current_sum)  # Initialize new month sum
+                if date_labels and date_labels[-1] == date_label:
+                    # Same month, add to current sum
+                    current_sum += etude.montant_HT_total()
+                else:
+                    # New month, append previous month data and start new sum
+                    if date_labels:
+                        cumulated_CA[-1] = current_sum  # Update previous month sum
+                    date_labels.append(date_label)
+                    current_sum += etude.montant_HT_total()
+                    cumulated_CA.append(current_sum)  # Initialize new month sum
 
         # Debug prints
         print(f"date_labels: {date_labels}")
@@ -2168,9 +2230,11 @@ def editer_devis(request, iD):
             model = Devis
             if instance.get_devis() :
                 devis = instance.get_devis()
+                print("devis existe deja")
             
             else :
                 devis = model(etude=instance)
+                print("creation devis")
                 
             
             responsable = instance.responsable.student
@@ -2189,7 +2253,7 @@ def editer_devis(request, iD):
             ref_m = instance.ref()
             ref_d = ref_m + "pv"
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
-            
+            duree_semaine= instance.duree_semaine()
             date = timezone.now()
             mois = date.strftime('%B')
             annee = date.strftime('%Y')
@@ -2338,7 +2402,7 @@ def editer_devis(request, iD):
                 """
                 rows_html += row
             
-            
+            semaine_s = "semaine" if duree_semaine == 1 else "semaines"
             final_html = html_template.format(debut=instance.debut, fin=instance.fin(), rows=rows_html, css=css_planning, semaines=semaines_html,duree_semaine=duree_semaine,semaine_s=semaine_s)
             
 
@@ -2386,6 +2450,7 @@ def editer_devis(request, iD):
             filename = f"Devis_{ref_m}.docx"
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            devis.save()
             return response
          # except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
@@ -2506,9 +2571,9 @@ def editer_bon(request, id_bon):
             if respo.titre =='Mme':
                 poste= "Cheffe de Projet"
             president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
-
+            logo_client = InlineImage(template, client.logo, width=Mm(20))
             context = {"etude": etude, "client": client, "responsable":responsable, "bon":bon,"repr":repr,"repr_legale":repr_legale,
-                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste,"nombre_phases":bon.nb_phases()}
+                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste,"nombre_phases":bon.nb_phases(),"logo_client":logo_client}
             # Load the template
             env = Environment()
             env.filters['FormatNombres'] = format_nombres
@@ -2654,7 +2719,7 @@ def repartition_CA_etudes_ec_term(etudes):
                 totale_CA+=etude.montant_HT_total()
                 totale_nb+=1
             elif etude.status == 'TERMINEE':
-                if etude.fin()> datetime(2024, 5, 1):
+                if etude.fin() is not None and etude.fin() > datetime(2024, 5, 1):
                     dictionaire_CA["025 terminées 026"]+=etude.montant_HT_total()
                     dictionaire_nb["025 terminées 026"]+=1
                     totale_CA+=etude.montant_HT_total()
@@ -2796,6 +2861,7 @@ def client_suggestions(request):
 
 
 def search(request):
+    print("search atteint")
     liste_messages = Message.objects.filter(
         destinataire=request.user,
         read=False,
