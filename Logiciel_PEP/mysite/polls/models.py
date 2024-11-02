@@ -782,12 +782,10 @@ class Etude(models.Model):
 
     def convention(self):
         if self.type_convention == "Convention d'étude":
-            conventions = ConventionEtude.objects.filter(etude=self)
+            return ConventionEtude.objects.filter(etude=self).first() 
         elif self.type_convention == "Convention cadre":
-            conventions = ConventionCadre.objects.filter(etude=self)
-        else:
-            return None
-        return conventions.first() if conventions.exists() else None
+            return  ConventionCadre.objects.filter(etude=self).first() 
+        
     
     def nouveau_num_avenant_ce(self):
         list_num = self.convention().avenants_modification.values_list("numero", flat=True)

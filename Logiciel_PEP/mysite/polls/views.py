@@ -1067,13 +1067,16 @@ def update_etude(request, id):
     if request.method == 'POST':
         suivi_document = etude.suivi_document  # Get the existing suivi_document
         
-        # Check if a delete request was made
-        delete_document_name = request.POST.get('delete_document_name')
-        if delete_document_name and delete_document_name in suivi_document:
-            del suivi_document[delete_document_name]  # Delete the document entry
-            etude.suivi_document = suivi_document
+
+        if 'delete_document_name' in request.POST:
+            document_name = request.POST['delete_document_name']
+            # Perform delete logic, e.g., removing document by name
+            if document_name in etude.suivi_document:
+                del etude.suivi_document[document_name]
+                etude.suivi_document = suivi_document
             etude.save()
-            return redirect('index')  # Redirect after deletion to refresh
+            return redirect('index')  
+        
 
         
         # Loop through the keys in suivi_document and update both status and date
@@ -1115,7 +1118,8 @@ def update_etude(request, id):
         return redirect('index')  # Redirect after saving
 
     # Render the template with the existing data (in case you need GET logic)
-    return render(request, 'your_template.html', {'etude': etude})
+    return render(request, 'index.html')
+
 
 
 
@@ -1691,7 +1695,7 @@ def editer_convention(request, iD):
                 nom_doc ="Convention_Cadre_"
             else:
                 raise ValueError("Type de convention non défini.")
-            if instance.convention_edited() :
+            if instance.convention() :
                 ce = instance.convention()
             else :
                 ce = model(etude=instance)
@@ -1794,7 +1798,7 @@ def editer_convention_cadre(request, iD):
             model = ConventionCadre
             template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
             nom_doc ="Convention_Cadre_"
-            if instance.convention_edited() :
+            if instance.convention :
                 ce = instance.convention()
             else :
                 ce = model(etude=instance)
@@ -3285,6 +3289,31 @@ def signature_document(request, model, iD):
                         devis.date_signature = new_date
                     
                         devis.save()
+                elif model == 'AvCE':
+                    avenant = AvenantConventionEtude.objects.get(id=iD)
+                    etude = avenant.ce.etude
+                    if new_date:
+                        avenant.date_signature = new_date
+                    
+                        avenant.save()
+                
+                elif model == 'CC':
+                    connvention = ConventionCadre.objects.get(id=iD)
+                    etude = connvention.etude
+                    if new_date:
+                        connvention.date_signature = new_date
+                        etude.debut= new_date
+                        etude.save()
+                        connvention.save()
+
+
+                elif model == 'BDC':
+                    bdc = BonCommande.objects.get(id=iD)
+                    etude = bdc.etude
+                    if new_date:
+                        bdc.debut = new_date
+                        
+                        bdc.save()
 
                 return redirect('details', modelName="Etude", iD=etude.id)
             # except Exception as e:

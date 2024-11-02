@@ -135,12 +135,62 @@
             background-color: green;
         }
 
+        .status-troptot {
+            background-color: paleturquoise;
+        }
+
+        .status-pasnecessaire {
+            background-color: lightgrey;
+        }
+
+        .status-signe {
+            background-color: darkblue;
+        }
+
+        .status-surdrive {
+            background-color: mediumseagreen;
+        }
+
+        .status-pasdrive {
+            background-color: darkred;
+        }
+
+        .status-sanssuite {
+            background-color: lightcoral;
+        }
+
+        .status-emise {
+            background-color: lightblue;
+        }
+
+        .status-plusnecessaire {
+            background-color: lightsteelblue;
+        }
+
+        .status-averifier {
+            background-color: goldenrod;
+        }
+
+        .status-pasajour {
+            background-color: darkorange;
+        }
+
+        .status-documentslegaux {
+            background-color: darkslategrey;
+        }
+
+        .status-fait {
+            background-color: darkgreen;
+        }
+
         /* Default style if no specific class is matched */
         .status-default {
             background-color: grey;
         }
-        .status-troptot {
-            background-color: paleturquoise;
+
+
+        .status-default {
+            background-color: grey;
         }
         
 
@@ -760,17 +810,45 @@
                                                             <div>{{key}}</div>
                                                         </td> 
                                                         <td>
-                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
+                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
                                                         </td>                                                            
                                                         <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                                            {% elif value.status == 'Pas fait' %}status-pasfait
-                                                                            {% elif value.status == 'Terminé' %}status-termine
-                                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                                            {% elif value.status == 'Payée' %}status-payee
-                                                                            {% elif value.status == 'Trop tôt' %}status-troptot
-                                                                            {% else %}status-default
-                                                                            {% endif %}">
-                                                            <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: #b0ecec; border: none; color: white; text-align: center; font-weight: 600;">
+                                                        {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                        {% elif value.status == 'Trop tôt' %}status-troptot
+                                                        {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                        {% elif value.status == 'Signé' %}status-signe
+                                                        {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                        {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                        {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                        {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                        {% elif value.status == 'Payée' %}status-payee
+                                                        {% elif value.status == 'Emise' %}status-emise
+                                                        {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                        {% elif value.status == 'A vérifier' %}status-averifier
+                                                        {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                        {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                        {% elif value.status == 'Fait' %}status-fait
+                                                        {% else %}status-default
+                                                        {% endif %}">
+                                                            <select name="suivi_document_{{ key }}_status" class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                            {% elif value.status == 'Trop tôt' %}status-troptot
+                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                            {% elif value.status == 'Signé' %}status-signe
+                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                            {% elif value.status == 'Payée' %}status-payee
+                                                            {% elif value.status == 'Emise' %}status-emise
+                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                            {% elif value.status == 'A vérifier' %}status-averifier
+                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                            {% elif value.status == 'Fait' %}status-fait
+                                                            {% else %}status-default
+                                                            {% endif %}"
+                                                            style="padding: 2px; border: none; color: white; text-align: center; font-weight: 600;">
                                                                 <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                 <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                 <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
@@ -794,11 +872,9 @@
                                                         </td> 
                                                         
                                                         <td>
-                                                            <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                                {% csrf_token %}
-                                                                <input type="hidden" name="delete_document_name" value="{{ key }}">
-                                                                <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
-                                                            </form>
+                                                            <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
                                                         </td>
                                         
                                                         
@@ -806,7 +882,7 @@
                                                     </tr>
                                                     {% endfor %}
                                                     <tr>
-                                                        <td colspan="4" class="text-center">
+                                                        <td colspan="5" class="text-center">
                                                             <button type="submit" class="btn btn-primary">Modifier</button>
                                                         </td>
                                                     </tr>
@@ -830,11 +906,22 @@
                                                 <div class="form-group">
                                                     <select name="new_document_status" id="new_document_status" class="form-control" required>
                                                         <option value="En cours">En cours</option>
-                                                        <option value="Pas fait">Pas fait</option>
-                                                        <option value="Terminé">Terminé</option>
-                                                        <option value="Confidentiel">Confidentiel</option>
-                                                        <option value="Payée">Payée</option>
+                                                        <option value="Pas nécessaire">Pas nécessaire</option>
                                                         <option value="Trop tôt">Trop tôt</option>
+                                                        <option value="Confidentiel">Confidentiel</option>
+                                                        <option value="Signé">Signé</option>
+                                                        <option value="Sur Drive">Sur Drive</option>
+                                                        <option value="Pas sur Drive">Pas sur Drive</option>
+                                                        <option value="Pas Fait">Pas Fait</option>
+                                                        <option value="Sans suite">Sans suite</option>
+                                                        <option value="Payée">Payée</option>
+                                                        <option value="Emise">Emise</option>
+                                                        <option value="Plus nécessaire">Plus nécessaire</option>
+                                                        <option value="A vérifier">A vérifier</option>
+                                                        <option value="Pas à jour">Pas à jour</option>
+                                                        <option value="Documents légaux ?">Documents légaux ?</option>
+                                                        <option value="Fait">Fait</option>
+
                                                         <!-- Add other values from Etat_Doc if necessary -->
                                                     </select>
                                                 </div>
@@ -969,17 +1056,46 @@
                                                                 <div>{{key}}</div>
                                                             </td> 
                                                             <td>
-                                                                <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
+                                                                <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
                                                             </td>                                                            
                                                             <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                                                {% elif value.status == 'Pas fait' %}status-pasfait
-                                                                                {% elif value.status == 'Terminé' %}status-termine
-                                                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                                                {% elif value.status == 'Payée' %}status-payee
-                                                                                {% elif value.status == 'Trop tôt' %}status-troptot
-                                                                                {% else %}status-default
-                                                                                {% endif %}">
-                                                                <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: transparent; border: none; color: white; text-align: center; font-weight: 600;">
+                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                            {% elif value.status == 'Trop tôt' %}status-troptot
+                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                            {% elif value.status == 'Signé' %}status-signe
+                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                            {% elif value.status == 'Payée' %}status-payee
+                                                            {% elif value.status == 'Emise' %}status-emise
+                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                            {% elif value.status == 'A vérifier' %}status-averifier
+                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                            {% elif value.status == 'Fait' %}status-fait
+                                                            {% else %}status-default
+                                                            {% endif %}">
+                                                                <select name="suivi_document_{{ key }}_status" 
+                                                                class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                                {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                                {% elif value.status == 'Trop tôt' %}status-troptot
+                                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                                {% elif value.status == 'Signé' %}status-signe
+                                                                {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                                {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                                {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                                {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                                {% elif value.status == 'Payée' %}status-payee
+                                                                {% elif value.status == 'Emise' %}status-emise
+                                                                {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                                {% elif value.status == 'A vérifier' %}status-averifier
+                                                                {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                                {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                                {% elif value.status == 'Fait' %}status-fait
+                                                                {% else %}status-default
+                                                                {% endif %}"
+                                                                style="padding: 2px;  border: none; color: white; text-align: center; font-weight: 600;">
                                                                     <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                     <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                     <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
@@ -1002,18 +1118,16 @@
                                                                 <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
                                                             </td> 
                                                             <td>
-                                                                <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="delete_document_name" value="{{ key }}">
-                                                                    <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
-                                                                </form>
+                                                                <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
                                                             </td>
                                                             
 
                                                         </tr>
                                                         {% endfor %}
                                                         <tr>
-                                                            <td colspan="4" class="text-center">
+                                                            <td colspan="5" class="text-center">
                                                                 <button type="submit" class="btn btn-primary">Modifier</button>
                                                             </td>
                                                         </tr>
@@ -1172,17 +1286,46 @@
                                                             <div>{{key}}</div>
                                                         </td> 
                                                         <td>
-                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" value="{{ value.date }}">
+                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
                                                         </td>                                                            
                                                         <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                                            {% elif value.status == 'Pas fait' %}status-pasfait
-                                                                            {% elif value.status == 'Terminé' %}status-termine
-                                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                                            {% elif value.status == 'Payée' %}status-payee
-                                                                            {% elif value.status == 'Trop tôt' %}status-troptot
-                                                                            {% else %}status-default
-                                                                            {% endif %}">
-                                                            <select name="suivi_document_{{ key }}_status" class="form-control" style="padding: 2px; background-color: transparent; border: none; color: white; text-align: center; font-weight: 600;">
+                                                        {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                        {% elif value.status == 'Trop tôt' %}status-troptot
+                                                        {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                        {% elif value.status == 'Signé' %}status-signe
+                                                        {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                        {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                        {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                        {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                        {% elif value.status == 'Payée' %}status-payee
+                                                        {% elif value.status == 'Emise' %}status-emise
+                                                        {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                        {% elif value.status == 'A vérifier' %}status-averifier
+                                                        {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                        {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                        {% elif value.status == 'Fait' %}status-fait
+                                                        {% else %}status-default
+                                                        {% endif %}">
+                                                            <select name="suivi_document_{{ key }}_status" 
+                                                            class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                            {% elif value.status == 'Trop tôt' %}status-troptot
+                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                            {% elif value.status == 'Signé' %}status-signe
+                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                            {% elif value.status == 'Payée' %}status-payee
+                                                            {% elif value.status == 'Emise' %}status-emise
+                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                            {% elif value.status == 'A vérifier' %}status-averifier
+                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                            {% elif value.status == 'Fait' %}status-fait
+                                                            {% else %}status-default
+                                                            {% endif %}"
+                                                            style="padding: 2px; border: none; color: white; text-align: center; font-weight: 600;">
                                                                 <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                 <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                 <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
@@ -1205,18 +1348,16 @@
                                                             <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
                                                         </td> 
                                                         <td>
-                                                            <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                                {% csrf_token %}
-                                                                <input type="hidden" name="delete_document_name" value="{{ key }}">
-                                                                <button type="submit" class="btn btn-danger bouton-suppression"><i class="fas fa-times"></i></button>
-                                                            </form>
+                                                            <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
                                                         </td>
                                                         
 
                                                     </tr>
                                                     {% endfor %}
                                                     <tr>
-                                                        <td colspan="4" class="text-center">
+                                                        <td colspan="5" class="text-center">
                                                             <button type="submit" class="btn btn-primary">Modifier</button>
                                                         </td>
                                                     </tr>

@@ -1728,7 +1728,7 @@
                                                             {% if etude.convention %}
                                                             <form method="POST" action="{% url 'signature_document' model='CE' iD=etude.convention.id %}">
                                                                 {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ devis.date_signature }}" class="form-control mb-2">
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
                                                                 <button type="submit" class="btn btn-primary">Modifier date </button>
  
                                                             </form>
@@ -1736,13 +1736,22 @@
                                                         
                                                         
                                                         {% elif etude.type_convention == "Convention cadre" %}
-                                                            <h5 class="card-title">Convention Cadre</h5>
                                                                 
-                                                            {% if etude.convention.date_signature %}
-                                                            <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
-                                                            {% endif %}
+                                                            
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                             <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
+                                                            
+                                                            <p style="margin: 20px;">{% if etude.convention %} {% if etude.convention.date_signature %} La CC a été signé le {{ etude.convention.date_signature }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
+      
+                                                            {% if etude.convention %}
+                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude.convention.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
+                                                                <button type="submit" class="btn btn-primary">Modifier date </button>
+ 
+                                                            </form>
+                                                            {% endif %}
+
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
@@ -1871,12 +1880,32 @@
                                                         <table class="table">
                                                             <tbody>
                                                                 {% for avenant in etude.convention.avenants_modification.all %}
-                                                                <tr>
-                                                                    <td>{{avenant}}</td>
-                                                                    <td>{% if avenant.date_signature %}{{avenant.date_signature}}{% else %}Non signé{% endif %}</td>
+                                                                <tr margin-bottom: 20px;>
+                                                                    <td style="color: #000;">{{avenant}}</td>
                                                                     <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
                                                                     <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
                                                                 </tr>
+                                                                <tr padding-bottom: 10px;>
+                                                                    <td colspan="3">
+                                                                        <p>
+                                                                            {% if avenant.date_signature %}
+                                                                                Avenant signé le {{ avenant.date_signature }}
+                                                                            {% else %}
+                                                                                Non signé
+                                                                            {% endif %}
+                                                                        </p>
+                                                                        
+                                                                        
+                                                                            <form method="POST" action="{% url 'signature_document' model='AvCE' iD=avenant.id %}" class="form-inline">
+                                                                                {% csrf_token %}
+                                                                                <label for="new_date_{{ avenant.id }}" class="mr-2">Modifier la date:</label>
+                                                                                <input type="date" name="new_date" value="{{ avenant.date_signature }}" class="form-control mr-2" id="new_date_{{ avenant.id }}">
+                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                                            </form>
+                                                                        
+                                                                    </td>
+                                                                </tr>
+                                                            
                                                                 {% endfor %}
                                                             </tbody>
                                                         </table>
@@ -1938,11 +1967,27 @@
                                                                 {% for bon in bons %}
                                                                 <tr> 
                                                                     <td>Bon n°{{bon.numero}}</td>
-                                                                    <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
-                                                                    <td><button button class="btn btn-primary" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button></td>
+                                                                    <td>
+
+                                                                        
+                                                                            <form method="POST" action="{% url 'signature_document' model='BDC' iD=bon.id %}" class="form-inline">
+                                                                                {% csrf_token %}
+                                                                                <input type="date" name="new_date" value="{{ bon.debut }}" class="form-control mr-2" id="new_date_{{ bon.id }}">
+                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                                            </form>
+                                                                        
+                                                                    
+                                                                    </td>
                                                                     <td><a href="{% url 'editer_bon' bon.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i></a></td>
                                                                     <td><button class="btn btn-danger bouton-suppression" data-objectname="Bon n°{{bon.numero}}" data-href="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}" data-toggle="modal" data-target="#suppressionModal"><i class="fas fa-times"></i></button></td>
                                                                 </tr>
+                                                                <tr padding-bottom: 10px;>
+                                                                    <td colspan="3" style="text-align: center;">
+                                                                        {% if bon.debut %}BDC signé le {{bon.debut}}{% else %}Non signé{% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            
+                                                                
                                                                 {% endfor %}
                                                             </tbody>
                                                         </table>
@@ -3459,7 +3504,6 @@
                             <div class="tab-pane fade" id="pills-documents">
                                 <div class="col-12 mb-4">
                                     <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
-                                    <a href="{% url 'ba' iD=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Bulletin d'adhésion</a>
                                     <a href="{% url 'editer_ba' id_eleve=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le Bulletin d'adhésion</a>
 
                                     <div class="nav-item">
