@@ -27,7 +27,7 @@
                     display: none;
                 }
             }
-            
+
             body {
             line-height: 1.1;
             font-size: 12px;
@@ -357,6 +357,15 @@
 	</head>
 	<body>
         
+        <div class="page-wrapper">
+            <button type="button" class=" bouton_pdf no-print" id="generate-invoice" onclick="generateInvoice()" target="_blank">Télécharger</button>
+        </div>
+        <script>
+            function generateInvoice() {
+                // Replace 'id_facture' with the actual invoice ID from your context
+                window.location.href = '{% url "generate_facture_pdf" facture.id %}';
+            }
+        </script> 
 
         <div id = "invoice" class="container" style="width: 210mm; height: 297mm;">
             <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
@@ -425,7 +434,8 @@
             
             
             
-            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.ref}} </span > <span >en référence à la {{etude.type_convention}} {{etude.convention}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{bdc.ref}} {% endif %} </span> </div>
+            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.ref}} </span > <span >en référence à la {{etude.type_convention}} {{etude.convention}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{bdc.ref}} {% endif %}
+                {% if avenante_ref %} et à l'avenant {{avenante_ref}} {% endif %} </span> </div>
             <table class="table_prestation">
                 <thead class = "space-above">
                     <tr>
@@ -532,83 +542,13 @@
                 <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{etude.representant_client.titre}} {{etude.representant_client.first_name}} {{etude.representant_client.last_name}} - {{etude.ref}}</span> <span class ="gras">Net à payer : </span> <span contenteditable="true" >{{facture.montant_TTC|FormatNombres}} EUR</span> </p>
             </div>
         </div>
-        <div class="page-wrapper"></div>
-        <div class="page-wrapper">
-            <button type="button" class=" bouton_pdf no-print" id="generate-invoice" onclick="generateInvoice()" target="_blank">Télécharger</button>
-        </div>
-        <script>
-            function generateInvoice() {
-                // Replace 'id_facture' with the actual invoice ID from your context
-                window.location.href = '{% url "generate_facture_pdf" facture.id %}';
-            }
-        </script> 
         
-		<script>
-			const button = document.getElementById('download-button');
-
-			function generatePDF() {
-				// Choose the element that your content will be rendered to.
-				const element = document.getElementById('invoice');
-				// Choose the element and save the PDF for your user.
-				html2pdf().from(element).save();
-			}
-
-			button.addEventListener('click', generatePDF);
-		</script>
-        <script>
-            // Get the current date
-            var today = new Date();
-    
-            // Format the date as MM/DD/YYYY
-            var formattedDate = today.getDate() + '/' + (today.getMonth() + 1) + '/' +  today.getFullYear();
-    
-            // Insert the date into the placeholder
-            document.getElementById('current-date').textContent = formattedDate;
-            var futureDate = new Date();
-            futureDate.setDate(today.getDate() + 30);
-
-            // Format the future date as MM/DD/YYYY
-            var formattedFutureDate = futureDate.getDate() + '/' + (futureDate.getMonth() + 1) + '/' + futureDate.getFullYear();
-            document.getElementById('future-date').textContent = formattedFutureDate;
-            </script>
+        
+        
+		
+        
         </body>
-        <script>
-            document.getElementById('download_pdf').addEventListener('click', async () => {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-            
-                // Capture the HTML content
-                const content = document.getElementById('invoice');
-                const canvas = await html2canvas(content, { scale: 2 }); // Adjust the scale for better quality
-                const imgData = canvas.toDataURL('image/png');
-            
-                // Calculate dimensions for A4
-                const imgWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgHeight = (canvas.height * imgWidth) / canvas.width; // Image height calculated proportionally
-                let heightLeft = imgHeight;
-                let position = 0;
-            
-                // Add the first page
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-            
-                // Add more pages if necessary
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-            
-                // Correctly finalize and save the PDF, avoiding an extra blank page
-                if (heightLeft < 0) {
-                    pdf.deletePage(pdf.getNumberOfPages());
-                }
-            
-                pdf.save('{{facture}}.pdf');
-            });
-        </script>
+        
         
             
         

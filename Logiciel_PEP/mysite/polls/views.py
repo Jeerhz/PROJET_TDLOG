@@ -1138,14 +1138,25 @@ def generate_facture_pdf(request, id_facture):
             etude = facture.etude
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by('numero')
+            
             res = facture.montant_TTC()
             facture.date_emission = timezone.now().strftime('%d/%m/%Y')
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.strftime('%d/%m/%Y')
             logo_url = request.build_absolute_uri(static('polls/img/bdc.png'))
             bdc=""
+            avenante_ref=None
+
+            avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+
             if etude.type_convention == "Convention cadre":
                 bdc=facture.bdc()
+            else:
+                ce = etude.convention()
+                if ce:
+                    avenants_signes  = AvenantConventionEtude.objects.filter(ce=ce,date_signature__isnull=False).order_by('numero')
+                    avenante_ref=avenants_signes.last()
+
 
             # Context for the invoice
             context = {
@@ -1156,7 +1167,7 @@ def generate_facture_pdf(request, id_facture):
                 "res": res,
                 "date_emission": facture.date_emission,
                 "date_echeance": facture.date_echeance,
-                "logo_url": logo_url, "bdc": bdc
+                "logo_url": logo_url, "bdc": bdc, "avenante_ref":avenante_ref
             }
 
             # Render the full HTML of the invoice page (with full HTML structure and CSS link)
@@ -1195,8 +1206,17 @@ def facture(request, id_facture):
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.strftime('%d/%m/%Y')
             bdc=""
+            avenante_ref=None
+
+            avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+
             if etude.type_convention == "Convention cadre":
                 bdc=facture.bdc()
+            else:
+                ce = etude.convention()
+                if ce:
+                    avenants_signes  = AvenantConventionEtude.objects.filter(ce=ce,date_signature__isnull=False).order_by('numero')
+                    avenante_ref=avenants_signes.last()
             context = {
                 "facture": facture,
                 "etude": etude,
@@ -1204,9 +1224,9 @@ def facture(request, id_facture):
                 "phases": phases,
                 "res": res,
                 "date_emission": facture.date_emission,
-                "date_echeance": facture.date_echeance, "bdc":bdc
+                "date_echeance": facture.date_echeance, "bdc":bdc,"avenante_ref":avenante_ref
             }
-            template = loader.get_template("polls/facpdfhtml.html")
+            template = loader.get_template("polls/facpdf.html")
 
         except Exception as e:
             template = loader.get_template("polls/page_error.html")
