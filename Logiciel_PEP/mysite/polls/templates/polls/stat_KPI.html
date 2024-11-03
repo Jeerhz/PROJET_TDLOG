@@ -23,6 +23,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
     <script src="{% static 'polls/js/chart-area.js' %}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -444,17 +446,19 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Chiffre d'Affaire Annuel</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{chiffre_affaire_total}} €</div>
+                                            <div class="text-xs text-success text-uppercase mb-1">
+                                                Chiffre d'Affaire 026 signé <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026|FormatNombres}} €</span></div>
+                                            <div class="text-xs text-success text-uppercase mb-1">
+                                                Chiffre d'Affaire 026 avec cut-off <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026_cutoff|FormatNombres}} €</span></div>
+                                            <div class="text-xs text-success text-uppercase mb-1">
+                                                Chiffre d'Affaire 026 potentiel <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_potentiel|FormatNombres}} €</span></div>
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
-                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
 
                         <!-- Card Nombre Eleve -->
                         <div class="col-xl-3 col-md-6 mb-4">
@@ -462,13 +466,19 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Nombre d'Eleves Inscrits</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ nombre_eleve }}</div>
+                                            <div class="text-xs text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.0 }} </span>études signées en cours 
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.1 }} € </span></div>
+                                            <div class="text-xs  text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.0 }} </span>études en discussion 
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.1 }} € </span></div>
+                                            <div class="text-xs  text-primary text-uppercase mb-1">
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.0 }} </span>études terminées 026
+                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.1 }} € </span></div>
+                                                   
+                                            
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-user fa-2x text-gray-300"></i>
-                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -478,16 +488,28 @@
                         <!-- Card Client Count -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
+                                <div class="card-body" style ="padding: 10px;padding-top: 4px;">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Nombre de Clients</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ nombre_client }}</div>
+                                            <div style = "text-align: center;font-size: 12px;"> signées 026</div>
+                                            <div class="text-xs  text-info text-uppercase mb-1">
+                                                Taux d'ouverture : <span style="font-weight: 1000; color: black;">{{taux_ouverture|FormatNombres}} % </span>
+                                             </div>
+                                                
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_etudes026|FormatNombres}} €</span>
+                                            </div>
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retrib_moye_etude|FormatNombres}} €</span>
+                                            </div>
+                                            <div class="text-xs text-info text-uppercase mb-1">
+                                                Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retrib_moye_etudiant|FormatNombres}} €</span>
+                                            </div>
+                                                
+                                           
+                                                
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-building fa-2x text-gray-300"></i>
-                                        </div>
+                                      
                                     </div>
                                 </div>
                             </div>
@@ -499,19 +521,24 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Nombre d'Etudes</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{nombre_etude}}</div>
+                                            
+                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_026}} </span>intervenants 026 </div>
+                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
+                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                                <span style="font-weight: 1000; color: black;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
+
+                                                
+                                           
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
+                                       
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Content Row -->
 
                     <div class="row">
@@ -559,13 +586,349 @@
                         <script>
                             var chiffre_affaire_par_departement = [{% for value in chiffre_affaire_par_departement %}{{ value }},{% endfor %}];
                             var chiffre_affaire_par_type = [{% for value in chiffre_affaire_par_type %}{{ value }},{% endfor %}];
-                            var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}]
+                            var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}];
+                            var repartition_CA_etudes = {{ repartition_CA_etudes|safe }};
+
+
                         </script>
                     </div>
+
+                    <div class="row">
+                        
+
+                        <!-- Area Chart -->
+                        <div class="col-xl-12 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary" style="text-align: center;">Devis envoyés / missions signées</h6>
+                                    
+                                </div>
+                                <!-- Card Body -->
+                                
+                                
+                                <div class="chart-area">
+                                    <canvas id="myBarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>                                                
+                        
+                    </div>
+
+
+                    <script>
+                        var dico_suivi_devis = {{ dico_suivi_devis|safe }};
+                    </script>
+                    <div class="row">
+
+                        <!-- Area Chart -->
+                        
+                        <div class="col-xl-12 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary" style="text-align: center;">Avenants à la CE par mois</h6>
+                                </div>
+                                <div class="chart-area">
+                                    <canvas  id="BarChartCE"></canvas >
+                                </div>
+                            
+                            </div>     
+                        
+                        </div>                                                
+                        
+                    </div>
+                    
+
+                    <script>
+                        var dico_avenants_mois_ce = {{ dico_avenants_mois_ce|safe }};
+                    </script>
                     <!--End Row-->
 
                     <!--New row-->
                     <div class="row">
+                        
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Répartition CA des études en cours et terminées</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{totale_CA_ecterm}} €</div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartEtudeSatus"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var repartitionData = {{ repartition_CA_etudes|safe }};
+                        </script>
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Nombres d'études en cours et terminées</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> {{totale_nb_ecterm}} études</div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartEtudeSatusnb"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var repartitionData_nb = {{ repartition_nb_etudes|safe }};
+                        </script>
+
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">départements des intervenants 026</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartDepartEleve"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var repartdepeleve = {{ dictionaire_dep_eleve|safe }};
+                        </script>
+
+
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">genre des intervenants</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> {{nb_intervenants_026}} intervenants</div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartGenreIntervenants"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var genre_inter = {{ dico_genre_inter|safe }};
+                        </script>
+
+                         <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par type d'entreprise</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartCAtypeentreprise"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var CA_typeentreprise = {{ dico_ca_typeentreprise|safe }};
+                        </script>
+
+                         <!-- Pie Chart -->
+                         <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par département</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartCAdepartement"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var dico_ca_departement = {{ dico_ca_departement|safe }};
+                        </script>
+                        
+
+                         <!-- Pie Chart -->
+                         <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par secteur d'activité
+                                    </h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                            aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Actions:</div>
+                                            <a class="dropdown-item" href="#">Période</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Télécharger</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body" style="padding-bottom: 10px;">
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="PieChartCAdSecteur"></canvas>
+                                    </div>
+                                    <div class="mt-4 text-center small">
+                                        
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
+                        var dico_ca_secteur = {{ dico_ca_secteur|safe }};
+                        </script>
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
@@ -588,7 +951,7 @@
                                     </div>
                                 </div>
                                 <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 110px;">
+                                <div class="card-body" style="padding-bottom: 10px;">
                                     <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartCADept"></canvas>
@@ -631,7 +994,7 @@
                                     </div>
                                 </div>
                                 <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 70px;">
+                                <div class="card-body" style="padding-bottom: 10px;">
                                     <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartCAType"></canvas>
@@ -695,7 +1058,19 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        
+                        
+
+                        
+
                     </div>
+                    
+                    
+                    
+                      
+                    
+
                 </div>
                 <!-- /.container-fluid -->
 
@@ -760,6 +1135,22 @@
     <script src="{% static 'polls/js/demo/chart-pie-ca-dept.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-ca-type.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-ca-sect.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-etude-status.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-etude-status-nb.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-depart-eleve.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-genre-intervenants.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-CA-dept2.js' %}"></script>
+    <script src="{% static 'polls/js/demo/chart-pie-CA-type-entr.js' %}"></script>
+    <script src="{% static 'polls/js/demo/bar-chart-CA.js' %}"></script>
+    <script src="{% static 'polls/js/demo/devis-envoyees-reussis.js' %}"></script>
+    <script src="{% static 'polls/js/demo/avenantsce-mois.js' %}"></script>
+
+
+
+    
+    
+
+
     <!-- 2 scripts spécifiques aux suggestions de recherche -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">

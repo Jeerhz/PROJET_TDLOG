@@ -557,8 +557,8 @@ class Etude(models.Model):
     description = models.TextField(max_length=10000, blank=True)
     problematique = models.TextField(max_length=500, blank=True)
     debut = models.DateField(default=timezone.now, blank=True, null=True)
-    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="qualite_etudes",verbose_name='qualité')
-    responsable = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True, related_name="responsable_etudes",verbose_name='suiveur')
+    resp_qualite = models.ForeignKey(Member, on_delete=models.CASCADE,  related_name="qualite_etudes",verbose_name='qualité')
+    responsable = models.ForeignKey(Member, on_delete=models.CASCADE,  related_name="responsable_etudes",verbose_name='suiveur')
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     client_interlocuteur= models.ForeignKey(Representant, on_delete=models.CASCADE, related_name='client_interlocuteur')
     client_representant_legale= models.ForeignKey(Representant, on_delete=models.CASCADE,related_name='client_representant_legale')
@@ -705,6 +705,14 @@ class Etude(models.Model):
 
     def marge_JE(self):
         return self.montant_HT_total() - self.retributions_totales() - self.charges_URSSAF()
+    
+    def facture_solde(self):
+        factures=Facture.objects.filter(etude=self).order_by('numero_facture')
+        fac_solde = None
+        for facture in factures:
+            if facture.type_facture==facture.Status.SOLDE:
+                fac_solde = facture
+        return fac_solde
 
     def save(self, *args, **kwargs):
         if not self.id_url:
@@ -774,12 +782,10 @@ class Etude(models.Model):
 
     def convention(self):
         if self.type_convention == "Convention d'étude":
-            conventions = ConventionEtude.objects.filter(etude=self)
+            return ConventionEtude.objects.filter(etude=self).first() 
         elif self.type_convention == "Convention cadre":
-            conventions = ConventionCadre.objects.filter(etude=self)
-        else:
-            return None
-        return conventions.first() if conventions.exists() else None
+            return  ConventionCadre.objects.filter(etude=self).first() 
+        
     
     def nouveau_num_avenant_ce(self):
         list_num = self.convention().avenants_modification.values_list("numero", flat=True)
@@ -792,7 +798,15 @@ class Etude(models.Model):
         return self.responsable is not None and self.resp_qualite is not None
 
     def devis_edited(self):
-        return Devis.objects.filter(etude=self).exists()
+        return Devis.objects.filter(etude_id=self.id).exists()
+    
+    def get_devis(self):
+        devis = self.devis.first()
+        if devis:
+            return devis
+        else:
+            return None
+
     
     def rdm_edited(self):
         return RDM.objects.filter(etude=self).exists()
@@ -930,14 +944,28 @@ class Devis(models.Model):
 
 class PV(models.Model):
     etude = models.ForeignKey('Etude', on_delete=models.CASCADE, related_name="pv")
-    numero = models.IntegerField()
+    numero = models.IntegerField(blank=True, null=True)
     date_signature = models.DateField(blank=True, null=True)
     remarque = models.TextField(blank=True, null=True)
     date = models.DateField(default=date.today)
+    class Type(models.TextChoices):
+        PVRF = 'PVRF', 'Procés verbale de recette finale'
+        PVRI = 'PVRI', 'Procés verbale de recette intermédiaire'
+    type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+        default=Type.PVRF,
+        help_text="Sélectionnez le type de procés verbale."
+    )
+    
     
     def ref(self):
         ref_etude= self.etude.ref()
-        return f"{ref_etude}pv"
+        if self.type== 'PVRF':
+            return f"{ref_etude}pvrf"
+        else:
+            return f"{ref_etude}pvri"
+
     
     def date_pv(self):
         date = timezone.now()

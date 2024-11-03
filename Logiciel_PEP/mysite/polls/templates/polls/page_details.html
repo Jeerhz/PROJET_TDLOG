@@ -644,7 +644,7 @@
 
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 text-center">
-                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.id|RefMission }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
+                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.ref }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
                             <h5 style="font-size: 16px;">{{ etude.problematique}}</h5>
                         </div>
                         <div class="card-body">
@@ -771,7 +771,9 @@
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
+
 
                                                         </ul>
                                                         <!-- Modify Button -->
@@ -789,7 +791,8 @@
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
 
                                                             </ul>
                                                             <!-- Save and Cancel Buttons -->
@@ -865,6 +868,11 @@
                                                 if (!debut) {
                                                     event.preventDefault();  // Prevent form submission
                                                     alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
+                                                    return false;
+                                                }
+                                                if (!numero) {
+                                                    event.preventDefault();  // Prevent form submission
+                                                    alert('Veuillez renseigner un numéro');  // Display alert
                                                     return false;
                                                 }
                                             });
@@ -1095,10 +1103,10 @@
                                                 </a>
                                                 <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
                                                     <div class="bg-white py-2 collapse-inner rounded">
-                                                        <table class="table table-striped">
+                                                        <table class="table table-striped clearfix">
                                                             <thead>
                                                                 <tr>
-                                                                    <th scope="col">Intervenant</th>
+                                                                    <th scope="col">Intervenant </th>
                                                                     <th scope="col">Nombre de JEH</th>
                                                                     <th scope="col">Pourcentage de rétribution</th>
                                                                     <th scope="col">Rétribution brute</th>
@@ -1165,7 +1173,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="padding: 20px;">{{phase.description}}</div>
+                                            <div style="padding: 20px;text-align: center;">{{phase.description}}</div>
                                         </div> 
                                     </div>
                                     {% endfor %}    
@@ -1297,43 +1305,53 @@
                                                     <div class="bg-white py-2 collapse-inner rounded">
                                                         <table class="table table-striped">
                                                             <thead>
-                                                                <tr>{% if phase.li_eleves %}
+                                                                <tr>
+                                                                    <th scope="col">Intervenant </th>
+                                                                    <th scope="col">Nombre de JEH</th>
+                                                                    <th scope="col">Pourcentage de rétribution</th>
+                                                                    <th scope="col">Rétribution brute</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% if phase.li_eleves %}
                                                                     {% for assignation_JEH in phase.get_assignations_JEH %}
-                                                                    <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
-                                                                    <td>{{ assignation_JEH.nombre_JEH }}</td>
-                                                                    <td>{{ assignation_JEH.pourcentage_retribution }}</td>
-                                                                    <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
-                                                                    <td>
-                                                                        
-                                                                        <!-- Delete Button -->
-                                                                        <button type="button" class="close" data-toggle="modal" data-target="#deleteModalAssignation{{ assignation_JEH.id }}" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                
-                                                                        <!-- Modal for Deleting Assignation -->
-                                                                        <div class="modal fade" id="deleteModalAssignation{{ assignation_JEH.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ assignation_JEH.id }}" aria-hidden="true">
-                                                                            <div class="modal-dialog" role="document">
-                                                                                <div class="modal-content">
-                                                                                    <div class="modal-header">
-                                                                                        <h5 class="modal-title" id="deleteModalLabel{{ assignation_JEH.id }}">Supprimer l'assignation</h5>
-                                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                                            <span aria-hidden="true">&times;</span>
-                                                                                        </button>
-                                                                                    </div>
-                                                                                    <div class="modal-body">
-                                                                                        Êtes-vous sûr de vouloir supprimer cette assignation ?
-                                                                                    </div>
-                                                                                    <div class="modal-footer">
-                                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                                        <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
-                                                                                            {% csrf_token %}
-                                                                                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                                                        </form>
+                                                                    <tr>
+                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                        <td>{{ assignation_JEH.nombre_JEH }}</td>
+                                                                        <td>{{ assignation_JEH.pourcentage_retribution }}</td>
+                                                                        <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
+                                                                        <td>
+                                                                            
+                                                                            <!-- Delete Button -->
+                                                                            <button type="button" class="close" data-toggle="modal" data-target="#deleteModalAssignation{{ assignation_JEH.id }}" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                    
+                                                                            <!-- Modal for Deleting Assignation -->
+                                                                            <div class="modal fade" id="deleteModalAssignation{{ assignation_JEH.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ assignation_JEH.id }}" aria-hidden="true">
+                                                                                <div class="modal-dialog" role="document">
+                                                                                    <div class="modal-content">
+                                                                                        <div class="modal-header">
+                                                                                            <h5 class="modal-title" id="deleteModalLabel{{ assignation_JEH.id }}">Supprimer l'assignation</h5>
+                                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        <div class="modal-body">
+                                                                                            Êtes-vous sûr de vouloir supprimer cette assignation ?
+                                                                                        </div>
+                                                                                        <div class="modal-footer">
+                                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                            <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
+                                                                                                {% csrf_token %}
+                                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                            </form>
+                                                                                        </div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    </td>
+                                                                        </td>
+                                                                    <tr>
                                                                     {% endfor %}
                                                                 {% else %}
                                                                 <tr>
@@ -1386,7 +1404,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="padding: 20px;">{{phase.description}}</div>
+                                            <div style="padding: 20px; text-align: center;">{{phase.description}}</div>
                                         </div>  
                                     </div>
                                     {% endfor %}    
@@ -1680,13 +1698,19 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">Devis</h5>
                                                         
-                                                        {% if etude.devis.date_signature %}                                       
-                                                        <p class="card-text">Le devis a été signé le {{etude.devis.date_signature}}</p>
-                                                        {% endif %}                                                    
-                                                        <p class="card-text">{% if etude.devis_editable %}Préparez le devis pour cette étude.{% else %}Informations manquantes pour générer le devis.{% endif %}</p>
-                                                        <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer le devis</a>
+                                                                                                       
+                                                        <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}" ><i class="fas fa-download mr-2"></i>Générer le Devis</a>
+                                                        <p style="margin: 20px;">{% if etude.get_devis %} {% if etude.get_devis.date_signature %} Le devis a été envoyé le {{ etude.get_devis.date_signature }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
+
+                                                        {% if etude.get_devis %}
+                                                        <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude.get_devis.id %}">
+                                                            {% csrf_token %}
+                                                            
+                                                            <input  type="date" name="new_date" value="{{ devis.date_signature }}" class="form-control mb-2">
+                                                            <button type="submit" class="btn btn-primary">Modifier date </button>
+                                                        </form>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>    
@@ -1694,34 +1718,45 @@
                                                 <div class="card">
                                                     <div class="card-body">
                                                         {% if etude.type_convention == "Convention d'étude" %}
-                                                            <h5 class="card-title">Convention d'Étude</h5>
                                                             
-                                                            {% if etude.convention.date_signature %}
-                                                            <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
+                                                            
+                                                            
+                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention d'Étude</a>
+                                                            
+                                                            <p style="margin: 20px;">{% if etude.convention %} {% if etude.convention.date_signature %} La CE a été signé le {{ etude.convention.date_signature }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
+
+                                                            {% if etude.convention %}
+                                                            <form method="POST" action="{% url 'signature_document' model='CE' iD=etude.convention.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
+                                                                <button type="submit" class="btn btn-primary">Modifier date </button>
+ 
+                                                            </form>
                                                             {% endif %}
-                                                            <p class="card-text">{% if etude.ce_editable %}Préparez la convention pour cette étude.{% else %}Informations manquantes pour générer la convention d'étude.{% endif %}</p>
-                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la CE</a>
+                                                        
+                                                        
                                                         {% elif etude.type_convention == "Convention cadre" %}
-                                                            <h5 class="card-title">Convention Cadre</h5>
                                                                 
-                                                            {% if etude.convention.date_signature %}
-                                                            <p class="card-text">La convention a été signée le {{ etude.convention.date_signature }}</p>
-                                                            {% endif %}
+                                                            
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                             <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
+                                                            
+                                                            <p style="margin: 20px;">{% if etude.convention %} {% if etude.convention.date_signature %} La CC a été signé le {{ etude.convention.date_signature }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
+      
+                                                            {% if etude.convention %}
+                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude.convention.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
+                                                                <button type="submit" class="btn btn-primary">Modifier date </button>
+ 
+                                                            </form>
+                                                            {% endif %}
+
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
                                                         {% endif %}
                                                     </div>
-                                                    <table style = " table-layout: fixed;">
-                                                        
-                                                        <tr>
-                                                            <td style="word-wrap: break-word;text-align: left;" >date de signature (jj/mm/aaaa)</td>
-                                                            <td style="word-wrap: break-word;"  ><span contenteditable="True" data-url="{% url 'signature_document' model='CE' iD=etude.convention.id %}" class="editableDiv">{% if etude.convention.date_signature %} {{etude.convention.date_signature}} {% else %} JJ/MM/AAAA {% endif %} </span></td>
-
-                                                        </tr>
-
-                                                    </table>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -1780,6 +1815,61 @@
                                                 });
                                             });
                                         </script>
+                                        <script>
+                                            // Function to send AJAX request to Django
+                                            function saveContent(elem) {
+                                              var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                              var content = elem.innerText;
+                                              var url = elem.dataset.url;
+                                              
+                                              // AJAX request using fetch API
+                                                fetch(url, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': csrfToken
+                                                    },
+                                                    body: JSON.stringify({ content: content }),
+                                                })
+                                                .then(response => {
+                                                    if (!response.ok) {
+                                                    throw new Error('Network response was not ok');
+                                                    }
+                                                    return response.json();
+                                                })
+                                                .then(data => {
+                                                    if(data.success){
+                                                        alert("The modification was taken into account.");
+                                                    }
+                                                    else{
+                                                        alert("The modification wasn't taken into account.");
+                                                    }
+                                                })
+                                                .catch(error => {
+                                                    console.error('There was a problem with the fetch operation:', error.message);
+                                                });
+                                            }
+                                            document.addEventListener("DOMContentLoaded", function() {
+                                                // Event listener to detect when user clicks outside the div
+                                                var alleditabledevis = document.getElementsByClassName('editabledevis');
+                                                var arrayEditDiv = Array.from(alleditabledevis);
+                                                var arrayDivContent = [];
+                                                arrayEditDiv.forEach(elem => {
+                                                    arrayDivContent.push(elem.textContent);
+                                                });
+                                    
+                                                window.addEventListener('click', function(event) {
+                                                    if (!event.target.closest('.editabledevis')) {
+                                                        arrayEditDiv.forEach((elem, index) => {
+                                                            if(elem.textContent !== arrayDivContent[index]){
+                                                                saveContent(elem);
+                                                                arrayDivContent[index] = elem.textContent;
+                                                            }
+                                                        })
+                                                    }
+                                                });
+                                            });
+                                        </script>
                                         <div class="row">
                                             {% if etude.type_convention == "Convention d'étude" %}
                                             <div class="col-md-6">
@@ -1790,12 +1880,32 @@
                                                         <table class="table">
                                                             <tbody>
                                                                 {% for avenant in etude.convention.avenants_modification.all %}
-                                                                <tr>
-                                                                    <td>{{avenant}}</td>
-                                                                    <td>{% if avenant.date_signature %}{{avenant.date_signature}}{% else %}Non signé{% endif %}</td>
+                                                                <tr margin-bottom: 20px;>
+                                                                    <td style="color: #000;">{{avenant}}</td>
                                                                     <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
                                                                     <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
                                                                 </tr>
+                                                                <tr padding-bottom: 10px;>
+                                                                    <td colspan="3">
+                                                                        <p>
+                                                                            {% if avenant.date_signature %}
+                                                                                Avenant signé le {{ avenant.date_signature }}
+                                                                            {% else %}
+                                                                                Non signé
+                                                                            {% endif %}
+                                                                        </p>
+                                                                        
+                                                                        
+                                                                            <form method="POST" action="{% url 'signature_document' model='AvCE' iD=avenant.id %}" class="form-inline">
+                                                                                {% csrf_token %}
+                                                                                <label for="new_date_{{ avenant.id }}" class="mr-2">Modifier la date:</label>
+                                                                                <input type="date" name="new_date" value="{{ avenant.date_signature }}" class="form-control mr-2" id="new_date_{{ avenant.id }}">
+                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                                            </form>
+                                                                        
+                                                                    </td>
+                                                                </tr>
+                                                            
                                                                 {% endfor %}
                                                             </tbody>
                                                         </table>
@@ -1857,11 +1967,27 @@
                                                                 {% for bon in bons %}
                                                                 <tr> 
                                                                     <td>Bon n°{{bon.numero}}</td>
-                                                                    <td>{% if bon.date_signature %}{{bon.date_signature}}{% else %}Non signé{% endif %}</td>
-                                                                    <td><button button class="btn btn-primary" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button></td>
+                                                                    <td>
+
+                                                                        
+                                                                            <form method="POST" action="{% url 'signature_document' model='BDC' iD=bon.id %}" class="form-inline">
+                                                                                {% csrf_token %}
+                                                                                <input type="date" name="new_date" value="{{ bon.debut }}" class="form-control mr-2" id="new_date_{{ bon.id }}">
+                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
+                                                                            </form>
+                                                                        
+                                                                    
+                                                                    </td>
                                                                     <td><a href="{% url 'editer_bon' bon.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i></a></td>
                                                                     <td><button class="btn btn-danger bouton-suppression" data-objectname="Bon n°{{bon.numero}}" data-href="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}" data-toggle="modal" data-target="#suppressionModal"><i class="fas fa-times"></i></button></td>
                                                                 </tr>
+                                                                <tr padding-bottom: 10px;>
+                                                                    <td colspan="3" style="text-align: center;">
+                                                                        {% if bon.debut %}BDC signé le {{bon.debut}}{% else %}Non signé{% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            
+                                                                
                                                                 {% endfor %}
                                                             </tbody>
                                                         </table>
@@ -1877,32 +2003,23 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">PV</h5>
-                                                            <br>
-                                                            <p class="card-text">Préparez le procés verbale de recette finale<strong></strong> pour cette étude.</p>
-                                                            <a  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
+                                                            <a href="{% url 'editer_acf_client' iD %}"  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer l'Accord de confidentialité client</a>
                                                             <br>
                                                             <br>
-                                                            <p class="card-text">Préparez le procés verbale de recette finale<strong></strong> pour cette étude.</p>
-                                                            <a href="{% url 'editer_pv' iD %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+                                                            <a href="{% url 'editer_pv' iD=iD type='PVRI'%}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
 
                                                             <br>
-                                                            <p class="card-text">Mission pas terminé</p>
+                                                            <br>
+                                                            
+                                                            <a href="{% url 'editer_pv' iD=iD type='PVRF'%}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+
+                                                            
+
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">Accord de confidentialité client</h5>
-                                                            <br>
-                                                            <a href="{% url 'editer_acf_client' iD %}"  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer</a>
-
-
-                                                            <br>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            
+                                            
                                         </div>
                                     </div>
                                         
@@ -1918,7 +2035,18 @@
                                                         <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
                                                             client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
                                                         </li>
-                                                        
+                                                        {% if etude.type_convention == "Convention d'étude" %}
+                                                            {% if etude.facture_solde %}
+                                                            <li class="list-group-item"> Facture de solde : <span style="color:#000" id="etude-frais">frais : {{ etude.facture_solde.pourcentage_frais|FormatNombres }} %, phases : {{ etude.facture_solde.pourcentage_JEH|FormatNombres }} %</span></li>
+ 
+                                                            {% else %}
+                                                            <li class="list-group-item">
+                                                                <span style="color: red;"> préciser la facturation </span>
+                                                            </li>
+                                                            {% endif %}
+                                                        {% elif etude.type_convention == "Convention cadre" %}
+                                                         <div></div>
+                                                        {% endif %}
                                                         <li class="list-group-item"> Frais de dossier : <span style="color:#000" id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
                                                         <li class="list-group-item">
                                                             Votre structure : <span id="verifier-client_description" style="color:#000">{% if etude.client.description %} {{ etude.client.description }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
@@ -1979,9 +2107,16 @@
                                                             <div style="text-align: center; font-weight: bold; font-size: large;color: #000;">Informations Convention d'Étude</div>
                                                         <br>
                                                         
-                                                        <div>
-                                                            Responsable client
-                                                        </div>
+                                                        
+                                                        <li class="list-group-item">
+                                                            <div>
+                                                                Interlocuteur client : <span id="verifier-client_interlocuteur" style="color:#000">{% if etude.client_interlocuteur  %} {{ etude.client_interlocuteur  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                            </div>
+                                                            <div>
+                                                                Responsable légal client : <span id="verifier-client_representant_legale" style="color:#000">{% if etude.client_representant_legale  %} {{ etude.client_representant_legale  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                            </div>
+
+                                                        </li>
                                                         <li class="list-group-item">
                                                             Objectifs de l'étude : <span id="verifier-objectifs" style="color:#000">{% if etude.objectifs  %} {{ etude.objectifs  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
                                                         </li>
@@ -2813,7 +2948,8 @@
                     <div class="tab-content">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                <h5 class="m-1 font-weight-bold text-primary">Détails Client</h5>
+                                 <img class="img-profile rounded-circle" style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px;" src="{{ client.logo.url }}">
+                                <h5 class="m-1 font-weight-bold text-primary">{{ client.nom_societe }}</h5>
                                 <div>
                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModalClient">Modifier</button>
                                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalClient">Supprimer</button>
@@ -2821,16 +2957,30 @@
                             </div>
                             <div class="card-body mb-3">
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>{{ client.nom_societe }}</strong></li>
-                                    <li class="list-group-item"><i class="fas fa-store mr-2"></i><strong>Secteur d'Activité :</strong> {{ client.secteur }}</li>
-                                    <li class="list-group-item"><i class="fas fa-road mr-2"></i><strong>Rue :</strong> {{ client.rue }} {{ client.code_postal }} {{ client.ville }} {{ client.country }}</li>
-                                    <li class="list-group-item"><i class="fas fa-image mr-2"></i><strong>Logo :</strong><img class="ml-3" src="{{ client.logo.url }}" alt="Logo" style="width: 100px; height: 100px;"></li>
+                                    <li class="list-group-item"><span style="font-style: italic;">Description : </span><span style="color: #000;">{{ client.description }}</span></li>
+
+                                    <li class="list-group-item"><span style="font-style: italic;">Secteur d'Activité : </span><span style="color: #000;">{{ client.get_secteur_display }}</span></li>
+                                    <li class="list-group-item"><span style="font-style: italic;">Type d'entreprise : </span> <span style="color: #000;">{{ client.get_type_display }}</span></li>
+                                    <li class="list-group-item"><span style="font-style: italic;">Remarque : </span> <span style="color: #000;">{{ client.remarque }}</span></li>
+                                    
+                                    <li class="list-group-item"><span style="font-style: italic;">Adresse : </span> 
+                                        <span style="color: #000;">
+                                            <div>{{ client.rue }} </div>
+                                            <div>{{ client.code_postal }} {{ client.ville }}</div>
+                                            <div>{{ client.country }}</div>
+                                        </span>
+                                        
+                                    </li>
+
+                                    
+                                    
+                                    
                                 </ul>
                             </div>
                         </div>
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                <h5 class="m-1 font-weight-bold text-primary">Représentants Client</h5>
+                                <h5 class="m-1 font-weight-bold text-primary">Représentants</h5>
                             </div>
                             <div class="card-body">
                                 {% if client.representants %}
@@ -2839,17 +2989,16 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
                                             <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-user-tag mr-2"></i><strong>{{ representant.first_name }} {{representant.last_name}}</strong>
+                                                <strong>{{ representant.first_name }} {{representant.last_name}}</strong>, {{ representant.fonction }}
+                                            </div>
+                                            
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span> <a href="mailto:{{ representant.email }}"> {{ representant.mail }}</a> - <a href="tel:{{ representant.telephone }}"> {{ representant.phone_number }}</a></span> 
                                             </div>
                                             <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-briefcase mr-2"></i><strong>Fonction : </strong> {{ representant.fonction }}
+                                                <span style="font-style: italic;">Remarque :&nbsp;</span> <span style="color: #000;"> {{representant.remarque}}</span> 
                                             </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-envelope mr-2"></i><strong>Email  </strong> <a href="mailto:{{ representant.email }}"> : {{ representant.mail }}</a>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-phone mr-2"></i><strong>Téléphone : </strong> <a href="tel:{{ representant.telephone }}"> {{ representant.phone_number }}</a>
-                                            </div>
+                                            
                                         </div>
                                         <div>
                                             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRepresentantModal{{ representant.id }}">Supprimer</button>
@@ -3079,21 +3228,37 @@
                             <div class="tab-pane fade show active" id="pills-fiche_info">
                                 <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                        <h5 class="m-1 font-weight-bold text-primary">{% if eleve.is_member %} {{ eleve.is_member.poste }} {% else %} Détails Élève {% endif %}</h5>
+                                        <h5 class="m-1 font-weight-bold text-primary">{{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
                                         <div>
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
                                             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
                                         </div>
                                     </div>
-                                    <div class="card-body w-100">
-                                        <!-- Détails spécifiques à l'élève -->
+                                    
+                                    <div class="card-body mb-3">
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item"><i class="fas fa-user mr-2"></i><strong>Nom:</strong> {{ eleve.last_name }} {{ eleve.first_name }}</li>
-                                            <li class="list-group-item"><i class="fas fa-envelope mr-2"></i><strong>Email:</strong> {{ eleve.mail }}</li>
-                                            <li class="list-group-item"><i class="fas fa-phone mr-2"></i><strong>Téléphone:</strong> {{ eleve.phone_number }}</li>
-                                            <li class="list-group-item"><i class="fas fa-home mr-2"></i><strong>Adresse:</strong> {{ eleve.adress }}, {{ eleve.country }}</li>
-                                            <li class="list-group-item"><i class="fas fa-graduation-cap mr-2"></i><strong>Promotion:</strong> {{ eleve.promotion }}</li>
-                                            <li class="list-group-item"><i class="fas fa-building mr-2"></i><strong>Département:</strong> {{ eleve.get_departement_display }}</li>
+                                            <li class="list-group-item"><span style="font-style: italic;">Remarque : </span><span style="color: #000;">{{ eleve.remarque }}</span> 
+                                            </li>
+                                            <li class="list-group-item"><span style="font-style: italic;">Département : </span><span style="color: #000;">{{ eleve.get_departement_display }}</span> 
+                                            </li>
+        
+                                            <li class="list-group-item"><span style="font-style: italic;">Promotion : </span><span style="color: #000;">{{ eleve.promotion }}</span></li>
+                                            
+                                            
+                                            <li class="list-group-item"><span style="font-style: italic;">Adresse : </span> 
+                                                <span style="color: #000;">
+                                                    <div>{{ eleve.adress }} </div>
+                                                    <div>{{ eleve.code_postal }} {{ eleve.ville }}</div>
+                                                    <div>{{ eleve.country }}</div>
+                                                </span>
+                                                
+                                            </li>
+                                            <div class="d-flex align-items-center mb-2" style="text-align: left;">
+                                                <span> <a href="mailto:{{ eleve.email }}"> {{ eleve.mail }}</a> - <a href="tel:{{ eleve.telephone }}"> {{ eleve.phone_number }}</a></span> 
+                                            </div>
+        
+                                            
+                                            
                                             
                                         </ul>
                                     </div>
@@ -3339,7 +3504,6 @@
                             <div class="tab-pane fade" id="pills-documents">
                                 <div class="col-12 mb-4">
                                     <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
-                                    <a href="{% url 'ba' iD=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Bulletin d'adhésion</a>
                                     <a href="{% url 'editer_ba' id_eleve=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le Bulletin d'adhésion</a>
 
                                     <div class="nav-item">

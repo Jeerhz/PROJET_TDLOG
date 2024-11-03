@@ -70,7 +70,7 @@ def range_boucle(start, end):
 def chiffre_lettres(nombre):
     if nombre is None:
         return ''
-    nbr_arrondi = round(nombre,2)
+    nbr_arrondi = round(float(nombre),2)
     nbr_entier = int(nbr_arrondi)
     nbr_dec = int(round((nbr_arrondi - nbr_entier)*100)) 
     lettres_entier = num2words(nbr_entier, lang='fr')  
@@ -125,6 +125,7 @@ def datejjmm(date):
 def order_dict_by_keys(dictionary):
     """
     Custom template filter to order a dictionary by a predefined list of keys.
+    Only includes keys that exist in the dictionary.
     :param dictionary: The dictionary to be ordered (e.g., etude.suivi_document)
     :return: A list of tuples (key, value) in the specified order
     """
@@ -136,17 +137,19 @@ def order_dict_by_keys(dictionary):
         "QS Etudiant", "QS Client", "BV (Etudiants payés)", 
         "Echange Client", "Livrables"
     ]
+
+    # Filter `ordered_keys` to include only keys that exist in the dictionary
+    filtered_ordered_keys = [key for key in ordered_keys if key in dictionary]
     
-    # Get the set of keys from the dictionary
-    dict_keys = set(dictionary.keys())
+    # Find any remaining keys that are in the dictionary but not in the filtered order
+    missing_keys = set(dictionary.keys()) - set(filtered_ordered_keys)
     
-    # Find missing keys (those in the dictionary but not in ordered_keys)
-    missing_keys = dict_keys - set(ordered_keys)
-    
-    # Append missing keys to the ordered list of keys
-    full_ordered_keys = ordered_keys + list(missing_keys)
+    # Combine filtered ordered keys with the remaining keys
+    full_ordered_keys = filtered_ordered_keys + sorted(missing_keys)
 
     # Create a list of tuples ordered by the full ordered keys
-    ordered_dict = [(key, dictionary.get(key, {'status': None, 'date': None})) for key in full_ordered_keys]
+    ordered_dict = [(key, dictionary[key]) for key in full_ordered_keys if key in dictionary]
     
     return ordered_dict
+
+

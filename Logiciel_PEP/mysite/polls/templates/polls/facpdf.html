@@ -22,6 +22,12 @@
 			referrerpolicy="no-referrer"
 		></script>
         <style>
+            @media print {
+                .no-print {
+                    display: none;
+                }
+            }
+            
             body {
             line-height: 1.1;
             font-size: 12px;
@@ -350,15 +356,7 @@
         </style>
 	</head>
 	<body>
-        <div class="page-wrapper">
-            <button type="button" class=" bouton_pdf" id="generate-invoice" onclick="generateInvoice()">Télécharger</button>
-        </div>
-        <script>
-            function generateInvoice() {
-                // Replace 'id_facture' with the actual invoice ID from your context
-                window.location.href = '{% url "generate_facture_pdf" facture.id %}';
-            }
-        </script>
+        
 
         <div id = "invoice" class="container" style="width: 210mm; height: 297mm;">
             <img src="{% static 'polls/img/bdc.png' %}" alt="Logo Junior" class="image_logo ">
@@ -427,7 +425,7 @@
             
             
             
-            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.id|RefMission}} </span > <span >en référence à la {{etude.type_convention}} {{etude.convention}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{bdc.ref}} {% endif %} </span> </div>
+            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.ref}} </span > <span >en référence à la {{etude.type_convention}} {{etude.convention}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{bdc.ref}} {% endif %} </span> </div>
             <table class="table_prestation">
                 <thead class = "space-above">
                     <tr>
@@ -535,6 +533,16 @@
             </div>
         </div>
         <div class="page-wrapper"></div>
+        <div class="page-wrapper">
+            <button type="button" class=" bouton_pdf no-print" id="generate-invoice" onclick="generateInvoice()" target="_blank">Télécharger</button>
+        </div>
+        <script>
+            function generateInvoice() {
+                // Replace 'id_facture' with the actual invoice ID from your context
+                window.location.href = '{% url "generate_facture_pdf" facture.id %}';
+            }
+        </script> 
+        
 		<script>
 			const button = document.getElementById('download-button');
 

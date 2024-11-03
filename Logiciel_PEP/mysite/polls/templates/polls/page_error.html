@@ -58,6 +58,7 @@
 
             <!-- Sidebar - Brand -->
             <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
+            
 
             <!-- Divider -->
             <hr class="sidebar-divider my-md-0">
@@ -68,93 +69,92 @@
                     <i class="fas fa-fw fa-house-user"></i>
                     <span>ACCUEIL</span></a>
             </li>
-
-            <!-- Divider -->
+            
             <hr class="sidebar-divider">
+            
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Interface
+                Informations
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Paramètres</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="#">Buttons</a>
-                        <a class="collapse-item" href="#">Cards</a>
-                    </div>
-                </div>
+                <a class="nav-link" href="{% url 'annuaire' %}">
+                    <i class="fas fa-book-open" ></i>
+                    <span>Annuaire</span></a>
             </li>
 
-            <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>Utilities</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Utilities:</h6>
-                        <a class="collapse-item" href="#">Colors</a>
-                        <a class="collapse-item" href="#">Borders</a>
-                        <a class="collapse-item" href="#">Animations</a>
-                        <a class="collapse-item" href="#">Other</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Extentions
-            </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Page de connexion:</h6>
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">S'inscrire</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        <div class="collapse-divider"></div>
-                        <h6 class="collapse-header">Autres pages:</h6>
-                        <a class="collapse-item" href="{% url 'messages' %}">Messages</a>
-                        <a class="collapse-item" href="{% url 'annuaire' %}">Annuaire</a>
-
-                    </div>
-                </div>
-            </li>
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{% url 'stat_KPI' %}">
                     <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Tableau</span></a>
+                    <span>Stat/KPI</span></a>
             </li>
 
-            <!-- Nav Item - Tables -->
             <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
+                    aria-expanded="true" aria-controls="pagetresorerie">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Trésorerie</span>
+                </a>
+                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
+                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
+                        <a class="collapse-item" href="#">DAS2</a>
+                        
+                        
+                    </div>
+                </div>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'je_detail' %}">
+                    <i class="fas fa-fw fa-cog" ></i>
+                    <span>Ma Junior Entreprise</span></a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'demarchage' %}">
+                    <i class="fas fa-fw fa-cog" ></i>
+                    <span>Démarchage</span></a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
+                    aria-expanded="true" aria-controls="pageconnexion">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Connexion</span>
+                </a>
+                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
+                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
+                        <a class="collapse-item" href="#">Mot de passe oublié</a>
+                        
+                        
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
+                    aria-expanded="true" aria-controls="pageautres">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Autres</span>
+                </a>
+                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
+                        
+                        <a class="collapse-item" >Notifications</a>    
+                    </div>
+                </div>
+            </li>
+            <!-- Heading -->
+            
+
+                        
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -174,7 +174,7 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -182,11 +182,11 @@
                     </button>
 
                     <!-- Topbar Search -->
-                    <form
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <form action="{% url 'search' %}"
+                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
                         <div class="input-group">
                             <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input">
+                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
                                     <i class="fas fa-search fa-sm"></i>
@@ -292,7 +292,7 @@
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="messagesDropdown">
                                 <h6 class="dropdown-header">
-                                    Message Center
+                                    Messagerie
                                 </h6>
                                 {% if liste_messages.0 %}
                                 <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
@@ -361,7 +361,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user}}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
                                     src="{{ request.user.photo.url }}">
                             </a>
