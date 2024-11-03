@@ -1342,6 +1342,8 @@ def stat_KPI(request):
                 derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
             dico_suivi_devis[derniere_date]={'envoyés': 0, 'signées': 0}
 
+        print(f"dico_suivi_devis : {dico_suivi_devis}")
+
 
         derniere_date ='11-2002'
         dico_avenants_mois_ce={} # key : devis , valeurs : date et si la mission a été signé
@@ -1351,17 +1353,24 @@ def stat_KPI(request):
             if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
                 derniere_date=mois 
             if mois in dico_avenants_mois_ce:
-                dico_avenants_mois_ce[mois]+=1
+                dico_avenants_mois_ce[mois]['avenants']+=1
+                if avenant.avenant_delais:
+                    dico_avenants_mois_ce[mois]['délais']+=1
+                if avenant.avenant_budget:
+                    dico_avenants_mois_ce[mois]['budget']+=1
             else:
-                dico_avenants_mois_ce[mois]=1
+                dico_avenants_mois_ce[mois]={'avenants':1,'délais':0,'budget':0}
+                if avenant.avenant_delais:
+                    dico_avenants_mois_ce[mois]['délais']+=1
+                if avenant.avenant_budget:
+                    dico_avenants_mois_ce[mois]['budget']+=1
 
         if derniere_date:
             if derniere_date[0:2]=='12':
                 derniere_date=f"01-{int(derniere_date[3:])+1}"
             else:
                 derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
-            dico_avenants_mois_ce[derniere_date]=0
-
+            dico_avenants_mois_ce[derniere_date]={'avenants':0,'délais':0,'budget':0}
 
         print(f"dico_avenants_mois_ce : {dico_avenants_mois_ce}")
 
@@ -1439,7 +1448,7 @@ def stat_KPI(request):
                     elif etude.duree_semaine():
                         ca_026_cutoff+=etude.montant_HT_total()*((date(2025, 5, 1) - etude.debut).days/7)/etude.duree_semaine()
             elif (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '025':
-                if etude.debut>date(2024, 5, 1):
+                if etude.debut and etude.debut>date(2024, 5, 1):
                     ca_026_cutoff+=etude.montant_HT_total()
                 elif etude.fin() is not None and etude.fin() >date(2024, 5, 1):
                     ca_026_cutoff+=etude.montant_HT_total()*((etude.fin() - date(2024, 5, 1)).days/7)/etude.duree_semaine()

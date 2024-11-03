@@ -22,7 +22,6 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-    <script src="{% static 'polls/js/chart-area.js' %}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 
@@ -547,7 +546,7 @@
                         <div class="col-xl-12 col-lg-7">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
                                     <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
@@ -600,10 +599,10 @@
                         <div class="col-xl-12 col-lg-7">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary" style="text-align: center;">Devis envoyés / missions signées</h6>
-                                    
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">Devis envoyés / missions signées</h6>
                                 </div>
+                                
                                 <!-- Card Body -->
                                 
                                 
@@ -626,8 +625,9 @@
                         <div class="col-xl-12 col-lg-7">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary" style="text-align: center;">Avenants à la CE par mois</h6>
+                                
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">Avenants à la CE par mois</h6>
                                 </div>
                                 <div class="chart-area">
                                     <canvas  id="BarChartCE"></canvas >
@@ -671,7 +671,7 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{totale_CA_ecterm}} €</div>
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €</div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartEtudeSatus"></canvas>
                                     </div>
@@ -750,7 +750,7 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{chiffre_affaire_total}} €</div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartDepartEleve"></canvas>
                                     </div>
@@ -831,7 +831,7 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartCAtypeentreprise"></canvas>
                                     </div>
@@ -871,7 +871,7 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartCAdepartement"></canvas>
                                     </div>
@@ -913,7 +913,7 @@
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> </div>
+                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €  </div>
                                     <div class="chart-pie pt-4 pb-2">
                                         <canvas id="PieChartCAdSecteur"></canvas>
                                     </div>
@@ -929,136 +929,8 @@
                         // Converting the repartition_CA_etudes dictionary to a JavaScript object
                         var dico_ca_secteur = {{ dico_ca_secteur|safe }};
                         </script>
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par département</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCADept"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <div style="display: flex; flex-wrap: wrap;">
-                                            {% for dept, color in departements_colors.items %}
-                                            <div style="flex: 1 1 50%; margin-bottom: 10px; display: flex; align-items: center;">
-                                                <i class="fas fa-circle" style="color: {{ color }};"></i>
-                                                <span style="margin-left: 10px;">{{ dept }}</span>
-                                                <span style="margin-left: 5px;">{{ pourcentage_par_departement|get_item:dept|floatformat:2 }}%</span>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                      
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par type d'entreprise</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCAType"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <div>
-                                            <ul class="legend-list">
-                                                {% for type, color in types_colors.items %}
-                                                    <li style="list-style-type: none; margin-bottom: 5px; align-items: center; display: flex;">
-                                                        <i class="fas fa-circle" style="color: {{ color }};"></i>
-                                                        <span style="margin-left: 10px;">{{ type }}</span>
-                                                        <span style="margin-left: 5px;">{{ pourcentage_par_type|get_item:type|floatformat:2 }}%</span>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>                                        
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par secteur d'activité</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" >
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total: {{chiffre_affaire_total}} €</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCASect"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <div>
-                                            <ul class="legend-list">
-                                                {% for sect, color in secteurs_colors.items %}
-                                                    <li style="list-style-type: none; margin-bottom: 5px; align-items: center; display: flex;">
-                                                        <i class="fas fa-circle" style="color: {{ color }};"></i>
-                                                        <span style="margin-left: 10px;">{{ sect }}</span>
-                                                        <span style="margin-left: 5px;">{{ pourcentage_par_secteur|get_item:sect|floatformat:2 }}%</span>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>                                        
-                                </div>
-                            </div>
-                        </div>
                         
+
                         
                         
 
@@ -1132,16 +1004,13 @@
 
     <!-- Page level custom scripts -->
     <script src="{% static 'polls/js/demo/chart-area-CA.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-pie-ca-dept.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-pie-ca-type.js' %}"></script>
-    <script src="{% static 'polls/js/demo/chart-pie-ca-sect.js' %}"></script>
+    
     <script src="{% static 'polls/js/demo/chart-pie-etude-status.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-etude-status-nb.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-depart-eleve.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-genre-intervenants.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-CA-dept2.js' %}"></script>
     <script src="{% static 'polls/js/demo/chart-pie-CA-type-entr.js' %}"></script>
-    <script src="{% static 'polls/js/demo/bar-chart-CA.js' %}"></script>
     <script src="{% static 'polls/js/demo/devis-envoyees-reussis.js' %}"></script>
     <script src="{% static 'polls/js/demo/avenantsce-mois.js' %}"></script>
 
