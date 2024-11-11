@@ -1302,7 +1302,6 @@ def stat_KPI(request):
 
         # Filtrer les études en fonction des dates
         etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
-        print(etudes)
         # Calculer les montants par mois et les labels
         date_labels = []
         cumulated_CA = []
@@ -1362,7 +1361,6 @@ def stat_KPI(request):
                 derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
             dico_suivi_devis[derniere_date]={'envoyés': 0, 'signées': 0}
 
-        print(f"dico_suivi_devis : {dico_suivi_devis}")
 
 
         derniere_date ='11-2002'
@@ -1392,7 +1390,6 @@ def stat_KPI(request):
                 derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
             dico_avenants_mois_ce[derniere_date]={'avenants':0,'délais':0,'budget':0}
 
-        print(f"dico_avenants_mois_ce : {dico_avenants_mois_ce}")
 
 
 
@@ -1434,7 +1431,6 @@ def stat_KPI(request):
             else:
                 bar_chart_CA[etude_year]={etude_month:etude.montant_HT_total()}
 
-        print(f"bar_chart_CA :{bar_chart_CA}")
 
         for etude in liste_etudes_ec_term:
 
@@ -1481,8 +1477,7 @@ def stat_KPI(request):
                 nb_etudes_ec[1]+=etude.montant_HT_total()
             if etude.mandat =='026':
                 if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
-                    print(f"oui une etude num {etude.numero}")
-                    print(etude.get_li_students())
+                    
                     if etude.get_li_students() :
                         nb_etudes_026_avec_interv+=1
                         for student in etude.get_li_students():
@@ -1649,8 +1644,7 @@ def stat_KPI(request):
             "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026,"totale_nb_ecterm":totale_nb_ecterm,"totale_CA_ecterm":totale_CA_ecterm,"dico_ca_typeentreprise":dico_ca_typeentreprise,
             "dico_ca_departement":dico_ca_departement,"dico_ca_secteur":dico_ca_secteur, "bar_chart_CA":bar_chart_CA, "dico_suivi_devis":dico_suivi_devis, "dico_avenants_mois_ce":dico_avenants_mois_ce
         }
-        print(f"dico ca entreprise :{dico_ca_typeentreprise}")
-        print(f"repartition_CA_etudes :{repartition_CA_etudes}")
+       
         
     else:
         template = loader.get_template("polls/login.html")
@@ -1671,7 +1665,6 @@ def fetch_data(request):
 
         # Filtrer les études en fonction des dates
         etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
-        print(f"Etudes count: {etudes.count()}")
 
         # Calculer les montants par mois et les labels
         date_labels = [start_date_obj.strftime('%Y-%m')]
@@ -1770,7 +1763,7 @@ def register(request):
 
 def editer_convention(request, iD):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = Etude.objects.get(id=iD)
             je= instance.je
             client = instance.client
@@ -1866,10 +1859,10 @@ def editer_convention(request, iD):
             return response
         
             
-        #except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -1880,7 +1873,7 @@ def editer_convention(request, iD):
 
 def editer_convention_cadre(request, iD):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = Etude.objects.get(id=iD)
             je= instance.je
             client = instance.client
@@ -1939,10 +1932,10 @@ def editer_convention_cadre(request, iD):
             return response
         
             
-        #except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2251,7 +2244,7 @@ def editer_ba(request, id_eleve):
 
 def editer_devis(request, iD):
     if request.user.is_authenticated:
-         # try:
+        try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
             template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
@@ -2481,10 +2474,10 @@ def editer_devis(request, iD):
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             devis.save()
             return response
-         # except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-         # except Exception as e:
+        except Exception as e:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2496,7 +2489,7 @@ def editer_devis(request, iD):
 
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce= instance.ce
             avenants =  AvenantConventionEtude.objects.filter(ce=ce).order_by('numero')
@@ -2571,7 +2564,7 @@ def editer_avenant_ce(request, iD):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2582,7 +2575,7 @@ def editer_avenant_ce(request, iD):
 
 def editer_bon(request, id_bon):
     if request.user.is_authenticated:
-        #try:
+        try:
             template = DocxTemplate("polls/templates/polls/BDC_026.docx")
 
             bon = BonCommande.objects.get(id=id_bon)
@@ -2620,7 +2613,7 @@ def editer_bon(request, id_bon):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -2656,7 +2649,7 @@ def get_object_info(request, model_name, object_id):
     
 def modifier_bon_commande(request, id_etude, id_bon):
     if request.user.is_authenticated:
-        #try:
+        try:
             etude = Etude.objects.get(id=id_etude)
             if(id_bon == 0):
                 bon = BonCommande(etude=etude, remarque=request.POST["remarque_bdc"], numero=request.POST["numero_bdc"],objectifs = request.POST["objectifs_bdc"]).save()
@@ -2683,7 +2676,7 @@ def modifier_bon_commande(request, id_etude, id_bon):
                 bon.save()
             
             return redirect('details', modelName="Etude", iD=id_etude)
-        #except :
+        except :
             context = general_context(request)
             template = loader.get_template("polls/page_error.html")
             context["error_message"] = "Un problème a été détecté dans la base de données."
@@ -3364,7 +3357,7 @@ def signature_document(request, model, iD):
     if request.user.is_authenticated:
         
         if request.method == 'POST':
-            # try:
+            try:
                 new_date = request.POST.get('new_date')
                 
                 if model == 'CE':
@@ -3411,7 +3404,7 @@ def signature_document(request, model, iD):
                         bdc.save()
 
                 return redirect('details', modelName="Etude", iD=etude.id)
-            # except Exception as e:
+            except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)})
     else:
         template = loader.get_template("polls/login.html")
@@ -3423,7 +3416,7 @@ def signature_devis(request, iD):
     if request.user.is_authenticated:
         
         if request.method == 'POST':
-            # try:
+            try:
                 raw_data = request.body
                 data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
                 content = data.get('content', '')
@@ -3442,7 +3435,7 @@ def signature_devis(request, iD):
                     
                     devis.save()
                 return JsonResponse({'success':True})
-            # except Exception as e:
+            except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)})
     else:
         template = loader.get_template("polls/login.html")
@@ -3610,7 +3603,7 @@ def ajouter_avenant_ce(request, id_etude):
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
         if request.method == 'POST':
-            #try:
+            try:
                 etude = Etude.objects.get(id=id_etude)
                 signature = None
                 modif_budget=False
@@ -3659,7 +3652,7 @@ def ajouter_avenant_ce(request, id_etude):
                     phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
                     etude.save()
                 return redirect('details', modelName="Etude", iD=id_etude)
-            #except:
+            except:
                 template = loader.get_template("polls/page_error.html")
                 context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
         else :
