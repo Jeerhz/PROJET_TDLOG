@@ -714,6 +714,52 @@ def delete_etude(request, pk):
         return redirect('login')  
 
 
+
+def edit_phase(request, pk, iD):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+        ).order_by("date")[:3]
+        message_count = liste_messages.count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        # Retrieve the phase instance or return a 404 if not found
+        phase = get_object_or_404(Phase, pk=pk)
+        etude = get_object_or_404(Etude, pk=iD)
+
+        if request.method == 'POST':
+            form = AddPhase(request.POST, instance=phase)
+            if form.is_valid():
+                form.save()  # Save changes to the database
+                return redirect('details', modelName="Etude", iD=etude.id)
+            else:
+                # Debugging: print out form errors if it is not valid
+                print(form.errors)
+        else:
+            form = AddPhase(instance=phase)
+
+        context = {
+            "phase": phase,
+            "form": form,
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        return render(request, "polls/page_details.html", context)
+
+    else:
+        return redirect('login')
+
+
 def delete_phase(request, pk, iD):
     if request.user.is_authenticated:
         # Fetch messages and notifications
@@ -846,22 +892,45 @@ def delete_client(request, pk):
 
 
 def input(request, modelName, iD):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        template = loader.get_template("polls/page_input.html")
-        model = apps.get_model(app_label="polls", model_name=modelName)
-        if request.method == "GET":
-            if iD == 0:
-                form = model.createForm(je=request.user.je)
+    if not request.user.is_authenticated:
+        return render(request, "polls/login.html")
+
+    # Fetch unread messages for the user
+    liste_messages = Message.objects.filter(
+        destinataire=request.user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+    ).order_by("date")[:3]
+    message_count = liste_messages.count()
+
+    model = apps.get_model(app_label="polls", model_name=modelName)
+    template_name = "polls/page_input.html"
+
+    if request.method == "GET":
+        if iD == 0:
+            # New instance creation
+            form = model.createForm(je=request.user.je)
+            # Exclude superusers from any user-related fields
+            if 'Member' in form.fields:
+                form.fields['Member'].queryset = Member.objects.filter(is_superuser=False)
+            context = {
+                "form": form,
+                "title": str(form),
+                "message": "",
+                "modelName": modelName,
+                "iD": iD,
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "is_message": (modelName == "Message"),
+            }
+        else:
+            # Modify existing instance
+            try:
+                instance = model.objects.get(id=iD, je=request.user.je)
+                form = model.modifyForm(instance)
+                # Exclude superusers from any user-related fields
+                if 'user' in form.fields:
+                    form.fields['user'].queryset = User.objects.filter(is_superuser=False)
                 context = {
                     "form": form,
                     "title": str(form),
@@ -872,58 +941,37 @@ def input(request, modelName, iD):
                     "message_count": message_count,
                     "is_message": (modelName == "Message"),
                 }
+            except model.DoesNotExist:
+                # Redirect to error page if instance does not exist
+                return render(request, "polls/page_error.html", {
+                    "error_message": "L'objet sélectionné n'existe pas dans la base de données.",
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                })
+
+    else:  # POST request
+        fetchform = model.retrieveForm(request.POST, files=request.FILES)
+        if fetchform.is_valid():
+            # Save the form, handling new and existing instances
+            if iD == 0:
+                fetchform.save(commit=True, expediteur=request.user)
             else:
-                try:
-                    instance = model.objects.get(id=iD, je=request.user.je)
-                    form = model.modifyForm(instance)
-                    context = {
-                        "form": form,
-                        "title": str(form),
-                        "message": "",
-                        "modelName": modelName,
-                        "iD": iD,
-                        "liste_messages": liste_messages,
-                        "message_count": message_count,
-                        "is_message": (modelName == "Message"),
-                    }
-                except:
-                    context = {
-                        "error_message": "The selected object does not exist in the database.",
-                        "liste_messages": liste_messages,
-                        "message_count": message_count,
-                    }
-                    template = loader.get_template("polls/page_error.html")
+                fetchform.save(commit=True)
+            # Redirect after successful form submission
+            return redirect('annuaire')
         else:
-            fetchform = model.retrieveForm(request.POST, files=request.FILES)
-            if fetchform.is_valid():
-                if iD == 0:
-                    fetchform.save(commit=True, expediteur=request.user)
-                else:
-                    fetchform.save(commit=True)
-                context = {
-                    "form": fetchform,
-                    "title": str(fetchform),
-                    "message": "Le formulaire a été envoyé avec succès",
-                    "modelName": modelName,
-                    "iD": iD,
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                }
-                return redirect('annuaire')
-            else:
-                context = {
-                    "form": fetchform,
-                    "title": str(fetchform),
-                    "message": "Entree invalide",
-                    "modelName": modelName,
-                    "iD": iD,
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                }
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
+            # Handle form errors
+            context = {
+                "form": fetchform,
+                "title": str(fetchform),
+                "message": "Entrée invalide",
+                "modelName": modelName,
+                "iD": iD,
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+            }
+
+    return HttpResponse(loader.get_template(template_name).render(context, request))
 
 def upload_students(request):
     if request.method == 'POST':
@@ -1755,11 +1803,13 @@ def register(request):
         if fetchform.is_valid():
             new_member = fetchform.save()
             login(request, new_member, backend='django.contrib.auth.backends.ModelBackend')
-            redirect('index')
+            return redirect('index')
         else:
             context = {"form": fetchform}
             template = loader.get_template("polls/register.html")
+
     return HttpResponse(template.render(context, request))
+
 
 def editer_convention(request, iD):
     if request.user.is_authenticated:
