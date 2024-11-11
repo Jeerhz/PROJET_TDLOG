@@ -1305,37 +1305,45 @@
 
                                     {% for phase in phases %}
                                     <div class="card mb-3">
-                                        <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
+                                        <div class="col-12 mb-4" style="padding:20px; margin: 0px;">
                                             <!-- Card -->
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 {% if phase.modif_duree.exists or phase.modif_debut.exists or phase.modif_jeh.exists %}
-                                                <span class="text-warning">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>                                      
-
+                                                <span class="text-warning">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH
+                                                    {% else %} JEHs {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} €</span>
                                                 <span><i class="fas fa-exclamation-circle fa-2x text-warning mr-2"></i></span>
                                                 {% elif phase.suppression.exists %}
-                                                <span class="text-danger">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>
+                                                <span class="text-danger">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH
+                                                    {% else %} JEHs {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} €</span>
                                                 <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
                                                 {% else %}
-                                                <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
+                                                <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs
+                                                    {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} € </span>
                                                 {% endif %}
-
-                                                {% if etude.type_convention == "Convention cadre" %} <small>Bon de commande n°{{phase.bon.numero}}</small> {% endif %}
+                                    
+                                                {% if etude.type_convention == "Convention cadre" %}
+                                                <small>Bon de commande n°{{ phase.bon.numero }}</small>
+                                                {% endif %}
+                                    
                                                 <div>
-                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModalPhase">
-                                                        Modifier la phase
+                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal"
+                                                        data-target="#editModalPhase{{ phase.id }}">
+                                                        Modifier la phase {{ phase.id }}
                                                     </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
-                                                        Supprimer la phase
+                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                        data-target="#deleteModalPhase{{ phase.id }}">
+                                                        Supprimer la phase {{ phase.id }}
                                                     </button>
                                                 </div>
                                             </div>
-
+                                    
                                             <!-- Delete Modal -->
-                                            <div class="modal fade" id="deleteModalPhase" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                            <div class="modal fade" id="deleteModalPhase{{ phase.id }}" tabindex="-1" role="dialog"
+                                                aria-labelledby="deleteModalLabel{{ phase.id }}" aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteModalLabel">Supprimer la phase</h5>
+                                                            <h5 class="modal-title" id="deleteModalLabel{{ phase.id }}">Supprimer la phase</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -1353,13 +1361,14 @@
                                                     </div>
                                                 </div>
                                             </div>
-
+                                    
                                             <!-- Edit Modal -->
-                                            <div class="modal fade" id="editModalPhase" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                                            <div class="modal fade" id="editModalPhase{{ phase.id }}" tabindex="-1" role="dialog"
+                                                aria-labelledby="editModalLabel{{ phase.id }}" aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="editModalLabel">Modifier la phase</h5>
+                                                            <h5 class="modal-title" id="editModalLabel{{ phase.id }}">Modifier la phase {{ phase.id }}</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -1369,32 +1378,40 @@
                                                             <div class="modal-body">
                                                                 <!-- Form fields for editing the phase -->
                                                                 <div class="form-group">
-                                                                    <label for="numero">Numéro de la phase</label>
-                                                                    <input type="number" class="form-control" id="numero" name="numero" value="{{ phase.numero }}" required>
+                                                                    <label for="numero{{ phase.id }}">Numéro de la phase</label>
+                                                                    <input type="number" class="form-control" id="numero{{ phase.id }}" name="numero"
+                                                                        value="{{ phase.numero }}" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="debut_relatif">Début relatif</label>
-                                                                    <input type="number" class="form-control" id="debut_relatif" name="debut_relatif" value="{{ phase.debut_relatif }}" required>
+                                                                    <label for="debut_relatif{{ phase.id }}">Début relatif</label>
+                                                                    <input type="number" class="form-control" id="debut_relatif{{ phase.id }}"
+                                                                        name="debut_relatif" value="{{ phase.debut_relatif }}" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="duree_semaine">Durée en semaines</label>
-                                                                    <input type="number" class="form-control" id="duree_semaine" name="duree_semaine" value="{{ phase.duree_semaine }}" required>
+                                                                    <label for="duree_semaine{{ phase.id }}">Durée en semaines</label>
+                                                                    <input type="number" class="form-control" id="duree_semaine{{ phase.id }}"
+                                                                        name="duree_semaine" value="{{ phase.duree_semaine }}" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="titre">Titre</label>
-                                                                    <input type="text" class="form-control" id="titre" name="titre" value="{{ phase.titre }}" required>
+                                                                    <label for="titre{{ phase.id }}">Titre</label>
+                                                                    <input type="text" class="form-control" id="titre{{ phase.id }}" name="titre"
+                                                                        value="{{ phase.titre }}" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="description">Description</label>
-                                                                    <textarea class="form-control" id="description" name="description" rows="4">{{ phase.description }}</textarea>
+                                                                    <label for="description{{ phase.id }}">Description</label>
+                                                                    <textarea class="form-control" id="description{{ phase.id }}" name="description"
+                                                                        rows="4">{{ phase.description }}</textarea>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="nb_JEH">Nombre de JEHs</label>
-                                                                    <input type="number" class="form-control" id="nb_JEH" name="nb_JEH" value="{{ phase.nb_JEH }}" required>
+                                                                    <label for="nb_JEH{{ phase.id }}">Nombre de JEHs</label>
+                                                                    <input type="number" class="form-control" id="nb_JEH{{ phase.id }}" name="nb_JEH"
+                                                                        value="{{ phase.nb_JEH }}" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="montant_HT_par_JEH">Montant HT par JEH</label>
-                                                                    <input type="number" step="0.01" class="form-control" id="montant_HT_par_JEH" name="montant_HT_par_JEH" value="{{ phase.montant_HT_par_JEH }}" required>
+                                                                    <label for="montant_HT_par_JEH{{ phase.id }}">Montant HT par JEH</label>
+                                                                    <input type="number" step="0.01" class="form-control"
+                                                                        id="montant_HT_par_JEH{{ phase.id }}" name="montant_HT_par_JEH"
+                                                                        value="{{ phase.montant_HT_par_JEH }}" required>
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
@@ -1405,8 +1422,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-
                                             <br>
                                             <div class="nav-item" >
                                                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
