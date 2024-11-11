@@ -1349,7 +1349,7 @@ def stat_KPI(request):
             end_date = end_date_obj.strftime('%Y-%m-%d')
 
         # Filtrer les études en fonction des dates
-        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        etudes = Etude.objects.filter(je = request.user.je, debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
         # Calculer les montants par mois et les labels
         date_labels = []
         cumulated_CA = []
@@ -1379,7 +1379,7 @@ def stat_KPI(request):
         liste_etudes_ec_term=[]
 
         dico_devis_envoye={} # key : devis , valeurs : date et si la mission a été signé
-        devis_envoye  = Devis.objects.filter(date_signature__isnull=False)
+        devis_envoye  = Devis.objects.filter(etude__in=etudes, date_signature__isnull=False)
 
 
         for devis in devis_envoye:
@@ -1413,7 +1413,10 @@ def stat_KPI(request):
 
         derniere_date ='11-2002'
         dico_avenants_mois_ce={} # key : devis , valeurs : date et si la mission a été signé
-        avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+        avenants_signes = AvenantConventionEtude.objects.filter(
+            date_signature__isnull=False,
+            ce__etude__in=etudes
+        )
         for avenant in avenants_signes:
             mois = f"{avenant.date_signature.month}-{avenant.date_signature.year}"
             if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
@@ -2250,7 +2253,7 @@ def editer_acf_client(request, iD):
 
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
-        #try :
+        try :
             eleve = Student.objects.get(id=id_eleve)
             je_president_nom="Debray"
             je_president_prenom="Thomas"
@@ -2282,7 +2285,7 @@ def editer_ba(request, id_eleve):
             response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
-        #except :
+        except :
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Un problème a été détecté dans la base de données."}
 
@@ -3089,7 +3092,7 @@ def ajouter_facture(request, id_etude):
 
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        #try :
+        try :
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             je= eleve.je
@@ -3142,7 +3145,7 @@ def BV(request, id_etude, id_eleve):
             response = FileResponse(output, as_attachment=True, filename=download_filename)
 
             return response
-        #except :
+        except :
             liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
@@ -3167,7 +3170,7 @@ def ajouter_assignation_jeh(request, id_etude, id_phase):
         if request.method == 'POST':
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
-                #try :
+                try :
                     etude = Etude.objects.get(id=id_etude)
                     phase = Phase.objects.get(id=id_phase)
                     eleve = fetchform.cleaned_data['eleve']
@@ -3179,7 +3182,7 @@ def ajouter_assignation_jeh(request, id_etude, id_phase):
                         only_ass_jeh.save()
                     else :
                         fetchform.save(commit=True, id_etude=id_etude, id_phase=id_phase)
-                #except:
+                except:
                     pass
         return redirect('details', modelName='Etude', iD=id_etude)
     else:
