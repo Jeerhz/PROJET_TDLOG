@@ -1059,25 +1059,25 @@
                                                 <span class="text-danger">Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</span>
                                                 <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
                                                 {% else %}
-                                                <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
+                                                <span>Phase {{ phase.numero }} - {{phase.titre}} | {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} € </span>
                                                 {% endif %}
                                                 
                                                 <div>
-                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModalPhase">
+                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModalPhase{{ phase.id }}">
                                                         Modifier la phase
                                                     </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase">
+                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase{{ phase.id }}">
                                                         Supprimer la phase
                                                     </button>
                                                 </div>
                                             </div>
 
                                             <!-- Delete Modal -->
-                                            <div class="modal fade" id="deleteModalPhase" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                            <div class="modal fade" id="deleteModalPhase{{ phase.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ phase.id }}" aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteModalLabel">Supprimer la phase</h5>
+                                                            <h5 class="modal-title" id="deleteModalLabel{{phase.id}}">Supprimer la phase {{phase.titre}}</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -1098,11 +1098,11 @@
 
 
                                             <!-- Edit Modal -->
-                                            <div class="modal fade" id="editModalPhase" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                                            <div class="modal fade" id="editModalPhase{{ phase.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ phase.id }}" aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="editModalLabel">Modifier la phase</h5>
+                                                            <h5 class="modal-title" id="editModalLabel{{ phase.id }}">Modifier la phase {{phase.titre}}</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -1317,7 +1317,8 @@
                                                     {% else %} JEHs {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} €</span>
                                                 <span><i class="fas fa-exclamation-circle text-danger mr-2"></i></span>
                                                 {% else %}
-                                                <span>Phase {{ phase.numero }} - {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs
+                                                <span>Phase {{ phase.numero }} - {{phase.titre}} | {{ phase.nb_JEH }} {% if phase.nb_JEH == 1 %} JEH {% else %} JEHs
+
                                                     {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} € </span>
                                                 {% endif %}
                                     
@@ -1328,11 +1329,11 @@
                                                 <div>
                                                     <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal"
                                                         data-target="#editModalPhase{{ phase.id }}">
-                                                        Modifier la phase {{ phase.id }}
+                                                        Modifier la phase
                                                     </button>
                                                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
                                                         data-target="#deleteModalPhase{{ phase.id }}">
-                                                        Supprimer la phase {{ phase.id }}
+                                                        Supprimer la phase
                                                     </button>
                                                 </div>
                                             </div>
@@ -1343,7 +1344,7 @@
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteModalLabel{{ phase.id }}">Supprimer la phase</h5>
+                                                            <h5 class="modal-title" id="deleteModalLabel{{ phase.id }}">Supprimer la phase {{phase.titre}}</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -1368,7 +1369,7 @@
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="editModalLabel{{ phase.id }}">Modifier la phase {{ phase.id }}</h5>
+                                                            <h5 class="modal-title" id="editModalLabel{{ phase.id }}">Modifier la phase {{phase.titre}}</h5>
                                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                 <span aria-hidden="true">&times;</span>
                                                             </button>
@@ -3896,7 +3897,7 @@
             }
           </script>
     <script src="{% static 'polls/js/select-search.js' %}"></script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function(event) {
             // Get the elements safely, ensuring they exist

@@ -2118,10 +2118,10 @@ def editer_convention(request, iD):
         except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except:
+        except Exception as e:
             template = loader.get_template("polls/page_error.html")
             context = {
-                "error_message": "Un problème a été détecté dans la base de données."
+                "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
             }
 
     else:
