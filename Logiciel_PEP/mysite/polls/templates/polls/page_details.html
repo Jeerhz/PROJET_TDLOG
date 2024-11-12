@@ -3204,11 +3204,11 @@
                             </div>
                             <!-- Fin formulaire ajout Representant -->
                         </div> 
-                        <!-- Edit Modal -->
+                       <!-- Edit Modal -->
                         <div class="modal fade" id="editModalClient" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
-                                    <form id="editClientForm" method="POST" action="{% url 'edit_client' client.id %}">
+                                    <form id="editClientForm" method="POST" action="{% url 'edit_client' client.id %}" enctype="multipart/form-data">
                                         {% csrf_token %}
                                         <div class="modal-header">
                                             <h5 class="modal-title" id="editModalLabel">Modifier Client</h5>
@@ -3217,6 +3217,17 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
+                                            <!-- Existing form fields -->
+
+                                            <!-- Image (Logo) Field -->
+                                            <div class="form-group">
+                                                <label for="logo">Logo de l'entreprise</label>
+                                                <input type="file" class="form-control" id="logo" name="logo">
+                                                {% if client.logo %}
+                                                    <img src="{{ client.logo.url }}" alt="Logo actuel" style="max-width: 100px; margin-top: 10px;">
+                                                {% endif %}
+                                            </div>
+
                                             <!-- Nom de la société -->
                                             <div class="form-group">
                                                 <label for="nom_societe">Nom de la société</label>
@@ -3262,12 +3273,11 @@
                                                     <option value="SECTEUR_PUBLIC" {% if client.secteur == "SECTEUR_PUBLIC" %}selected{% endif %}>Secteur Public</option>
                                                     <option value="CONSEIL" {% if client.secteur == "CONSEIL" %}selected{% endif %}>Conseil</option>
                                                     <option value="TRANSPORT" {% if client.secteur == "TRANSPORT" %}selected{% endif %}>Transport</option>
-                                                    <option value="NUMERIQUE" {% if client.secteur == "NUMERIQUE" %}selected{% endif %}>Numerique</option>
+                                                    <option value="NUMERIQUE" {% if client.secteur == "NUMERIQUE" %}selected{% endif %}>Numérique</option>
                                                     <option value="BTP" {% if client.secteur == "BTP" %}selected{% endif %}>BTP</option>
                                                     <option value="AUTRE" {% if client.secteur == "AUTRE" %}selected{% endif %}>Autre</option>
                                                 </select>
                                             </div>
-                                            
 
                                             <!-- Type d'entreprise -->
                                             <div class="form-group">
@@ -3281,7 +3291,6 @@
                                                     <option value="ASSOCIATION" {% if client.type == "ASSOCIATION" %}selected{% endif %}>Association</option>
                                                 </select>
                                             </div>
-                                            
 
                                             <!-- Remarque -->
                                             <div class="form-group">
@@ -3303,6 +3312,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <!-- Delete Modal -->
                         <div class="modal fade" id="deleteModalClient" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                             <div class="modal-dialog" role="document">
@@ -3886,65 +3896,75 @@
             }
           </script>
     <script src="{% static 'polls/js/select-search.js' %}"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function(event){
+        document.addEventListener('DOMContentLoaded', function(event) {
+            // Get the elements safely, ensuring they exist
             var cond_client = document.getElementById('cond_client');
             var dep_interlocuteur = document.getElementById('dep_interlocuteur');
             var dep_rep_leg = document.getElementById('dep_rep_leg');
-            var client_select = $('#'+cond_client.dataset.id);
-            var interlocuteur_select = $('#'+dep_interlocuteur.dataset.id);
-            var rep_leg_select = $('#'+dep_rep_leg.dataset.id);
-            var selectedValue = client_select.val();
-            console.log(client_select);
-            if(!selectedValue){
-                interlocuteur_select.prop('disabled', true);
-                rep_leg_select.prop('disabled', true);
-            }
-            
-            client_select.on('change', function(event) {
-                // Get the selected option
-                selectedValue = event.target.value;
-                if (selectedValue){
-                    interlocuteur_select.prop('disabled', false);
-                    rep_leg_select.prop('disabled', false);
-                    $.ajax({
-                        url: "{% url 'get_representants' %}",  // Django URL that will handle the search
-                        data: {
-                            'client_id': selectedValue
-                        },
-                        dataType: 'json',
-                        success: function (data) {
-                            // Clear current options
-                            interlocuteur_select.empty();  
-                            interlocuteur_select.append('<option value="">Select an option</option>');
-                            rep_leg_select.empty(); 
-                            rep_leg_select.append('<option value="">Select an option</option>');
 
-                            // Check if results exist
-                            if (data.results && data.results.length) {
-                                // Populate select with new options from AJAX response
-                                data.results.forEach(function(item) {
-                                    interlocuteur_select.append('<option value="' + item.id + '">' + item.name + '</option>');
-                                    rep_leg_select.append('<option value="' + item.id + '">' + item.name + '</option>');
-                                });
-                            } else {
-                                // If no results found
-                                interlocuteur_select.append('<option value="">No results found</option>');
-                                rep_leg_select.append('<option value="">No results found</option>');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error("AJAX error:", status, error);
-                        }
-                    });
-                }
-                else{
+            if (cond_client && dep_interlocuteur && dep_rep_leg) {
+                // Now access dataset if elements exist
+                var client_select = $('#' + cond_client.dataset.id);
+                var interlocuteur_select = $('#' + dep_interlocuteur.dataset.id);
+                var rep_leg_select = $('#' + dep_rep_leg.dataset.id);
+
+                var selectedValue = client_select.val();
+                console.log(client_select);
+
+                if (!selectedValue) {
                     interlocuteur_select.prop('disabled', true);
                     rep_leg_select.prop('disabled', true);
                 }
-            });
-        })
+
+                client_select.on('change', function(event) {
+                    // Get the selected option
+                    selectedValue = event.target.value;
+                    if (selectedValue) {
+                        interlocuteur_select.prop('disabled', false);
+                        rep_leg_select.prop('disabled', false);
+                        $.ajax({
+                            url: "/polls/get_representants/", // Django URL that will handle the search
+                            data: {
+                                'client_id': selectedValue
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                // Clear current options
+                                interlocuteur_select.empty();
+                                interlocuteur_select.append('<option value="">Select an option</option>');
+                                rep_leg_select.empty();
+                                rep_leg_select.append('<option value="">Select an option</option>');
+
+                                // Check if results exist
+                                if (data.results && data.results.length) {
+                                    // Populate select with new options from AJAX response
+                                    data.results.forEach(function(item) {
+                                        interlocuteur_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                        rep_leg_select.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                    });
+                                } else {
+                                    // If no results found
+                                    interlocuteur_select.append('<option value="">No results found</option>');
+                                    rep_leg_select.append('<option value="">No results found</option>');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("AJAX error:", status, error);
+                            }
+                        });
+                    } else {
+                        interlocuteur_select.prop('disabled', true);
+                        rep_leg_select.prop('disabled', true);
+                    }
+                });
+            } else {
+                console.error("One or more elements are not found in the DOM.");
+            }
+        });
     </script>
+
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     
 </body>
