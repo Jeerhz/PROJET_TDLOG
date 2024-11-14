@@ -13,6 +13,17 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from celery.schedules import crontab
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://24c054af02dc8cd11c9f984543148360@o4508298420486144.ingest.de.sentry.io/4508298876223568",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    traces_sample_rate=1.0,
+    _experiments={
+        # Set continuous_profiling_auto_start to True
+        "continuous_profiling_auto_start": True,
+    },
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
