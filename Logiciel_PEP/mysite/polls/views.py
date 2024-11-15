@@ -728,8 +728,8 @@ def edit_phase(request, pk, iD):
         notification_list = [notif for notif in all_notifications if notif.active()]
 
         # Retrieve the phase instance or return a 404 if not found
-        phase = get_object_or_404(Phase, pk=pk)
-        etude = get_object_or_404(Etude, pk=iD)
+        phase = Phase.objects.filter(id=pk).first()
+        etude = Etude.objects.filter(id=iD).first()
 
         if request.method == 'POST':
             form = AddPhase(request.POST, instance=phase)
