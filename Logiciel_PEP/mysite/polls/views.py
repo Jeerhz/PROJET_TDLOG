@@ -1,5 +1,6 @@
 import json
 import os
+
 #### UTILISATEUR WINDOWS ####
 # Installer MSYS2 puis à l'aide du terminal installer GTK puis gobject
 # Après installation de gobject, chercher le répertoire des dll et les mettre en variable d'environnement
@@ -12,20 +13,21 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from bs4 import BeautifulSoup
 
-import pytz #pour CA dynamique
+import pytz  # pour CA dynamique
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
 from jinja2 import Environment
 import math
 from html2image import Html2Image
-import time as time1 
+import time as time1
 from social_django.models import UserSocialAuth
 import base64
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 
-import logging #pour gérer plus facilement les erreurs
+import logging  # pour gérer plus facilement les erreurs
+
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
@@ -47,18 +49,24 @@ from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
-locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+
+locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 from django.http import JsonResponse, FileResponse
 from django.conf import settings as conf_settings
 from django.core.files.base import ContentFile
-from .templatetags.format_duration import format_nombres, chiffre_lettres, en_lettres, assignation
+from .templatetags.format_duration import (
+    format_nombres,
+    chiffre_lettres,
+    en_lettres,
+    assignation,
+)
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 
 
-#from weasyprint import HTML
-#from wand.image import Image
+# from weasyprint import HTML
+# from wand.image import Image
 
 from .models import (
     JE,
@@ -108,19 +116,20 @@ from .models import (
     AssociationFactureBDC,
 )
 
-#flemme d'import format durations
+
+# flemme d'import format durations
 def format_nombres(nombre):
     arrondi = round(float(nombre), 2)
-    nbre_virg = f"{arrondi:.2f}".replace('.', ',')
+    nbre_virg = f"{arrondi:.2f}".replace(".", ",")
     return nbre_virg
 
 
 def general_context(request):
     liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
+        destinataire=request.user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+    ).order_by("date")
     message_count = liste_messages.count()
     all_notifications = request.user.notifications.order_by("-date_effet")
     notification_list = [notif for notif in all_notifications if notif.active()]
@@ -128,21 +137,24 @@ def general_context(request):
     context = {
         "liste_messages": liste_messages,
         "message_count": message_count,
-        "notification_list":notification_list,
-        "notification_count":notification_count,
+        "notification_list": notification_list,
+        "notification_count": notification_count,
     }
     return context
 
+
 def my_view(request):
-    return render(request, 'polls/facpdf.html')
+    return render(request, "polls/facpdf.html")
+
 
 def generate_pdf(request):
-    html_content = render_to_string('polls/facpdf.html')
+    html_content = render_to_string("polls/facpdf.html")
     pdf_file = HTML(string=html_content).write_pdf()
 
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="page.pdf"'
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="page.pdf"'
     return response
+
 
 def confidentialite_donnees(request):
     template = loader.get_template("polls/confidentialite_donnees.html")
@@ -162,28 +174,36 @@ def index(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        
+
         user_je = request.user.je
         monthly_sums = calculate_monthly_sums(user_je)
         chiffre_affaire = monthly_sums[-1]
-        mandat_select = request.POST.getlist('mandat-select')          
+        mandat_select = request.POST.getlist("mandat-select")
         if mandat_select:
-            mandat_default=[choice for choice in Etude.Mandat.choices if choice[0] in mandat_select]
+            mandat_default = [
+                choice for choice in Etude.Mandat.choices if choice[0] in mandat_select
+            ]
         else:
-            mandat_default=Etude.Mandat.choices
+            mandat_default = Etude.Mandat.choices
             mandat_select = [choice[0] for choice in mandat_default]
-        etudes_recentes = Etude.objects.filter(je=user_je).order_by('-debut')
-        etudes_terminees = etudes_recentes.filter(status='TERMINEE', mandat__in=mandat_select)
+        etudes_recentes = Etude.objects.filter(je=user_je).order_by("-debut")
+        etudes_terminees = etudes_recentes.filter(
+            status="TERMINEE", mandat__in=mandat_select
+        )
         nombre_mission_terminee = etudes_terminees.count()
         # etudes_terminees = etudes_terminees[:5]
         etudes_terminees = etudes_terminees
 
-        etudes_en_cours = etudes_recentes.filter(status='EN_COURS', mandat__in=mandat_select)
+        etudes_en_cours = etudes_recentes.filter(
+            status="EN_COURS", mandat__in=mandat_select
+        )
         nombre_mission_en_cours = etudes_en_cours.count()
         # etudes_en_cours = etudes_en_cours[:5]
         etudes_en_cours = etudes_en_cours
 
-        etudes_en_negociation = etudes_recentes.filter(status='EN_NEGOCIATION', mandat__in=mandat_select)
+        etudes_en_negociation = etudes_recentes.filter(
+            status="EN_NEGOCIATION", mandat__in=mandat_select
+        )
         nombre_mission_en_negociation = etudes_en_negociation.count()
         # etudes_en_negociation = etudes_en_negociation[:5]
         etudes_en_negociation = etudes_en_negociation
@@ -196,12 +216,12 @@ def index(request):
             "monthly_sums": monthly_sums,
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
             "chiffre_affaire": chiffre_affaire,
-            "etudes_en_cours":etudes_en_cours,
-            "etudes_en_negociation":etudes_en_negociation,
-            "etudes_terminees":etudes_terminees,
+            "etudes_en_cours": etudes_en_cours,
+            "etudes_en_negociation": etudes_en_negociation,
+            "etudes_terminees": etudes_terminees,
             "mandat_choices": mandat_choices,
             "mandat_default": mandat_default,
         }
@@ -219,8 +239,8 @@ def custom_login(request):
             request, email=request.POST["email"], password=request.POST["password"]
         )
         if user:
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('index')
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            return redirect("index")
         else:
             error_message = "Nom d'utilisateur ou mot de passe incorrect."
             context = {"error_message": error_message}
@@ -231,8 +251,10 @@ def custom_login(request):
     context = {}
     return HttpResponse(template.render(context, request))
 
+
 def google_login(request):
-    return redirect('settings')
+    return redirect("settings")
+
 
 def custom_logout(request):
     logout(request)
@@ -253,7 +275,7 @@ def annuaire(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        
+
         template = loader.get_template("polls/annuaire.html")
         client_list = Client.objects.filter(je=request.user.je)
         etude_list = Etude.objects.filter(je=request.user.je)
@@ -265,8 +287,8 @@ def annuaire(request):
             "etude_list": etude_list,
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
         }
     else:
         template = loader.get_template("polls/login.html")
@@ -286,14 +308,13 @@ def je_detail(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        
 
         context = {
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
-            "je":request.user.je
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+            "je": request.user.je,
         }
         template = loader.get_template("polls/je_detail.html")
     else:
@@ -301,51 +322,67 @@ def je_detail(request):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def demarchage(request):
     if request.user.is_authenticated:
         context = general_context(request)
         template = loader.get_template("polls/demarchage.html")
         je = request.user.je
-        representants= Representant.objects.filter(client__je=je)
+        representants = Representant.objects.filter(client__je=je)
         clients = Client.objects.filter(je=je)
-        secteurs =[ 'INDUSTRIE','DISTRIBUTION', 'SECTEUR_PUBLIC', 'CONSEIL',  'TRANSPORT',  'NUMERIQUE', 'BTP','AUTRE']
+        secteurs = [
+            "INDUSTRIE",
+            "DISTRIBUTION",
+            "SECTEUR_PUBLIC",
+            "CONSEIL",
+            "TRANSPORT",
+            "NUMERIQUE",
+            "BTP",
+            "AUTRE",
+        ]
         mail_templates = je.mail_templates
-        mail_templates_ids = list(mail_templates.values_list('id', flat=True))
-        mail_template_contents = list(mail_templates.values_list('message', flat=True))
-        context['clients']=clients
-        context['secteurs']=secteurs
-        context['mail_template_form']=CreateMailTemplate()
-        context['mail_template_ids']=mail_templates_ids
-        context['mail_template_contents']=mail_template_contents
-        try :
-            google_user = request.user.social_auth.get(provider='google-oauth2')
-            context['google_user'] = google_user
-            context['google_email'] = google_user.extra_data['email']
-            context['connecté'] = True
+        mail_templates_ids = list(mail_templates.values_list("id", flat=True))
+        mail_template_contents = list(mail_templates.values_list("message", flat=True))
+        context["clients"] = clients
+        context["secteurs"] = secteurs
+        context["mail_template_form"] = CreateMailTemplate()
+        context["mail_template_ids"] = mail_templates_ids
+        context["mail_template_contents"] = mail_template_contents
+        try:
+            google_user = request.user.social_auth.get(provider="google-oauth2")
+            context["google_user"] = google_user
+            context["google_email"] = google_user.extra_data["email"]
+            context["connecté"] = True
         except UserSocialAuth.DoesNotExist:
-            context['google_user'] = None
-            context['alert_message'] = "Vous n'êtes pas connecté à votre compte Google. Vous ne pouvez pas envoyer de mail. (voir paramètres)"
-            context['connecté'] = False
+            context["google_user"] = None
+            context["alert_message"] = (
+                "Vous n'êtes pas connecté à votre compte Google. Vous ne pouvez pas envoyer de mail. (voir paramètres)"
+            )
+            context["connecté"] = False
         except:
-            context['alert_message'] = "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations Google nécessaires."
-            context['connecté'] = False
+            context["alert_message"] = (
+                "L'authentification a fonctionné, mais vous n'avez pas accordé les autorisations Google nécessaires."
+            )
+            context["connecté"] = False
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def supprimer_demarchage(request, id_representant):
     representant = Representant.objects.filter(id=id_representant).first()
 
-    if request.method == 'POST':
-        representant.demarchage = 'A_CONTACTER'
-        
-        nouvelle_remarque = request.POST.get('remarque', '')
+    if request.method == "POST":
+        representant.demarchage = "A_CONTACTER"
+
+        nouvelle_remarque = request.POST.get("remarque", "")
         representant.remarque = nouvelle_remarque
         representant.save()
-        return redirect('demarchage')  
-    
-    return redirect('demarchage')  
+        return redirect("demarchage")
+
+    return redirect("demarchage")
+
 
 def blank_page(request):
     if request.user.is_authenticated:
@@ -360,8 +397,7 @@ def blank_page(request):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
         template = loader.get_template("polls/blank_page.html")
-        context = {
-        }
+        context = {}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -381,20 +417,20 @@ def page_detail_etude(request):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
 
-        context ={"attribute_list": Etude.objects.filter(iD=1).get_display_dict(),
-                "title": 'nptq',
-                "iD": 1,
-                "liste_messages": liste_messages,
-                "message_count": message_count,}
+        context = {
+            "attribute_list": Etude.objects.filter(iD=1).get_display_dict(),
+            "title": "nptq",
+            "iD": 1,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+        }
 
         template = loader.get_template("polls/page_detail_etude.html")
-        context = {
-        }
+        context = {}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def details(request, modelName, iD):
@@ -416,7 +452,7 @@ def details(request, modelName, iD):
             if modelName == "Message":
                 instance.read = True
                 instance.save()
-                
+
             phases = None
             factures = None
             etude = None  # Initialisez `etude` à None par défaut
@@ -425,15 +461,17 @@ def details(request, modelName, iD):
             eleve = None
             if modelName == "Etude":
                 etude = instance
-                phases = Phase.objects.filter(etude=instance).order_by('numero')
-                factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
+                phases = Phase.objects.filter(etude=instance).order_by("numero")
+                factures = Facture.objects.filter(etude=instance).order_by(
+                    "numero_facture"
+                )
                 intervenants = etude.get_li_students()
                 members = Member.objects.all()
                 respo = instance.responsable.student
                 poste = "Chef de Projet"
-                
-                if respo.titre =='Mme':
-                    poste= "Cheffe de Projet"
+
+                if respo.titre == "Mme":
+                    poste = "Cheffe de Projet"
                 # If a client is selected, get the relevant representants
                 if etude.client:
                     representants_interlocuteurs = etude.client.representants()
@@ -454,10 +492,10 @@ def details(request, modelName, iD):
                 "iD": iD,
                 "liste_messages": liste_messages,
                 "message_count": message_count,
-                "notification_list":notification_list,
-                "notification_count":notification_count,
+                "notification_list": notification_list,
+                "notification_count": notification_count,
             }
-            
+
             # Ajoutez `l'instance` au contexte seulement si elle est définie
             if etude is not None:
                 context["etude"] = etude
@@ -467,19 +505,20 @@ def details(request, modelName, iD):
                 context["phase_form"] = AddPhase()
                 context["facture_form"] = AddFacture()
                 context["intervenant_form"] = AddIntervenant()
-                
+
                 context["etude_form"] = AddEtude(instance=etude)
                 context["representants_interlocuteurs"] = representants_interlocuteurs
                 context["representants_legaux"] = representants_legaux
                 context["members"] = members
                 context["poste"] = poste
                 if etude.type_convention == "Convention cadre":
-                    context["bons"]= BonCommande.objects.filter(etude=etude).order_by('numero')
-
+                    context["bons"] = BonCommande.objects.filter(etude=etude).order_by(
+                        "numero"
+                    )
 
             if client is not None:
                 context["client"] = client
-                context["representant_form"]= AddRepresentant()
+                context["representant_form"] = AddRepresentant()
             if eleve is not None:
                 context["eleve"] = eleve
 
@@ -489,8 +528,8 @@ def details(request, modelName, iD):
                 "error_message": "The selected object does not exist in the database.",
                 "liste_messages": liste_messages,
                 "message_count": message_count,
-                "notification_list":notification_list,
-                "notification_count":notification_count,
+                "notification_list": notification_list,
+                "notification_count": notification_count,
             }
             template = loader.get_template("polls/page_error.html")
     else:
@@ -502,15 +541,15 @@ def details(request, modelName, iD):
 def edit_etude(request, pk):
     etude = get_object_or_404(Etude, pk=pk)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AddEtude(request.POST, instance=etude)
         if form.is_valid():
             form.save(expediteur=request.user)
-            return redirect('etude_detail', pk=etude.pk)
+            return redirect("etude_detail", pk=etude.pk)
     else:
         form = AddEtude(instance=etude)
 
-    return render(request, 'etudes/edit_etude.html', {'form': form, 'etude': etude})
+    return render(request, "etudes/edit_etude.html", {"form": form, "etude": etude})
 
 
 def edit_student(request, pk):
@@ -532,21 +571,19 @@ def edit_student(request, pk):
         # Retrieve the student instance, or return a 404 if not found
         student = get_object_or_404(Student, pk=pk)
 
-
-        if request.method == 'POST':
+        if request.method == "POST":
             form = AddStudent(request.POST, instance=student)
             if form.is_valid():
                 form.save()  # Save changes to the database
-                return redirect('details', modelName="Student", iD=student.id)
+                return redirect("details", modelName="Student", iD=student.id)
             else:
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
         else:
             form = AddStudent(instance=student)
 
-
         context = {
-            "eleve": student, 
+            "eleve": student,
             "form": form,
             "liste_messages": liste_messages,
             "message_count": message_count,
@@ -557,10 +594,10 @@ def edit_student(request, pk):
         }
 
         return render(request, "polls/page_details.html", context)
-    
+
     else:
-        return redirect('login')
-    
+        return redirect("login")
+
 
 def modify_etude(request, pk):
     if request.user.is_authenticated:
@@ -568,7 +605,7 @@ def modify_etude(request, pk):
         # Retrieve the etude instance, or return a 404 if not found
         etude = get_object_or_404(Etude, pk=pk)
 
-        if request.method == 'POST':
+        if request.method == "POST":
             form = AddEtude(request.POST, instance=etude)
             if form.is_valid():
                 form.save()  # Save changes to the database
@@ -576,63 +613,81 @@ def modify_etude(request, pk):
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
 
-        return redirect('details', modelName='Etude', iD=pk)
-    
+        return redirect("details", modelName="Etude", iD=pk)
+
     else:
-        return redirect('login')
-    
+        return redirect("login")
+
+
 def object_suppression(request, model_name, object_id):
     if request.user.is_authenticated:
-        try :
+        try:
             model = apps.get_model(app_label="polls", model_name=model_name)
             object = model.objects.get(id=object_id)
             # Attention checker la cohérence des JE
             object.delete()
-            return JsonResponse({'success':True})
+            return JsonResponse({"success": True})
         except:
-            return JsonResponse({'success':False, 'error_message':"Une erreur a été détectée dans la base de données."})
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error_message": "Une erreur a été détectée dans la base de données.",
+                }
+            )
     else:
-        return JsonResponse({'success':False, 'error_message':"Il semblerait que vous ayez été déconnecté."})
-    
+        return JsonResponse(
+            {
+                "success": False,
+                "error_message": "Il semblerait que vous ayez été déconnecté.",
+            }
+        )
+
 
 def get_client_representants(request):
-    client_id = request.GET.get('client_id')
+    client_id = request.GET.get("client_id")
     if client_id:
         client = get_object_or_404(Client, id=client_id)
         representants = client.representants()
-        
+
         interlocuteurs = [
-            {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
-            for r in representants
+            {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
         ]
 
         legaux = [
-            {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
-            for r in representants
+            {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
         ]
 
-        return JsonResponse({
-            'interlocuteurs': ''.join([f'<option value="{r["id"]}">{r["name"]}</option>' for r in interlocuteurs]),
-            'legaux': ''.join([f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux])
-        })
-    return JsonResponse({'error': 'Invalid client ID'}, status=400)
+        return JsonResponse(
+            {
+                "interlocuteurs": "".join(
+                    [
+                        f'<option value="{r["id"]}">{r["name"]}</option>'
+                        for r in interlocuteurs
+                    ]
+                ),
+                "legaux": "".join(
+                    [f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux]
+                ),
+            }
+        )
+    return JsonResponse({"error": "Invalid client ID"}, status=400)
+
 
 def get_representants(request):
-    if(request.user.is_authenticated):
-        client_id = request.GET.get('client_id')
+    if request.user.is_authenticated:
+        client_id = request.GET.get("client_id")
         if client_id:
             client = get_object_or_404(Client, id=client_id)
             representants = client.representants()
-            
+
             results = [
-                {'id': r.id, 'name': f"{r.first_name} {r.last_name}"}
+                {"id": r.id, "name": f"{r.first_name} {r.last_name}"}
                 for r in representants
             ]
 
-            return JsonResponse({
-                'results':results
-            })
-        return JsonResponse({'error': 'Invalid client ID'}, status=400)
+            return JsonResponse({"results": results})
+        return JsonResponse({"error": "Invalid client ID"}, status=400)
+
 
 def edit_client(request, pk):
     if request.user.is_authenticated:
@@ -653,22 +708,21 @@ def edit_client(request, pk):
         # Retrieve the client instance, or return a 404 if not found
         client = get_object_or_404(Client, pk=pk)
 
-
-        if request.method == 'POST':
-            form = AddClient(request.POST, instance=client)
+        if request.method == "POST":
+            # Update the form to include request.FILES to handle file uploads
+            form = AddClient(request.POST, request.FILES, instance=client)
             if form.is_valid():
-                form.save()  # Save changes to the database
-                return redirect('details', modelName="Client", iD=client.id)
+                form.save()  # Save changes to the database, including the new image if uploaded
+                return redirect("details", modelName="Client", iD=client.id)
             else:
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
         else:
             form = AddClient(instance=client)
 
-
         context = {
             "client": client,
-            "representant_form" : AddRepresentant(),
+            "representant_form": AddRepresentant(),
             "form": form,
             "liste_messages": liste_messages,
             "message_count": message_count,
@@ -679,9 +733,10 @@ def edit_client(request, pk):
         }
 
         return render(request, "polls/page_details.html", context)
-    
+
     else:
-        return redirect('login')
+        return redirect("login")
+
 
 def delete_student(request, pk):
     if request.user.is_authenticated:
@@ -696,23 +751,23 @@ def delete_student(request, pk):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
         student = get_object_or_404(Student, pk=pk)
-        if request.method == 'POST':
+        if request.method == "POST":
             student.delete()
-        return redirect('annuaire')
+        return redirect("annuaire")
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def delete_etude(request, pk):
     if request.user.is_authenticated:
         etude = get_object_or_404(Etude, pk=pk)
-        if request.method == 'POST':
+        if request.method == "POST":
             etude.delete()
-            return redirect('annuaire')  
+            return redirect("annuaire")
     else:
-        return redirect('login')  
-
+        return redirect("login")
 
 
 def edit_phase(request, pk, iD):
@@ -721,7 +776,7 @@ def edit_phase(request, pk, iD):
         liste_messages = Message.objects.filter(
             destinataire=request.user,
             read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).order_by("date")[:3]
         message_count = liste_messages.count()
         all_notifications = request.user.notifications.order_by("-date_effet")
@@ -731,11 +786,11 @@ def edit_phase(request, pk, iD):
         phase = Phase.objects.filter(id=pk).first()
         etude = Etude.objects.filter(id=iD).first()
 
-        if request.method == 'POST':
+        if request.method == "POST":
             form = AddPhase(request.POST, instance=phase)
             if form.is_valid():
                 form.save()  # Save changes to the database
-                return redirect('details', modelName="Etude", iD=etude.id)
+                return redirect("details", modelName="Etude", iD=etude.id)
             else:
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
@@ -757,7 +812,7 @@ def edit_phase(request, pk, iD):
         return render(request, "polls/page_details.html", context)
 
     else:
-        return redirect('login')
+        return redirect("login")
 
 
 def delete_phase(request, pk, iD):
@@ -775,7 +830,7 @@ def delete_phase(request, pk, iD):
         ).count()
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
-        
+
         phase = get_object_or_404(Phase, pk=pk)
         etude = get_object_or_404(Etude, pk=iD)
 
@@ -789,12 +844,13 @@ def delete_phase(request, pk, iD):
             "iD": etude.id,
         }
 
-        if request.method == 'POST':
+        if request.method == "POST":
             phase.delete()
-            return redirect('details', modelName="Etude", iD=etude.id)
+            return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect('login')
-    
+        return redirect("login")
+
+
 def delete_assignation(request, pk, etude_id):
     if request.user.is_authenticated:
         # Fetch messages and notifications
@@ -824,11 +880,12 @@ def delete_assignation(request, pk, etude_id):
             "iD": etude.id,
         }
 
-        if request.method == 'POST':
+        if request.method == "POST":
             assignation.delete()
-            return redirect('details', modelName="Etude", iD=etude.id)
+            return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect('login')
+        return redirect("login")
+
 
 def delete_facture(request, pk, iD):
     if request.user.is_authenticated:
@@ -845,7 +902,7 @@ def delete_facture(request, pk, iD):
         ).count()
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
-        
+
         facture = get_object_or_404(Facture, pk=pk)
         etude = get_object_or_404(Etude, pk=iD)
 
@@ -859,14 +916,11 @@ def delete_facture(request, pk, iD):
             "iD": etude.id,
         }
 
-        if request.method == 'POST':
+        if request.method == "POST":
             facture.delete()
-            return redirect('details', modelName="Etude", iD=etude.id)
+            return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect('login')
-
-
-
+        return redirect("login")
 
 
 def delete_client(request, pk):
@@ -882,9 +936,9 @@ def delete_client(request, pk):
             date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
         ).count()
         client = get_object_or_404(Client, pk=pk)
-        if request.method == 'POST':
+        if request.method == "POST":
             client.delete()
-        return redirect('annuaire')
+        return redirect("annuaire")
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -899,7 +953,7 @@ def input(request, modelName, iD):
     liste_messages = Message.objects.filter(
         destinataire=request.user,
         read=False,
-        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
     ).order_by("date")[:3]
     message_count = liste_messages.count()
 
@@ -911,8 +965,10 @@ def input(request, modelName, iD):
             # New instance creation
             form = model.createForm(je=request.user.je)
             # Exclude superusers from any user-related fields
-            if 'Member' in form.fields:
-                form.fields['Member'].queryset = Member.objects.filter(is_superuser=False)
+            if "Member" in form.fields:
+                form.fields["Member"].queryset = Member.objects.filter(
+                    is_superuser=False
+                )
             context = {
                 "form": form,
                 "title": str(form),
@@ -929,8 +985,10 @@ def input(request, modelName, iD):
                 instance = model.objects.get(id=iD, je=request.user.je)
                 form = model.modifyForm(instance)
                 # Exclude superusers from any user-related fields
-                if 'user' in form.fields:
-                    form.fields['user'].queryset = User.objects.filter(is_superuser=False)
+                if "user" in form.fields:
+                    form.fields["user"].queryset = User.objects.filter(
+                        is_superuser=False
+                    )
                 context = {
                     "form": form,
                     "title": str(form),
@@ -943,11 +1001,15 @@ def input(request, modelName, iD):
                 }
             except model.DoesNotExist:
                 # Redirect to error page if instance does not exist
-                return render(request, "polls/page_error.html", {
-                    "error_message": "L'objet sélectionné n'existe pas dans la base de données.",
-                    "liste_messages": liste_messages,
-                    "message_count": message_count,
-                })
+                return render(
+                    request,
+                    "polls/page_error.html",
+                    {
+                        "error_message": "L'objet sélectionné n'existe pas dans la base de données.",
+                        "liste_messages": liste_messages,
+                        "message_count": message_count,
+                    },
+                )
 
     else:  # POST request
         fetchform = model.retrieveForm(request.POST, files=request.FILES)
@@ -958,7 +1020,7 @@ def input(request, modelName, iD):
             else:
                 fetchform.save(commit=True)
             # Redirect after successful form submission
-            return redirect('annuaire')
+            return redirect("annuaire")
         else:
             # Handle form errors
             context = {
@@ -973,21 +1035,22 @@ def input(request, modelName, iD):
 
     return HttpResponse(loader.get_template(template_name).render(context, request))
 
+
 def upload_students(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = StudentCSVUploadForm(request.POST, request.FILES)
-        
+
         if form.is_valid():
-            csv_file = request.FILES.get('csv_file')
+            csv_file = request.FILES.get("csv_file")
 
             # Check if the file is a CSV
-            if not csv_file.name.endswith('.csv'):
-                print('This is not a CSV file.')
-                return redirect('upload_students')
+            if not csv_file.name.endswith(".csv"):
+                print("This is not a CSV file.")
+                return redirect("upload_students")
 
             try:
                 # Decode the uploaded file and read its content with correct delimiter
-                data = csv_file.read().decode('utf-8')
+                data = csv_file.read().decode("utf-8")
                 # Use csv.Sniffer to detect the delimiter
                 sniffer = csv.Sniffer()
                 detected_dialect = sniffer.sniff(data)
@@ -997,21 +1060,37 @@ def upload_students(request):
                 reader = csv.reader(StringIO(data), delimiter=delimiter)
                 # Skip the header row if present
                 header = next(reader, None)
-                
+
                 # Check if header matches the expected columns
                 if len(header) != 11:
-                    print(f'Unexpected header format. Expected 9 columns, got {len(header)}.')
-                    return redirect('upload_students')
-                
+                    print(
+                        f"Unexpected header format. Expected 9 columns, got {len(header)}."
+                    )
+                    return redirect("upload_students")
+
                 # Iterate through each row in the CSV
                 for row in reader:
                     if len(row) != 11:
-                        print(f"Error processing row: {row}. Incorrect number of columns.")
+                        print(
+                            f"Error processing row: {row}. Incorrect number of columns."
+                        )
                         continue
-                    
+
                     # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
                     try:
-                        titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays, depart, promo = row
+                        (
+                            titre,
+                            first_name,
+                            last_name,
+                            mail,
+                            phone_number,
+                            rue,
+                            ville,
+                            code_postal,
+                            pays,
+                            depart,
+                            promo,
+                        ) = row
                         je = request.user.je
                         # Create or update the student record
                         Student.objects.get_or_create(
@@ -1026,38 +1105,37 @@ def upload_students(request):
                             code_postal=code_postal.strip(),
                             country=pays.strip(),
                             departement=depart.strip(),
-                            promotion=promo.strip()
-
+                            promotion=promo.strip(),
                         )
                     except Exception as e:
                         print(f"Error processing row {row}: {e}")
             except Exception as e:
                 print(f"Error reading file: {e}")  # Debugging statement
 
-            print('Students have been successfully added!')
-            return redirect('upload_students')
+            print("Students have been successfully added!")
+            return redirect("upload_students")
     else:
         form = StudentCSVUploadForm()
 
+    return redirect("annuaire")
+    # return render(request, 'polls/annuaire.html', {'form': form})
 
-    return redirect('annuaire')
-    #return render(request, 'polls/annuaire.html', {'form': form})
 
 def upload_clients(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ClientCSVUploadForm(request.POST, request.FILES)
-        
+
         if form.is_valid():
-            csv_file = request.FILES.get('csv_file')
+            csv_file = request.FILES.get("csv_file")
 
             # Check if the file is a CSV
-            if not csv_file.name.endswith('.csv'):
-                print('This is not a CSV file.')
-                return redirect('upload_students')
+            if not csv_file.name.endswith(".csv"):
+                print("This is not a CSV file.")
+                return redirect("upload_students")
 
             try:
                 # Decode the uploaded file and read its content with correct delimiter
-                data = csv_file.read().decode('utf-8')
+                data = csv_file.read().decode("utf-8")
                 # Use csv.Sniffer to detect the delimiter
                 sniffer = csv.Sniffer()
                 detected_dialect = sniffer.sniff(data)
@@ -1067,21 +1145,32 @@ def upload_clients(request):
                 reader = csv.reader(StringIO(data), delimiter=delimiter)
                 # Skip the header row if present
                 header = next(reader, None)
-                
+
                 # Check if header matches the expected columns
                 if len(header) != 6:
-                    print(f'Unexpected header format. Expected 9 columns, got {len(header)}.')
-                    return redirect('upload_students')
-                
+                    print(
+                        f"Unexpected header format. Expected 9 columns, got {len(header)}."
+                    )
+                    return redirect("upload_students")
+
                 # Iterate through each row in the CSV
                 for row in reader:
                     if len(row) != 6:
-                        print(f"Error processing row: {row}. Incorrect number of columns.")
+                        print(
+                            f"Error processing row: {row}. Incorrect number of columns."
+                        )
                         continue
-                    
+
                     # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
                     try:
-                        nom_societe, raison_sociale, rue, ville, code_postal, country = row
+                        (
+                            nom_societe,
+                            raison_sociale,
+                            rue,
+                            ville,
+                            code_postal,
+                            country,
+                        ) = row
                         je = request.user.je
                         # Create or update the student record
                         Client.objects.get_or_create(
@@ -1092,91 +1181,82 @@ def upload_clients(request):
                             ville=ville.strip(),
                             code_postal=code_postal.strip(),
                             country=country.strip(),
-                            
-
                         )
                     except Exception as e:
                         print(f"Error processing row {row}: {e}")
             except Exception as e:
                 print(f"Error reading file: {e}")  # Debugging statement
 
-            print('Students have been successfully added!')
-            return redirect('upload_students')
+            print("Students have been successfully added!")
+            return redirect("upload_students")
     else:
         form = ClientCSVUploadForm()
 
+    return redirect("annuaire")
+    # return render(request, 'polls/annuaire.html', {'form': form})
 
-    return redirect('annuaire')
-    #return render(request, 'polls/annuaire.html', {'form': form})
 
 def update_etude(request, id):
     etude = Etude.objects.get(id=id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         suivi_document = etude.suivi_document  # Get the existing suivi_document
-        
 
-        if 'delete_document_name' in request.POST:
-            document_name = request.POST['delete_document_name']
+        if "delete_document_name" in request.POST:
+            document_name = request.POST["delete_document_name"]
             # Perform delete logic, e.g., removing document by name
             if document_name in etude.suivi_document:
                 del etude.suivi_document[document_name]
                 etude.suivi_document = suivi_document
             etude.save()
-            return redirect('index')  
-        
+            return redirect("index")
 
-        
         # Loop through the keys in suivi_document and update both status and date
         for key in suivi_document.keys():
-            new_status = request.POST.get(f'suivi_document_{key}_status')
-            new_date = request.POST.get(f'suivi_document_{key}_date')
-            new_remarque =request.POST.get(f'suivi_document_{key}_remarque')
+            new_status = request.POST.get(f"suivi_document_{key}_status")
+            new_date = request.POST.get(f"suivi_document_{key}_date")
+            new_remarque = request.POST.get(f"suivi_document_{key}_remarque")
             if new_status:
-                suivi_document[key]['status'] = new_status
+                suivi_document[key]["status"] = new_status
             if new_date:
-                suivi_document[key]['date'] = new_date
+                suivi_document[key]["date"] = new_date
             else:
-                suivi_document[key]['date'] = None 
-         
+                suivi_document[key]["date"] = None
+
             if new_remarque:
-                suivi_document[key]['remarque'] = new_remarque
+                suivi_document[key]["remarque"] = new_remarque
         etude.suivi_document = suivi_document
         etude.save()
-        suivi_document = etude.suivi_document 
+        suivi_document = etude.suivi_document
         # Check if the form is adding a new document (new_document_name is filled)
-        new_document_name = request.POST.get('new_document_name')
-        new_document_status = request.POST.get('new_document_status')
-        new_document_date = request.POST.get('new_document_date')
-        new_remarque_name = request.POST.get('new_remarque_name')
-        
+        new_document_name = request.POST.get("new_document_name")
+        new_document_status = request.POST.get("new_document_status")
+        new_document_date = request.POST.get("new_document_date")
+        new_remarque_name = request.POST.get("new_remarque_name")
 
         if new_document_name and new_document_status:
             suivi_document[new_document_name] = {
-                'status': new_document_status,
-                'date': new_document_date, 'remarque':new_remarque_name
+                "status": new_document_status,
+                "date": new_document_date,
+                "remarque": new_remarque_name,
             }
-           
 
         etude.suivi_document = suivi_document  # Update the dictionary with new entries
-        etude.save() 
-         # Save the changes
-        
-       
-        return redirect('index')  # Redirect after saving
+        etude.save()
+        # Save the changes
+
+        return redirect("index")  # Redirect after saving
 
     # Render the template with the existing data (in case you need GET logic)
-    return render(request, 'index.html')
-
-
-
+    return render(request, "index.html")
 
 
 def ref_facture(numero):
     date = datetime.now()
     annee = str(date.year)
-    an =annee[-2:]
+    an = annee[-2:]
     return f"{an}{numero:03d}"
+
 
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
@@ -1185,26 +1265,29 @@ def generate_facture_pdf(request, id_facture):
             facture = Facture.objects.get(id=id_facture)
             etude = facture.etude
             client = etude.client
-            phases = Phase.objects.filter(etude=etude).order_by('numero')
-            
-            res = facture.montant_TTC()
-            facture.date_emission = timezone.now().strftime('%d/%m/%Y')
-            date_30 = timezone.now() + timedelta(30)
-            facture.date_echeance = date_30.strftime('%d/%m/%Y')
-            logo_url = request.build_absolute_uri(static('polls/img/bdc.png'))
-            bdc=""
-            avenante_ref=None
+            phases = Phase.objects.filter(etude=etude).order_by("numero")
 
-            avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+            res = facture.montant_TTC()
+            facture.date_emission = timezone.now().strftime("%d/%m/%Y")
+            date_30 = timezone.now() + timedelta(30)
+            facture.date_echeance = date_30.strftime("%d/%m/%Y")
+            logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
+            bdc = ""
+            avenante_ref = None
+
+            avenants_signes = AvenantConventionEtude.objects.filter(
+                date_signature__isnull=False
+            )
 
             if etude.type_convention == "Convention cadre":
-                bdc=facture.bdc()
+                bdc = facture.bdc()
             else:
                 ce = etude.convention()
                 if ce:
-                    avenants_signes  = AvenantConventionEtude.objects.filter(ce=ce,date_signature__isnull=False).order_by('numero')
-                    avenante_ref=avenants_signes.last()
-
+                    avenants_signes = AvenantConventionEtude.objects.filter(
+                        ce=ce, date_signature__isnull=False
+                    ).order_by("numero")
+                    avenante_ref = avenants_signes.last()
 
             # Context for the invoice
             context = {
@@ -1215,21 +1298,23 @@ def generate_facture_pdf(request, id_facture):
                 "res": res,
                 "date_emission": facture.date_emission,
                 "date_echeance": facture.date_echeance,
-                "logo_url": logo_url, "bdc": bdc, "avenante_ref":avenante_ref
+                "logo_url": logo_url,
+                "bdc": bdc,
+                "avenante_ref": avenante_ref,
             }
 
             # Render the full HTML of the invoice page (with full HTML structure and CSS link)
-            html_string = render_to_string('polls/facpdfhtml.html', context)
+            html_string = render_to_string("polls/facpdfhtml.html", context)
 
             # Optionally replace static URLs with absolute URLs (if required)
-            
+
             # Generate PDF from the full HTML
             pdf_file = HTML(string=html_string).write_pdf()
-            ref1=ref_facture(facture.numero_facture)
-            refFA=f"FA{ref1}.pdf"
+            ref1 = ref_facture(facture.numero_facture)
+            refFA = f"FA{ref1}.pdf"
             # Serve the PDF as a download
-            response = HttpResponse(pdf_file, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{refFA}.pdf"'
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
             return response
 
         except Exception as e:
@@ -1238,33 +1323,34 @@ def generate_facture_pdf(request, id_facture):
     return HttpResponse("Unauthorized", status=401)
 
 
-
-
-
 def facture(request, id_facture):
     if request.user.is_authenticated:
         try:
             facture = Facture.objects.get(id=id_facture)
             etude = facture.etude
-            #etude = {'type_convention': etude.type_convention, }
+            # etude = {'type_convention': etude.type_convention, }
             client = etude.client
-            phases = Phase.objects.filter(etude=etude).order_by('numero')
+            phases = Phase.objects.filter(etude=etude).order_by("numero")
             res = facture.montant_TTC()
-            facture.date_emission = timezone.now().strftime('%d/%m/%Y')
+            facture.date_emission = timezone.now().strftime("%d/%m/%Y")
             date_30 = timezone.now() + timedelta(30)
-            facture.date_echeance = date_30.strftime('%d/%m/%Y')
-            bdc=""
-            avenante_ref=None
+            facture.date_echeance = date_30.strftime("%d/%m/%Y")
+            bdc = ""
+            avenante_ref = None
 
-            avenants_signes  = AvenantConventionEtude.objects.filter(date_signature__isnull=False)
+            avenants_signes = AvenantConventionEtude.objects.filter(
+                date_signature__isnull=False
+            )
 
             if etude.type_convention == "Convention cadre":
-                bdc=facture.bdc()
+                bdc = facture.bdc()
             else:
                 ce = etude.convention()
                 if ce:
-                    avenants_signes  = AvenantConventionEtude.objects.filter(ce=ce,date_signature__isnull=False).order_by('numero')
-                    avenante_ref=avenants_signes.last()
+                    avenants_signes = AvenantConventionEtude.objects.filter(
+                        ce=ce, date_signature__isnull=False
+                    ).order_by("numero")
+                    avenante_ref = avenants_signes.last()
             context = {
                 "facture": facture,
                 "etude": etude,
@@ -1272,7 +1358,9 @@ def facture(request, id_facture):
                 "phases": phases,
                 "res": res,
                 "date_emission": facture.date_emission,
-                "date_echeance": facture.date_echeance, "bdc":bdc,"avenante_ref":avenante_ref
+                "date_echeance": facture.date_echeance,
+                "bdc": bdc,
+                "avenante_ref": avenante_ref,
             }
             template = loader.get_template("polls/facpdf.html")
 
@@ -1285,9 +1373,9 @@ def facture(request, id_facture):
     return HttpResponse(template.render(context, request))
 
 
-def update_facture(request,iD):
-    if request.method == 'POST':
-        facture_id = request.POST.get('facture_id')
+def update_facture(request, iD):
+    if request.method == "POST":
+        facture_id = request.POST.get("facture_id")
         try:
             instance = Etude.objects.get(id=iD)
             facture = Facture.objects.get(id=facture_id)
@@ -1301,12 +1389,13 @@ def update_facture(request,iD):
             context = {"error_message": "facture n'existe pas."}
     return HttpResponse(template.render(context, request))
 
+
 def ndf(request):
     if request.user.is_authenticated:
         try:
-            
+
             template = loader.get_template("polls/ndf.html")
-            context={}
+            context = {}
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -1314,14 +1403,15 @@ def ndf(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
 
 def ba(request, iD):
     if request.user.is_authenticated:
         try:
-            eleve= Student.objects.get(id=iD)
+            eleve = Student.objects.get(id=iD)
             template = loader.get_template("polls/ba.html")
-            president={"first_name" : "Thomas", "last_name" : "Debray"}
-            context={"eleve":eleve,"president":president}
+            president = {"first_name": "Thomas", "last_name": "Debray"}
+            context = {"eleve": eleve, "president": president}
         except:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": "Erreur dans l'identification de la mission."}
@@ -1331,25 +1421,29 @@ def ba(request, iD):
     return HttpResponse(template.render(context, request))
 
 
-
-
 def stat_KPI(request):
     if request.user.is_authenticated:
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
 
         if start_date and end_date:
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.UTC
+            )
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.UTC
+            )
         else:
             now = timezone.now()
             end_date_obj = (now + timedelta(days=150)).date()
             start_date_obj = (now - timedelta(days=100)).date()
-            start_date = start_date_obj.strftime('%Y-%m-%d')
-            end_date = end_date_obj.strftime('%Y-%m-%d')
+            start_date = start_date_obj.strftime("%Y-%m-%d")
+            end_date = end_date_obj.strftime("%Y-%m-%d")
 
         # Filtrer les études en fonction des dates
-        etudes = Etude.objects.filter(je = request.user.je, debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        etudes = Etude.objects.filter(
+            je=request.user.je, debut__gte=start_date_obj, debut__lte=end_date_obj
+        ).order_by("debut")
         # Calculer les montants par mois et les labels
         date_labels = []
         cumulated_CA = []
@@ -1358,130 +1452,139 @@ def stat_KPI(request):
         current_sum = 0
         total_sum = 0
 
-        ca_026 = 0 #ca du mandat 026
-        ca_026_cutoff =0
-        ca_en_nego =0
-        nb_etudes_ec ={0:0,1:0}
-        nb_etude_ed ={0:0,1:0}
-        nb_etudes_term_026= {0:0,1:0}
-        dictionaire_dep_eleve={}
-        nb_intervenants_026 =0
-      
-        dico_nb_intervenants_diff_026={}
-        taux_ouverture=0
-        retributions_etudes026=0
-        nb_etudes_026_avec_interv=0
-        dico_genre_inter={'M.':0, 'Mme':0}
-        dico_ca_typeentreprise ={}
-        dico_ca_departement ={}
-        dico_ca_secteur ={}
+        ca_026 = 0  # ca du mandat 026
+        ca_026_cutoff = 0
+        ca_en_nego = 0
+        nb_etudes_ec = {0: 0, 1: 0}
+        nb_etude_ed = {0: 0, 1: 0}
+        nb_etudes_term_026 = {0: 0, 1: 0}
+        dictionaire_dep_eleve = {}
+        nb_intervenants_026 = 0
 
-        liste_etudes_ec_term=[]
+        dico_nb_intervenants_diff_026 = {}
+        taux_ouverture = 0
+        retributions_etudes026 = 0
+        nb_etudes_026_avec_interv = 0
+        dico_genre_inter = {"M.": 0, "Mme": 0}
+        dico_ca_typeentreprise = {}
+        dico_ca_departement = {}
+        dico_ca_secteur = {}
 
-        dico_devis_envoye={} # key : devis , valeurs : date et si la mission a été signé
-        devis_envoye  = Devis.objects.filter(etude__in=etudes, date_signature__isnull=False)
+        liste_etudes_ec_term = []
 
+        dico_devis_envoye = (
+            {}
+        )  # key : devis , valeurs : date et si la mission a été signé
+        devis_envoye = Devis.objects.filter(
+            etude__in=etudes, date_signature__isnull=False
+        )
 
         for devis in devis_envoye:
-            dico_devis_envoye[devis.id]={'date': f"{devis.date_signature.month}-{devis.date_signature.year}", 'mission':0 }
-            etude= devis.etude
-            if etude.status == 'TERMINEE' or etude.status == 'EN_COURS':
-                dico_devis_envoye[devis.id]['mission']=1
-        
+            dico_devis_envoye[devis.id] = {
+                "date": f"{devis.date_signature.month}-{devis.date_signature.year}",
+                "mission": 0,
+            }
+            etude = devis.etude
+            if etude.status == "TERMINEE" or etude.status == "EN_COURS":
+                dico_devis_envoye[devis.id]["mission"] = 1
 
-        dico_suivi_devis={}
-        derniere_date ='11-2002'
+        dico_suivi_devis = {}
+        derniere_date = "11-2002"
         for devis in dico_devis_envoye:
-            mois = dico_devis_envoye[devis]['date']
-            if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
-                derniere_date=mois 
+            mois = dico_devis_envoye[devis]["date"]
+            if int(mois[3:]) >= int(derniere_date[3:]) and int(mois[0:2]) >= int(
+                derniere_date[0:2]
+            ):
+                derniere_date = mois
             if mois in dico_suivi_devis:
-                dico_suivi_devis[mois]['envoyés']+=1
-                dico_suivi_devis[mois]['signées']+=dico_devis_envoye[devis]['mission']
-            else: 
-                dico_suivi_devis[mois]={}
-                dico_suivi_devis[mois]['envoyés']=1
-                dico_suivi_devis[mois]['signées']=dico_devis_envoye[devis]['mission']
-        if derniere_date:
-            if derniere_date[0:2]=='12':
-                derniere_date=f"01-{int(derniere_date[3:])+1}"
+                dico_suivi_devis[mois]["envoyés"] += 1
+                dico_suivi_devis[mois]["signées"] += dico_devis_envoye[devis]["mission"]
             else:
-                derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
-            dico_suivi_devis[derniere_date]={'envoyés': 0, 'signées': 0}
+                dico_suivi_devis[mois] = {}
+                dico_suivi_devis[mois]["envoyés"] = 1
+                dico_suivi_devis[mois]["signées"] = dico_devis_envoye[devis]["mission"]
+        if derniere_date:
+            if derniere_date[0:2] == "12":
+                derniere_date = f"01-{int(derniere_date[3:])+1}"
+            else:
+                derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+            dico_suivi_devis[derniere_date] = {"envoyés": 0, "signées": 0}
 
-
-
-        derniere_date ='11-2002'
-        dico_avenants_mois_ce={} # key : devis , valeurs : date et si la mission a été signé
+        derniere_date = "11-2002"
+        dico_avenants_mois_ce = (
+            {}
+        )  # key : devis , valeurs : date et si la mission a été signé
         avenants_signes = AvenantConventionEtude.objects.filter(
-            date_signature__isnull=False,
-            ce__etude__in=etudes
+            date_signature__isnull=False, ce__etude__in=etudes
         )
         for avenant in avenants_signes:
             mois = f"{avenant.date_signature.month}-{avenant.date_signature.year}"
-            if int(mois[3:])>=int(derniere_date[3:]) and int(mois[0:2])>=int(derniere_date[0:2]):
-                derniere_date=mois 
+            if int(mois[3:]) >= int(derniere_date[3:]) and int(mois[0:2]) >= int(
+                derniere_date[0:2]
+            ):
+                derniere_date = mois
             if mois in dico_avenants_mois_ce:
-                dico_avenants_mois_ce[mois]['avenants']+=1
+                dico_avenants_mois_ce[mois]["avenants"] += 1
                 if avenant.avenant_delais:
-                    dico_avenants_mois_ce[mois]['délais']+=1
+                    dico_avenants_mois_ce[mois]["délais"] += 1
                 if avenant.avenant_budget:
-                    dico_avenants_mois_ce[mois]['budget']+=1
+                    dico_avenants_mois_ce[mois]["budget"] += 1
             else:
-                dico_avenants_mois_ce[mois]={'avenants':1,'délais':0,'budget':0}
+                dico_avenants_mois_ce[mois] = {"avenants": 1, "délais": 0, "budget": 0}
                 if avenant.avenant_delais:
-                    dico_avenants_mois_ce[mois]['délais']+=1
+                    dico_avenants_mois_ce[mois]["délais"] += 1
                 if avenant.avenant_budget:
-                    dico_avenants_mois_ce[mois]['budget']+=1
+                    dico_avenants_mois_ce[mois]["budget"] += 1
 
         if derniere_date:
-            if derniere_date[0:2]=='12':
-                derniere_date=f"01-{int(derniere_date[3:])+1}"
+            if derniere_date[0:2] == "12":
+                derniere_date = f"01-{int(derniere_date[3:])+1}"
             else:
-                derniere_date=f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
-            dico_avenants_mois_ce[derniere_date]={'avenants':0,'délais':0,'budget':0}
-
-
-
-
-
-
+                derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+            dico_avenants_mois_ce[derniere_date] = {
+                "avenants": 0,
+                "délais": 0,
+                "budget": 0,
+            }
 
         for etude in etudes:
-            if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
+            if etude.status == "EN_COURS" or etude.status == "TERMINEE":
                 liste_etudes_ec_term.append(etude)
-        
+
         for etude in liste_etudes_ec_term:
-            secteur =etude.client.get_secteur_display()
+            secteur = etude.client.get_secteur_display()
             if secteur in dico_ca_secteur:
-                dico_ca_secteur[secteur]+=etude.montant_HT_total()
+                dico_ca_secteur[secteur] += etude.montant_HT_total()
             else:
-                dico_ca_secteur[secteur]=etude.montant_HT_total()
+                dico_ca_secteur[secteur] = etude.montant_HT_total()
 
             if etude.client.get_type_display() in dico_ca_typeentreprise:
-                dico_ca_typeentreprise[etude.client.get_type_display()]+=etude.montant_HT_total()
+                dico_ca_typeentreprise[
+                    etude.client.get_type_display()
+                ] += etude.montant_HT_total()
             else:
-                dico_ca_typeentreprise[etude.client.get_type_display()]=etude.montant_HT_total()
+                dico_ca_typeentreprise[etude.client.get_type_display()] = (
+                    etude.montant_HT_total()
+                )
             departements = etude.departement
             for depart in departements:
                 if depart in dico_ca_departement:
-                    dico_ca_departement[depart]+=etude.montant_HT_total()
+                    dico_ca_departement[depart] += etude.montant_HT_total()
                 else:
-                    dico_ca_departement[depart]=etude.montant_HT_total()
+                    dico_ca_departement[depart] = etude.montant_HT_total()
 
-        bar_chart_CA={}
+        bar_chart_CA = {}
         for etude in liste_etudes_ec_term:
-            
+
             etude_month = etude.debut.month
             etude_year = etude.debut.year
             if etude_year in bar_chart_CA:
                 if etude_month in bar_chart_CA[etude_year]:
-                    bar_chart_CA[etude_year][etude_month]+=etude.montant_HT_total()
+                    bar_chart_CA[etude_year][etude_month] += etude.montant_HT_total()
                 else:
-                    bar_chart_CA[etude_year][etude_month]=etude.montant_HT_total()
+                    bar_chart_CA[etude_year][etude_month] = etude.montant_HT_total()
             else:
-                bar_chart_CA[etude_year]={etude_month:etude.montant_HT_total()}
-
+                bar_chart_CA[etude_year] = {etude_month: etude.montant_HT_total()}
 
         for etude in liste_etudes_ec_term:
 
@@ -1502,72 +1605,88 @@ def stat_KPI(request):
                 current_sum = etude.montant_HT_total()
 
         for etude in etudes:
-            
-            if (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '026':
-                ca_026+=etude.montant_HT_total()
-                if etude.status == 'TERMINEE':
-                    ca_026_cutoff+=etude.montant_HT_total()
-                    nb_etudes_term_026[0]+=1
-                    nb_etudes_term_026[1]+=etude.montant_HT_total()
-                else:
-                    if etude.fin() is not None and etude.fin() <date(2025, 5, 1):
-                        ca_026_cutoff+=etude.montant_HT_total()
-                    elif etude.duree_semaine():
-                        ca_026_cutoff+=etude.montant_HT_total()*((date(2025, 5, 1) - etude.debut).days/7)/etude.duree_semaine()
-            elif (etude.status == 'EN_COURS' or etude.status == 'TERMINEE' ) and etude.mandat== '025':
-                if etude.debut and etude.debut>date(2024, 5, 1):
-                    ca_026_cutoff+=etude.montant_HT_total()
-                elif etude.fin() is not None and etude.fin() >date(2024, 5, 1):
-                    ca_026_cutoff+=etude.montant_HT_total()*((etude.fin() - date(2024, 5, 1)).days/7)/etude.duree_semaine()
-            if etude.status == 'EN_NEGOCIATION':
-                ca_en_nego+=etude.montant_HT_total()
-                nb_etude_ed[0]+=1
-                nb_etude_ed[1]+=etude.montant_HT_total()
-            if etude.status == 'EN_COURS':
-                nb_etudes_ec[0]+=1
-                nb_etudes_ec[1]+=etude.montant_HT_total()
-            if etude.mandat =='026':
-                if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
-                    
-                    if etude.get_li_students() :
-                        nb_etudes_026_avec_interv+=1
-                        for student in etude.get_li_students():
-                            dico_genre_inter[student.titre]+=1
-                            nb_intervenants_026+=1
-                            dico_nb_intervenants_diff_026[f"{student.first_name}{student.last_name}"]=1
-                            if student.departement in  dictionaire_dep_eleve:
-                                dictionaire_dep_eleve[student.departement]+=1
-                            else: 
-                                dictionaire_dep_eleve[student.departement]=1
-                        
-                            
-                            assignations  = list(AssignationJEH.objects.filter(eleve=student, phase__etude=etude))
-                            remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
-                            if student.is_member():
-                                taux_ouverture+=remuneration
-                            retributions_etudes026+=remuneration
-                                
 
-                
-            
-        
-        nb_intervenants_diff_026= len(dico_nb_intervenants_diff_026)
-        if retributions_etudes026>0:
-            taux_ouverture=1-taux_ouverture/retributions_etudes026
+            if (
+                etude.status == "EN_COURS" or etude.status == "TERMINEE"
+            ) and etude.mandat == "026":
+                ca_026 += etude.montant_HT_total()
+                if etude.status == "TERMINEE":
+                    ca_026_cutoff += etude.montant_HT_total()
+                    nb_etudes_term_026[0] += 1
+                    nb_etudes_term_026[1] += etude.montant_HT_total()
+                else:
+                    if etude.fin() is not None and etude.fin() < date(2025, 5, 1):
+                        ca_026_cutoff += etude.montant_HT_total()
+                    elif etude.duree_semaine():
+                        ca_026_cutoff += (
+                            etude.montant_HT_total()
+                            * ((date(2025, 5, 1) - etude.debut).days / 7)
+                            / etude.duree_semaine()
+                        )
+            elif (
+                etude.status == "EN_COURS" or etude.status == "TERMINEE"
+            ) and etude.mandat == "025":
+                if etude.debut and etude.debut > date(2024, 5, 1):
+                    ca_026_cutoff += etude.montant_HT_total()
+                elif etude.fin() is not None and etude.fin() > date(2024, 5, 1):
+                    ca_026_cutoff += (
+                        etude.montant_HT_total()
+                        * ((etude.fin() - date(2024, 5, 1)).days / 7)
+                        / etude.duree_semaine()
+                    )
+            if etude.status == "EN_NEGOCIATION":
+                ca_en_nego += etude.montant_HT_total()
+                nb_etude_ed[0] += 1
+                nb_etude_ed[1] += etude.montant_HT_total()
+            if etude.status == "EN_COURS":
+                nb_etudes_ec[0] += 1
+                nb_etudes_ec[1] += etude.montant_HT_total()
+            if etude.mandat == "026":
+                if etude.status == "EN_COURS" or etude.status == "TERMINEE":
+
+                    if etude.get_li_students():
+                        nb_etudes_026_avec_interv += 1
+                        for student in etude.get_li_students():
+                            dico_genre_inter[student.titre] += 1
+                            nb_intervenants_026 += 1
+                            dico_nb_intervenants_diff_026[
+                                f"{student.first_name}{student.last_name}"
+                            ] = 1
+                            if student.departement in dictionaire_dep_eleve:
+                                dictionaire_dep_eleve[student.departement] += 1
+                            else:
+                                dictionaire_dep_eleve[student.departement] = 1
+
+                            assignations = list(
+                                AssignationJEH.objects.filter(
+                                    eleve=student, phase__etude=etude
+                                )
+                            )
+                            remuneration = sum(
+                                assignment.retribution_brute_totale()
+                                for assignment in assignations
+                            )
+                            if student.is_member():
+                                taux_ouverture += remuneration
+                            retributions_etudes026 += remuneration
+
+        nb_intervenants_diff_026 = len(dico_nb_intervenants_diff_026)
+        if retributions_etudes026 > 0:
+            taux_ouverture = 1 - taux_ouverture / retributions_etudes026
         else:
-            taux_ouverture=0
-        if nb_etudes_026_avec_interv>0:
-            retrib_moye_etude = retributions_etudes026/nb_etudes_026_avec_interv
+            taux_ouverture = 0
+        if nb_etudes_026_avec_interv > 0:
+            retrib_moye_etude = retributions_etudes026 / nb_etudes_026_avec_interv
         else:
-            retrib_moye_etude=0
-        if nb_intervenants_026>0:
-            retrib_moye_etudiant = retributions_etudes026/nb_intervenants_026
+            retrib_moye_etude = 0
+        if nb_intervenants_026 > 0:
+            retrib_moye_etudiant = retributions_etudes026 / nb_intervenants_026
         else:
-            retrib_moye_etudiant=0
+            retrib_moye_etudiant = 0
         # Ajouter les données pour le dernier mois
         date_labels.append(f"{current_year}-{current_month:02d}")
         total_sum += current_sum
-        
+
         # Calcul des autres métriques
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -1582,88 +1701,101 @@ def stat_KPI(request):
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
         chiffre_affaire_total = cumulated_CA[-1]
-        chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(user_je)
-        nb_ca_etudes= nb_etudes_ed_ec_term(user_je)
-        repartition_CA_etudes,repartition_nb_etudes, totale_CA_ecterm,totale_nb_ecterm=repartition_CA_etudes_ec_term(liste_etudes_ec_term)
+        chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(
+            user_je
+        )
+        nb_ca_etudes = nb_etudes_ed_ec_term(user_je)
+        (
+            repartition_CA_etudes,
+            repartition_nb_etudes,
+            totale_CA_ecterm,
+            totale_nb_ecterm,
+        ) = repartition_CA_etudes_ec_term(liste_etudes_ec_term)
         chiffre_affaire_par_type = calculate_chiffre_affaire_par_type(user_je)
         chiffre_affaire_par_secteur = calculate_chiffre_affaire_par_secteur(user_je)
         nombre_eleve = Student.objects.filter(je=user_je).count()
         nombre_client = Client.objects.filter(je=user_je).count()
         nombre_etude = Etude.objects.filter(je=user_je).count()
 
-
         dictionnaire_CA_par_dept = {
-            'IMI': chiffre_affaire_par_departement[0],
-            'GCC': chiffre_affaire_par_departement[1],
-            'GMM': chiffre_affaire_par_departement[2],
-            'SEGF': chiffre_affaire_par_departement[3],
-            'VET': chiffre_affaire_par_departement[4],
-            '1A': chiffre_affaire_par_departement[5],
-            'AUTRE': chiffre_affaire_par_departement[6],
+            "IMI": chiffre_affaire_par_departement[0],
+            "GCC": chiffre_affaire_par_departement[1],
+            "GMM": chiffre_affaire_par_departement[2],
+            "SEGF": chiffre_affaire_par_departement[3],
+            "VET": chiffre_affaire_par_departement[4],
+            "1A": chiffre_affaire_par_departement[5],
+            "AUTRE": chiffre_affaire_par_departement[6],
         }
 
         dictionnaire_CA_par_secteur = {
-            'INDUSTRIE': chiffre_affaire_par_secteur[0],
-            'DISTRIBUTION': chiffre_affaire_par_secteur[1],
-            'SECTEUR_PUBLIC': chiffre_affaire_par_secteur[2],
-            'CONSEIL': chiffre_affaire_par_secteur[3],
-            'TRANSPORT': chiffre_affaire_par_secteur[4],
-            'NUMERIQUE': chiffre_affaire_par_secteur[5],
-            'BTP': chiffre_affaire_par_secteur[6],
-            'AUTRE': chiffre_affaire_par_secteur[7],
+            "INDUSTRIE": chiffre_affaire_par_secteur[0],
+            "DISTRIBUTION": chiffre_affaire_par_secteur[1],
+            "SECTEUR_PUBLIC": chiffre_affaire_par_secteur[2],
+            "CONSEIL": chiffre_affaire_par_secteur[3],
+            "TRANSPORT": chiffre_affaire_par_secteur[4],
+            "NUMERIQUE": chiffre_affaire_par_secteur[5],
+            "BTP": chiffre_affaire_par_secteur[6],
+            "AUTRE": chiffre_affaire_par_secteur[7],
         }
 
         dictionnaire_CA_par_type = {
-            'GRANDE_ENTREPRISE': chiffre_affaire_par_type[0],
-            'SECTEUR_PUBLIC': chiffre_affaire_par_type[1],
-            'START_UP_ET_TPE': chiffre_affaire_par_type[2],
-            'PME': chiffre_affaire_par_type[3],
-            'ETI': chiffre_affaire_par_type[4],
-            'ASSOCIATION': chiffre_affaire_par_type[5],
+            "GRANDE_ENTREPRISE": chiffre_affaire_par_type[0],
+            "SECTEUR_PUBLIC": chiffre_affaire_par_type[1],
+            "START_UP_ET_TPE": chiffre_affaire_par_type[2],
+            "PME": chiffre_affaire_par_type[3],
+            "ETI": chiffre_affaire_par_type[4],
+            "ASSOCIATION": chiffre_affaire_par_type[5],
         }
-        
+
         # Définition des couleurs pour chaque département
         departements_colors = {
-            'IMI': '#FF6633',
-            'GCC': '#FFB399',
-            'GMM': '#FF33FF',
-            'SEGF': '#FFFF99',
-            'VET': '#00B3E6',
-            '1A': '#E6B333',
-            'AUTRE': '#3366E6',
+            "IMI": "#FF6633",
+            "GCC": "#FFB399",
+            "GMM": "#FF33FF",
+            "SEGF": "#FFFF99",
+            "VET": "#00B3E6",
+            "1A": "#E6B333",
+            "AUTRE": "#3366E6",
         }
 
         # Définition des couleurs pour chaque secteur
         secteurs_colors = {
-            'INDUSTRIE': '#0071C5',
-            'DISTRIBUTION': '#FFD700',
-            'SECTEUR_PUBLIC': '#DC143C',
-            'CONSEIL': '#008B8B',
-            'TRANSPORT': '#B8860B',
-            'NUMERIQUE': '#4682B4',
-            'BTP': '#DAA520',
-            'AUTRE': '#808080',
+            "INDUSTRIE": "#0071C5",
+            "DISTRIBUTION": "#FFD700",
+            "SECTEUR_PUBLIC": "#DC143C",
+            "CONSEIL": "#008B8B",
+            "TRANSPORT": "#B8860B",
+            "NUMERIQUE": "#4682B4",
+            "BTP": "#DAA520",
+            "AUTRE": "#808080",
         }
 
         types_colors = {
-            'GRANDE_ENTREPRISE': '#4A90E2',  # Bleu lumineux
-            'SECTEUR_PUBLIC': '#D0021B',     # Rouge vif
-            'START_UP_ET_TPE': '#7B8D8E',    # Gris ardoise
-            'PME': '#F5A623',                # Orange safran
-            'ETI': '#8B572A',                # Brun cuir
-            'ASSOCIATION': '#50E3C2',        # Turquoise clair
+            "GRANDE_ENTREPRISE": "#4A90E2",  # Bleu lumineux
+            "SECTEUR_PUBLIC": "#D0021B",  # Rouge vif
+            "START_UP_ET_TPE": "#7B8D8E",  # Gris ardoise
+            "PME": "#F5A623",  # Orange safran
+            "ETI": "#8B572A",  # Brun cuir
+            "ASSOCIATION": "#50E3C2",  # Turquoise clair
         }
 
-        pourcentage_par_departement = {dept: ca / (chiffre_affaire_total + 1e-12) * 100 for dept, ca in dictionnaire_CA_par_dept.items()}
-        pourcentage_par_secteur = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_secteur.items()}
-        pourcentage_par_type = {sect: ca / (chiffre_affaire_total + 1e-12) * 100 for sect, ca in dictionnaire_CA_par_type.items()}
+        pourcentage_par_departement = {
+            dept: ca / (chiffre_affaire_total + 1e-12) * 100
+            for dept, ca in dictionnaire_CA_par_dept.items()
+        }
+        pourcentage_par_secteur = {
+            sect: ca / (chiffre_affaire_total + 1e-12) * 100
+            for sect, ca in dictionnaire_CA_par_secteur.items()
+        }
+        pourcentage_par_type = {
+            sect: ca / (chiffre_affaire_total + 1e-12) * 100
+            for sect, ca in dictionnaire_CA_par_type.items()
+        }
 
-
-        if nb_etudes_026_avec_interv>0:
-            moyen_int_etude= nb_intervenants_026/nb_etudes_026_avec_interv
+        if nb_etudes_026_avec_interv > 0:
+            moyen_int_etude = nb_intervenants_026 / nb_etudes_026_avec_interv
         else:
-            moyen_int_etude=0
-
+            moyen_int_etude = 0
 
         template = loader.get_template("polls/stat_KPI.html")
         context = {
@@ -1684,19 +1816,39 @@ def stat_KPI(request):
             "date_labels": date_labels,
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
             "chiffre_affaires": chiffres_affaires,
             "start_date": start_date,
-            "end_date": end_date, "nb_ca_etudes":nb_ca_etudes, 
-            "repartition_CA_etudes":repartition_CA_etudes, "repartition_nb_etudes":repartition_nb_etudes,"ca_026":ca_026,"ca_026_cutoff":ca_026_cutoff,"ca_potentiel":ca_en_nego+ca_026_cutoff,
-            "nb_etudes_ec" :nb_etudes_ec,"nb_etude_ed" :nb_etude_ed,"dictionaire_dep_eleve":dictionaire_dep_eleve,"nb_intervenants_diff_026":nb_intervenants_diff_026,"nb_intervenants_026":nb_intervenants_026,
-            "taux_ouverture" :taux_ouverture*100,"retrib_moye_etude":retrib_moye_etude,"retrib_moye_etudiant":retrib_moye_etudiant,"retributions_etudes026":retributions_etudes026, "moyen_int_etude": moyen_int_etude,
-            "dico_genre_inter":dico_genre_inter,"nb_etudes_term_026":nb_etudes_term_026,"totale_nb_ecterm":totale_nb_ecterm,"totale_CA_ecterm":totale_CA_ecterm,"dico_ca_typeentreprise":dico_ca_typeentreprise,
-            "dico_ca_departement":dico_ca_departement,"dico_ca_secteur":dico_ca_secteur, "bar_chart_CA":bar_chart_CA, "dico_suivi_devis":dico_suivi_devis, "dico_avenants_mois_ce":dico_avenants_mois_ce
+            "end_date": end_date,
+            "nb_ca_etudes": nb_ca_etudes,
+            "repartition_CA_etudes": repartition_CA_etudes,
+            "repartition_nb_etudes": repartition_nb_etudes,
+            "ca_026": ca_026,
+            "ca_026_cutoff": ca_026_cutoff,
+            "ca_potentiel": ca_en_nego + ca_026_cutoff,
+            "nb_etudes_ec": nb_etudes_ec,
+            "nb_etude_ed": nb_etude_ed,
+            "dictionaire_dep_eleve": dictionaire_dep_eleve,
+            "nb_intervenants_diff_026": nb_intervenants_diff_026,
+            "nb_intervenants_026": nb_intervenants_026,
+            "taux_ouverture": taux_ouverture * 100,
+            "retrib_moye_etude": retrib_moye_etude,
+            "retrib_moye_etudiant": retrib_moye_etudiant,
+            "retributions_etudes026": retributions_etudes026,
+            "moyen_int_etude": moyen_int_etude,
+            "dico_genre_inter": dico_genre_inter,
+            "nb_etudes_term_026": nb_etudes_term_026,
+            "totale_nb_ecterm": totale_nb_ecterm,
+            "totale_CA_ecterm": totale_CA_ecterm,
+            "dico_ca_typeentreprise": dico_ca_typeentreprise,
+            "dico_ca_departement": dico_ca_departement,
+            "dico_ca_secteur": dico_ca_secteur,
+            "bar_chart_CA": bar_chart_CA,
+            "dico_suivi_devis": dico_suivi_devis,
+            "dico_avenants_mois_ce": dico_avenants_mois_ce,
         }
-       
-        
+
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -1705,25 +1857,31 @@ def stat_KPI(request):
 
 def fetch_data(request):
     if request.user.is_authenticated:
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
 
         if start_date and end_date:
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
-            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC)
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.UTC
+            )
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.UTC
+            )
         else:
-            return JsonResponse({'error': 'Invalid date range'}, status=400)
+            return JsonResponse({"error": "Invalid date range"}, status=400)
 
         # Filtrer les études en fonction des dates
-        etudes = Etude.objects.filter(debut__gte=start_date_obj, debut__lte=end_date_obj).order_by('debut')
+        etudes = Etude.objects.filter(
+            debut__gte=start_date_obj, debut__lte=end_date_obj
+        ).order_by("debut")
 
         # Calculer les montants par mois et les labels
-        date_labels = [start_date_obj.strftime('%Y-%m')]
+        date_labels = [start_date_obj.strftime("%Y-%m")]
         cumulated_CA = [0]
         current_sum = 0
-        
+
         for etude in etudes:
-            if etude.status == 'EN_COURS' or etude.status == 'TERMINEE' :
+            if etude.status == "EN_COURS" or etude.status == "TERMINEE":
                 etude_month = etude.debut.month
                 etude_year = etude.debut.year
                 date_label = f"{etude_year}-{etude_month:02d}"
@@ -1743,24 +1901,18 @@ def fetch_data(request):
         print(f"date_labels: {date_labels}")
         print(f"cumulated_CA: {cumulated_CA}")
 
-        response_data = {
-            'date_labels': date_labels,
-            'cumulated_CA': cumulated_CA
-        }
+        response_data = {"date_labels": date_labels, "cumulated_CA": cumulated_CA}
 
         # Ensure response_data is JSON serializable
         try:
             json_response = JsonResponse(response_data)
         except TypeError as e:
             print(f"Serialization error: {e}")
-            return JsonResponse({'error': 'Serialization error'}, status=500)
+            return JsonResponse({"error": "Serialization error"}, status=500)
 
         return json_response
 
-    return JsonResponse({'error': 'Unauthorized'}, status=403)
-
-
-
+    return JsonResponse({"error": "Unauthorized"}, status=403)
 
 
 def messages(request):
@@ -1774,13 +1926,12 @@ def messages(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        
 
         context = {
             "liste_messages": liste_messages,
             "message_count": message_count,
-            "notification_list":notification_list,
-            "notification_count":notification_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
         }
         template = loader.get_template("polls/page_messages.html")
     else:
@@ -1791,7 +1942,7 @@ def messages(request):
 
 def register(request):
     if request.method == "GET":
-        referer = request.META.get('HTTP_REFERER')
+        referer = request.META.get("HTTP_REFERER")
         referer_path = urlparse(referer).path
         try:
             match = resolve(referer_path)
@@ -1800,13 +1951,15 @@ def register(request):
             context = {"form": form}
             template = loader.get_template("polls/register.html")
         except:
-            return redirect('confidentialite-donnees')
+            return redirect("confidentialite-donnees")
     else:
         fetchform = AddMember(request.POST, request.FILES)
         if fetchform.is_valid():
             new_member = fetchform.save()
-            login(request, new_member, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('index')
+            login(
+                request, new_member, backend="django.contrib.auth.backends.ModelBackend"
+            )
+            return redirect("index")
         else:
             context = {"form": fetchform}
             template = loader.get_template("polls/register.html")
@@ -1818,85 +1971,133 @@ def editer_convention(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
-            je= instance.je
+            je = instance.je
             client = instance.client
-            phases= Phase.objects.filter(etude=instance).order_by('numero')
+            phases = Phase.objects.filter(etude=instance).order_by("numero")
             if instance.type_convention == "Convention d'étude":
                 model = ConventionEtude
 
-                template = DocxTemplate("polls/templates/polls/Convention_Etude_026.docx")
-                nom_doc ="Convention_Etude_"
+                template = DocxTemplate(
+                    "polls/templates/polls/Convention_Etude_026.docx"
+                )
+                nom_doc = "Convention_Etude_"
             elif instance.type_convention == "Convention cadre":
                 model = ConventionCadre
-                template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
-                nom_doc ="Convention_Cadre_"
+                template = DocxTemplate(
+                    "polls/templates/polls/Convention_Cadre_026.docx"
+                )
+                nom_doc = "Convention_Cadre_"
             else:
                 raise ValueError("Type de convention non défini.")
-            if instance.convention() :
+            if instance.convention():
                 ce = instance.convention()
-            else :
+            else:
                 ce = model(etude=instance)
                 ce.save()
 
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
             poste = "Chef de Projet"
-            if respo.titre =='Mme':
-                poste= "Cheffe de Projet"
+            if respo.titre == "Mme":
+                poste = "Cheffe de Projet"
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
-            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
-            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
-            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            representant_client = (
+                instance.client_interlocuteur
+            )  # le gars de la boite qui interagit avec la PEP
+            representant_legale_client = (
+                instance.client_representant_legale
+            )  # souvent le patron de l boite qui a le droit de signer les documents
+            # souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
             date = timezone.now()
-            annee = date.strftime('%Y')
-            nb_JEH=instance.nb_JEH()
+            annee = date.strftime("%Y")
+            nb_JEH = instance.nb_JEH()
             tot_HT_phase = format_nombres(instance.montant_phase_HT())
-            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
-            
-            fac_acom=None
-            fac_inter = None
-            fac_solde=None
-            for facture in factures:
-                if facture.type_facture==facture.Status.ACOMPTE:
-                    fac_acom = facture
-                elif facture.type_facture==facture.Status.SOLDE:
-                    fac_solde = facture
-                elif facture.type_facture==facture.Status.INTERMEDIAIRE:
-                    fac_inter= facture
-            
+            factures = Facture.objects.filter(etude=instance).order_by("numero_facture")
 
-            ac_inter=[]
+            fac_acom = None
+            fac_inter = None
+            fac_solde = None
+            for facture in factures:
+                if facture.type_facture == facture.Status.ACOMPTE:
+                    fac_acom = facture
+                elif facture.type_facture == facture.Status.SOLDE:
+                    fac_solde = facture
+                elif facture.type_facture == facture.Status.INTERMEDIAIRE:
+                    fac_inter = facture
+
+            ac_inter = []
             if fac_acom or fac_inter:
                 if fac_acom:
-                    ac_inter.append({'modal': "A la signature de la Convention d'Étude", 'denom': "Acompte", 'sht':format_nombres(fac_acom.montant_HT()), 'sttc':format_nombres(fac_acom.montant_TTC())})
+                    ac_inter.append(
+                        {
+                            "modal": "A la signature de la Convention d'Étude",
+                            "denom": "Acompte",
+                            "sht": format_nombres(fac_acom.montant_HT()),
+                            "sttc": format_nombres(fac_acom.montant_TTC()),
+                        }
+                    )
                 if fac_inter:
-                    ac_inter.append({'modal': "A la remise du livrable intermédiaire", 'denom': "Intermédiaire", 'sht':format_nombres(fac_inter.montant_HT()), 'sttc':format_nombres(fac_inter.montant_TTC())})
+                    ac_inter.append(
+                        {
+                            "modal": "A la remise du livrable intermédiaire",
+                            "denom": "Intermédiaire",
+                            "sht": format_nombres(fac_inter.montant_HT()),
+                            "sttc": format_nombres(fac_inter.montant_TTC()),
+                        }
+                    )
 
             if fac_solde is None:
                 raise ValueError("Définir la facturation de solde pour l'échéancier")
             else:
-                ac_inter.append({'modal': "A la remise du livrable final", 'denom': "Solde", 'sht':format_nombres(fac_solde.montant_HT()), 'sttc':format_nombres(fac_solde.montant_TTC())})
+                ac_inter.append(
+                    {
+                        "modal": "A la remise du livrable final",
+                        "denom": "Solde",
+                        "sht": format_nombres(fac_solde.montant_HT()),
+                        "sttc": format_nombres(fac_solde.montant_TTC()),
+                    }
+                )
 
+            # acompte_HT= format_nombres(fac_acom.montant_HT())
+            # solde_HT= format_nombres(fac_solde.montant_HT())
+            logo_client = InlineImage(
+                template, client.logo, width=Mm(20)
+            )  # width is in millimetres
 
-            #acompte_HT= format_nombres(fac_acom.montant_HT())
-            #solde_HT= format_nombres(fac_solde.montant_HT())
-            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
-
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
-                       "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
-                       "quali":qualite,"ref_m":ref_m,"annee":annee,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase, "fac_acom":fac_acom, "fac_solde":fac_solde, "fac_inter":fac_inter, "ac_inter":ac_inter,
-                       "poste":poste,"factures":factures,"logo_client":logo_client}
+            context = {
+                "etude": instance,
+                "phases": phases,
+                "nb_phases": nb_phases,
+                "president": president,
+                "duree": duree,
+                "client": client,
+                "repr": representant_client,
+                "repr_legale": representant_legale_client,
+                "je": je,
+                "ce": ce,
+                "respo": respo,
+                "quali": qualite,
+                "ref_m": ref_m,
+                "annee": annee,
+                "nb_JEH": nb_JEH,
+                "tot_HT_phase": tot_HT_phase,
+                "fac_acom": fac_acom,
+                "fac_solde": fac_solde,
+                "fac_inter": fac_inter,
+                "ac_inter": ac_inter,
+                "poste": poste,
+                "factures": factures,
+                "logo_client": logo_client,
+            }
             # Load the template
 
             env = Environment()
 
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['ChiffreLettre'] = chiffre_lettres
-
-            
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["ChiffreLettre"] = chiffre_lettres
 
             template.render(context, env)
             output = BytesIO()
@@ -1905,71 +2106,89 @@ def editer_convention(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"{nom_doc}{ref_m}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            instance.status='EN_COURS'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            instance.status = "EN_COURS"
             instance.save()
             return response
-        
-            
+
         except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        except Exception as e:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
+            }
 
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def editer_convention_cadre(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
-            je= instance.je
+            je = instance.je
             client = instance.client
-            phases= Phase.objects.filter(etude=instance).order_by('numero')
-            
+            phases = Phase.objects.filter(etude=instance).order_by("numero")
+
             model = ConventionCadre
             template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
-            nom_doc ="Convention_Cadre_"
-            if instance.convention :
+            nom_doc = "Convention_Cadre_"
+            if instance.convention:
                 ce = instance.convention()
-            else :
+            else:
                 ce = model(etude=instance)
                 ce.save()
 
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
             duree = instance.duree_semaine()
             nb_phases = instance.nb_phases()
             respo = instance.responsable.student
             poste = "Chef de Projet"
-            if respo.titre =='Mme':
-                poste= "Cheffe de Projet"
+            if respo.titre == "Mme":
+                poste = "Cheffe de Projet"
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
-            representant_client= instance.client_interlocuteur #le gars de la boite qui interagit avec la PEP
-            representant_legale_client = instance.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
-            #souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            representant_client = (
+                instance.client_interlocuteur
+            )  # le gars de la boite qui interagit avec la PEP
+            representant_legale_client = (
+                instance.client_representant_legale
+            )  # souvent le patron de l boite qui a le droit de signer les documents
+            # souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
             date = timezone.now()
-            annee = date.strftime('%Y')
-            
-            
-            
+            annee = date.strftime("%Y")
 
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, 
-                       "repr":representant_client,"repr_legale":representant_legale_client, "je":je, "ce":ce, "respo":respo, 
-                       "quali":qualite,"ref_m":ref_m,"annee":annee, "poste":poste}
+            context = {
+                "etude": instance,
+                "phases": phases,
+                "nb_phases": nb_phases,
+                "president": president,
+                "duree": duree,
+                "client": client,
+                "repr": representant_client,
+                "repr_legale": representant_legale_client,
+                "je": je,
+                "ce": ce,
+                "respo": respo,
+                "quali": qualite,
+                "ref_m": ref_m,
+                "annee": annee,
+                "poste": poste,
+            }
             # Load the template
 
             env = Environment()
 
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['ChiffreLettre'] = chiffre_lettres
-
-            
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["ChiffreLettre"] = chiffre_lettres
 
             template.render(context, env)
             output = BytesIO()
@@ -1978,19 +2197,23 @@ def editer_convention_cadre(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"{nom_doc}{ref_m}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            instance.status='EN_COURS'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            instance.status = "EN_COURS"
             instance.save()
             return response
-        
-            
+
         except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2004,91 +2227,122 @@ def editer_pv(request, iD, type):
             instance = Etude.objects.get(id=iD)
 
             convention = instance.convention()
-            if not convention :
+            if not convention:
                 raise ValueError("pas de convention")
-            
-            
-            je= instance.je
+
+            je = instance.je
             client = instance.client
             model = PV
             pv = model(etude=instance, type=type)
             client_resp = instance.client_representant_legale
-            
-            
-            
 
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
-            
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+
             respo = instance.responsable.student
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
 
             if instance.type_convention == "Convention d'étude":
-                phases= Phase.objects.filter(etude=instance).order_by('numero')
-                
-                ce_ref=convention
+                phases = Phase.objects.filter(etude=instance).order_by("numero")
+
+                ce_ref = convention
                 duree = instance.duree_semaine()
                 nb_phases = instance.nb_phases()
-                avenants =  AvenantConventionEtude.objects.filter(ce=convention).order_by('numero')
-                avenant=None
+                avenants = AvenantConventionEtude.objects.filter(
+                    ce=convention
+                ).order_by("numero")
+                avenant = None
                 num_avenant = None
-                if len(avenants)>0:
-                    avenant= avenants[len(avenants)-1]
+                if len(avenants) > 0:
+                    avenant = avenants[len(avenants) - 1]
                     num_avenant = avenant
-                if type=='PVRF':
+                if type == "PVRF":
                     template = DocxTemplate("polls/templates/polls/PVRF_026_CE.docx")
                     filename = f"PVRF_{ref_m}.docx"
                 else:
                     template = DocxTemplate("polls/templates/polls/PVRI_026_CE.docx")
                     filename = f"PVRI_{ref_m}.docx"
 
-
             else:
                 raise ValueError("Pas encore de pv pour les CCs")
-            
-            
-            
+
             date = datetime.now()
 
             date_2 = timezone.now().date()
             mois = [
-                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
             ]
 
             # Format the date
-            general_date_creation = f"{date_2.day} {mois[date_2.month - 1]} {date_2.year}"
-            annee = date.strftime('%Y')
+            general_date_creation = (
+                f"{date_2.day} {mois[date_2.month - 1]} {date_2.year}"
+            )
+            annee = date.strftime("%Y")
             etude_periode_garantie = instance.periode_de_garantie
-            
-            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
 
-            context = {"etude": instance,"phases":phases,"nb_phases":nb_phases,"president":president, "duree":duree, "client": client, "je":je,  "respo":respo, "quali":qualite,"ref_m":ref_m,"annee":annee,
-                       "avenant":avenant, "num_avenant":num_avenant,"ce":ce_ref,"general_date_creation":general_date_creation,"pv_ref":pv.ref(),"repr_legale":client_resp,"logo_client":logo_client,
-                       "etude_periode_garantie":etude_periode_garantie}
+            logo_client = InlineImage(
+                template, client.logo, width=Mm(20)
+            )  # width is in millimetres
+
+            context = {
+                "etude": instance,
+                "phases": phases,
+                "nb_phases": nb_phases,
+                "president": president,
+                "duree": duree,
+                "client": client,
+                "je": je,
+                "respo": respo,
+                "quali": qualite,
+                "ref_m": ref_m,
+                "annee": annee,
+                "avenant": avenant,
+                "num_avenant": num_avenant,
+                "ce": ce_ref,
+                "general_date_creation": general_date_creation,
+                "pv_ref": pv.ref(),
+                "repr_legale": client_resp,
+                "logo_client": logo_client,
+                "etude_periode_garantie": etude_periode_garantie,
+            }
             # Load the template
 
             env = Environment()
 
-            env.filters['FormatNombres'] = format_nombres
+            env.filters["FormatNombres"] = format_nombres
             template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
 
             # Save the "fichier" field of the CE
-            
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        
-            
+
         except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2096,53 +2350,76 @@ def editer_pv(request, iD, type):
     return HttpResponse(template.render(context, request))
 
 
-
 def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try :
+        try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            client= etude.client
-            assignations  = list(AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude))
-            je= eleve.je
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
-            remuneration = sum(assignment.retribution_brute_totale() for assignment in assignations)
-            date_fin= timezone.now().date()
+            client = etude.client
+            assignations = list(
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude)
+            )
+            je = eleve.je
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+            remuneration = sum(
+                assignment.retribution_brute_totale() for assignment in assignations
+            )
+            date_fin = timezone.now().date()
             for assignation in assignations:
                 if assignation.phase.date_fin > date_fin:
                     date_fin = assignation.phase.date_fin
-            etudiant_nb_JEH = sum(assignation.nombre_JEH for assignation in assignations )
+            etudiant_nb_JEH = sum(
+                assignation.nombre_JEH for assignation in assignations
+            )
             template = DocxTemplate("polls/templates/polls/RDM_026.docx")
             model = RDM
-            if etude.rdm_edited() :
-                #a modifier
+            if etude.rdm_edited():
+                # a modifier
                 rdm = model(etude=etude, eleve=eleve)
-            else :
+            else:
                 rdm = model(etude=etude, eleve=eleve)
                 rdm.save()
             ref_m = etude.ref()
             ref_d = rdm
             ce = etude.convention()
             date = timezone.now().date()
-            annee = date.strftime('%Y')
-            context = {"etude": etude,"client": client, "rdm": rdm, "ref_d":ref_d, "etudiant": eleve, "ref_m":ref_m, "assignations":assignations,"annee":annee,"president" :president,"etudiant_nb_JEH":etudiant_nb_JEH,"date_fin":date_fin,
-                       "remuneration":remuneration,"ce":ce}
+            annee = date.strftime("%Y")
+            context = {
+                "etude": etude,
+                "client": client,
+                "rdm": rdm,
+                "ref_d": ref_d,
+                "etudiant": eleve,
+                "ref_m": ref_m,
+                "assignations": assignations,
+                "annee": annee,
+                "president": president,
+                "etudiant_nb_JEH": etudiant_nb_JEH,
+                "date_fin": date_fin,
+                "remuneration": remuneration,
+                "ce": ce,
+            }
 
             env = Environment()
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['EnLettres'] = en_lettres
-            env.filters['ChiffreLettre'] = chiffre_lettres
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
             filename = f"RDM_{ref_m}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2152,40 +2429,56 @@ def editer_rdm(request, id_etude, id_eleve):
 
 def editer_acf(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try :
+        try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            client= etude.client.nom_societe
-            president_titre ="M." 
-            president_prenom="Thomas"
-            president_nom ="Debray"
-            num_etude= etude.ref()
+            client = etude.client.nom_societe
+            president_titre = "M."
+            president_prenom = "Thomas"
+            president_nom = "Debray"
+            num_etude = etude.ref()
             titre = eleve.titre
             nom = eleve.last_name
             prenom = eleve.first_name
-            etude_titre=etude.titre
+            etude_titre = etude.titre
             date = timezone.now().date()
-            annee = date.strftime('%Y')
+            annee = date.strftime("%Y")
             template = DocxTemplate("polls/templates/polls/ACF_etudiant_026.docx")
-            
-            context = {"etude": etude,"client": client, "president_titre": president_titre, "president_prenom":president_prenom, "president_nom": president_nom, "num_etude":num_etude, 
-                       "titre":titre,"annee":annee,"nom" :nom,"prenom":prenom,"etude_titre":etude_titre}
+
+            context = {
+                "etude": etude,
+                "client": client,
+                "president_titre": president_titre,
+                "president_prenom": president_prenom,
+                "president_nom": president_nom,
+                "num_etude": num_etude,
+                "titre": titre,
+                "annee": annee,
+                "nom": nom,
+                "prenom": prenom,
+                "etude_titre": etude_titre,
+            }
 
             env = Environment()
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['EnLettres'] = en_lettres
-            env.filters['ChiffreLettre'] = chiffre_lettres
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
             filename = f"ACF_{num_etude}{nom}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2195,54 +2488,85 @@ def editer_acf(request, id_etude, id_eleve):
 
 def editer_acf_client(request, iD):
     if request.user.is_authenticated:
-        try :
+        try:
             etude = Etude.objects.get(id=iD)
-            client= etude.client
-            je_president_titre ="M." 
-            je_president_prenom="Thomas"
-            je_president_nom ="Debray"
-            num_etude= etude.ref()
-            client_adresse= client.rue
-            client_code_postal= client.code_postal
+            client = etude.client
+            je_president_titre = "M."
+            je_president_prenom = "Thomas"
+            je_president_nom = "Debray"
+            num_etude = etude.ref()
+            client_adresse = client.rue
+            client_code_postal = client.code_postal
             client_ville = client.ville
-            client_pays=client.country
+            client_pays = client.country
             client_titre = etude.client_representant_legale.titre
             client_prenom = etude.client_representant_legale.first_name
             client_nom = etude.client_representant_legale.last_name
             client_fonction = etude.client_representant_legale.fonction
-            client=client.nom_societe
+            client = client.nom_societe
 
-            etude_titre=etude.titre
+            etude_titre = etude.titre
             date = timezone.now().date()
             mois = [
-                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
             ]
 
             # Format the date
             general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
-            annee = date.strftime('%Y')
+            annee = date.strftime("%Y")
             template = DocxTemplate("polls/templates/polls/ACF_Client_026.docx")
-            
-            context = {"etude": etude,"client": client, "je_president_titre": je_president_titre, "je_president_prenom":je_president_prenom, "je_president_nom": je_president_nom, "num_etude":num_etude, 
-                       "general_date_creation":general_date_creation,"annee":annee,"client_adresse" :client_adresse,"client_code_postal":client_code_postal,"etude_titre":etude_titre,"client_ville":client_ville,
-                       "client_pays":client_pays,"client_titre":client_titre,"client_prenom":client_prenom,"client_nom":client_nom, "client_fonction":client_fonction}
+
+            context = {
+                "etude": etude,
+                "client": client,
+                "je_president_titre": je_president_titre,
+                "je_president_prenom": je_president_prenom,
+                "je_president_nom": je_president_nom,
+                "num_etude": num_etude,
+                "general_date_creation": general_date_creation,
+                "annee": annee,
+                "client_adresse": client_adresse,
+                "client_code_postal": client_code_postal,
+                "etude_titre": etude_titre,
+                "client_ville": client_ville,
+                "client_pays": client_pays,
+                "client_titre": client_titre,
+                "client_prenom": client_prenom,
+                "client_nom": client_nom,
+                "client_fonction": client_fonction,
+            }
 
             env = Environment()
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['EnLettres'] = en_lettres
-            env.filters['ChiffreLettre'] = chiffre_lettres
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
             output = BytesIO()
             template.save(output)
             output.seek(0)
             filename = f"ACF_{num_etude}{client}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2250,29 +2574,34 @@ def editer_acf_client(request, iD):
     return HttpResponse(template.render(context, request))
 
 
-
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
-        try :
+        try:
             eleve = Student.objects.get(id=id_eleve)
-            je_president_nom="Debray"
-            je_president_prenom="Thomas"
+            je_president_nom = "Debray"
+            je_president_prenom = "Thomas"
             date = timezone.now()
-            general_date_creation= date.strftime('%d %B %Y')
-            num_conv_etudiant="CE_20231017"
+            general_date_creation = date.strftime("%d %B %Y")
+            num_conv_etudiant = "CE_20231017"
             template = DocxTemplate("polls/templates/polls/BA_026.docx")
             model = BA
-            dernier_ba = BA.objects.order_by('-number').first()
+            dernier_ba = BA.objects.order_by("-number").first()
 
             if dernier_ba:
-                number=dernier_ba.number+1
+                number = dernier_ba.number + 1
             else:
-                number=636
-            ba = model( eleve=eleve, number=number)
+                number = 636
+            ba = model(eleve=eleve, number=number)
             ba.save()
 
-            ref =f"20240{number}"
-            context = {"etudiant":eleve, "je_president_nom":je_president_nom,"je_president_prenom" :je_president_prenom, "general_date_creation":general_date_creation,"num_conv_etudiant":ref}
+            ref = f"20240{number}"
+            context = {
+                "etudiant": eleve,
+                "je_president_nom": je_president_nom,
+                "je_president_prenom": je_president_prenom,
+                "general_date_creation": general_date_creation,
+                "num_conv_etudiant": ref,
+            }
 
             env = Environment()
             template.render(context, env)
@@ -2282,12 +2611,17 @@ def editer_ba(request, id_eleve):
             output.seek(0)
 
             filename = f"{eleve.last_name.upper()}_BA.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2300,70 +2634,90 @@ def editer_devis(request, iD):
         try:
             instance = Etude.objects.get(id=iD)
             client = instance.client
-            template_path = os.path.join(conf_settings.BASE_DIR, 'polls/templates/polls/Devis_026.docx')
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/Devis_026.docx"
+            )
             template = DocxTemplate(template_path)
             model = Devis
-            if instance.get_devis() :
+            if instance.get_devis():
                 devis = instance.get_devis()
                 print("devis existe deja")
-            
-            else :
+
+            else:
                 devis = model(etude=instance)
                 print("creation devis")
-                
-            
+
             responsable = instance.responsable.student
             if responsable is None:
                 raise ValueError("Définir un suiveur")
             if responsable is None:
                 raise ValueError("Définir un suiveur")
-                
+
             poste = "Chef de Projet"
-            if responsable.titre =='Mme':
-                poste= "Cheffe de Projet"
+            if responsable.titre == "Mme":
+                poste = "Cheffe de Projet"
             qualite = instance.resp_qualite.student
             if qualite is None:
                 raise ValueError("Définir un qualité")
-                
+
             ref_m = instance.ref()
             ref_d = ref_m + "pv"
             # !!!! quand je fais ref_d = devis.ref() il reconnait pas devis mais faudra mettre le contexte en fonction de devis
-            duree_semaine= instance.duree_semaine()
+            duree_semaine = instance.duree_semaine()
             date = timezone.now()
-            mois = date.strftime('%B')
-            annee = date.strftime('%Y')
-            date_creation= date.strftime('%d %B %Y')
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
-            phases= Phase.objects.filter(etude=instance).order_by('numero')
-            nb_JEH=instance.nb_JEH()
+            mois = date.strftime("%B")
+            annee = date.strftime("%Y")
+            date_creation = date.strftime("%d %B %Y")
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+            phases = Phase.objects.filter(etude=instance).order_by("numero")
+            nb_JEH = instance.nb_JEH()
             tot_HT_phase = format_nombres(instance.montant_phase_HT())
-            
-            factures=Facture.objects.filter(etude=instance).order_by('numero_facture')
-            
-            fac_acom=None
-            fac_inter = None
-            fac_solde=None
-            for facture in factures:
-                if facture.type_facture==facture.Status.ACOMPTE:
-                    fac_acom = facture
-                elif facture.type_facture==facture.Status.SOLDE:
-                    fac_solde = facture
-                elif facture.type_facture==facture.Status.INTERMEDIAIRE:
-                    fac_inter= facture
-            
 
-            ac_inter=[]
+            factures = Facture.objects.filter(etude=instance).order_by("numero_facture")
+
+            fac_acom = None
+            fac_inter = None
+            fac_solde = None
+            for facture in factures:
+                if facture.type_facture == facture.Status.ACOMPTE:
+                    fac_acom = facture
+                elif facture.type_facture == facture.Status.SOLDE:
+                    fac_solde = facture
+                elif facture.type_facture == facture.Status.INTERMEDIAIRE:
+                    fac_inter = facture
+
+            ac_inter = []
             if fac_acom or fac_inter:
                 if fac_acom:
-                    ac_inter.append({'modal': "A la signature de la Convention d'Étude", 'denom': "Acompte", 'sht':format_nombres(fac_acom.montant_HT()), 'sttc':format_nombres(fac_acom.montant_TTC())})
+                    ac_inter.append(
+                        {
+                            "modal": "A la signature de la Convention d'Étude",
+                            "denom": "Acompte",
+                            "sht": format_nombres(fac_acom.montant_HT()),
+                            "sttc": format_nombres(fac_acom.montant_TTC()),
+                        }
+                    )
                 if fac_inter:
-                    ac_inter.append({'modal': "A la remise du livrable intermédiaire", 'denom': "Intermédiaire", 'sht':format_nombres(fac_inter.montant_HT()), 'sttc':format_nombres(fac_inter.montant_TTC())})
+                    ac_inter.append(
+                        {
+                            "modal": "A la remise du livrable intermédiaire",
+                            "denom": "Intermédiaire",
+                            "sht": format_nombres(fac_inter.montant_HT()),
+                            "sttc": format_nombres(fac_inter.montant_TTC()),
+                        }
+                    )
 
             if fac_solde is None:
                 raise ValueError("Définir la facturation de solde pour l'échéancier")
             else:
-                ac_inter.append({'modal': "A la remise du livrable final", 'denom': "Solde", 'sht':format_nombres(fac_solde.montant_HT()), 'sttc':format_nombres(fac_solde.montant_TTC())})
-
+                ac_inter.append(
+                    {
+                        "modal": "A la remise du livrable final",
+                        "denom": "Solde",
+                        "sht": format_nombres(fac_solde.montant_HT()),
+                        "sttc": format_nombres(fac_solde.montant_TTC()),
+                    }
+                )
 
             css_planning = """
             .table_planning {
@@ -2448,8 +2802,6 @@ def editer_devis(request, iD):
             </html>
             """
 
-            
-
             semaines_html = ""
             for i in range(instance.duree_semaine()):
                 semaines_html += f"<span>{i + 1}</span>"
@@ -2476,44 +2828,70 @@ def editer_devis(request, iD):
                 </tr>
                 """
                 rows_html += row
-            
+
             semaine_s = "semaine" if duree_semaine == 1 else "semaines"
-            final_html = html_template.format(debut=instance.debut, fin=instance.fin(), rows=rows_html, css=css_planning, semaines=semaines_html,duree_semaine=duree_semaine,semaine_s=semaine_s)
-            
+            final_html = html_template.format(
+                debut=instance.debut,
+                fin=instance.fin(),
+                rows=rows_html,
+                css=css_planning,
+                semaines=semaines_html,
+                duree_semaine=duree_semaine,
+                semaine_s=semaine_s,
+            )
 
-
-            output_dir = 'polls/static/polls/img'
+            output_dir = "polls/static/polls/img"
             os.makedirs(output_dir, exist_ok=True)
             os.chdir(output_dir)
-            filename = 'tab_planning.png'
+            filename = "tab_planning.png"
             time1.sleep(1)
             hti = Html2Image()
-            hti.size = (1720, 60+ 64*instance.nb_phases())
+            hti.size = (1720, 60 + 64 * instance.nb_phases())
             hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
-            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            image_path = os.path.join(conf_settings.BASE_DIR, "tab_planning.png")
             time1.sleep(1)
-            image_path = os.path.join(conf_settings.BASE_DIR, 'tab_planning.png')
+            image_path = os.path.join(conf_settings.BASE_DIR, "tab_planning.png")
             with open(image_path, "rb") as img_file:
                 image_data = img_file.read()
-            
+
             image_stream = BytesIO(image_data)
             image = InlineImage(template, image_stream, width=Mm(173))
             time1.sleep(1)
-            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
+            logo_client = InlineImage(
+                template, client.logo, width=Mm(20)
+            )  # width is in millimetres
             photo_cdp = InlineImage(template, instance.responsable.photo, width=Mm(20))
-            context = {"planning_pre":image, "president":president, "etude": instance, "devis": devis, "client": client, "responsable":responsable, 
-                       "phases":phases, "qualite":qualite, "mois":mois, "annee":annee, "date_creation":date_creation, "poste":poste,
-                       "ref_m":ref_m,"ref_d":ref_d,"nb_JEH":nb_JEH,"tot_HT_phase":tot_HT_phase,"fac_acom":fac_acom,"fac_solde":fac_solde,"factures":factures, "ac_inter":ac_inter,
-                       "logo_client":logo_client,"photo_cdp":photo_cdp, "duree_semaine":duree_semaine}
-            
+            context = {
+                "planning_pre": image,
+                "president": president,
+                "etude": instance,
+                "devis": devis,
+                "client": client,
+                "responsable": responsable,
+                "phases": phases,
+                "qualite": qualite,
+                "mois": mois,
+                "annee": annee,
+                "date_creation": date_creation,
+                "poste": poste,
+                "ref_m": ref_m,
+                "ref_d": ref_d,
+                "nb_JEH": nb_JEH,
+                "tot_HT_phase": tot_HT_phase,
+                "fac_acom": fac_acom,
+                "fac_solde": fac_solde,
+                "factures": factures,
+                "ac_inter": ac_inter,
+                "logo_client": logo_client,
+                "photo_cdp": photo_cdp,
+                "duree_semaine": duree_semaine,
+            }
 
             env = Environment()
 
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['EnLettres'] = en_lettres
-            env.filters['ChiffreLettre'] = chiffre_lettres
-        
-            
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
 
             # Render the document
             template.render(context, env)
@@ -2523,8 +2901,11 @@ def editer_devis(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"Devis_{ref_m}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             devis.save()
             return response
         except ValueError as ve:
@@ -2532,7 +2913,9 @@ def editer_devis(request, iD):
             context = {"error_message": str(ve)}
         except Exception as e:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2544,68 +2927,97 @@ def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
         try:
             instance = AvenantConventionEtude.objects.get(id=iD)
-            ce= instance.ce
-            avenants =  AvenantConventionEtude.objects.filter(ce=ce).order_by('numero')
+            ce = instance.ce
+            avenants = AvenantConventionEtude.objects.filter(ce=ce).order_by("numero")
 
-            dernier_avenant=None
-            if len(avenants)>1:
-                dernier_avenant = avenants[len(avenants) -2 ]
-            
-            avenant_budget=False
-            avenant_delais=False
+            dernier_avenant = None
+            if len(avenants) > 1:
+                dernier_avenant = avenants[len(avenants) - 2]
+
+            avenant_budget = False
+            avenant_delais = False
             for avenant in avenants:
                 if avenant.avenant_budget:
-                    avenant_budget=True
+                    avenant_budget = True
                 if avenant.avenant_delais:
-                    avenant_delais=True
+                    avenant_delais = True
 
-            objet=instance.objet
-            num_del=1
+            objet = instance.objet
+            num_del = 1
             num_bud = 2
             if not avenant_delais:
-                num_bud=1
+                num_bud = 1
 
             etude = ce.etude
             client = etude.client
-            representant_legale_client = etude.client_representant_legale #souvent le patron de l boite qui a le droit de signer les documents
+            representant_legale_client = (
+                etude.client_representant_legale
+            )  # souvent le patron de l boite qui a le droit de signer les documents
 
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
             ref_m = etude.ref()
-            
-
 
             if etude.fin():
-                semaine_fin = math.ceil( (datetime.combine(etude.fin(),time(12, 0))  -datetime.today() ).days /7 )
+                semaine_fin = math.ceil(
+                    (datetime.combine(etude.fin(), time(12, 0)) - datetime.today()).days
+                    / 7
+                )
             else:
-                semaine_fin= etude.duree_semaine()
+                semaine_fin = etude.duree_semaine()
 
-            semaine_fin_lettres= en_lettres(semaine_fin)
+            semaine_fin_lettres = en_lettres(semaine_fin)
 
-            nb_JEH= etude.nb_JEH()
+            nb_JEH = etude.nb_JEH()
             nb_JEH_lettres = en_lettres(nb_JEH)
 
-            phase_montant_HT= format_nombres(etude.montant_phase_HT())
+            phase_montant_HT = format_nombres(etude.montant_phase_HT())
             phase_montant_HT_lettres = chiffre_lettres(etude.montant_phase_HT())
             frais_HT = format_nombres(etude.frais_dossier)
-            frais_HT_lettres=chiffre_lettres(etude.frais_dossier)
-            total_HT= format_nombres(etude.montant_HT_total())
+            frais_HT_lettres = chiffre_lettres(etude.frais_dossier)
+            total_HT = format_nombres(etude.montant_HT_total())
             total_HT_lettres = chiffre_lettres(etude.montant_HT_total())
-            total_TTC= format_nombres(etude.total_ttc())
-            total_TTC_lettres= chiffre_lettres(etude.total_ttc())
+            total_TTC = format_nombres(etude.total_ttc())
+            total_TTC_lettres = chiffre_lettres(etude.total_ttc())
             template = DocxTemplate("polls/templates/polls/avenant_ce_026.docx")
-            logo_client = InlineImage(template, client.logo, width=Mm(20)) # width is in millimetres
-            context = {"avenant": instance, "etude": etude, "client": client, "president":president, "ref_m":ref_m,"ce":ce,"repr_legale": representant_legale_client, "semaine_fin":semaine_fin,
-                       "semaine_fin":semaine_fin,"semaine_fin_lettres":semaine_fin_lettres,"nb_JEH":nb_JEH,"nb_JEH_lettres":nb_JEH_lettres,
-                       "phase_montant_HT":phase_montant_HT,"phase_montant_HT_lettres":phase_montant_HT_lettres,"frais_HT":frais_HT, "frais_HT_lettres":frais_HT_lettres,
-                       "total_HT":total_HT,"total_HT_lettres":total_HT_lettres,"total_TTC":total_TTC,"total_TTC_lettres":total_TTC_lettres,
-                       "avenant_delais":avenant_delais,"avenant_budget":avenant_budget,"num_del":num_del,"num_bud":num_bud,"objet":objet,"dernier_avenant":dernier_avenant,"logo_client":logo_client
-                       }
-            print(f"avenant_delais : {avenant_delais}, avenant_budget: {avenant_budget}")
+            logo_client = InlineImage(
+                template, client.logo, width=Mm(20)
+            )  # width is in millimetres
+            context = {
+                "avenant": instance,
+                "etude": etude,
+                "client": client,
+                "president": president,
+                "ref_m": ref_m,
+                "ce": ce,
+                "repr_legale": representant_legale_client,
+                "semaine_fin": semaine_fin,
+                "semaine_fin": semaine_fin,
+                "semaine_fin_lettres": semaine_fin_lettres,
+                "nb_JEH": nb_JEH,
+                "nb_JEH_lettres": nb_JEH_lettres,
+                "phase_montant_HT": phase_montant_HT,
+                "phase_montant_HT_lettres": phase_montant_HT_lettres,
+                "frais_HT": frais_HT,
+                "frais_HT_lettres": frais_HT_lettres,
+                "total_HT": total_HT,
+                "total_HT_lettres": total_HT_lettres,
+                "total_TTC": total_TTC,
+                "total_TTC_lettres": total_TTC_lettres,
+                "avenant_delais": avenant_delais,
+                "avenant_budget": avenant_budget,
+                "num_del": num_del,
+                "num_bud": num_bud,
+                "objet": objet,
+                "dernier_avenant": dernier_avenant,
+                "logo_client": logo_client,
+            }
+            print(
+                f"avenant_delais : {avenant_delais}, avenant_budget: {avenant_budget}"
+            )
             # Load the template
 
             # Render the document
             template.render(context)
-
 
             # Create a temporary in-memory file
             output = BytesIO()
@@ -2614,17 +3026,23 @@ def editer_avenant_ce(request, iD):
 
             # Save the "fichier" field of the CE
             filename = f"AvenantCE_{instance.__str__()}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
-        template = loader.get_template("polls/login.html") 
+        template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
+
 
 def editer_bon(request, id_bon):
     if request.user.is_authenticated:
@@ -2635,27 +3053,40 @@ def editer_bon(request, id_bon):
             etude = bon.etude
             responsable = etude.responsable
             client = etude.client
-            
-            phases=bon.phases()
-            repr= etude.client_interlocuteur 
-            repr_legale = etude.client_representant_legale 
+
+            phases = bon.phases()
+            repr = etude.client_interlocuteur
+            repr_legale = etude.client_representant_legale
             quali = etude.resp_qualite.student
             respo = etude.responsable.student
-            tot_HT_phase=sum(phase.calcul_mt_HT() for phase in phases)
+            tot_HT_phase = sum(phase.calcul_mt_HT() for phase in phases)
             poste = "Chef de Projet"
-            if respo.titre =='Mme':
-                poste= "Cheffe de Projet"
-            president = {"titre":"M.","first_name":"Thomas", "last_name":"Debray"}
+            if respo.titre == "Mme":
+                poste = "Cheffe de Projet"
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
             logo_client = InlineImage(template, client.logo, width=Mm(20))
-            context = {"etude": etude, "client": client, "responsable":responsable, "bon":bon,"repr":repr,"repr_legale":repr_legale,
-                       "quali":quali,"respo":respo,"president":president, "phases":phases, "poste":poste,"nombre_phases":bon.nb_phases(),"logo_client":logo_client}
+            context = {
+                "etude": etude,
+                "client": client,
+                "responsable": responsable,
+                "bon": bon,
+                "repr": repr,
+                "repr_legale": repr_legale,
+                "quali": quali,
+                "respo": respo,
+                "president": president,
+                "phases": phases,
+                "poste": poste,
+                "nombre_phases": bon.nb_phases(),
+                "logo_client": logo_client,
+            }
             # Load the template
             env = Environment()
-            env.filters['FormatNombres'] = format_nombres
-            env.filters['EnLettres'] = en_lettres
-            env.filters['ChiffreLettre'] = chiffre_lettres
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
             # Render the document
-            template.render(context, env) 
+            template.render(context, env)
             # Create a temporary in-memory file
             output = BytesIO()
             template.save(output)
@@ -2663,12 +3094,17 @@ def editer_bon(request, id_bon):
 
             # Save the "fichier" field of the CE
             filename = f"{bon.ref()}.docx"
-            response = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except :
+        except:
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "Un problème a été détecté dans la base de données."}
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2694,18 +3130,34 @@ def get_object_info(request, model_name, object_id):
 
             fields["success"] = True
             return JsonResponse(fields)
-        except :
-            return JsonResponse({"success" : False, "error_message" : "Un problème a été détecté dans la base de données."})
+        except:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error_message": "Un problème a été détecté dans la base de données.",
+                }
+            )
 
     else:
-        return JsonResponse({"success" : False, "error_message" : "You have been identified as not logged in."})
-    
+        return JsonResponse(
+            {
+                "success": False,
+                "error_message": "You have been identified as not logged in.",
+            }
+        )
+
+
 def modifier_bon_commande(request, id_etude, id_bon):
     if request.user.is_authenticated:
         try:
             etude = Etude.objects.get(id=id_etude)
-            if(id_bon == 0):
-                bon = BonCommande(etude=etude, remarque=request.POST["remarque_bdc"], numero=request.POST["numero_bdc"],objectifs = request.POST["objectifs_bdc"]).save()
+            if id_bon == 0:
+                bon = BonCommande(
+                    etude=etude,
+                    remarque=request.POST["remarque_bdc"],
+                    numero=request.POST["numero_bdc"],
+                    objectifs=request.POST["objectifs_bdc"],
+                ).save()
             else:
                 bon = BonCommande.objects.get(id=id_bon)
                 bon.remarque = request.POST["remarque_bdc"]
@@ -2718,28 +3170,33 @@ def modifier_bon_commande(request, id_etude, id_bon):
                 if request.POST["objectifs_bdc"]:
                     bon.objectifs = request.POST["objectifs_bdc"]
 
-                keys = request.POST.getlist('keys_bdc[]')
-                values = request.POST.getlist('values_bdc[]')
+                keys = request.POST.getlist("keys_bdc[]")
+                values = request.POST.getlist("values_bdc[]")
                 if keys:
-                    cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+                    cahier_des_charges = {
+                        key: value for key, value in zip(keys, values) if key
+                    }
                     bon.cahier_des_charges = cahier_des_charges
 
-
-                bon.etude= etude
+                bon.etude = etude
                 bon.save()
-            
-            return redirect('details', modelName="Etude", iD=id_etude)
-        except :
+
+            return redirect("details", modelName="Etude", iD=id_etude)
+        except:
             context = general_context(request)
             template = loader.get_template("polls/page_error.html")
-            context["error_message"] = "Un problème a été détecté dans la base de données."
+            context["error_message"] = (
+                "Un problème a été détecté dans la base de données."
+            )
 
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
-#---- FONCTIONS POUR STATISTIQUES ------------
+
+# ---- FONCTIONS POUR STATISTIQUES ------------
+
 
 def calculate_monthly_sums(user_je):
     september = 9
@@ -2752,7 +3209,7 @@ def calculate_monthly_sums(user_je):
         etudes = Etude.objects.filter(
             je=user_je,
             debut__month=current_month,
-            status__in=[Etude.Status.EN_COURS, Etude.Status.TERMINEE]  
+            status__in=[Etude.Status.EN_COURS, Etude.Status.TERMINEE],
         )
         total_montant_HT = sum(etude.montant_HT_total() for etude in etudes)
         monthly_sums.append(total_montant_HT)
@@ -2763,81 +3220,119 @@ def calculate_monthly_sums(user_je):
     return res
 
 
-
 def calculate_chiffre_affaire_par_departement(user_je):
-    revenues = [0]*7
-    department_index = {"IMI":0, "GCC":1, "GMM":2, "SEGF":3, "VET":4, "1A":5, "AUTRE":6}
+    revenues = [0] * 7
+    department_index = {
+        "IMI": 0,
+        "GCC": 1,
+        "GMM": 2,
+        "SEGF": 3,
+        "VET": 4,
+        "1A": 5,
+        "AUTRE": 6,
+    }
     studies = Etude.objects.filter(je=user_je)
-    
+
     for study in studies:
         if study.montant_HT_total() > 0:
             phases = Phase.objects.filter(etude=study)
             students = study.get_li_students()
-            
+
             for student in students:
                 for phase in phases:
                     if student.departement:
-                        revenues[department_index[student.departement]] += phase.get_montant_HT(student)
+                        revenues[
+                            department_index[student.departement]
+                        ] += phase.get_montant_HT(student)
 
     return revenues
 
+
 def repartition_CA_etudes_ec_term(etudes):
-    dictionaire_CA = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
-    dictionaire_nb = {"025 en cours":0, "026 en cours":0,"025 terminées 026":0, "026 terminées 026":0}
-    totale_CA =0
-    totale_nb=0
+    dictionaire_CA = {
+        "025 en cours": 0,
+        "026 en cours": 0,
+        "025 terminées 026": 0,
+        "026 terminées 026": 0,
+    }
+    dictionaire_nb = {
+        "025 en cours": 0,
+        "026 en cours": 0,
+        "025 terminées 026": 0,
+        "026 terminées 026": 0,
+    }
+    totale_CA = 0
+    totale_nb = 0
     for etude in etudes:
-        if etude.mandat == '025':
-            if etude.status == 'EN_COURS':
-                dictionaire_CA["025 en cours"]+=etude.montant_HT_total()
-                dictionaire_nb["025 en cours"]+=1
-                totale_CA+=etude.montant_HT_total()
-                totale_nb+=1
-            elif etude.status == 'TERMINEE':
+        if etude.mandat == "025":
+            if etude.status == "EN_COURS":
+                dictionaire_CA["025 en cours"] += etude.montant_HT_total()
+                dictionaire_nb["025 en cours"] += 1
+                totale_CA += etude.montant_HT_total()
+                totale_nb += 1
+            elif etude.status == "TERMINEE":
                 if etude.fin() is not None and etude.fin() > datetime(2024, 5, 1):
-                    dictionaire_CA["025 terminées 026"]+=etude.montant_HT_total()
-                    dictionaire_nb["025 terminées 026"]+=1
-                    totale_CA+=etude.montant_HT_total()
-                    totale_nb+=1
-        elif etude.mandat == '026':
-            if etude.status == 'EN_COURS':
-                dictionaire_CA["026 en cours"]+=etude.montant_HT_total()
-                dictionaire_nb["026 en cours"]+=1
-                totale_CA+=etude.montant_HT_total()
-                totale_nb+=1
-            elif etude.status == 'TERMINEE':
-                dictionaire_CA["026 terminées 026"]+=etude.montant_HT_total()
-                dictionaire_nb["026 terminées 026"]+=1
-                totale_CA+=etude.montant_HT_total()
-                totale_nb+=1
-    return dictionaire_CA,dictionaire_nb, totale_CA,totale_nb
-
-
+                    dictionaire_CA["025 terminées 026"] += etude.montant_HT_total()
+                    dictionaire_nb["025 terminées 026"] += 1
+                    totale_CA += etude.montant_HT_total()
+                    totale_nb += 1
+        elif etude.mandat == "026":
+            if etude.status == "EN_COURS":
+                dictionaire_CA["026 en cours"] += etude.montant_HT_total()
+                dictionaire_nb["026 en cours"] += 1
+                totale_CA += etude.montant_HT_total()
+                totale_nb += 1
+            elif etude.status == "TERMINEE":
+                dictionaire_CA["026 terminées 026"] += etude.montant_HT_total()
+                dictionaire_nb["026 terminées 026"] += 1
+                totale_CA += etude.montant_HT_total()
+                totale_nb += 1
+    return dictionaire_CA, dictionaire_nb, totale_CA, totale_nb
 
 
 def nb_etudes_ed_ec_term(user_je):
-    etudes=Etude.objects.filter(je=user_je)
-    dictionaire = {"EN_NEGOCIATION":{0:0, 1:0}, "EN_COURS":{0:0, 1:0},"TERMINEE":{0:0, 1:0}}
+    etudes = Etude.objects.filter(je=user_je)
+    dictionaire = {
+        "EN_NEGOCIATION": {0: 0, 1: 0},
+        "EN_COURS": {0: 0, 1: 0},
+        "TERMINEE": {0: 0, 1: 0},
+    }
     for etude in etudes:
-        dictionaire[etude.status][0]+=1
-        dictionaire[etude.status][1]+=etude.montant_HT_total()
+        dictionaire[etude.status][0] += 1
+        dictionaire[etude.status][1] += etude.montant_HT_total()
     return dictionaire
 
 
 def calculate_chiffre_affaire_par_type(user_je):
-    revenues = [0]*6
-    type_index = {"GRANDE_ENTREPRISE":0, "SECTEUR_PUBLIC":1, "START_UP_ET_TPE":2, "PME":3, "ETI":4, "ASSOCIATION":5}
+    revenues = [0] * 6
+    type_index = {
+        "GRANDE_ENTREPRISE": 0,
+        "SECTEUR_PUBLIC": 1,
+        "START_UP_ET_TPE": 2,
+        "PME": 3,
+        "ETI": 4,
+        "ASSOCIATION": 5,
+    }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
         montant_HT_total = study.montant_HT_total()
-        if montant_HT_total > 0: 
+        if montant_HT_total > 0:
             revenues[type_index[study.client.type]] += montant_HT_total
     return revenues
 
 
 def calculate_chiffre_affaire_par_secteur(user_je):
-    revenues = [0]*8
-    secteur_index = {'INDUSTRIE':0, 'DISTRIBUTION':1, 'SECTEUR_PUBLIC':2, 'CONSEIL':3, 'TRANSPORT':4, 'NUMERIQUE':5, 'BTP':6, 'AUTRE':7}
+    revenues = [0] * 8
+    secteur_index = {
+        "INDUSTRIE": 0,
+        "DISTRIBUTION": 1,
+        "SECTEUR_PUBLIC": 2,
+        "CONSEIL": 3,
+        "TRANSPORT": 4,
+        "NUMERIQUE": 5,
+        "BTP": 6,
+        "AUTRE": 7,
+    }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
         montant_HT_total = study.montant_HT_total()
@@ -2846,10 +3341,8 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     return revenues
 
 
+# -----------------------
 
-
-
-#-----------------------
 
 def charts(request):
     if request.user.is_authenticated:
@@ -2883,56 +3376,106 @@ def charts(request):
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
+
+
 def search_suggestions(request):
-    query = request.GET.get('query', '')
+    query = request.GET.get("query", "")
     if query:
         keywords = query.split()
         suggestions_etude = Etude.objects.filter(je=request.user.je)
         suggestions_client = Client.objects.filter(je=request.user.je)
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
-            suggestions_etude = suggestions_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword) | Q(resp_qualite__student__first_name__icontains=keyword) | Q(resp_qualite__student__last_name__icontains=keyword))
-            suggestions_client = suggestions_client.filter(Q(nom_societe__icontains=keyword) | Q(raison_sociale__icontains=keyword))
-            suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
+            suggestions_etude = suggestions_etude.filter(
+                Q(titre__icontains=keyword)
+                | Q(numero__icontains=keyword)
+                | Q(responsable__student__first_name__icontains=keyword)
+                | Q(responsable__student__last_name__icontains=keyword)
+                | Q(client__nom_societe__icontains=keyword)
+                | Q(resp_qualite__student__first_name__icontains=keyword)
+                | Q(resp_qualite__student__last_name__icontains=keyword)
+            )
+            suggestions_client = suggestions_client.filter(
+                Q(nom_societe__icontains=keyword) | Q(raison_sociale__icontains=keyword)
+            )
+            suggestions_student = suggestions_student.filter(
+                Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)
+            )
         count_client = suggestions_client.count()
         count_student = suggestions_student.count()
-        suppression_etude_c=max(1, count_client)
-        suppression_etude_s=max(1, count_student)
-        suggestions_etude=suggestions_etude.order_by('-debut')[:5-suppression_etude_c-suppression_etude_s]
+        suppression_etude_c = max(1, count_client)
+        suppression_etude_s = max(1, count_student)
+        suggestions_etude = suggestions_etude.order_by("-debut")[
+            : 5 - suppression_etude_c - suppression_etude_s
+        ]
         nombre_etude = suggestions_etude.count()
-        suggestions_client = suggestions_client[:5-nombre_etude-suppression_etude_s]
+        suggestions_client = suggestions_client[
+            : 5 - nombre_etude - suppression_etude_s
+        ]
         nombre_client = suggestions_client.count()
-        suggestions_student = suggestions_student[:5-nombre_etude-nombre_client]
-        return JsonResponse({'suggestions_etude': list(suggestions_etude.values_list('titre', 'id')), 'suggestions_client': list(suggestions_client.values_list('nom_societe', 'id')), 'suggestions_student': list(suggestions_student.values_list('first_name', 'last_name', 'id'))})
-    else :
-        return JsonResponse({'suggestions_etude': [], 'suggestions_client': [], 'suggestions_student': []})
-    
+        suggestions_student = suggestions_student[: 5 - nombre_etude - nombre_client]
+        return JsonResponse(
+            {
+                "suggestions_etude": list(suggestions_etude.values_list("titre", "id")),
+                "suggestions_client": list(
+                    suggestions_client.values_list("nom_societe", "id")
+                ),
+                "suggestions_student": list(
+                    suggestions_student.values_list("first_name", "last_name", "id")
+                ),
+            }
+        )
+    else:
+        return JsonResponse(
+            {
+                "suggestions_etude": [],
+                "suggestions_client": [],
+                "suggestions_student": [],
+            }
+        )
+
+
 def search_suggestions_student(request, id_etude):
-    query = request.GET.get('query', '')
+    query = request.GET.get("query", "")
     if query:
         keywords = query.split()
         suggestions_student = Student.objects.filter(je=request.user.je)
         for keyword in keywords:
-            suggestions_student = suggestions_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword))
+            suggestions_student = suggestions_student.filter(
+                Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)
+            )
         suggestions_student = suggestions_student[:5]
         etude = Etude.objects.get(id=id_etude)
-        return JsonResponse({'suggestions_student': [[student.first_name, student.last_name, student.id, student.phases_etude(etude).count(), student.nb_etudes_realisees()] for student in suggestions_student.all()]})
-    else :
-        return JsonResponse({'suggestions_student': []})
-    
+        return JsonResponse(
+            {
+                "suggestions_student": [
+                    [
+                        student.first_name,
+                        student.last_name,
+                        student.id,
+                        student.phases_etude(etude).count(),
+                        student.nb_etudes_realisees(),
+                    ]
+                    for student in suggestions_student.all()
+                ]
+            }
+        )
+    else:
+        return JsonResponse({"suggestions_student": []})
+
+
 def client_suggestions(request):
     if request.user.is_authenticated:
-        query = request.GET.get('q', '')
+        query = request.GET.get("q", "")
         if query:
             results = Client.objects.filter(nom_societe__icontains=query)
-            results_list = [{'id': obj.id, 'name': obj.__str__()} for obj in results]
+            results_list = [{"id": obj.id, "name": obj.__str__()} for obj in results]
         else:
             results_list = []
-        
-        return JsonResponse({'results': results_list})
+
+        return JsonResponse({"results": results_list})
     else:
-        return JsonResponse({'results': []})
+        return JsonResponse({"results": []})
 
 
 def search(request):
@@ -2947,7 +3490,7 @@ def search(request):
     all_notifications = request.user.notifications.order_by("-date_effet")
     notification_list = [notif for notif in all_notifications if notif.active()]
     notification_count = len(notification_list)
-    query = request.GET.get('search-input', '')
+    query = request.GET.get("search-input", "")
     if query:
         keywords = query.split()
         resultats_etude = Etude.objects.filter(je=request.user.je)
@@ -2960,59 +3503,116 @@ def search(request):
         combined_res_client = Client.objects.none()
         combined_res_student = Student.objects.none()
         for keyword in keywords:
-            liste_res_etude.append(resultats_etude.filter(Q(titre__icontains=keyword) | Q(numero__icontains=keyword) | Q(responsable__student__first_name__icontains=keyword) | Q(responsable__student__last_name__icontains=keyword) | Q(client__nom_societe__icontains=keyword) | Q(resp_qualite__student__first_name__icontains=keyword) | Q(resp_qualite__student__last_name__icontains=keyword)))
-            liste_res_client.append(resultats_client.filter(Q(nom_societe__icontains=keyword) | Q(raison_sociale__icontains=keyword)))
-            liste_res_student.append(resultats_student.filter(Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)))
+            liste_res_etude.append(
+                resultats_etude.filter(
+                    Q(titre__icontains=keyword)
+                    | Q(numero__icontains=keyword)
+                    | Q(responsable__student__first_name__icontains=keyword)
+                    | Q(responsable__student__last_name__icontains=keyword)
+                    | Q(client__nom_societe__icontains=keyword)
+                    | Q(resp_qualite__student__first_name__icontains=keyword)
+                    | Q(resp_qualite__student__last_name__icontains=keyword)
+                )
+            )
+            liste_res_client.append(
+                resultats_client.filter(
+                    Q(nom_societe__icontains=keyword)
+                    | Q(raison_sociale__icontains=keyword)
+                )
+            )
+            liste_res_student.append(
+                resultats_student.filter(
+                    Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)
+                )
+            )
         for i in range(len(liste_res_etude)):
             combined_res_etude |= liste_res_etude[i]
             combined_res_client |= liste_res_client[i]
             combined_res_student |= liste_res_student[i]
-        combined_res_etude = combined_res_etude.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
-        combined_res_client = combined_res_client.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
-        combined_res_student = combined_res_student.annotate(appearances_count=Count('id', distinct=True)).order_by('-appearances_count')
+        combined_res_etude = combined_res_etude.annotate(
+            appearances_count=Count("id", distinct=True)
+        ).order_by("-appearances_count")
+        combined_res_client = combined_res_client.annotate(
+            appearances_count=Count("id", distinct=True)
+        ).order_by("-appearances_count")
+        combined_res_student = combined_res_student.annotate(
+            appearances_count=Count("id", distinct=True)
+        ).order_by("-appearances_count")
         final_res_etude = combined_res_etude.all()
         final_res_client = combined_res_client.all()
         final_res_student = combined_res_student.all()
-        context = {"query":query, "res_etude":final_res_etude, "res_client":final_res_client, "res_student":final_res_student, "liste_messages":liste_messages, "message_count":message_count, "notification_list":notification_list, "notification_count":notification_count}
+        context = {
+            "query": query,
+            "res_etude": final_res_etude,
+            "res_client": final_res_client,
+            "res_student": final_res_student,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
     else:
-        context = {"query":query, "liste_messages":liste_messages, "message_count":message_count, "notification_list":notification_list, "notification_count":notification_count}
+        context = {
+            "query": query,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
         template = loader.get_template("polls/search_results.html")
         return HttpResponse(template.render(context, request))
-    
+
+
 def ajouter_phase(request, id_etude):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 fetchform = AddPhase(request.POST)
                 if fetchform.is_valid():
                     etude = Etude.objects.get(id=id_etude)
                     numero_bdc = request.POST.get("numero_bdc", None)
                     if etude.type_convention == "Convention cadre":
-                            if not numero_bdc:
-                                raise ValueError("Veuillez préciser le bon de commande de la phase.")
-                            else:
-                                bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
-                                if not bdcs.exists():
-                                    raise ValueError("Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant.")
+                        if not numero_bdc:
+                            raise ValueError(
+                                "Veuillez préciser le bon de commande de la phase."
+                            )
+                        else:
+                            bdcs = BonCommande.objects.filter(
+                                etude=etude, numero=numero_bdc
+                            )
+                            if not bdcs.exists():
+                                raise ValueError(
+                                    "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                                )
                     count_phase = Phase.objects.filter(etude=etude).count()
-                    new_phase = fetchform.save(commit=True, id_etude=id_etude, numero=count_phase+1)
+                    new_phase = fetchform.save(
+                        commit=True, id_etude=id_etude, numero=count_phase + 1
+                    )
                     if etude.type_convention == "Convention cadre" and numero_bdc:
-                        bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                        bdcs = BonCommande.objects.filter(
+                            etude=etude, numero=numero_bdc
+                        )
                         bdc = None
-                        if(bdcs.exists()):
+                        if bdcs.exists():
                             bdc = bdcs[0]
                         else:
                             gen_context = general_context(request)
-                            gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            gen_context["error_message"] = (
+                                "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            )
                             template = loader.get_template("polls/page_error.html")
                             return HttpResponse(template.render(gen_context, request))
-                        new_ass_phase_bdc = AssociationPhaseBDC(phase=new_phase, bon_de_commande=bdc)
+                        new_ass_phase_bdc = AssociationPhaseBDC(
+                            phase=new_phase, bon_de_commande=bdc
+                        )
                         new_ass_phase_bdc.save()
-                else :
+                else:
                     gen_context = general_context(request)
-                    gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                    gen_context["error_message"] = (
+                        "Le formulaire envoyé comporte une erreur."
+                    )
                     template = loader.get_template("polls/page_error.html")
                     return HttpResponse(template.render(gen_context, request))
             except ValueError as ve:
@@ -3021,16 +3621,16 @@ def ajouter_phase(request, id_etude):
                 context = {"error_message": str(ve)}
                 return HttpResponse(template.render(context, request))
 
-        return redirect('details', modelName='Etude', iD=id_etude)
+        return redirect("details", modelName="Etude", iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
+
 
 def ajouter_facture(request, id_etude):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 fetchform = AddFacture(request.POST)
                 if fetchform.is_valid():
@@ -3040,37 +3640,50 @@ def ajouter_facture(request, id_etude):
                     # Check if `numero_bdc` is None and raise an error if necessary
                     if etude.type_convention == "Convention cadre":
                         if not numero_bdc:
-                            raise ValueError("Veuillez préciser le bon de commande de la facture.")
+                            raise ValueError(
+                                "Veuillez préciser le bon de commande de la facture."
+                            )
                         else:
-                            bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                            bdcs = BonCommande.objects.filter(
+                                etude=etude, numero=numero_bdc
+                            )
                             if not bdcs.exists():
-                                raise ValueError("Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant.")
-
+                                raise ValueError(
+                                    "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                                )
 
                     # Proceed to save the new facture if numero_bdc is not None
                     new_facture = fetchform.save(commit=True, id_etude=id_etude)
 
                     # Handle the BDC association
                     if numero_bdc:
-                        bdcs = BonCommande.objects.filter(etude=etude, numero=numero_bdc)
+                        bdcs = BonCommande.objects.filter(
+                            etude=etude, numero=numero_bdc
+                        )
                         bdc = None
                         if bdcs.exists():
                             bdc = bdcs[0]
                         else:
                             gen_context = general_context(request)
-                            gen_context['error_message'] = "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            gen_context["error_message"] = (
+                                "Le numéro de bon de commande indiqué ne correspond à aucun bon de commande existant."
+                            )
                             template = loader.get_template("polls/page_error.html")
                             return HttpResponse(template.render(gen_context, request))
 
                         # Associate facture with BDC
-                        new_ass_fac_bdc = AssociationFactureBDC(facture=new_facture, bon_de_commande=bdc)
+                        new_ass_fac_bdc = AssociationFactureBDC(
+                            facture=new_facture, bon_de_commande=bdc
+                        )
                         new_ass_fac_bdc.save()
-                    return redirect('details', modelName='Etude', iD=id_etude)
+                    return redirect("details", modelName="Etude", iD=id_etude)
 
                 else:
                     # Handle form errors
                     gen_context = general_context(request)
-                    gen_context['error_message'] = "Le formulaire envoyé comporte une erreur."
+                    gen_context["error_message"] = (
+                        "Le formulaire envoyé comporte une erreur."
+                    )
                     template = loader.get_template("polls/page_error.html")
                     return HttpResponse(template.render(gen_context, request))
 
@@ -3081,58 +3694,57 @@ def ajouter_facture(request, id_etude):
                 return HttpResponse(template.render(context, request))
 
         # Redirect to details page if everything went smoothly
-        return redirect('details', modelName='Etude', iD=id_etude)
+        return redirect("details", modelName="Etude", iD=id_etude)
 
     else:
         # Redirect to login if not authenticated
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
- 
+
 
 def BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try :
+        try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            je= eleve.je
+            je = eleve.je
             nb_JEH = 0
-            montant_HT = 0.
-            if request.method == 'POST':
+            montant_HT = 0.0
+            if request.method == "POST":
                 for phase in etude.phases():
-                    my_checkbox_value = request.POST.get(f'checkInputPhase{phase.id}')
-                    print(f'checkInputPhase{phase.id}')
+                    my_checkbox_value = request.POST.get(f"checkInputPhase{phase.id}")
+                    print(f"checkInputPhase{phase.id}")
                     print(my_checkbox_value)
                     print(request.POST)
-                    if (my_checkbox_value is not None):
+                    if my_checkbox_value is not None:
                         nb_JEH += phase.get_nb_JEH_eleve(eleve)
                         montant_HT += phase.get_montant_HT(eleve)
 
-
             chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
-            
+
             classeur = openpyxl.load_workbook(chemin_absolu)
 
             # Sélectionner la feuille de calcul
             feuille = classeur.active
 
             # Modifier la cellule G4
-            feuille['H2'] = "N° 24001"
-            feuille['I13'] = montant_HT
-            feuille['I14'] = nb_JEH
-            feuille['G4'] = eleve.first_name +" " + eleve.last_name
-            feuille['G6'] = eleve.adress
-            feuille['G8'] = eleve.code_postal + " " + eleve.country
-            feuille['I3'] = datetime.now().strftime('%d %B %Y')
-            feuille['C13']= etude.ref()
+            feuille["H2"] = "N° 24001"
+            feuille["I13"] = montant_HT
+            feuille["I14"] = nb_JEH
+            feuille["G4"] = eleve.first_name + " " + eleve.last_name
+            feuille["G6"] = eleve.adress
+            feuille["G8"] = eleve.code_postal + " " + eleve.country
+            feuille["I3"] = datetime.now().strftime("%d %B %Y")
+            feuille["C13"] = etude.ref()
 
-            #assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
-            #feuille['C13']= assignation_jeh.reference
-            feuille['H10'] = eleve.numero_ss
-            
-            #info JE
-            feuille['I15'] = je.base_urssaf
-            feuille['F23'] = je.taux_ATMP
+            # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
+            # feuille['C13']= assignation_jeh.reference
+            feuille["H10"] = eleve.numero_ss
+
+            # info JE
+            feuille["I15"] = je.base_urssaf
+            feuille["F23"] = je.taux_ATMP
             # Sauvegarder les modifications dans le fichier Excel
             output = BytesIO()
             classeur.save(output)
@@ -3142,22 +3754,34 @@ def BV(request, id_etude, id_eleve):
             download_filename = f"BV_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
 
             # Return the file with the new filename
-            response = FileResponse(output, as_attachment=True, filename=download_filename)
+            response = FileResponse(
+                output, as_attachment=True, filename=download_filename
+            )
 
             return response
-        except :
+        except:
             liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[0:3]
+                destinataire=request.user,
+                read=False,
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
+            ).order_by("date")[0:3]
             message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
+                destinataire=request.user,
+                read=False,
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
+            ).count()
             template = loader.get_template("polls/page_error.html")
-            context = {"error_message":"Erreur dans le téléversement du BV.", "liste_messages":liste_messages, "message_count":message_count}
+            context = {
+                "error_message": "Erreur dans le téléversement du BV.",
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+            }
             return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")
@@ -3167,73 +3791,116 @@ def BV(request, id_etude, id_eleve):
 
 def ajouter_assignation_jeh(request, id_etude, id_phase):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             fetchform = AddIntervenant(request.POST)
             if fetchform.is_valid():
-                try :
+                try:
                     etude = Etude.objects.get(id=id_etude)
                     phase = Phase.objects.get(id=id_phase)
-                    eleve = fetchform.cleaned_data['eleve']
+                    eleve = fetchform.cleaned_data["eleve"]
                     ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
-                    if (ass_jeh.exists()):
+                    if ass_jeh.exists():
                         only_ass_jeh = ass_jeh[0]
-                        only_ass_jeh.nombre_JEH = fetchform.cleaned_data['nombre_JEH']
-                        only_ass_jeh.pourcentage_retribution = fetchform.cleaned_data['pourcentage_retribution']
+                        only_ass_jeh.nombre_JEH = fetchform.cleaned_data["nombre_JEH"]
+                        only_ass_jeh.pourcentage_retribution = fetchform.cleaned_data[
+                            "pourcentage_retribution"
+                        ]
                         only_ass_jeh.save()
-                    else :
-                        fetchform.save(commit=True, id_etude=id_etude, id_phase=id_phase)
+                    else:
+                        fetchform.save(
+                            commit=True, id_etude=id_etude, id_phase=id_phase
+                        )
                 except:
                     pass
-        return redirect('details', modelName='Etude', iD=id_etude)
+        return redirect("details", modelName="Etude", iD=id_etude)
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
-def recrutement(request, id_url): # Controler les dates
-    if (request.method=='GET'):
-        try :
+
+
+def recrutement(request, id_url):  # Controler les dates
+    if request.method == "GET":
+        try:
             uuid_url = UUID(id_url)
             etude = Etude.objects.get(id_url=uuid_url)
-            if (etude.date_fin_recrutement is None or etude.date_debut_recrutement is None or timezone.now().date()<etude.date_debut_recrutement or timezone.now().date()>etude.date_fin_recrutement):
-                raise ValueError('')
-            context = {'etude':etude, 'form':Recrutement()}
+            if (
+                etude.date_fin_recrutement is None
+                or etude.date_debut_recrutement is None
+                or timezone.now().date() < etude.date_debut_recrutement
+                or timezone.now().date() > etude.date_fin_recrutement
+            ):
+                raise ValueError("")
+            context = {"etude": etude, "form": Recrutement()}
             template = loader.get_template("polls/recrutement.html")
-        except :
-            context = {'error_message': "Cette page n'est associée à aucune mission, ou vous tentez d'y accéder hors période de recrutement."}
+        except:
+            context = {
+                "error_message": "Cette page n'est associée à aucune mission, ou vous tentez d'y accéder hors période de recrutement."
+            }
             template = loader.get_template("polls/recrutement_fail.html")
     else:
-        try :
+        try:
             uuid_url = UUID(id_url)
             etude = Etude.objects.get(id_url=uuid_url)
             recrutement = Recrutement(request.POST)
-            if(recrutement.is_valid()):
-                existing_students = Student.objects.filter(mail=recrutement.cleaned_data['email'], first_name__iexact=recrutement.cleaned_data['prenom'], last_name__iexact=recrutement.cleaned_data['nom'])
+            if recrutement.is_valid():
+                existing_students = Student.objects.filter(
+                    mail=recrutement.cleaned_data["email"],
+                    first_name__iexact=recrutement.cleaned_data["prenom"],
+                    last_name__iexact=recrutement.cleaned_data["nom"],
+                )
                 student = None
                 detail_message = None
-                if(existing_students.exists()):
+                if existing_students.exists():
                     student = existing_students[0]
-                    detail_message = "Votre profil a été reconnu dans la base de données."
+                    detail_message = (
+                        "Votre profil a été reconnu dans la base de données."
+                    )
                 else:
-                    student = Student(je=request.user.je, titre=recrutement.cleaned_data['titre'], first_name=recrutement.cleaned_data['prenom'], last_name=recrutement.cleaned_data['nom'], mail=recrutement.cleaned_data['email'], promotion=recrutement.cleaned_data['promotion'], departement=recrutement.cleaned_data['departement'])
+                    student = Student(
+                        je=request.user.je,
+                        titre=recrutement.cleaned_data["titre"],
+                        first_name=recrutement.cleaned_data["prenom"],
+                        last_name=recrutement.cleaned_data["nom"],
+                        mail=recrutement.cleaned_data["email"],
+                        promotion=recrutement.cleaned_data["promotion"],
+                        departement=recrutement.cleaned_data["departement"],
+                    )
                     student.save()
-                    detail_message = "D'après nos données, il s'agit de votre première candidature."
-                candidature = Candidature(eleve=student, motivation=recrutement.cleaned_data['motivation'], etude=etude)
+                    detail_message = (
+                        "D'après nos données, il s'agit de votre première candidature."
+                    )
+                candidature = Candidature(
+                    eleve=student,
+                    motivation=recrutement.cleaned_data["motivation"],
+                    etude=etude,
+                )
                 candidature.save()
 
-                notif = Notification(description=student.__str__()+" a soumis sa candidature pour la mission "+etude.ref(), date_effet=timezone.now().date(), date_echeance=(timezone.now()+timedelta(weeks=2)).date(), href_redirect=reverse('details', kwargs={"modelName":"Etude", "iD":etude.id}))
+                notif = Notification(
+                    description=student.__str__()
+                    + " a soumis sa candidature pour la mission "
+                    + etude.ref(),
+                    date_effet=timezone.now().date(),
+                    date_echeance=(timezone.now() + timedelta(weeks=2)).date(),
+                    href_redirect=reverse(
+                        "details", kwargs={"modelName": "Etude", "iD": etude.id}
+                    ),
+                )
                 notif.save()
                 all_responsables = [etude.responsable]
                 for representant in all_responsables:
                     notif.utilisateur.add(representant)
 
-                context = {"detail_message" : detail_message}
+                context = {"detail_message": detail_message}
                 template = loader.get_template("polls/recrutement_succes.html")
             else:
-                context = {'error_message': "Votre candidature semble contenir des données corrompues."}
+                context = {
+                    "error_message": "Votre candidature semble contenir des données corrompues."
+                }
                 template = loader.get_template("polls/recrutement_fail.html")
-        except :
-            context = {'error_message': "Votre candidature n'a pas pu aboutir."}
+        except:
+            context = {"error_message": "Votre candidature n'a pas pu aboutir."}
             template = loader.get_template("polls/recrutement_fail.html")
     return HttpResponse(template.render(context, request))
 
@@ -3241,115 +3908,119 @@ def recrutement(request, id_url): # Controler les dates
 def modifier_je(request, id):
     je = get_object_or_404(JE, id=id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         # Met à jour les champs avec les données du formulaire
-        je.nom = request.POST.get('nom')
-        je.raison_sociale = request.POST.get('raison_sociale')
-        je.rue = request.POST.get('rue')
-        je.ville = request.POST.get('ville')
-        je.code_postal = request.POST.get('code_postal')
-        je.siret = request.POST.get('siret')
-        je.APE = request.POST.get('APE')
-        je.TVA = request.POST.get('TVA')
-        je.IBAN = request.POST.get('IBAN')
-        je.BIC = request.POST.get('BIC')
-        je.chiffres_affaires = request.POST.get('chiffres_affaires')
+        je.nom = request.POST.get("nom")
+        je.raison_sociale = request.POST.get("raison_sociale")
+        je.rue = request.POST.get("rue")
+        je.ville = request.POST.get("ville")
+        je.code_postal = request.POST.get("code_postal")
+        je.siret = request.POST.get("siret")
+        je.APE = request.POST.get("APE")
+        je.TVA = request.POST.get("TVA")
+        je.IBAN = request.POST.get("IBAN")
+        je.BIC = request.POST.get("BIC")
+        je.chiffres_affaires = request.POST.get("chiffres_affaires")
         je.save()
 
         # Redirection vers la page je_detail après la sauvegarde
-        return HttpResponseRedirect(reverse('je_detail'))
+        return HttpResponseRedirect(reverse("je_detail"))
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+    return JsonResponse(
+        {"success": False, "message": "Invalid request method"}, status=400
+    )
 
 
 def modifier_recrutement_etude(request, iD):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 etude = Etude.objects.get(id=iD)
-                etude.date_debut_recrutement = request.POST['debut']
-                etude.date_fin_recrutement = request.POST['fin']
+                etude.date_debut_recrutement = request.POST["debut"]
+                etude.date_fin_recrutement = request.POST["fin"]
                 etude.save()
-                return JsonResponse({'success':True, 'debut':etude.date_debut_recrutement, 'fin':etude.date_fin_recrutement})
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "debut": etude.date_debut_recrutement,
+                        "fin": etude.date_fin_recrutement,
+                    }
+                )
             except:
-                return JsonResponse({'success':False})
+                return JsonResponse({"success": False})
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
-    
+
 
 def modifier_etude(request, iD):
     # Fetch the Etude instance using the provided iD
     etude = get_object_or_404(Etude, id=iD)
     numero_ori = etude.numero
-    numero_list = list(Etude.objects.values_list('numero', flat=True))
+    numero_list = list(Etude.objects.values_list("numero", flat=True))
     numero_list.remove(numero_ori)
     print(f"numero d'etudes {numero_list}")
-    if request.method == 'POST':
+    if request.method == "POST":
         # Get the form data from the request
-        debut = request.POST.get('debut')
-        frais_dossier = request.POST.get('frais_dossier')
-        remarque= request.POST.get('remarque')
-        numero = int(request.POST.get('numero'))
+        debut = request.POST.get("debut")
+        frais_dossier = request.POST.get("frais_dossier")
+        remarque = request.POST.get("remarque")
+        numero = int(request.POST.get("numero"))
 
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
-        
+
         if numero:
             if numero not in numero_list:
-                print(numero==1)
+                print(numero == 1)
                 print(f"numero : {numero}, numero_list: {numero_list}")
-                etude.numero=numero
-            
+                etude.numero = numero
+
             else:
                 etude.numero = numero_ori
-                
-                
-
-        
-
-            
 
         # 'fin' should not be updated, as it's set to readonly in the form
 
         # Update the other fields
         etude.frais_dossier = frais_dossier
-        etude.remarque=remarque
+        etude.remarque = remarque
         etude.save()
 
         # Redirect to the details page with the correct modelName
-        modelName = 'Etude'  
-        return HttpResponseRedirect(reverse('details', args=[modelName, iD]))
+        modelName = "Etude"
+        return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+    return JsonResponse(
+        {"success": False, "message": "Invalid request method"}, status=400
+    )
 
 
 def verifier_etude(request, iD):
     # Fetch the Etude instance using the provided iD
     etude = get_object_or_404(Etude, id=iD)
-    
-    client=etude.client
-    if request.method == 'POST':
+
+    client = etude.client
+    if request.method == "POST":
         # Get the form data from the request
-        debut = request.POST.get('debut')
-        frais_dossier = request.POST.get('frais_dossier')
-        remarque= request.POST.get('remarque')
-        client_description= request.POST.get('client_description')
-        etude_contexte= request.POST.get('etude_contexte')
-        paragraphe_intervenant_devis= request.POST.get('paragraphe_intervenant_devis')
-        cdp_mail = request.POST.get('chefdep')
+        debut = request.POST.get("debut")
+        frais_dossier = request.POST.get("frais_dossier")
+        remarque = request.POST.get("remarque")
+        client_description = request.POST.get("client_description")
+        etude_contexte = request.POST.get("etude_contexte")
+        paragraphe_intervenant_devis = request.POST.get("paragraphe_intervenant_devis")
+        cdp_mail = request.POST.get("chefdep")
         cdp = Member.objects.filter(email=cdp_mail).first()
-        quali_mail = request.POST.get('qualite')
-        quali=Member.objects.filter(email=quali_mail).first()
-        garantie = request.POST.get('per_gara')
-        objectifs=request.POST.get('objectifs')
-        methodologie=request.POST.get('methodologie')
-        element_a_fournir= request.POST.get('element_a_fournir')
-    
-        keys = request.POST.getlist('keys[]')
-        values = request.POST.getlist('values[]')
+        quali_mail = request.POST.get("qualite")
+        quali = Member.objects.filter(email=quali_mail).first()
+        garantie = request.POST.get("per_gara")
+        objectifs = request.POST.get("objectifs")
+        methodologie = request.POST.get("methodologie")
+        element_a_fournir = request.POST.get("element_a_fournir")
+
+        keys = request.POST.getlist("keys[]")
+        values = request.POST.getlist("values[]")
 
         # Create a new dictionary from the submitted keys and values
         cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
@@ -3359,106 +4030,107 @@ def verifier_etude(request, iD):
         # Allow 'debut' to be null, and only update if it's provided
         if debut:
             etude.debut = debut
-        client.description=client_description
-            
+        client.description = client_description
 
         # 'fin' should not be updated, as it's set to readonly in the form
 
         # Update the other fields
         etude.frais_dossier = frais_dossier
-        etude.remarque=remarque
-        etude.contexte=etude_contexte
-        etude.paragraphe_intervenant_devis=paragraphe_intervenant_devis
-        etude.responsable=cdp
-        etude.resp_qualite=quali
-        etude.periode_de_garantie= garantie
-        etude.objectifs=objectifs
-        etude.methodologie=methodologie
-        etude.element_a_fournir=element_a_fournir
+        etude.remarque = remarque
+        etude.contexte = etude_contexte
+        etude.paragraphe_intervenant_devis = paragraphe_intervenant_devis
+        etude.responsable = cdp
+        etude.resp_qualite = quali
+        etude.periode_de_garantie = garantie
+        etude.objectifs = objectifs
+        etude.methodologie = methodologie
+        etude.element_a_fournir = element_a_fournir
 
         etude.save()
-        client.description= client_description
+        client.description = client_description
         client.save()
-        
 
         # Redirect to the details page with the correct modelName
-        modelName = 'Etude'  
-        return HttpResponseRedirect(reverse('details', args=[modelName, iD]))
+        modelName = "Etude"
+        return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+    return JsonResponse(
+        {"success": False, "message": "Invalid request method"}, status=400
+    )
+
 
 def remarque_etude(request, iD):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 raw_data = request.body
-                data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
-                content = data.get('content', '')
+                data = json.loads(raw_data.decode("utf-8"))  # Decode bytes to string
+                content = data.get("content", "")
                 etude = Etude.objects.get(id=iD)
                 etude.remarque = content
-                print("Texte de la remarque : ",etude.remarque)
+                print("Texte de la remarque : ", etude.remarque)
                 etude.save()
-                return JsonResponse({'success':True})
+                return JsonResponse({"success": True})
             except:
-                return JsonResponse({'success':False})
+                return JsonResponse({"success": False})
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
 
+
 def signature_document(request, model, iD):
     if request.user.is_authenticated:
-        
-        if request.method == 'POST':
+
+        if request.method == "POST":
             try:
-                new_date = request.POST.get('new_date')
-                
-                if model == 'CE':
+                new_date = request.POST.get("new_date")
+
+                if model == "CE":
                     convention = ConventionEtude.objects.get(id=iD)
-                    etude=convention.etude
+                    etude = convention.etude
                     if new_date:
                         convention.date_signature = new_date
-                        etude=convention.etude
-                        etude.debut= new_date
+                        etude = convention.etude
+                        etude.debut = new_date
                         etude.save()
                     convention.save()
-                
-                elif model == 'Devis':
+
+                elif model == "Devis":
                     devis = Devis.objects.get(id=iD)
                     etude = devis.etude
                     if new_date:
                         devis.date_signature = new_date
-                    
+
                         devis.save()
-                elif model == 'AvCE':
+                elif model == "AvCE":
                     avenant = AvenantConventionEtude.objects.get(id=iD)
                     etude = avenant.ce.etude
                     if new_date:
                         avenant.date_signature = new_date
-                    
+
                         avenant.save()
-                
-                elif model == 'CC':
+
+                elif model == "CC":
                     connvention = ConventionCadre.objects.get(id=iD)
                     etude = connvention.etude
                     if new_date:
                         connvention.date_signature = new_date
-                        etude.debut= new_date
+                        etude.debut = new_date
                         etude.save()
                         connvention.save()
 
-
-                elif model == 'BDC':
+                elif model == "BDC":
                     bdc = BonCommande.objects.get(id=iD)
                     etude = bdc.etude
                     if new_date:
                         bdc.debut = new_date
-                        
+
                         bdc.save()
 
-                return redirect('details', modelName="Etude", iD=etude.id)
+                return redirect("details", modelName="Etude", iD=etude.id)
             except Exception as e:
-                return JsonResponse({'success': False, 'error': str(e)})
+                return JsonResponse({"success": False, "error": str(e)})
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -3467,13 +4139,13 @@ def signature_document(request, model, iD):
 
 def signature_devis(request, iD):
     if request.user.is_authenticated:
-        
-        if request.method == 'POST':
+
+        if request.method == "POST":
             try:
                 raw_data = request.body
-                data = json.loads(raw_data.decode('utf-8'))  # Decode bytes to string
-                content = data.get('content', '')
-                
+                data = json.loads(raw_data.decode("utf-8"))  # Decode bytes to string
+                content = data.get("content", "")
+
                 devis = Devis.objects.get(id=iD)
                 if not content:
                     devis.date = None
@@ -3482,65 +4154,86 @@ def signature_devis(request, iD):
                         date_signature = datetime.strptime(content, "%d/%m/%Y").date()
                     except ValueError:
                         # Return a message if the date format is invalid
-                        return JsonResponse({'success': False, 'message': 'mettre la date au format JJ/MM/AAAA'})
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": "mettre la date au format JJ/MM/AAAA",
+                            }
+                        )
 
-                    devis.date=date_signature
-                    
+                    devis.date = date_signature
+
                     devis.save()
-                return JsonResponse({'success':True})
+                return JsonResponse({"success": True})
             except Exception as e:
-                return JsonResponse({'success': False, 'error': str(e)})
+                return JsonResponse({"success": False, "error": str(e)})
     else:
         template = loader.get_template("polls/login.html")
         context = {}
         return HttpResponse(template.render(context, request))
 
-def send_mail_demarchage(request,iD):
+
+def send_mail_demarchage(request, iD):
     if request.user.is_authenticated:
         context = general_context(request)
-        if request.method == 'POST':
-            try :
-                google_user = request.user.social_auth.get(provider='google-oauth2')
-                context['google_user'] = google_user
+        if request.method == "POST":
+            try:
+                google_user = request.user.social_auth.get(provider="google-oauth2")
+                context["google_user"] = google_user
                 # Extract OAuth2 tokens
                 credentials = Credentials(
-                    token=google_user.extra_data['access_token'],
-                    refresh_token=google_user.extra_data['refresh_token'],
-                    token_uri='https://oauth2.googleapis.com/token',
+                    token=google_user.extra_data["access_token"],
+                    refresh_token=google_user.extra_data["refresh_token"],
+                    token_uri="https://oauth2.googleapis.com/token",
                     client_id=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
                     client_secret=conf_settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET,
                 )
 
                 # Build Gmail API service
-                service = build('gmail', 'v1', credentials=credentials)
+                service = build("gmail", "v1", credentials=credentials)
 
                 # Create the email message
-                html_message = loader.render_to_string('polls/mail_template.html', {'message': request.POST['message'], 'name': request.POST['name'], 'signature': request.POST['signature']})
-                message = MIMEText(html_message, 'html')
-                message['to'] = request.POST['destinataire']
-                message['subject'] = request.POST['subject']
-                raw = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
-                content = {'raw': raw}
+                html_message = loader.render_to_string(
+                    "polls/mail_template.html",
+                    {
+                        "message": request.POST["message"],
+                        "name": request.POST["name"],
+                        "signature": request.POST["signature"],
+                    },
+                )
+                message = MIMEText(html_message, "html")
+                message["to"] = request.POST["destinataire"]
+                message["subject"] = request.POST["subject"]
+                raw = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
+                content = {"raw": raw}
 
                 # Send the email using the Gmail API
-                send_message = service.users().messages().send(userId='me', body=content).execute()
+                send_message = (
+                    service.users().messages().send(userId="me", body=content).execute()
+                )
 
-                #representant = Representant.objects.get(id=iD)
-                #representant.contenu_mail=request.POST['message']
-                #representant.demarchage="ATTENTE_REPONSE"
-                #representant.save()
-                return redirect('demarchage')
+                # representant = Representant.objects.get(id=iD)
+                # representant.contenu_mail=request.POST['message']
+                # representant.demarchage="ATTENTE_REPONSE"
+                # representant.save()
+                return redirect("demarchage")
             except UserSocialAuth.DoesNotExist:
                 context = general_context(request)
-                context['error_message'] = "Vous n'êtes pas connecté avec votre compte Google. (voir paramètres)"
+                context["error_message"] = (
+                    "Vous n'êtes pas connecté avec votre compte Google. (voir paramètres)"
+                )
                 template = loader.get_template("polls/page_error.html")
             except:
                 context = general_context(request)
-                context['error_message'] = "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
+                context["error_message"] = (
+                    "Vous n'avez pas de connexion ou votre serveur d'envoi de mail n'est pas fonctionnel."
+                )
                 template = loader.get_template("polls/page_error.html")
-        else :
+        else:
             context = general_context(request)
-            context['error_message'] = "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
+            context["error_message"] = (
+                "Vous tentez d'utiliser une fonctionnalité de manière inattendue."
+            )
             template = loader.get_template("polls/page_error.html")
     else:
         template = loader.get_template("polls/login.html")
@@ -3548,44 +4241,53 @@ def send_mail_demarchage(request,iD):
     return HttpResponse(template.render(context, request))
 
 
-
 def settings(request):
     if request.user.is_authenticated:
         context = general_context(request)
-        try :
-            google_user = request.user.social_auth.get(provider='google-oauth2')
-            context['google_user'] = google_user
+        try:
+            google_user = request.user.social_auth.get(provider="google-oauth2")
+            context["google_user"] = google_user
             print(google_user.extra_data)
-            context['google_email'] = google_user.extra_data['email']
+            context["google_email"] = google_user.extra_data["email"]
         except UserSocialAuth.DoesNotExist:
-            context['google_user'] = None
-            context['alert_message'] = "L'authentification Google a échoué!"
+            context["google_user"] = None
+            context["alert_message"] = "L'authentification Google a échoué!"
         except:
-            context['alert_message'] = "L'authentification Google a fonctionné, mais vous n'avez pas accordé les autorisations."
+            context["alert_message"] = (
+                "L'authentification Google a fonctionné, mais vous n'avez pas accordé les autorisations."
+            )
         template = loader.get_template("polls/settings.html")
-        if request.method == 'GET':
-            context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
-        else :
+        if request.method == "GET":
+            context["form_param"] = SetParametresUtilisateur(
+                instance=request.user.parametres
+            )
+        else:
             try:
                 fetchform = request.POST
-                param = SetParametresUtilisateur(fetchform, instance=request.user.parametres)
+                param = SetParametresUtilisateur(
+                    fetchform, instance=request.user.parametres
+                )
                 if param.is_valid():
                     param.save()
-                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
-                    context['alert_message'] = "Modifications enregistrées!"
+                    context["form_param"] = SetParametresUtilisateur(
+                        instance=request.user.parametres
+                    )
+                    context["alert_message"] = "Modifications enregistrées!"
                 else:
-                    context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
-                    context['alert_message'] = "La modification n'a pas aboutie!"
+                    context["form_param"] = SetParametresUtilisateur(
+                        instance=request.user.parametres
+                    )
+                    context["alert_message"] = "La modification n'a pas aboutie!"
             except:
-                context['form_param'] = SetParametresUtilisateur(instance=request.user.parametres)
-                context['alert_message'] = "La modification n'a pas aboutie!"
+                context["form_param"] = SetParametresUtilisateur(
+                    instance=request.user.parametres
+                )
+                context["alert_message"] = "La modification n'a pas aboutie!"
         return HttpResponse(template.render(context, request))
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
-
 
 
 def convention_etude(request, iD):
@@ -3604,31 +4306,46 @@ def convention_etude(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def add_intervenant(request, id_etude, id_student):
     if request.user.is_authenticated:
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
-            for phase in etude.phases() :
-                nb_jeh = request.POST[("nb_jeh_phase"+str(phase.numero))]
-                pourcentage_retribution = request.POST[("pourcentage_retribution_phase"+str(phase.numero))]
-                if(nb_jeh is not None and pourcentage_retribution is not None):
-                    existing_ass_jeh = AssignationJEH.objects.filter(phase=phase, eleve=eleve)
-                    if(existing_ass_jeh.exists()):
+            for phase in etude.phases():
+                nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
+                pourcentage_retribution = request.POST[
+                    ("pourcentage_retribution_phase" + str(phase.numero))
+                ]
+                if nb_jeh is not None and pourcentage_retribution is not None:
+                    existing_ass_jeh = AssignationJEH.objects.filter(
+                        phase=phase, eleve=eleve
+                    )
+                    if existing_ass_jeh.exists():
                         retrieve_ass_jeh = existing_ass_jeh[0]
                         retrieve_ass_jeh.nombre_JEH = nb_jeh
-                        retrieve_ass_jeh.pourcentage_retribution = pourcentage_retribution
+                        retrieve_ass_jeh.pourcentage_retribution = (
+                            pourcentage_retribution
+                        )
                         retrieve_ass_jeh.save()
-                    else :
-                        new_ass_jeh = AssignationJEH(phase=phase, eleve=eleve, nombre_JEH=nb_jeh, pourcentage_retribution=pourcentage_retribution)
+                    else:
+                        new_ass_jeh = AssignationJEH(
+                            phase=phase,
+                            eleve=eleve,
+                            nombre_JEH=nb_jeh,
+                            pourcentage_retribution=pourcentage_retribution,
+                        )
                         new_ass_jeh.save()
-            return redirect('details', modelName="Etude", iD=id_etude)
-            
+            return redirect("details", modelName="Etude", iD=id_etude)
+
         except:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
             ).order_by("date")
             message_count = liste_messages.count()
             liste_messages = liste_messages[:3]
@@ -3636,7 +4353,13 @@ def add_intervenant(request, id_etude, id_student):
             notification_list = [notif for notif in all_notifications if notif.active()]
             notification_count = len(notification_list)
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur dans l'identification de la mission.", "notification_list":notification_list, "notification_count":notification_count}
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "error_message": "Erreur dans l'identification de la mission.",
+                "notification_list": notification_list,
+                "notification_count": notification_count,
+            }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -3655,62 +4378,112 @@ def ajouter_avenant_ce(request, id_etude):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 etude = Etude.objects.get(id=id_etude)
                 signature = None
-                modif_budget=False
-                modif_delais=False
+                modif_budget = False
+                modif_delais = False
                 for phase in etude.phases():
-                    suppression_key = f'suppression{phase.id}'
+                    suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
-                        modif_budget=True
-                    if(float(request.POST['nb_jeh'+str(phase.id)]) != float(phase.nb_JEH)):
-                        modif_budget=True
-                    if float(request.POST['debut'+str(phase.id)]+request.POST['duree'+str(phase.id)]) != float(phase.duree_semaine)+float(phase.debut_relatif):
-                        modif_delais=True
-                
-                nouveau_frais_dossier = request.POST['frais_dossier']
+                        modif_budget = True
+                    if float(request.POST["nb_jeh" + str(phase.id)]) != float(
+                        phase.nb_JEH
+                    ):
+                        modif_budget = True
+                    if float(
+                        request.POST["debut" + str(phase.id)]
+                        + request.POST["duree" + str(phase.id)]
+                    ) != float(phase.duree_semaine) + float(phase.debut_relatif):
+                        modif_delais = True
+
+                nouveau_frais_dossier = request.POST["frais_dossier"]
                 if float(nouveau_frais_dossier) != etude.frais_dossier:
-                    modif_budget=True    
-                new_avenant = AvenantConventionEtude(ce = etude.convention(), numero = request.POST['numero'], date_signature=signature, objet=request.POST['objet'],
-                avenant_budget=modif_budget,avenant_delais=modif_delais)
-                if nouveau_frais_dossier is not None and etude.frais_dossier != nouveau_frais_dossier:
+                    modif_budget = True
+                new_avenant = AvenantConventionEtude(
+                    ce=etude.convention(),
+                    numero=request.POST["numero"],
+                    date_signature=signature,
+                    objet=request.POST["objet"],
+                    avenant_budget=modif_budget,
+                    avenant_delais=modif_delais,
+                )
+                if (
+                    nouveau_frais_dossier is not None
+                    and etude.frais_dossier != nouveau_frais_dossier
+                ):
                     new_avenant.nouveau_frais_dossier = nouveau_frais_dossier
                     new_avenant.ancien_frais_dossier = etude.frais_dossier
                     etude.frais_dossier = nouveau_frais_dossier
                 new_avenant.save()
                 for phase in etude.phases():
-                    suppression_key = f'suppression{phase.id}'
+                    suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
                         print(f"supprimer phase {phase.id}")
-                        supp_phase = SuppressionPhase(avenant_ce=new_avenant, phase=phase)
+                        supp_phase = SuppressionPhase(
+                            avenant_ce=new_avenant, phase=phase
+                        )
                         supp_phase.save()
-                        phase.supprimee=True
-                    if(request.POST['debut'+str(phase.id)] != phase.debut_relatif):
-                        n_debut = request.POST['debut'+str(phase.id)]
-                        deb_phase = ModificationDebutPhase(avenant_ce=new_avenant, phase=phase, nouveau_debut=n_debut, ancien_debut=phase.debut_relatif)
+                        phase.supprimee = True
+                    if request.POST["debut" + str(phase.id)] != phase.debut_relatif:
+                        n_debut = request.POST["debut" + str(phase.id)]
+                        deb_phase = ModificationDebutPhase(
+                            avenant_ce=new_avenant,
+                            phase=phase,
+                            nouveau_debut=n_debut,
+                            ancien_debut=phase.debut_relatif,
+                        )
                         deb_phase.save()
                         phase.debut_relatif = n_debut
-                    if(request.POST['duree'+str(phase.id)] != phase.duree_semaine):
-                        n_duree = request.POST['duree'+str(phase.id)]
-                        dur_phase = ModificationDureePhase(avenant_ce=new_avenant, phase=phase, nouvelle_duree=n_duree, ancienne_duree=phase.duree_semaine)
+                    if request.POST["duree" + str(phase.id)] != phase.duree_semaine:
+                        n_duree = request.POST["duree" + str(phase.id)]
+                        dur_phase = ModificationDureePhase(
+                            avenant_ce=new_avenant,
+                            phase=phase,
+                            nouvelle_duree=n_duree,
+                            ancienne_duree=phase.duree_semaine,
+                        )
                         dur_phase.save()
                         phase.duree_semaine = n_duree
-                    if(request.POST['nb_jeh'+str(phase.id)] != phase.nb_JEH):
-                        n_jeh = request.POST['nb_jeh'+str(phase.id)]
-                        jeh_phase = ModificationJEHPhase(avenant_ce=new_avenant, phase=phase, nouveau_nombre_JEH=n_jeh, ancien_nombre_JEH=phase.nb_JEH)
+                    if request.POST["nb_jeh" + str(phase.id)] != phase.nb_JEH:
+                        n_jeh = request.POST["nb_jeh" + str(phase.id)]
+                        jeh_phase = ModificationJEHPhase(
+                            avenant_ce=new_avenant,
+                            phase=phase,
+                            nouveau_nombre_JEH=n_jeh,
+                            ancien_nombre_JEH=phase.nb_JEH,
+                        )
                         jeh_phase.save()
                         phase.nb_JEH = n_jeh
-                    phase.save(update_fields=['supprimee', 'debut_relatif', 'duree_semaine', 'nb_JEH'])
+                    phase.save(
+                        update_fields=[
+                            "supprimee",
+                            "debut_relatif",
+                            "duree_semaine",
+                            "nb_JEH",
+                        ]
+                    )
                     etude.save()
-                return redirect('details', modelName="Etude", iD=id_etude)
+                return redirect("details", modelName="Etude", iD=id_etude)
             except:
                 template = loader.get_template("polls/page_error.html")
-                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
-        else :
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.",
+                    "notification_list": notification_list,
+                    "notification_count": notification_count,
+                }
+        else:
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur de requête.", "notification_list":notification_list, "notification_count":notification_count}
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "error_message": "Erreur de requête.",
+                "notification_list": notification_list,
+                "notification_count": notification_count,
+            }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -3729,7 +4502,7 @@ def ajouter_representant(request, id_client):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
                 client = Client.objects.get(id=id_client)
                 fetchform = AddRepresentant(request.POST)
@@ -3737,40 +4510,51 @@ def ajouter_representant(request, id_client):
                     new_representant = fetchform.save(commit=False)
                     new_representant.client = client
                     new_representant.save()
-                    return redirect('details', modelName="Client", iD=id_client)
-                else :
+                    return redirect("details", modelName="Client", iD=id_client)
+                else:
                     raise ValueError("Formulaire corrompu")
             except:
                 template = loader.get_template("polls/page_error.html")
-                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.", "notification_list":notification_list, "notification_count":notification_count}
-        else :
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "error_message": "Le formulaire envoyé est incohérent : certaines données sont manquantes, certaines données sont inattendues.",
+                    "notification_list": notification_list,
+                    "notification_count": notification_count,
+                }
+        else:
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Erreur de requête.", "notification_list":notification_list, "notification_count":notification_count}
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "error_message": "Erreur de requête.",
+                "notification_list": notification_list,
+                "notification_count": notification_count,
+            }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-    
+
 
 def supprimer_representant(request, id_representant):
     if request.user.is_authenticated:
         representant = get_object_or_404(Representant, id=id_representant)
         id_client = representant.client.id
         representant.delete()
-        return redirect('details', modelName="Client", iD=id_client)
+        return redirect("details", modelName="Client", iD=id_client)
     else:
-        return redirect('login')
-
+        return redirect("login")
 
 
 def factures(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        factures = Facture.objects.all().order_by('numero_facture')
-        #pas optimale mais faudrait potentiellement crééer un champs je
+        factures = Facture.objects.all().order_by("numero_facture")
+        # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
-        context = { "factures": filtered_factures}
+        context = {"factures": filtered_factures}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -3780,46 +4564,67 @@ def factures(request):
 def BVs(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        factures = Facture.objects.all().order_by('numero_facture')
-        #pas optimale mais faudrait potentiellement crééer un champs je
+        factures = Facture.objects.all().order_by("numero_facture")
+        # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
-        context = { "factures": filtered_factures}
+        context = {"factures": filtered_factures}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def create_mail_template(request):
     if request.user.is_authenticated:
-        if request.method=='POST':
+        if request.method == "POST":
 
             try:
-                message = request.POST['message']
+                message = request.POST["message"]
                 je = request.user.je
-                numero = request.POST.get('numero', None)
-                numero = numero if numero else (max(je.mail_templates.values_list('numero', flat=True))+1)
-                new_mail_template = CustomMailTemplate(je=je, message=message, numero=numero)
+                numero = request.POST.get("numero", None)
+                numero = (
+                    numero
+                    if numero
+                    else (max(je.mail_templates.values_list("numero", flat=True)) + 1)
+                )
+                new_mail_template = CustomMailTemplate(
+                    je=je, message=message, numero=numero
+                )
                 new_mail_template.save()
-                return redirect('demarchage')
+                return redirect("demarchage")
             except:
                 liste_messages = Message.objects.filter(
                     destinataire=request.user,
                     read=False,
-                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                    date__range=(
+                        timezone.now() - timezone.timedelta(days=20),
+                        timezone.now(),
+                    ),
                 ).order_by("date")
                 message_count = liste_messages.count()
                 liste_messages = liste_messages[:3]
                 all_notifications = request.user.notifications.order_by("-date_effet")
-                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_list = [
+                    notif for notif in all_notifications if notif.active()
+                ]
                 notification_count = len(notification_list)
                 template = loader.get_template("polls/page_error.html")
-                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "La création du template a échoué.", "notification_list":notification_list, "notification_count":notification_count}
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "error_message": "La création du template a échoué.",
+                    "notification_list": notification_list,
+                    "notification_count": notification_count,
+                }
         else:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
             ).order_by("date")
             message_count = liste_messages.count()
             liste_messages = liste_messages[:3]
@@ -3827,41 +4632,62 @@ def create_mail_template(request):
             notification_list = [notif for notif in all_notifications if notif.active()]
             notification_count = len(notification_list)
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.",
+                "notification_list": notification_list,
+                "notification_count": notification_count,
+            }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def delete_mail_template(request):
     if request.user.is_authenticated:
-        if request.method == 'POST':
+        if request.method == "POST":
             try:
-                template_id = request.POST['id_template']
+                template_id = request.POST["id_template"]
                 template = CustomMailTemplate.objects.get(id=template_id)
-                if(template.je != request.user.je):
-                    raise ValueError('Le template sélectionné n\'a pas été trouvé.')
+                if template.je != request.user.je:
+                    raise ValueError("Le template sélectionné n'a pas été trouvé.")
                 template.delete()
-                return redirect('demarchage')
+                return redirect("demarchage")
             except:
                 liste_messages = Message.objects.filter(
                     destinataire=request.user,
                     read=False,
-                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                    date__range=(
+                        timezone.now() - timezone.timedelta(days=20),
+                        timezone.now(),
+                    ),
                 ).order_by("date")
                 message_count = liste_messages.count()
                 liste_messages = liste_messages[:3]
                 all_notifications = request.user.notifications.order_by("-date_effet")
-                notification_list = [notif for notif in all_notifications if notif.active()]
+                notification_list = [
+                    notif for notif in all_notifications if notif.active()
+                ]
                 notification_count = len(notification_list)
                 template = loader.get_template("polls/page_error.html")
-                context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Le template sélectionné n'a pas été trouvé.", "notification_list":notification_list, "notification_count":notification_count}
+                context = {
+                    "liste_messages": liste_messages,
+                    "message_count": message_count,
+                    "error_message": "Le template sélectionné n'a pas été trouvé.",
+                    "notification_list": notification_list,
+                    "notification_count": notification_count,
+                }
                 return HttpResponse(template.render(context, request))
-        else :
+        else:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
-                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
             ).order_by("date")
             message_count = liste_messages.count()
             liste_messages = liste_messages[:3]
@@ -3869,10 +4695,14 @@ def delete_mail_template(request):
             notification_list = [notif for notif in all_notifications if notif.active()]
             notification_count = len(notification_list)
             template = loader.get_template("polls/page_error.html")
-            context = {"liste_messages":liste_messages,"message_count":message_count, "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.", "notification_list":notification_list, "notification_count":notification_count}
+            context = {
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+                "error_message": "Vous tentez d'utiliser une fonctionnalité de manière inattendue.",
+                "notification_list": notification_list,
+                "notification_count": notification_count,
+            }
             return HttpResponse(template.render(context, request))
 
     else:
-        return redirect('login')  # Adjust as needed
-
-
+        return redirect("login")  # Adjust as needed
