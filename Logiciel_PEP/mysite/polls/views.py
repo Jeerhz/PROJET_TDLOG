@@ -50,7 +50,20 @@ from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
+
+# ADLE: For code optimisation
 from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from celery.result import GroupResult
+from .tasks import (
+    fetch_clients,
+    fetch_students,
+    fetch_etudes,
+    fetch_messages,
+    fetch_notifications,
+)
 
 locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 from django.http import JsonResponse, FileResponse
@@ -257,70 +270,101 @@ def custom_logout(request):
     return HttpResponse(template.render(context, request))
 
 
-async def annuaire(request):
-    user = await request.auser()
-    if not user.is_authenticated:  # See django docu for asyncronous authentification
+# Failed Asyncroneous view
+# async def annuaire(request):
+#     """Renvoie la page de l'annuaire des études, clients et élèves"""
+#     user = await request.auser()
+#     if not await sync_to_async(lambda: user.is_authenticated)():
+#         template = loader.get_template("polls/login.html")
+#         return HttpResponse(await sync_to_async(template.render)({}, request))
+
+#     user_je = await sync_to_async(lambda: request.user.je)()
+
+#     def fetch_data_annuaire():
+#         client_list = Client.objects.filter(je=user_je)
+#         etude_list = Etude.objects.filter(je=user_je)
+#         student_list = Student.objects.filter(je=user_je)
+#         user_photo_url = user.photo.url  # Preload the photo URL
+#         return {
+#             "user_photo_url": user_photo_url,
+#             "liste_messages": list(
+#                 Message.objects.filter(
+#                     destinataire=request.user,
+#                     read=False,
+#                     date__range=(
+#                         timezone.now() - timezone.timedelta(days=20),
+#                         timezone.now(),
+#                     ),
+#                 ).order_by("date")[:3]
+#             ),
+#             "client_list": client_list,
+#             "student_list": student_list,
+#             "etude_list": etude_list,
+#             "all_notifications": list(
+#                 request.user.notifications.order_by("-date_effet")
+#             ),
+#         }
+
+#     data = await sync_to_async(fetch_data_annuaire)()
+#     context = {
+#         "user": user,
+#         "user_photo_url": data["user_photo_url"],
+#         "client_list": data["client_list"],
+#         "student_list": data["student_list"],
+#         "etude_list": data["etude_list"],
+#         "liste_messages": data["liste_messages"],
+#         "message_count": len(data.get("liste_messages")),
+#         "notification_list": data.get("all_notifications"),
+#         "notification_count": len(data.get("all_notifications")),
+#     }
+
+#     template = loader.get_template("polls/annuaire.html")
+#     return HttpResponse(template.render(context, request))
+
+
+def annuaire(request):
+    """Render the annuaire page with Celery tasks."""
+    user = request.user
+    if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
-        return HttpResponse(await sync_to_async(template.render)({}, request))
+        return HttpResponse(template.render({}, request))
 
-    else:
-        user_je = await sync_to_async(lambda: request.user.je)()
+    # Trigger parallel Celery tasks
+    user_je = user.je
 
-        def fetch_data_annuaire():
-            client_list = Client.objects.filter(je=user_je)
-            etude_list = Etude.objects.filter(je=user_je)
-            student_list = Student.objects.filter(je=user_je)
-            return {
-                "liste_messages": list(
-                    Message.objects.filter(
-                        destinataire=request.user,
-                        read=False,
-                        date__range=(
-                            timezone.now() - timezone.timedelta(days=20),
-                            timezone.now(),
-                        ),
-                    ).order_by("date")[:3]
-                ),
-                "client_list": client_list,
-                "student_list": student_list,
-                "etude_list": etude_list,
-                "all_notifications": list(
-                    request.user.notifications.order_by("-date_effet")
-                ),
-            }
+    # Start Celery tasks
+    client_task = fetch_clients.delay(user_je)
+    student_task = fetch_students.delay(user_je)
+    etude_task = fetch_etudes.delay(user_je)
+    message_task = fetch_messages.delay(user)
+    notification_task = fetch_notifications.delay(user)
 
-        liste_messages = await Message.objects.afilter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
+    # Wait for all tasks to complete
+    client_list = client_task.get(timeout=10)
+    student_list = student_task.get(timeout=10)
+    etude_list = etude_task.get(timeout=10)
+    liste_messages = message_task.get(timeout=10)
+    notification_list = notification_task.get(timeout=10)
 
-        template = loader.get_template("polls/annuaire.html")
-        client_list = Client.objects.filter(je=request.user.je)
-        etude_list = Etude.objects.filter(je=request.user.je)
-        student_list = Student.objects.filter(je=request.user.je)
+    # Context for rendering the page
+    context = {
+        "user": user,
+        "user_photo_url": user.photo.url,
+        "client_list": client_list,
+        "student_list": student_list,
+        "etude_list": etude_list,
+        "liste_messages": liste_messages,
+        "message_count": len(liste_messages),
+        "notification_list": notification_list,
+        "notification_count": len(notification_list),
+    }
 
-        context = {
-            "client_list": client_list,
-            "student_list": student_list,
-            "etude_list": etude_list,
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": notification_count,
-        }
-
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
+    template = loader.get_template("polls/annuaire.html")
+    return HttpResponse(template.render(context, request))
 
 
 def je_detail(request):
+    """Renvoie la page de détail du JE de l'utilisateur connecté"""
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -348,6 +392,7 @@ def je_detail(request):
 
 
 def demarchage(request):
+    """Renvoie la page de démarchage des clients"""
     if request.user.is_authenticated:
         context = general_context(request)
         template = loader.get_template("polls/demarchage.html")
