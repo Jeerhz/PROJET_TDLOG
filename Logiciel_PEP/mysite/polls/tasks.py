@@ -14,32 +14,33 @@ def send_reminder_emails():
         notif.send()
 
 
-@shared_task
-def fetch_clients(je):
-    return list(Client.objects.filter(je=je))
+# TODO: use id instead of classes in requests
+# @shared_task
+# def fetch_clients(je):
+#     return list(Client.objects.filter(je=je))
 
 
-@shared_task
-def fetch_students(je):
-    return list(Student.objects.filter(je=je))
+# @shared_task
+# def fetch_students(je):
+#     return list(Student.objects.filter(je=je))
 
 
-@shared_task
-def fetch_etudes(je):
-    return list(Etude.objects.filter(je=je))
+# @shared_task
+# def fetch_etudes(je):
+#     return list(Etude.objects.filter(je=je))
 
 
-@shared_task
-def fetch_messages(user):
-    return list(
-        Message.objects.filter(
-            destinataire_id=user,
-            read=False,
-            date__range=(now() - timedelta(days=20), now()),
-        )
-        .order_by("date")[:3]
-        .values()
-    )
+# @shared_task
+# def fetch_messages(user):
+#     return list(
+#         Message.objects.filter(
+#             destinataire_id=user,
+#             read=False,
+#             date__range=(now() - timedelta(days=20), now()),
+#         )
+#         .order_by("date")[:3]
+#         .values()
+#     )
 
 
 @shared_task
