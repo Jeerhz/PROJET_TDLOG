@@ -25,6 +25,7 @@ import base64
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
+from celery import shared_task
 
 import logging  # pour gérer plus facilement les erreurs
 
@@ -49,6 +50,25 @@ from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
+
+# ADLE: For code optimisation
+from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from polls.tasks import (
+    fetch_clients,
+    fetch_students,
+    fetch_etudes,
+    fetch_messages,
+    fetch_notifications,
+)
+
+
+from concurrent.futures import ThreadPoolExecutor
+from django.http import HttpResponse
+from django.template import loader
+from django.db import connection
 
 locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 from django.http import JsonResponse, FileResponse
@@ -119,12 +139,15 @@ from .models import (
 
 # flemme d'import format durations
 def format_nombres(nombre):
+    """Formate un nombre en nombre à virgule avec deux chiffres après la virgule"""
     arrondi = round(float(nombre), 2)
     nbre_virg = f"{arrondi:.2f}".replace(".", ",")
     return nbre_virg
 
 
+@shared_task
 def general_context(request):
+    """Renvoie un dictionnaire contenant les messages non lus, le nombre de messages non lus, les notifications actives et le nombre de notifications actives"""
     liste_messages = Message.objects.filter(
         destinataire=request.user,
         read=False,
@@ -162,74 +185,63 @@ def confidentialite_donnees(request):
     return HttpResponse(template.render(context, request))
 
 
-def index(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
+async def index(request):
+    user = await request.auser()
+    if not user.is_authenticated:  # See django docu for asyncronous authentification
+        template = loader.get_template("polls/login.html")
+        return HttpResponse(await sync_to_async(template.render)({}, request))
 
-        user_je = request.user.je
-        monthly_sums = calculate_monthly_sums(user_je)
-        chiffre_affaire = monthly_sums[-1]
-        mandat_select = request.POST.getlist("mandat-select")
-        if mandat_select:
-            mandat_default = [
-                choice for choice in Etude.Mandat.choices if choice[0] in mandat_select
-            ]
-        else:
-            mandat_default = Etude.Mandat.choices
-            mandat_select = [choice[0] for choice in mandat_default]
-        etudes_recentes = Etude.objects.filter(je=user_je).order_by("-debut")
-        etudes_terminees = etudes_recentes.filter(
-            status="TERMINEE", mandat__in=mandat_select
-        )
-        nombre_mission_terminee = etudes_terminees.count()
-        # etudes_terminees = etudes_terminees[:5]
-        etudes_terminees = etudes_terminees
+    user_je = await sync_to_async(lambda: request.user.je)()
+    mandat_select = request.POST.getlist("mandat-select")
+    mandat_select = mandat_select or [choice[0] for choice in Etude.Mandat.choices]
 
-        etudes_en_cours = etudes_recentes.filter(
-            status="EN_COURS", mandat__in=mandat_select
-        )
-        nombre_mission_en_cours = etudes_en_cours.count()
-        # etudes_en_cours = etudes_en_cours[:5]
-        etudes_en_cours = etudes_en_cours
-
-        etudes_en_negociation = etudes_recentes.filter(
-            status="EN_NEGOCIATION", mandat__in=mandat_select
-        )
-        nombre_mission_en_negociation = etudes_en_negociation.count()
-        # etudes_en_negociation = etudes_en_negociation[:5]
-        etudes_en_negociation = etudes_en_negociation
-        template = loader.get_template("polls/index.html")
-        mandat_choices = Etude.Mandat.choices
-        context = {
-            "nombre_mission_en_cours": nombre_mission_en_cours,
-            "nombre_mission_terminee": nombre_mission_terminee,
-            "nombre_mission_en_negociation": nombre_mission_en_negociation,
-            "monthly_sums": monthly_sums,
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": notification_count,
-            "chiffre_affaire": chiffre_affaire,
-            "etudes_en_cours": etudes_en_cours,
-            "etudes_en_negociation": etudes_en_negociation,
-            "etudes_terminees": etudes_terminees,
-            "mandat_choices": mandat_choices,
-            "mandat_default": mandat_default,
+    # Fetch data using sync_to_async
+    def fetch_etudes_filtrees():
+        recent_etudes = Etude.objects.filter(je=user_je).order_by("-debut")
+        return {
+            "liste_messages": list(
+                Message.objects.filter(
+                    destinataire=request.user,
+                    read=False,
+                    date__range=(
+                        timezone.now() - timezone.timedelta(days=20),
+                        timezone.now(),
+                    ),
+                ).order_by("date")[:3]
+            ),
+            "etudes_terminees": recent_etudes.filter(
+                status="TERMINEE", mandat__in=mandat_select
+            ),
+            "etudes_en_cours": recent_etudes.filter(
+                status="EN_COURS", mandat__in=mandat_select
+            ),
+            "etudes_en_negociation": recent_etudes.filter(
+                status="EN_NEGOCIATION", mandat__in=mandat_select
+            ),
+            "all_notifications": list(
+                request.user.notifications.order_by("-date_effet")
+            ),
         }
 
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
+    data = await sync_to_async(fetch_etudes_filtrees)()
+
+    # Prepare the context
+    context = {
+        "liste_messages": data["liste_messages"],
+        "message_count": len(data["liste_messages"]),
+        "etudes_terminees": data["etudes_terminees"],
+        "etudes_en_cours": data["etudes_en_cours"],
+        "etudes_en_negociation": data["etudes_en_negociation"],
+        "notification_list": [
+            notif for notif in data["all_notifications"] if notif.active()
+        ],
+        "notification_count": len(data["all_notifications"]),
+        "mandat_choices": Etude.Mandat.choices,
+        "mandat_default": mandat_select,
+    }
+
+    template = loader.get_template("polls/index.html")
+    return HttpResponse(await sync_to_async(template.render)(context, request))
 
 
 def custom_login(request):
@@ -263,40 +275,125 @@ def custom_logout(request):
     return HttpResponse(template.render(context, request))
 
 
+# Failed Asyncroneous view
+# async def annuaire(request):
+#     """Renvoie la page de l'annuaire des études, clients et élèves"""
+#     user = await request.auser()
+#     if not await sync_to_async(lambda: user.is_authenticated)():
+#         template = loader.get_template("polls/login.html")
+#         return HttpResponse(await sync_to_async(template.render)({}, request))
+
+#     user_je = await sync_to_async(lambda: request.user.je)()
+
+#     def fetch_data_annuaire():
+#         client_list = Client.objects.filter(je=user_je)
+#         etude_list = Etude.objects.filter(je=user_je)
+#         student_list = Student.objects.filter(je=user_je)
+#         user_photo_url = user.photo.url  # Preload the photo URL
+#         return {
+#             "user_photo_url": user_photo_url,
+#             "liste_messages": list(
+#                 Message.objects.filter(
+#                     destinataire=request.user,
+#                     read=False,
+#                     date__range=(
+#                         timezone.now() - timezone.timedelta(days=20),
+#                         timezone.now(),
+#                     ),
+#                 ).order_by("date")[:3]
+#             ),
+#             "client_list": client_list,
+#             "student_list": student_list,
+#             "etude_list": etude_list,
+#             "all_notifications": list(
+#                 request.user.notifications.order_by("-date_effet")
+#             ),
+#         }
+
+#     data = await sync_to_async(fetch_data_annuaire)()
+#     context = {
+#         "user": user,
+#         "user_photo_url": data["user_photo_url"],
+#         "client_list": data["client_list"],
+#         "student_list": data["student_list"],
+#         "etude_list": data["etude_list"],
+#         "liste_messages": data["liste_messages"],
+#         "message_count": len(data.get("liste_messages")),
+#         "notification_list": data.get("all_notifications"),
+#         "notification_count": len(data.get("all_notifications")),
+#     }
+
+#     template = loader.get_template("polls/annuaire.html")
+#     return HttpResponse(template.render(context, request))
+
+
+from celery.result import GroupResult
+from celery import group
+from polls.tasks import (
+    fetch_clients,
+    fetch_students,
+    fetch_etudes,
+    fetch_messages,
+    fetch_notifications,
+)
+
+
+from concurrent.futures import ThreadPoolExecutor
+from django.http import HttpResponse
+from django.template import loader
+from django.db import connection
+
+
+def run_query(func, *args):
+    result = func(*args)
+    connection.close()
+    return result
+
+
 def annuaire(request):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-
-        template = loader.get_template("polls/annuaire.html")
-        client_list = Client.objects.filter(je=request.user.je)
-        etude_list = Etude.objects.filter(je=request.user.je)
-        student_list = Student.objects.filter(je=request.user.je)
-
-        context = {
-            "client_list": client_list,
-            "student_list": student_list,
-            "etude_list": etude_list,
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": notification_count,
-        }
-    else:
+    """Render the annuaire page with parallel thread execution."""
+    user = request.user
+    if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
-        context = {}
+        return HttpResponse(template.render({}, request))
+
+    user_je_id = user.je.id
+
+    # Define the functions to be executed in parallel
+    tasks = [
+        (fetch_clients, user_je_id),
+        (fetch_students, user_je_id),
+        (fetch_etudes, user_je_id),
+        (fetch_messages, user.pk),
+        (fetch_notifications, user),
+    ]
+
+    # Use ThreadPoolExecutor to run tasks concurrently
+    with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
+        results = list(executor.map(lambda x: run_query(*x), tasks))
+
+    # Extract results
+    client_list, student_list, etude_list, liste_messages, notification_list = results
+
+    # Context for rendering the page
+    context = {
+        "user": user,
+        "user_photo_url": user.photo.url,
+        "client_list": client_list,
+        "student_list": student_list,
+        "etude_list": etude_list,
+        "liste_messages": liste_messages,
+        "message_count": len(liste_messages),
+        "notification_list": notification_list,
+        "notification_count": len(notification_list),
+    }
+
+    template = loader.get_template("polls/annuaire.html")
     return HttpResponse(template.render(context, request))
 
 
 def je_detail(request):
+    """Renvoie la page de détail du JE de l'utilisateur connecté"""
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -323,7 +420,9 @@ def je_detail(request):
     return HttpResponse(template.render(context, request))
 
 
+# TODO: representants n'est jamais utilisé
 def demarchage(request):
+    """Renvoie la page de démarchage des clients"""
     if request.user.is_authenticated:
         context = general_context(request)
         template = loader.get_template("polls/demarchage.html")
@@ -433,109 +532,106 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-def details(request, modelName, iD):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-
-        model = apps.get_model(app_label="polls", model_name=modelName)
-        try:
-            instance = model.objects.get(id=iD)
-            if modelName == "Message":
-                instance.read = True
-                instance.save()
-
-            phases = None
-            factures = None
-            etude = None  # Initialisez `etude` à None par défaut
-            intervenants = None
-            client = None
-            eleve = None
-            if modelName == "Etude":
-                etude = instance
-                phases = Phase.objects.filter(etude=instance).order_by("numero")
-                factures = Facture.objects.filter(etude=instance).order_by(
-                    "numero_facture"
-                )
-                intervenants = etude.get_li_students()
-                members = Member.objects.all()
-                respo = instance.responsable.student
-                poste = "Chef de Projet"
-
-                if respo.titre == "Mme":
-                    poste = "Cheffe de Projet"
-                # If a client is selected, get the relevant representants
-                if etude.client:
-                    representants_interlocuteurs = etude.client.representants()
-                    representants_legaux = etude.client.representants()
-                else:
-                    representants_interlocuteurs = []
-                    representants_legaux = []
-
-            if modelName == "Student":
-                eleve = instance
-            if modelName == "Client":
-                client = instance
-
-            context = {
-                "attribute_list": instance.get_display_dict(),
-                "title": instance.get_title_details(),
-                "modelName": modelName,
-                "iD": iD,
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
-
-            # Ajoutez `l'instance` au contexte seulement si elle est définie
-            if etude is not None:
-                context["etude"] = etude
-                context["phases"] = phases
-                context["factures"] = factures
-                context["intervenants"] = intervenants
-                context["phase_form"] = AddPhase()
-                context["facture_form"] = AddFacture()
-                context["intervenant_form"] = AddIntervenant()
-
-                context["etude_form"] = AddEtude(instance=etude)
-                context["representants_interlocuteurs"] = representants_interlocuteurs
-                context["representants_legaux"] = representants_legaux
-                context["members"] = members
-                context["poste"] = poste
-                if etude.type_convention == "Convention cadre":
-                    context["bons"] = BonCommande.objects.filter(etude=etude).order_by(
-                        "numero"
-                    )
-
-            if client is not None:
-                context["client"] = client
-                context["representant_form"] = AddRepresentant()
-            if eleve is not None:
-                context["eleve"] = eleve
-
-            template = loader.get_template("polls/page_details.html")
-        except model.DoesNotExist:
-            context = {
-                "error_message": "The selected object does not exist in the database.",
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
-            template = loader.get_template("polls/page_error.html")
-    else:
+# Updated details function with async support
+async def details(request, modelName, iD):
+    user = await request.auser()
+    if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
+        return HttpResponse(await sync_to_async(template.render)({}, request))
+
+    # Fetch messages and notifications asynchronously
+    liste_messages = await sync_to_async(lambda: Message.objects.filter(
+        destinataire=request.user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+    ).order_by("date")[:3])()
+    message_count = await sync_to_async(lambda: len(liste_messages))()
+    all_notifications = await sync_to_async(lambda: list(request.user.notifications.order_by("-date_effet")))()
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
+
+    model = apps.get_model(app_label="polls", model_name=modelName)
+    try:
+        instance = await sync_to_async(lambda: model.objects.get(id=iD))()
+        if modelName == "Message":
+            instance.read = True
+            await sync_to_async(instance.save)()
+
+        # Initialize context variables
+        etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
+
+        if modelName == "Etude":
+            etude = instance
+            phases = await sync_to_async(lambda: list(Phase.objects.filter(etude=instance).order_by("numero")))()
+            factures = await sync_to_async(lambda: list(Facture.objects.filter(etude=instance).order_by("numero_facture")))()
+            intervenants = await sync_to_async(etude.get_li_students)()
+            members = await sync_to_async(lambda: list(Member.objects.all()))()
+            respo = await sync_to_async(lambda: instance.responsable.student)()
+            poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
+
+            client = await sync_to_async(lambda: etude.client)()
+            if client:
+                representants_interlocuteurs = await sync_to_async(client.representants)()
+                representants_legaux = await sync_to_async(client.representants)()
+            else:
+                representants_interlocuteurs, representants_legaux = [], []
+
+        if modelName == "Student":
+            eleve = instance
+        if modelName == "Client":
+            client = instance
+
+        context = {
+            "attribute_list": await sync_to_async(instance.get_display_dict)(),
+            "title": await sync_to_async(instance.get_title_details)(),
+            "modelName": modelName,
+            "iD": iD,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
+
+        # Add additional context if applicable
+        if etude is not None:
+            context.update({
+                "etude": etude,
+                "phases": phases,
+                "factures": factures,
+                "intervenants": intervenants,
+                "phase_form": AddPhase(),
+                "facture_form": AddFacture(),
+                "intervenant_form": AddIntervenant(),
+                "etude_form": AddEtude(instance=etude),
+                "representants_interlocuteurs": representants_interlocuteurs,
+                "representants_legaux": representants_legaux,
+                "members": members,
+                "poste": poste,
+            })
+            if etude.type_convention == "Convention cadre":
+                context["bons"] = await sync_to_async(lambda: list(BonCommande.objects.filter(etude=etude).order_by("numero")))()
+
+        if client is not None:
+            context.update({
+                "client": client,
+                "representant_form": AddRepresentant(),
+            })
+
+        if eleve is not None:
+            context["eleve"] = eleve
+
+        template = loader.get_template("polls/page_details.html")
+    except model.DoesNotExist:
+        context = {
+            "error_message": "The selected object does not exist in the database.",
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
+        template = loader.get_template("polls/page_error.html")
+
+    return HttpResponse(await sync_to_async(template.render)(context, request))
 
 
 def edit_etude(request, pk):
@@ -1967,7 +2063,7 @@ def register(request):
     return HttpResponse(template.render(context, request))
 
 
-def editer_convention(request, iD):
+async def editer_convention(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
