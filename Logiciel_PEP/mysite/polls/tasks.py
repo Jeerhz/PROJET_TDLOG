@@ -1,7 +1,6 @@
 from celeryy import app as celery_app
 from datetime import date
 from .models import Notification
-from celery import shared_task
 from django.utils.timezone import now, timedelta
 from .models import Client, Etude, Student, Message
 

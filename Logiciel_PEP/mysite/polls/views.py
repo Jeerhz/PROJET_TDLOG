@@ -11,7 +11,6 @@ from io import StringIO
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from bs4 import BeautifulSoup
 
 import pytz  # pour CA dynamique
 from docxtpl import DocxTemplate, InlineImage
@@ -25,7 +24,6 @@ import base64
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
-from celery import shared_task
 
 import logging  # pour gérer plus facilement les erreurs
 
@@ -63,7 +61,6 @@ from polls.tasks import (
     fetch_messages,
     fetch_notifications,
 )
-
 
 from concurrent.futures import ThreadPoolExecutor
 from django.http import HttpResponse
@@ -145,7 +142,6 @@ def format_nombres(nombre):
     return nbre_virg
 
 
-@shared_task
 def general_context(request):
     """Renvoie un dictionnaire contenant les messages non lus, le nombre de messages non lus, les notifications actives et le nombre de notifications actives"""
     liste_messages = Message.objects.filter(
@@ -326,22 +322,6 @@ def custom_logout(request):
 #     template = loader.get_template("polls/annuaire.html")
 #     return HttpResponse(template.render(context, request))
 
-
-from celery.result import GroupResult
-from celery import group
-from polls.tasks import (
-    fetch_clients,
-    fetch_students,
-    fetch_etudes,
-    fetch_messages,
-    fetch_notifications,
-)
-
-
-from concurrent.futures import ThreadPoolExecutor
-from django.http import HttpResponse
-from django.template import loader
-from django.db import connection
 
 
 def run_query(func, *args):
