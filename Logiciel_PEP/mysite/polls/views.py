@@ -51,7 +51,6 @@ import locale
 
 # ADLE: For code optimisation
 from asgiref.sync import sync_to_async
-from asgiref.sync import async_to_sync
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from polls.tasks import (
