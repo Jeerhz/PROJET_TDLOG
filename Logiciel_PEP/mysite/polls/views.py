@@ -56,14 +56,19 @@ from asgiref.sync import sync_to_async
 from asgiref.sync import async_to_sync
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from celery.result import GroupResult
-from .tasks import (
+from polls.tasks import (
     fetch_clients,
     fetch_students,
     fetch_etudes,
     fetch_messages,
     fetch_notifications,
 )
+
+
+from concurrent.futures import ThreadPoolExecutor
+from django.http import HttpResponse
+from django.template import loader
+from django.db import connection
 
 locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 from django.http import JsonResponse, FileResponse
@@ -322,29 +327,53 @@ def custom_logout(request):
 #     return HttpResponse(template.render(context, request))
 
 
+from celery.result import GroupResult
+from celery import group
+from polls.tasks import (
+    fetch_clients,
+    fetch_students,
+    fetch_etudes,
+    fetch_messages,
+    fetch_notifications,
+)
+
+
+from concurrent.futures import ThreadPoolExecutor
+from django.http import HttpResponse
+from django.template import loader
+from django.db import connection
+
+
+def run_query(func, *args):
+    result = func(*args)
+    connection.close()
+    return result
+
+
 def annuaire(request):
-    """Render the annuaire page with Celery tasks."""
+    """Render the annuaire page with parallel thread execution."""
     user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
 
-    # Trigger parallel Celery tasks
-    user_je = user.je
+    user_je_id = user.je.id
 
-    # Start Celery tasks
-    client_task = fetch_clients.delay(user_je)
-    student_task = fetch_students.delay(user_je)
-    etude_task = fetch_etudes.delay(user_je)
-    message_task = fetch_messages.delay(user)
-    notification_task = fetch_notifications.delay(user)
+    # Define the functions to be executed in parallel
+    tasks = [
+        (fetch_clients, user_je_id),
+        (fetch_students, user_je_id),
+        (fetch_etudes, user_je_id),
+        (fetch_messages, user.pk),
+        (fetch_notifications, user),
+    ]
 
-    # Wait for all tasks to complete
-    client_list = client_task.get(timeout=10)
-    student_list = student_task.get(timeout=10)
-    etude_list = etude_task.get(timeout=10)
-    liste_messages = message_task.get(timeout=10)
-    notification_list = notification_task.get(timeout=10)
+    # Use ThreadPoolExecutor to run tasks concurrently
+    with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
+        results = list(executor.map(lambda x: run_query(*x), tasks))
+
+    # Extract results
+    client_list, student_list, etude_list, liste_messages, notification_list = results
 
     # Context for rendering the page
     context = {
@@ -391,6 +420,7 @@ def je_detail(request):
     return HttpResponse(template.render(context, request))
 
 
+# TODO: representants n'est jamais utilisé
 def demarchage(request):
     """Renvoie la page de démarchage des clients"""
     if request.user.is_authenticated:
@@ -473,7 +503,7 @@ def blank_page(request):
     return HttpResponse(template.render(context, request))
 
 
-async def page_detail_etude(request):
+def page_detail_etude(request):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
             destinataire=request.user,
@@ -502,109 +532,106 @@ async def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-def details(request, modelName, iD):
-    if request.user.is_authenticated:
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")
-        message_count = liste_messages.count()
-        liste_messages = liste_messages[:3]
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-        notification_count = len(notification_list)
-
-        model = apps.get_model(app_label="polls", model_name=modelName)
-        try:
-            instance = model.objects.get(id=iD)
-            if modelName == "Message":
-                instance.read = True
-                instance.save()
-
-            phases = None
-            factures = None
-            etude = None  # Initialisez `etude` à None par défaut
-            intervenants = None
-            client = None
-            eleve = None
-            if modelName == "Etude":
-                etude = instance
-                phases = Phase.objects.filter(etude=instance).order_by("numero")
-                factures = Facture.objects.filter(etude=instance).order_by(
-                    "numero_facture"
-                )
-                intervenants = etude.get_li_students()
-                members = Member.objects.all()
-                respo = instance.responsable.student
-                poste = "Chef de Projet"
-
-                if respo.titre == "Mme":
-                    poste = "Cheffe de Projet"
-                # If a client is selected, get the relevant representants
-                if etude.client:
-                    representants_interlocuteurs = etude.client.representants()
-                    representants_legaux = etude.client.representants()
-                else:
-                    representants_interlocuteurs = []
-                    representants_legaux = []
-
-            if modelName == "Student":
-                eleve = instance
-            if modelName == "Client":
-                client = instance
-
-            context = {
-                "attribute_list": instance.get_display_dict(),
-                "title": instance.get_title_details(),
-                "modelName": modelName,
-                "iD": iD,
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
-
-            # Ajoutez `l'instance` au contexte seulement si elle est définie
-            if etude is not None:
-                context["etude"] = etude
-                context["phases"] = phases
-                context["factures"] = factures
-                context["intervenants"] = intervenants
-                context["phase_form"] = AddPhase()
-                context["facture_form"] = AddFacture()
-                context["intervenant_form"] = AddIntervenant()
-
-                context["etude_form"] = AddEtude(instance=etude)
-                context["representants_interlocuteurs"] = representants_interlocuteurs
-                context["representants_legaux"] = representants_legaux
-                context["members"] = members
-                context["poste"] = poste
-                if etude.type_convention == "Convention cadre":
-                    context["bons"] = BonCommande.objects.filter(etude=etude).order_by(
-                        "numero"
-                    )
-
-            if client is not None:
-                context["client"] = client
-                context["representant_form"] = AddRepresentant()
-            if eleve is not None:
-                context["eleve"] = eleve
-
-            template = loader.get_template("polls/page_details.html")
-        except model.DoesNotExist:
-            context = {
-                "error_message": "The selected object does not exist in the database.",
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
-            template = loader.get_template("polls/page_error.html")
-    else:
+# Updated details function with async support
+async def details(request, modelName, iD):
+    user = await request.auser()
+    if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
-        context = {}
-    return HttpResponse(template.render(context, request))
+        return HttpResponse(await sync_to_async(template.render)({}, request))
+
+    # Fetch messages and notifications asynchronously
+    liste_messages = await sync_to_async(lambda: Message.objects.filter(
+        destinataire=request.user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+    ).order_by("date")[:3])()
+    message_count = await sync_to_async(lambda: len(liste_messages))()
+    all_notifications = await sync_to_async(lambda: list(request.user.notifications.order_by("-date_effet")))()
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
+
+    model = apps.get_model(app_label="polls", model_name=modelName)
+    try:
+        instance = await sync_to_async(lambda: model.objects.get(id=iD))()
+        if modelName == "Message":
+            instance.read = True
+            await sync_to_async(instance.save)()
+
+        # Initialize context variables
+        etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
+
+        if modelName == "Etude":
+            etude = instance
+            phases = await sync_to_async(lambda: list(Phase.objects.filter(etude=instance).order_by("numero")))()
+            factures = await sync_to_async(lambda: list(Facture.objects.filter(etude=instance).order_by("numero_facture")))()
+            intervenants = await sync_to_async(etude.get_li_students)()
+            members = await sync_to_async(lambda: list(Member.objects.all()))()
+            respo = await sync_to_async(lambda: instance.responsable.student)()
+            poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
+
+            client = await sync_to_async(lambda: etude.client)()
+            if client:
+                representants_interlocuteurs = await sync_to_async(client.representants)()
+                representants_legaux = await sync_to_async(client.representants)()
+            else:
+                representants_interlocuteurs, representants_legaux = [], []
+
+        if modelName == "Student":
+            eleve = instance
+        if modelName == "Client":
+            client = instance
+
+        context = {
+            "attribute_list": await sync_to_async(instance.get_display_dict)(),
+            "title": await sync_to_async(instance.get_title_details)(),
+            "modelName": modelName,
+            "iD": iD,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
+
+        # Add additional context if applicable
+        if etude is not None:
+            context.update({
+                "etude": etude,
+                "phases": phases,
+                "factures": factures,
+                "intervenants": intervenants,
+                "phase_form": AddPhase(),
+                "facture_form": AddFacture(),
+                "intervenant_form": AddIntervenant(),
+                "etude_form": AddEtude(instance=etude),
+                "representants_interlocuteurs": representants_interlocuteurs,
+                "representants_legaux": representants_legaux,
+                "members": members,
+                "poste": poste,
+            })
+            if etude.type_convention == "Convention cadre":
+                context["bons"] = await sync_to_async(lambda: list(BonCommande.objects.filter(etude=etude).order_by("numero")))()
+
+        if client is not None:
+            context.update({
+                "client": client,
+                "representant_form": AddRepresentant(),
+            })
+
+        if eleve is not None:
+            context["eleve"] = eleve
+
+        template = loader.get_template("polls/page_details.html")
+    except model.DoesNotExist:
+        context = {
+            "error_message": "The selected object does not exist in the database.",
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+        }
+        template = loader.get_template("polls/page_error.html")
+
+    return HttpResponse(await sync_to_async(template.render)(context, request))
 
 
 def edit_etude(request, pk):
