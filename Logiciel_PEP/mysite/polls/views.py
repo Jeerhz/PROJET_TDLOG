@@ -25,7 +25,6 @@ import base64
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
-from celery import shared_task
 
 import logging  # pour gérer plus facilement les erreurs
 
@@ -53,8 +52,6 @@ import locale
 
 # ADLE: For code optimisation
 from asgiref.sync import sync_to_async
-from asgiref.sync import async_to_sync
-from django.http import HttpResponse
 from django.template.loader import render_to_string
 from polls.tasks import (
     fetch_clients,
@@ -145,7 +142,6 @@ def format_nombres(nombre):
     return nbre_virg
 
 
-@shared_task
 def general_context(request):
     """Renvoie un dictionnaire contenant les messages non lus, le nombre de messages non lus, les notifications actives et le nombre de notifications actives"""
     liste_messages = Message.objects.filter(
@@ -327,8 +323,6 @@ def custom_logout(request):
 #     return HttpResponse(template.render(context, request))
 
 
-from celery.result import GroupResult
-from celery import group
 from polls.tasks import (
     fetch_clients,
     fetch_students,

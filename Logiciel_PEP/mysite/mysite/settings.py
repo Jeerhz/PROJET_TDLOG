@@ -185,9 +185,4 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Celery configuration
-CELERY_BROKER_URL = "redis://localhost:6379/0"  # Use Redis as the broker
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_RESULT_BACKEND = "django-db"  # Store task results in the database
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
