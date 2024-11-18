@@ -2042,7 +2042,7 @@ def register(request):
     return HttpResponse(template.render(context, request))
 
 
-async def editer_convention(request, iD):
+def editer_convention(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
