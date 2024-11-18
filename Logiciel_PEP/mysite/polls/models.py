@@ -1085,8 +1085,8 @@ class Facture(models.Model):
     type_facture = models.CharField(
         max_length=100, choices=Status.choices, default=Status.ACOMPTE
     )
-    numero_facture = models.IntegerField(default=5)
-    fac_frais = models.FloatField(default=0)
+    numero_facture = models.IntegerField(null=True)
+    #fac_frais = models.FloatField(default=0)
     # montant_HT=models.FloatField(default=30)
     TVA_per = models.IntegerField(default=20)
     date_emission = models.DateField(null=True)
@@ -1094,9 +1094,12 @@ class Facture(models.Model):
     facture_pdf = models.FileField(upload_to="factures/pdfs/", null=True, blank=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.numero_facture:02d}"
+        if self.date_emission:
+            current_year = self.date_emission.year
+            current_year_last_two_digits = current_year % 100
+            return f"{current_year_last_two_digits}{self.numero_facture:03d}"
+        else:
+            return f"{self.numero_facture:03d}"
 
     def bdc(self):
         if self.etude.type_convention == "Convention cadre":
@@ -1144,8 +1147,16 @@ class Facture(models.Model):
         id_etude = kwargs.pop("id_etude")
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
-        self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
-        self.numero_facture = len(Facture.objects.filter(etude=etude)) + 1
+        #self.etude = etude
+        #self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        if not self.numero_facture:
+            current_year= date.today().year
+            je_act= etude.je
+            max_numero = Facture.objects.filter(
+                date_emission__year=current_year,  # Filter by year
+                etude__je=je_act  # Filter by je_act
+            ).aggregate(Max('numero_facture'))['numero_facture__max'] 
+            self.numero_facture = max_numero + 1
         super(Facture, self).save(*args, **kwargs)
 
 
@@ -1157,6 +1168,68 @@ class AssociationFactureBDC(models.Model):
         "Facture", on_delete=models.CASCADE, related_name="associations_bdc_fac"
     )
 
+class BV(models.Model):
+    
+    etude = models.ForeignKey(
+        "Etude", on_delete=models.CASCADE, related_name="bvs"
+    )
+    eleve = models.ForeignKey(
+        "Student", on_delete=models.CASCADE, related_name="bvs"
+
+    )
+    numero_bv = models.IntegerField(null=True)
+    
+
+    
+    date_emission = models.DateField(null=True)
+    # il faut les assignations jehs, dictionaire ?
+    # il faut la ref au rdm ou au dernier avenant
+    nb_JEH = models.IntegerField(null=True)
+    retr_brute = models.FloatField(null=True)
+
+    def __str__(self):
+        if self.date_emission:
+            current_year = self.date_emission.year
+            current_year_last_two_digits = current_year % 100
+            return f"{current_year_last_two_digits}{self.numero_bv:03d}"
+        else:
+            return f"{self.numero_bv:03d}"
+
+    def ref_rdm(self):
+        if self.etude.type_convention == "Convention cadre":
+            asso_bdc_fac = AssociationFactureBDC.objects.filter(facture=self).first()
+
+            return asso_bdc_fac.bon_de_commande
+        else:
+             
+            rdm = RDM.objects.filter(etude=self.etude, eleve=self.eleve).first()
+            if rdm:
+                dernier_avenant = rdm.dernier_avenant()
+                if dernier_avenant:
+                    return dernier_avenant.ref()
+                else:
+                    return rdm.ref()
+                
+            else:
+                return None
+
+    def je(self):
+        return self.etude.je
+
+    def save(self):
+        
+        if not self.numero_bv:
+            current_year= date.today().year
+            je_act= self.je()
+            max_numero = BV.objects.filter(
+                date_emission__year=current_year,  # Filter by year
+                etude__je=je_act  # Filter by je_act
+            ).aggregate(Max('numero_bv'))['numero_bv__max'] 
+            if max_numero:
+                self.numero_bv = max_numero + 1
+            else:
+                self.numero_bv =   1
+        super(BV, self).save()
 
 class Devis(models.Model):
     etude = models.ForeignKey("Etude", on_delete=models.CASCADE, related_name="devis")
@@ -1496,6 +1569,13 @@ class RDM(models.Model):
         current_year_last_two_digits = current_year % 100
         initials = self.eleve.first_name[0] + self.eleve.last_name[0]
         return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
+    
+    def dernier_avenant(self):
+        avenant = AvenantRDM.objects.filter(
+                rdm=self,  
+                date_signature__isnull=False  
+            ).order_by('-date_signature').first()
+        return avenant
 
     def signe(self):
         return self.date_signature is not None
@@ -1522,8 +1602,14 @@ class AvenantRDM(models.Model):
 
     def save(self, *args, **kwargs):
         if self.numero is None:
-            nb_avenants = max(AvenantRDM.objects.filter(rdm=self.rdm))
-            self.numero = nb_avenants + 1
+            avenant = AvenantRDM.objects.filter(
+                rdm=self.rdm,  
+                date_signature__isnull=False  
+            ).order_by('-date_signature').first()
+            if avenant:
+                self.numero = avenant.numero + 1
+            else:
+                self.numero = 1
         super(AvenantRDM, self).save(*args, **kwargs)
 
 

@@ -563,6 +563,7 @@
                 <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                     <form method="post" id="form-intervenant">
+
                     {% csrf_token %}
                         <div class="modal-content">
                             <div class="modal-header">
@@ -767,8 +768,8 @@
                                                             <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude.fin }}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT }}</span> €</li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
 
@@ -784,8 +785,8 @@
                                                         <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
                                                             {% csrf_token %}
                                                             <ul class="list-group list-group-flush">
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin }}" readonly></li>
+                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
+                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
@@ -934,8 +935,8 @@
                                                 <form action="{% url 'modifier_recrutement_etude' iD=etude.id %}" method="post" id="rec-f-form">
                                                     {% csrf_token %}
                                                     <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement }}"></li>
-                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement }}"></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement|date:'Y-m-d' }}"></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement|date:'Y-m-d' }}"></li>
                                                     </ul>
                                                     <!-- Bouton Modifier -->
                                                     <div class="row justify-content-between">
@@ -1836,7 +1837,7 @@
                                                         <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude.get_devis.id %}">
                                                             {% csrf_token %}
                                                             
-                                                            <input  type="date" name="new_date" value="{{ devis.date_signature }}" class="form-control mb-2">
+                                                            <input  type="date" name="new_date" value="{{ devis.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
                                                             <button type="submit" class="btn btn-primary">Modifier date </button>
                                                         </form>
                                                         {% endif %}
@@ -1857,7 +1858,7 @@
                                                             {% if etude.convention %}
                                                             <form method="POST" action="{% url 'signature_document' model='CE' iD=etude.convention.id %}">
                                                                 {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
                                                                 <button type="submit" class="btn btn-primary">Modifier date </button>
  
                                                             </form>
@@ -1875,7 +1876,7 @@
                                                             {% if etude.convention %}
                                                             <form method="POST" action="{% url 'signature_document' model='CC' iD=etude.convention.id %}">
                                                                 {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature }}" class="form-control mb-2">
+                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
                                                                 <button type="submit" class="btn btn-primary">Modifier date </button>
  
                                                             </form>
@@ -2028,7 +2029,7 @@
                                                                             <form method="POST" action="{% url 'signature_document' model='AvCE' iD=avenant.id %}" class="form-inline">
                                                                                 {% csrf_token %}
                                                                                 <label for="new_date_{{ avenant.id }}" class="mr-2">Modifier la date:</label>
-                                                                                <input type="date" name="new_date" value="{{ avenant.date_signature }}" class="form-control mr-2" id="new_date_{{ avenant.id }}">
+                                                                                <input type="date" name="new_date" value="{{ avenant.date_signature|date:'Y-m-d' }}" class="form-control mr-2" id="new_date_{{ avenant.id }}">
                                                                                 <button type="submit" class="btn btn-primary">Modifier</button>
                                                                             </form>
                                                                         
@@ -2101,7 +2102,7 @@
                                                                         
                                                                             <form method="POST" action="{% url 'signature_document' model='BDC' iD=bon.id %}" class="form-inline">
                                                                                 {% csrf_token %}
-                                                                                <input type="date" name="new_date" value="{{ bon.debut }}" class="form-control mr-2" id="new_date_{{ bon.id }}">
+                                                                                <input type="date" name="new_date" value="{{ bon.debut|date:'Y-m-d' }}" class="form-control mr-2" id="new_date_{{ bon.id }}">
                                                                                 <button type="submit" class="btn btn-primary">Modifier</button>
                                                                             </form>
                                                                         
@@ -2487,7 +2488,7 @@
                                                     </div>
                                                     <br>
                                                     {% if eleve|assignation:etude %}
-                                                    <form action="{% url 'BV' id_etude=iD id_eleve=eleve.id %}" method="post">
+                                                    <form action="{% url 'nouveau_BV' id_etude=iD id_eleve=eleve.id %}" method="post">
                                                         {% csrf_token %}
                                                         <div class="bg-white py-2 collapse-inner rounded">
                                                             <table class="table table-striped">
@@ -3367,7 +3368,50 @@
                             <div class="tab-pane fade show active" id="pills-fiche_info">
                                 <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                        <h5 class="m-1 font-weight-bold text-primary">{{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
+                                        <h5 class="m-1 font-weight-bold text-primary"> {% if eleve.is_member %} 
+
+                                            <!-- Trigger the modal by clicking on the photo -->
+                                                <img 
+                                                class="img-profile rounded-circle" 
+                                                style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px; cursor: pointer;" 
+                                                src="{{ eleve.is_member.photo.url }}" 
+                                                data-toggle="modal" 
+                                                data-target="#editPhotoModal">
+
+                                                <!-- Bootstrap Modal -->
+                                                <div class="modal fade" id="editPhotoModal" tabindex="-1" role="dialog" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="editpdp" method="POST" enctype="multipart/form-data" action="{% url 'edit_pdp' eleve.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                        <label for="pdp">Photo de profil</label>
+                                                        <input type="file" class="form-control" id="pdp" name="pdp">
+                                                        {% if eleve.is_member.photo.url %}
+                                                            <img src="{{ eleve.is_member.photo.url }}" alt="pdp actuelle" style="max-width: 100px; margin-top: 10px;">
+                                                        {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                    </div>
+                                                    </form>
+                                                </div>
+                                                </div>
+                                                </div>
+
+    
+
+                                             {% endif %}
+                                            {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
                                         <div>
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
                                             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
@@ -3416,8 +3460,13 @@
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
+
+                                            
+                                            
                                             <div class="modal-body">
                                                 <!-- Titre Field -->
+                                                
+
                                                 <div class="form-group">
                                                     <label for="titre">Titre</label>
                                                     <select class="form-control" id="titre" name="titre">
@@ -3566,7 +3615,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <a href="{% url 'details' modelName='Etude' iD=mission.id %}" class="btn btn-primary">Voir étude</a>
-                                                <button data-href="{% url 'BV' id_etude=mission.id id_eleve=eleve.id %}" class="btn btn-success bv-trigger" data-toggle="modal" data-target="#bv-modal" data-formcontent="bv-form-content{{mission.id}}">Générer le BV</button>
+                                                <button data-href="{% url 'nouveau_BV' id_etude=mission.id id_eleve=eleve.id %}" class="btn btn-success bv-trigger" data-toggle="modal" data-target="#bv-modal" data-formcontent="bv-form-content{{mission.id}}">Générer le BV</button>
                                             </div>
                                         </div>
                                         

@@ -11,6 +11,8 @@ urlpatterns = [
     path("login/", views.custom_login, name="custom_login"),
     path("details/<str:modelName>/<int:iD>", views.details, name="details"),
     path("student/<int:pk>/edit/", views.edit_student, name='edit_student'),
+    path("edit_pdp/<int:pk>/edit/", views.edit_pdp, name='edit_pdp'),
+
     path("student/<int:pk>/delete/", views.delete_student, name='delete_student'),
     path("client/<int:pk>/edit/", views.edit_client, name='edit_client'),
     path("client/<int:pk>/delete/", views.delete_client, name='delete_client'),
@@ -19,10 +21,16 @@ urlpatterns = [
     path("etude/<int:pk>/<int:iD>/edit_phase/", views.edit_phase, name='edit_phase'),
     path("phase/<int:pk>/<int:etude_id>/delete_assignation/", views.delete_assignation, name='delete_assignation'),
     path("etude/<int:pk>/<int:iD>/delete_facture/", views.delete_facture, name='delete_facture'),
+    path("etude/<int:pk>/<int:iD>/delete_BV/", views.delete_BV, name='delete_BV'),
+
+    
     path("input/<str:modelName>/<int:iD>", views.input, name="input"),
     path("logout/", views.custom_logout, name="custom_logout"),
     path("annuaire/", views.annuaire, name="annuaire"),
     path("facture/<int:id_facture>", views.facture, name="facture"), 
+    path("generer_BV/<int:id_bv>", views.generer_BV, name="generer_BV"), 
+
+    
     path("messages/", views.messages, name="messages"),
     path("register/", views.register, name="register"),
     path("charts/", views.charts, name="charts"),
@@ -35,7 +43,7 @@ urlpatterns = [
     path("messagerie/", views.messages, name='messagerie'),
     path("ajouter_phase/<int:id_etude>", views.ajouter_phase, name='ajouter_phase'),
     path("ajouter_assignation_jeh/<int:id_etude>/<int:id_phase>", views.ajouter_assignation_jeh, name='ajouter_assignation_jeh'),
-    path("BV/<int:id_etude>/<int:id_eleve>", views.BV, name='BV'),
+    path("nouveau_BV/<int:id_etude>/<int:id_eleve>", views.nouveau_BV, name='nouveau_BV'),
     path("ndf/", views.ndf, name="ndf"),
     path("ba/<int:iD>", views.ba, name="ba"),
     path("recrutement/<str:id_url>", views.recrutement, name="recrutement"),
@@ -91,6 +99,11 @@ urlpatterns = [
     path("editer_acf/<int:id_etude>/<int:id_eleve>", views.editer_acf, name='editer_acf'),
     path("editer_convention_cadre/<int:iD>", views.editer_convention_cadre, name="editer_convention_cadre"),
     path("editer_acf_client/<int:iD>", views.editer_acf_client, name='editer_acf_client'),
+    path("numero_facture/<int:iD>/edit/", views.numero_facture, name='numero_facture'),
+    path("numero_BV/<int:iD>/edit/", views.numero_BV, name='numero_BV'),
+
+
+
 
     
     

@@ -135,7 +135,7 @@
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
                 <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user"></i>
+                    <i class="fas fa-fw fa-house-user black-text"></i>
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -159,13 +159,14 @@
                     <span>Stat/KPI</span></a>
             </li>
 
+            
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
+                    aria-expanded="true" aria-controls="pagetresorerie">
                     <i class="fas fa-fw fa-folder"></i>
                     <span>Trésorerie</span>
                 </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
                         <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
@@ -181,12 +182,13 @@
                     <i class="fas fa-fw fa-cog" ></i>
                     <span>Ma Junior Entreprise</span></a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'demarchage' %}">
                     <i class="fas fa-fw fa-cog" ></i>
                     <span>Démarchage</span></a>
             </li>
+            
 
             <hr class="sidebar-divider">
 
@@ -491,39 +493,87 @@
                                 </div>
                                 <!-- Card Body -->
                                 
-                                
+                                {% for facture in factures %}
+                                    {% if facture.date_emission %}
             
                                     <table style="margin-top:20px;" class="table_demarchage">
+                                        
                                         <tbody>
-                                            {% for facture in factures %}
+                                            
                                             <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{facture}} <span style="color: #6d7379; font-weight: 400;">{{facture.etude}}</span></td>
+                                                <td>
+                                                    <span style="cursor:pointer; font-weight: 650;"  data-toggle="modal" data-target="#numeroFacture_{{facture.id}}"> {{facture}} </span>
+                                                    <a style="color: #6d7379; font-weight: 400;" href="{% url 'details' modelName='Etude' iD=facture.etude.id %}">
+                                                        {{facture.etude.ref}} - {{facture.etude}}
+                                                    </a>                                                </td>
+                                                <div class="modal fade" id="numeroFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="editFactureModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <form id="editFactureForm_{{facture.id}}" method="POST" action="{% url 'numero_facture' facture.id %}">
+                                                                {% csrf_token %}
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="editFactureModalLabel_{{facture.id}}">Modifier Facture</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="form-group">
+                                                                        <label for="numero_fac">Numéro de facture</label>
+                                                                        <input type="text" class="form-control" id="numero_fac" name="numero_fac" value="{{ facture.numero_facture }}">
+                                                                    </div>
+                                                            
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                 </div>
                                                 <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
                                                 <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{facture.montant_HT|FormatNombres}} EUR.</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">infos</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">infos</td>
-                                                        </tr>
-                                                        </tbody>
+                                                
+                                                <td style="text-align: right;">
+                                                    <a class="fas fa-download mr-2" target="_blank" href="{% url 'facture' facture.id %}"></a>
+                                                    <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalFacture">
                                                         
-                                                    </table>
-                                                    <br>
-                                                    
+                                                    </button>
+                                                
                                                 </td>
+                                                
+                                                <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteModalLabel">Supprimer la facture</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Êtes-vous sûr de vouloir supprimer cette facture ?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id facture.etude.id %}">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </tr>
+                                            
                                         </tbody>
-                                    {% endfor %}
+                                    
+                                    
+
                                     </table>
-                                    
-                                    
+                                    {% endif %}
+                                {% endfor %}   
                                 
                                     
                             </div>

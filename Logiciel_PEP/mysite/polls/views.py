@@ -114,6 +114,7 @@ from .models import (
     AssociationPhaseBDC,
     BA,
     AssociationFactureBDC,
+    BV,
 )
 
 
@@ -598,6 +599,87 @@ def edit_student(request, pk):
     else:
         return redirect("login")
 
+def edit_pdp(request, pk):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        # Retrieve the student instance, or return a 404 if not found
+        student = get_object_or_404(Student, pk=pk)
+
+        if request.method == "POST":
+        # Handle form submission
+        
+            member = student.is_member()
+            if member and 'pdp' in request.FILES:
+                uploaded_file = request.FILES['pdp']
+                member.photo = uploaded_file  # Update the photo
+                member.save()
+                
+            else:
+                messages.info(request, "photo pas modifiée")
+
+        
+
+                return redirect("details", modelName="Student", iD=student.id)
+            
+       
+
+        context = {
+            "eleve": student,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Student",
+            "iD": student.id,
+        }
+
+        return render(request, "polls/page_details.html", context)
+
+    else:
+        return redirect("login")
+
+def numero_facture(request, iD):
+    if request.user.is_authenticated:
+        
+        facture = get_object_or_404(Facture, pk=iD)
+
+        if request.method == "POST":
+            numero= request.POST['numero_fac']
+            facture.numero_facture=numero
+            id_etude = facture.etude.id
+            facture.save(id_etude=id_etude)
+        return redirect("factures")
+
+    else:
+        return redirect("login")
+    
+def numero_BV(request, iD):
+    if request.user.is_authenticated:
+        
+        bv = get_object_or_404(BV, pk=iD)
+
+        if request.method == "POST":
+            numero= request.POST['numero_bv']
+            bv.numero_bv=numero
+            bv.save()
+        return redirect("BVs")
+
+    else:
+        return redirect("login")
+
 
 def modify_etude(request, pk):
     if request.user.is_authenticated:
@@ -919,6 +1001,42 @@ def delete_facture(request, pk, iD):
         if request.method == "POST":
             facture.delete()
             return redirect("details", modelName="Etude", iD=etude.id)
+    else:
+        return redirect("login")
+
+
+def delete_BV(request, pk, iD):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        bv = get_object_or_404(BV, pk=pk)
+        etude = get_object_or_404(Etude, pk=iD)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+
+        if request.method == "POST":
+            bv.delete()
+            return redirect("BVs")
     else:
         return redirect("login")
 
@@ -1325,18 +1443,22 @@ def generate_facture_pdf(request, id_facture):
 
 def facture(request, id_facture):
     if request.user.is_authenticated:
+        
         try:
             facture = Facture.objects.get(id=id_facture)
+            print(f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}")
             etude = facture.etude
             # etude = {'type_convention': etude.type_convention, }
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by("numero")
             res = facture.montant_TTC()
-            facture.date_emission = timezone.now().strftime("%d/%m/%Y")
+            facture.date_emission = timezone.now().date()
             date_30 = timezone.now() + timedelta(30)
-            facture.date_echeance = date_30.strftime("%d/%m/%Y")
+            facture.date_echeance = date_30.date() 
             bdc = ""
             avenante_ref = None
+            
+            print(f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}")
 
             avenants_signes = AvenantConventionEtude.objects.filter(
                 date_signature__isnull=False
@@ -1363,6 +1485,7 @@ def facture(request, id_facture):
                 "avenante_ref": avenante_ref,
             }
             template = loader.get_template("polls/facpdf.html")
+            facture.save(id_etude=etude.id)
 
         except Exception as e:
             template = loader.get_template("polls/page_error.html")
@@ -3703,9 +3826,9 @@ def ajouter_facture(request, id_etude):
         return HttpResponse(template.render(context, request))
 
 
-def BV(request, id_etude, id_eleve):
+def nouveau_BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        try:
+        #try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             je = eleve.je
@@ -3714,12 +3837,53 @@ def BV(request, id_etude, id_eleve):
             if request.method == "POST":
                 for phase in etude.phases():
                     my_checkbox_value = request.POST.get(f"checkInputPhase{phase.id}")
-                    print(f"checkInputPhase{phase.id}")
-                    print(my_checkbox_value)
-                    print(request.POST)
+                   
                     if my_checkbox_value is not None:
                         nb_JEH += phase.get_nb_JEH_eleve(eleve)
                         montant_HT += phase.get_montant_HT(eleve)
+            nouveau_BV= BV(etude=etude,eleve=eleve, date_emission= timezone.now().date(), nb_JEH=nb_JEH,retr_brute=montant_HT)
+            nouveau_BV.save()
+
+            
+            return redirect("BVs")
+
+        #except:
+            liste_messages = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
+            ).order_by("date")[0:3]
+            message_count = Message.objects.filter(
+                destinataire=request.user,
+                read=False,
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
+            ).count()
+            template = loader.get_template("polls/page_error.html")
+            context = {
+                "error_message": "Erreur dans le téléversement du BV.",
+                "liste_messages": liste_messages,
+                "message_count": message_count,
+            }
+            return HttpResponse(template.render(context, request))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
+def generer_BV(request, id_bv):
+    if request.user.is_authenticated:
+        try:
+            bv = BV.objects.get(id=id_bv)
+            eleve = bv.eleve
+            je = eleve.je
+            etude=bv.etude
+            
 
             chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
 
@@ -3729,14 +3893,19 @@ def BV(request, id_etude, id_eleve):
             feuille = classeur.active
 
             # Modifier la cellule G4
-            feuille["H2"] = "N° 24001"
-            feuille["I13"] = montant_HT
-            feuille["I14"] = nb_JEH
+            feuille["H2"] = f"N° {bv}"
+            feuille["I13"] = bv.retr_brute
+            feuille["I14"] = bv.nb_JEH
             feuille["G4"] = eleve.first_name + " " + eleve.last_name
             feuille["G6"] = eleve.adress
             feuille["G8"] = eleve.code_postal + " " + eleve.country
             feuille["I3"] = datetime.now().strftime("%d %B %Y")
             feuille["C13"] = etude.ref()
+            ref_rdm=bv.ref_rdm()
+            if ref_rdm:
+                feuille["C14"] = ref_rdm
+            else:
+                messages.error(request, "pas de référence au rdm")
 
             # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
             # feuille['C13']= assignation_jeh.reference
@@ -4564,11 +4733,11 @@ def factures(request):
 def BVs(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        factures = Facture.objects.all().order_by("numero_facture")
+        BVs = BV.objects.all().order_by("numero_bv")
         # pas optimale mais faudrait potentiellement crééer un champs je
-        filtered_factures = [facture for facture in factures if facture.je() == user_je]
-        template = loader.get_template("polls/factures.html")
-        context = {"factures": filtered_factures}
+        BVs = [bv for bv in BVs if bv.je() == user_je and bv.date_emission]
+        template = loader.get_template("polls/BVs.html")
+        context = {"BVs": BVs}
     else:
         template = loader.get_template("polls/login.html")
         context = {}
