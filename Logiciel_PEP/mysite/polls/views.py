@@ -1263,7 +1263,7 @@ def upload_students(request):
 
                     # Iterate through each row in the CSV
                     for row in reader:
-                        if len(row) != 11:
+                        if len(row) != 12:
                             print(
                                 f"Error processing row: {row}. Incorrect number of columns."
                             )
@@ -1283,6 +1283,7 @@ def upload_students(request):
                                 pays,
                                 depart,
                                 promo,
+                                numero_ss,
                             ) = row
                             je = request.user.je
                             # Create or update the student record
@@ -1299,6 +1300,7 @@ def upload_students(request):
                                 country=pays.strip(),
                                 departement=depart.strip(),
                                 promotion=promo.strip(),
+                                numero_ss=numero_ss.strip()
                             )
                         except Exception as e:
                             print(f"Error processing row {row}: {e}")
