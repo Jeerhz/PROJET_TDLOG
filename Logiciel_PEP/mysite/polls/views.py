@@ -278,6 +278,12 @@ def custom_logout(request):
     return HttpResponse(template.render(context, request))
 
 
+def run_query(func, *args):
+    result = func(*args)
+    connection.close()
+    return result
+
+
 def annuaire(request):
     if request.user.is_authenticated:
         liste_messages = Message.objects.filter(
@@ -323,6 +329,8 @@ def je_detail(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
+
+        
 
         context = {
             "liste_messages": liste_messages,
@@ -1687,6 +1695,7 @@ def stat_KPI(request):
             etude__in=etudes, date_signature__isnull=False
         )
 
+        #TODO : optimise this boucle for
         for devis in devis_envoye:
             dico_devis_envoye[devis.id] = {
                 "date": f"{devis.date_signature.month}-{devis.date_signature.year}",
