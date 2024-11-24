@@ -440,7 +440,7 @@
                                             <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre de Membres:</strong> {{ je.member_set.count }}</li>
                                             <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre d'Inscrits:</strong> {{ je.student_set.count }}</li>
                                             <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires:</strong> {{ je.chiffres_affaires }} €</li>
-                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Président</strong> {{ je.president }} </li>
+                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Président</strong> {% if je.president %} {{ je.president }} {% else %} pas encore de président {% endif %} </li>
 
                                         </ul>
                                         <!-- Modifier Button -->

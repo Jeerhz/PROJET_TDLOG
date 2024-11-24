@@ -1697,7 +1697,8 @@ def stat_KPI(request):
                 dico_devis_envoye[devis.id]["mission"] = 1
 
         dico_suivi_devis = {}
-        derniere_date = "11-2002"
+        date_ajd = datetime.now()  
+        derniere_date = date_ajd.strftime("%m-%Y")  
         for devis in dico_devis_envoye:
             mois = dico_devis_envoye[devis]["date"]
             if int(mois[3:]) >= int(derniere_date[3:]) and int(mois[0:2]) >= int(
@@ -1718,7 +1719,9 @@ def stat_KPI(request):
                 derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
             dico_suivi_devis[derniere_date] = {"envoyés": 0, "signées": 0}
 
-        derniere_date = "11-2002"
+        
+        date_ajd = datetime.now()  
+        derniere_date = date_ajd.strftime("%m-%Y")  
         dico_avenants_mois_ce = (
             {}
         )  # key : devis , valeurs : date et si la mission a été signé
@@ -1754,10 +1757,110 @@ def stat_KPI(request):
                 "délais": 0,
                 "budget": 0,
             }
-
+        
+       
         for etude in etudes:
             if etude.status == "EN_COURS" or etude.status == "TERMINEE":
                 liste_etudes_ec_term.append(etude)
+            if (etude.status == "EN_COURS" or etude.status == "TERMINEE") and etude.mandat == "026":
+                ca_026 += etude.montant_HT_total()
+                if etude.status == "TERMINEE":
+                    ca_026_cutoff += etude.montant_HT_total()
+                    nb_etudes_term_026[0] += 1
+                    nb_etudes_term_026[1] += etude.montant_HT_total()
+                else:
+                    if etude.fin() is not None and etude.fin() < date(2025, 5, 1):
+                        ca_026_cutoff += etude.montant_HT_total()
+                    elif etude.duree_semaine():
+                        ca_026_cutoff += (etude.montant_HT_total()  * ((date(2025, 5, 1) - etude.debut).days / 7) / etude.duree_semaine()  )
+
+            elif (etude.status == "EN_COURS" or etude.status == "TERMINEE") and etude.mandat == "025":
+                if etude.debut and etude.debut > date(2024, 5, 1):
+                    ca_026_cutoff += etude.montant_HT_total()
+                elif etude.fin() is not None and etude.fin() > date(2024, 5, 1):
+                    ca_026_cutoff += (
+                        etude.montant_HT_total()
+                        * ((etude.fin() - date(2024, 5, 1)).days / 7)
+                        / etude.duree_semaine()
+                    )
+            if etude.status == "EN_NEGOCIATION":
+                ca_en_nego += etude.montant_HT_total()
+                nb_etude_ed[0] += 1
+                nb_etude_ed[1] += etude.montant_HT_total()
+            if etude.status == "EN_COURS":
+                nb_etudes_ec[0] += 1
+                nb_etudes_ec[1] += etude.montant_HT_total()
+            if etude.mandat == "026":
+                if etude.status == "EN_COURS" or etude.status == "TERMINEE":
+
+                    if etude.get_li_students():
+                        nb_etudes_026_avec_interv += 1
+                        for student in etude.get_li_students():
+                            dico_genre_inter[student.titre] += 1
+                            nb_intervenants_026 += 1
+                            dico_nb_intervenants_diff_026[
+                                f"{student.first_name}{student.last_name}"
+                            ] = 1
+                            if student.departement in dictionaire_dep_eleve:
+                                dictionaire_dep_eleve[student.departement] += 1
+                            else:
+                                dictionaire_dep_eleve[student.departement] = 1
+
+                            assignations = list(
+                                AssignationJEH.objects.filter(
+                                    eleve=student, phase__etude=etude
+                                )
+                            )
+                            remuneration = sum(
+                                assignment.retribution_brute_totale()
+                                for assignment in assignations
+                            )
+                            if student.is_member():
+                                taux_ouverture += remuneration
+                            retributions_etudes026 += remuneration
+
+
+        dico_CA_mois = {}
+        date_ajd = datetime.now()  
+        derniere_date_CA = date_ajd.strftime("%m-%Y")  
+
+        for etude in liste_etudes_ec_term:
+            if etude.type_convention == "Convention d'étude":
+                mois = etude.debut.strftime("%m-%Y")
+            
+                if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(derniere_date_CA[0:2]):
+                    derniere_date_CA = mois
+                if mois in dico_CA_mois:
+                    dico_CA_mois[mois]["CA"] += etude.montant_HT_total()
+                    
+                else:
+                    dico_CA_mois[mois] = {}
+                    dico_CA_mois[mois]["CA"] = etude.montant_HT_total()
+            else:
+                bdcs = etude.get_bon_commandes()
+                for bdc in bdcs:
+                    mois = bdc.debut.strftime("%m-%Y")
+            
+                    if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(derniere_date_CA[0:2]):
+                        derniere_date_CA = mois
+                    if mois in dico_CA_mois:
+                        dico_CA_mois[mois]["CA"] += bdc.montant_HT_total()
+                        
+                    else:
+                        dico_CA_mois[mois] = {}
+                        dico_CA_mois[mois]["CA"] = bdc.montant_HT_total()
+            
+        if derniere_date_CA:
+            if derniere_date_CA[0:2] == "12":
+                derniere_date_CA = f"01-{int(derniere_date_CA[3:])+1}"
+            else:
+                derniere_date_CA = f"{(int(derniere_date_CA[0:2])+1):02}-{derniere_date_CA[3:]}"
+            dico_CA_mois[derniere_date_CA] = {"CA": 0}
+
+
+
+
+
 
         for etude in liste_etudes_ec_term:
             secteur = etude.client.get_secteur_display()
@@ -1812,72 +1915,7 @@ def stat_KPI(request):
                 current_year = etude_year
                 current_sum = etude.montant_HT_total()
 
-        for etude in etudes:
-
-            if (
-                etude.status == "EN_COURS" or etude.status == "TERMINEE"
-            ) and etude.mandat == "026":
-                ca_026 += etude.montant_HT_total()
-                if etude.status == "TERMINEE":
-                    ca_026_cutoff += etude.montant_HT_total()
-                    nb_etudes_term_026[0] += 1
-                    nb_etudes_term_026[1] += etude.montant_HT_total()
-                else:
-                    if etude.fin() is not None and etude.fin() < date(2025, 5, 1):
-                        ca_026_cutoff += etude.montant_HT_total()
-                    elif etude.duree_semaine():
-                        ca_026_cutoff += (
-                            etude.montant_HT_total()
-                            * ((date(2025, 5, 1) - etude.debut).days / 7)
-                            / etude.duree_semaine()
-                        )
-            elif (
-                etude.status == "EN_COURS" or etude.status == "TERMINEE"
-            ) and etude.mandat == "025":
-                if etude.debut and etude.debut > date(2024, 5, 1):
-                    ca_026_cutoff += etude.montant_HT_total()
-                elif etude.fin() is not None and etude.fin() > date(2024, 5, 1):
-                    ca_026_cutoff += (
-                        etude.montant_HT_total()
-                        * ((etude.fin() - date(2024, 5, 1)).days / 7)
-                        / etude.duree_semaine()
-                    )
-            if etude.status == "EN_NEGOCIATION":
-                ca_en_nego += etude.montant_HT_total()
-                nb_etude_ed[0] += 1
-                nb_etude_ed[1] += etude.montant_HT_total()
-            if etude.status == "EN_COURS":
-                nb_etudes_ec[0] += 1
-                nb_etudes_ec[1] += etude.montant_HT_total()
-            if etude.mandat == "026":
-                if etude.status == "EN_COURS" or etude.status == "TERMINEE":
-
-                    if etude.get_li_students():
-                        nb_etudes_026_avec_interv += 1
-                        for student in etude.get_li_students():
-                            dico_genre_inter[student.titre] += 1
-                            nb_intervenants_026 += 1
-                            dico_nb_intervenants_diff_026[
-                                f"{student.first_name}{student.last_name}"
-                            ] = 1
-                            if student.departement in dictionaire_dep_eleve:
-                                dictionaire_dep_eleve[student.departement] += 1
-                            else:
-                                dictionaire_dep_eleve[student.departement] = 1
-
-                            assignations = list(
-                                AssignationJEH.objects.filter(
-                                    eleve=student, phase__etude=etude
-                                )
-                            )
-                            remuneration = sum(
-                                assignment.retribution_brute_totale()
-                                for assignment in assignations
-                            )
-                            if student.is_member():
-                                taux_ouverture += remuneration
-                            retributions_etudes026 += remuneration
-
+       
         nb_intervenants_diff_026 = len(dico_nb_intervenants_diff_026)
         if retributions_etudes026 > 0:
             taux_ouverture = 1 - taux_ouverture / retributions_etudes026
@@ -2055,6 +2093,7 @@ def stat_KPI(request):
             "bar_chart_CA": bar_chart_CA,
             "dico_suivi_devis": dico_suivi_devis,
             "dico_avenants_mois_ce": dico_avenants_mois_ce,
+            "dico_CA_mois":dico_CA_mois,
         }
 
     else:

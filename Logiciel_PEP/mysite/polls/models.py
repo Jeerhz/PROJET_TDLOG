@@ -103,8 +103,8 @@ class JE(models.Model):
         return new_je
     
     def president(self):
-        trez = Member.objects.filter(je=self, poste='PRESIDENT').first()
-        return trez
+        prez = Member.objects.filter(je=self, poste='PRESIDENT').first()
+        return prez
 
 
 
@@ -947,6 +947,9 @@ class Etude(models.Model):
             - self.retributions_totales()
             - self.charges_URSSAF()
         )
+
+    def get_bon_commandes(self):
+        return BonCommande.objects.filter(etude=self)
 
     def facture_solde(self):
         factures = Facture.objects.filter(etude=self).order_by("numero_facture")

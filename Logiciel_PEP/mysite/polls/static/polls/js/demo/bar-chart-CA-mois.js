@@ -1,41 +1,35 @@
-// Check if dico_suivi_devis is available
-if (typeof dico_suivi_devis !== 'undefined') {
+
+Chart.defaults.global.defaultFontFamily = 'Nunito, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
+
+if (typeof dico_CA_mois !== 'undefined') {
     // Extract dates and values for 'envoyés' and 'signées'
-    var dates = Object.keys(dico_suivi_devis).sort((a, b) => {
+    var dates = Object.keys(dico_avenants_mois_ce).sort((a, b) => {
         const [monthA, yearA] = a.split('-').map(Number);
         const [monthB, yearB] = b.split('-').map(Number);
         return yearA - yearB || monthA - monthB;  // Sort by year first, then by month
     });    
-    var envoyesData = dates.map(date => dico_suivi_devis[date]['envoyés'] || 0);
-    var signeesData = dates.map(date => dico_suivi_devis[date]['signées'] || 0);
+    var CAData = dates.map(date => dico_CA_mois[date]['CA'] || 0);
+    
 
-    // Determine the maximum y-axis value (ymax)
-    var allValues = envoyesData.concat(signeesData);
-    var ymax = Math.ceil(Math.max(...allValues) + 1);  // Add buffer to ymax
+    
 
     // Set up the Chart.js bar chart
-    var ctx = document.getElementById('myBarChart').getContext('2d');
-    var myBarChart = new Chart(ctx, {
+    var ctx = document.getElementById('BarChartCAmois').getContext('2d');
+    var BarChartCAmois = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: dates,
             datasets: [
                 {
-                    label: 'Envoyés',
+                    label: 'CA',
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1,
-                    data: envoyesData,
-                    barThickness: 60,
-                },
-                {
-                    label: 'Signées',
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                    data: signeesData,
-                    barThickness: 60,
+                    data: CAData,
+                    barThickness: 100,
                 }
+                
             ]
         },
         options: {
@@ -68,5 +62,5 @@ if (typeof dico_suivi_devis !== 'undefined') {
         }
     });
 } else {
-    console.error('dico_suivi_devis is not defined');
+    console.error('dico_CA_mois is not defined');
 }
