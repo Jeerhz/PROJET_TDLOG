@@ -91,6 +91,8 @@ def en_lettres(nombre):
 
 @register.filter(name='FormatNombres')
 def format_nombres(nombre):
+    if not isinstance(nombre, (int, float)):
+        return nombre  # Return the original value if it's not a number
     arrondi = round(nombre, 2)
     nbre_virg = f"{arrondi:.2f}".replace('.', ',')
     return nbre_virg

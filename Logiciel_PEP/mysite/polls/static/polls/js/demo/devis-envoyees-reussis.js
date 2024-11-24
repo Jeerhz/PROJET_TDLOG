@@ -26,7 +26,7 @@ if (typeof dico_suivi_devis !== 'undefined') {
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1,
                     data: envoyesData,
-                    barThickness: 20,
+                    barThickness: 60,
                 },
                 {
                     label: 'Signées',
@@ -34,7 +34,7 @@ if (typeof dico_suivi_devis !== 'undefined') {
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1,
                     data: signeesData,
-                    barThickness: 20,
+                    barThickness: 60,
                 }
             ]
         },
