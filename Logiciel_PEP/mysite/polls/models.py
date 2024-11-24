@@ -101,6 +101,12 @@ class JE(models.Model):
         new_je.logo = "/static/polls/img/bdc.png"
         new_je.chiffres_affaires = 0.0
         return new_je
+    
+    def president(self):
+        trez = Member.objects.filter(je=self, poste='PRESIDENT').first()
+        return trez
+
+
 
 
 class JESerializer(BaseSerializer):

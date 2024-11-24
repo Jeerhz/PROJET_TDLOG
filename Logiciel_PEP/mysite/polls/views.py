@@ -144,23 +144,20 @@ def general_context(request):
     return context
 
 
-def my_view(request):
-    return render(request, "polls/facpdf.html")
 
 
-def generate_pdf(request):
-    html_content = render_to_string("polls/facpdf.html")
-    pdf_file = HTML(string=html_content).write_pdf()
-
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="page.pdf"'
-    return response
 
 
 def confidentialite_donnees(request):
-    template = loader.get_template("polls/confidentialite_donnees.html")
-    context = {}
+    if request.user.is_authenticated:
+        template = loader.get_template("polls/confidentialite_donnees.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
     return HttpResponse(template.render(context, request))
+
 
 
 def index(request):
@@ -234,33 +231,50 @@ def index(request):
 
 
 def custom_login(request):
-    error_message = ""
-    if request.method == "POST":
-        user = authenticate(
-            request, email=request.POST["email"], password=request.POST["password"]
-        )
-        if user:
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            return redirect("index")
-        else:
-            error_message = "Nom d'utilisateur ou mot de passe incorrect."
-            context = {"error_message": error_message}
-            template = loader.get_template("polls/login.html")
-            return HttpResponse(template.render(context, request))
+    if request.user.is_authenticated:
+        error_message = ""
+        if request.method == "POST":
+            user = authenticate(
+                request, email=request.POST["email"], password=request.POST["password"]
+            )
+            if user:
+                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                return redirect("index")
+            else:
+                error_message = "Nom d'utilisateur ou mot de passe incorrect."
+                context = {"error_message": error_message}
+                template = loader.get_template("polls/login.html")
+                return HttpResponse(template.render(context, request))
 
-    template = loader.get_template("polls/login.html")
-    context = {}
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
     return HttpResponse(template.render(context, request))
 
 
+
+
 def google_login(request):
-    return redirect("settings")
+    if request.user.is_authenticated:
+        return redirect("settings")
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def custom_logout(request):
-    logout(request)
-    template = loader.get_template("polls/login.html")
-    context = {}
+    if request.user.is_authenticated:
+        logout(request)
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
     return HttpResponse(template.render(context, request))
 
 
@@ -372,17 +386,22 @@ def demarchage(request):
 
 
 def supprimer_demarchage(request, id_representant):
-    representant = Representant.objects.filter(id=id_representant).first()
+    if request.user.is_authenticated:
+        representant = Representant.objects.filter(id=id_representant).first()
 
-    if request.method == "POST":
-        representant.demarchage = "A_CONTACTER"
+        if request.method == "POST":
+            representant.demarchage = "A_CONTACTER"
 
-        nouvelle_remarque = request.POST.get("remarque", "")
-        representant.remarque = nouvelle_remarque
-        representant.save()
+            nouvelle_remarque = request.POST.get("remarque", "")
+            representant.remarque = nouvelle_remarque
+            representant.save()
+            return redirect("demarchage")
+
         return redirect("demarchage")
-
-    return redirect("demarchage")
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def blank_page(request):
@@ -540,17 +559,23 @@ def details(request, modelName, iD):
 
 
 def edit_etude(request, pk):
-    etude = get_object_or_404(Etude, pk=pk)
+    if request.user.is_authenticated:
+        etude = get_object_or_404(Etude, pk=pk)
 
-    if request.method == "POST":
-        form = AddEtude(request.POST, instance=etude)
-        if form.is_valid():
-            form.save(expediteur=request.user)
-            return redirect("etude_detail", pk=etude.pk)
+        if request.method == "POST":
+            form = AddEtude(request.POST, instance=etude)
+            if form.is_valid():
+                form.save(expediteur=request.user)
+                return redirect("etude_detail", pk=etude.pk)
+        else:
+            form = AddEtude(instance=etude)
+
+        return render(request, "etudes/edit_etude.html", {"form": form, "etude": etude})
     else:
-        form = AddEtude(instance=etude)
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
-    return render(request, "etudes/edit_etude.html", {"form": form, "etude": etude})
 
 
 def edit_student(request, pk):
@@ -597,7 +622,10 @@ def edit_student(request, pk):
         return render(request, "polls/page_details.html", context)
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 def edit_pdp(request, pk):
     if request.user.is_authenticated:
@@ -649,7 +677,10 @@ def edit_pdp(request, pk):
         return render(request, "polls/page_details.html", context)
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 def numero_facture(request, iD):
     if request.user.is_authenticated:
@@ -664,7 +695,10 @@ def numero_facture(request, iD):
         return redirect("factures")
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
     
 def numero_BV(request, iD):
     if request.user.is_authenticated:
@@ -678,7 +712,10 @@ def numero_BV(request, iD):
         return redirect("BVs")
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 def modify_etude(request, pk):
@@ -698,7 +735,10 @@ def modify_etude(request, pk):
         return redirect("details", modelName="Etude", iD=pk)
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 def object_suppression(request, model_name, object_id):
@@ -726,33 +766,39 @@ def object_suppression(request, model_name, object_id):
 
 
 def get_client_representants(request):
-    client_id = request.GET.get("client_id")
-    if client_id:
-        client = get_object_or_404(Client, id=client_id)
-        representants = client.representants()
+    if request.user.is_authenticated: 
+        client_id = request.GET.get("client_id")
+        if client_id:
+            client = get_object_or_404(Client, id=client_id)
+            representants = client.representants()
 
-        interlocuteurs = [
-            {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
-        ]
+            interlocuteurs = [
+                {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
+            ]
 
-        legaux = [
-            {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
-        ]
+            legaux = [
+                {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
+            ]
 
-        return JsonResponse(
-            {
-                "interlocuteurs": "".join(
-                    [
-                        f'<option value="{r["id"]}">{r["name"]}</option>'
-                        for r in interlocuteurs
-                    ]
-                ),
-                "legaux": "".join(
-                    [f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux]
-                ),
-            }
-        )
-    return JsonResponse({"error": "Invalid client ID"}, status=400)
+            return JsonResponse(
+                {
+                    "interlocuteurs": "".join(
+                        [
+                            f'<option value="{r["id"]}">{r["name"]}</option>'
+                            for r in interlocuteurs
+                        ]
+                    ),
+                    "legaux": "".join(
+                        [f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux]
+                    ),
+                }
+            )
+        return JsonResponse({"error": "Invalid client ID"}, status=400)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 
 def get_representants(request):
@@ -769,6 +815,10 @@ def get_representants(request):
 
             return JsonResponse({"results": results})
         return JsonResponse({"error": "Invalid client ID"}, status=400)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def edit_client(request, pk):
@@ -817,7 +867,9 @@ def edit_client(request, pk):
         return render(request, "polls/page_details.html", context)
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_student(request, pk):
@@ -849,7 +901,9 @@ def delete_etude(request, pk):
             etude.delete()
             return redirect("annuaire")
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def edit_phase(request, pk, iD):
@@ -894,7 +948,9 @@ def edit_phase(request, pk, iD):
         return render(request, "polls/page_details.html", context)
 
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_phase(request, pk, iD):
@@ -930,7 +986,9 @@ def delete_phase(request, pk, iD):
             phase.delete()
             return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_assignation(request, pk, etude_id):
@@ -966,7 +1024,9 @@ def delete_assignation(request, pk, etude_id):
             assignation.delete()
             return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_facture(request, pk, iD):
@@ -1002,7 +1062,9 @@ def delete_facture(request, pk, iD):
             facture.delete()
             return redirect("details", modelName="Etude", iD=etude.id)
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_BV(request, pk, iD):
@@ -1038,7 +1100,9 @@ def delete_BV(request, pk, iD):
             bv.delete()
             return redirect("BVs")
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def delete_client(request, pk):
@@ -1065,7 +1129,9 @@ def delete_client(request, pk):
 
 def input(request, modelName, iD):
     if not request.user.is_authenticated:
-        return render(request, "polls/login.html")
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
 
     # Fetch unread messages for the user
     liste_messages = Message.objects.filter(
@@ -1155,225 +1221,236 @@ def input(request, modelName, iD):
 
 
 def upload_students(request):
-    if request.method == "POST":
-        form = StudentCSVUploadForm(request.POST, request.FILES)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            form = StudentCSVUploadForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            csv_file = request.FILES.get("csv_file")
+            if form.is_valid():
+                csv_file = request.FILES.get("csv_file")
 
-            # Check if the file is a CSV
-            if not csv_file.name.endswith(".csv"):
-                print("This is not a CSV file.")
-                return redirect("upload_students")
-
-            try:
-                # Decode the uploaded file and read its content with correct delimiter
-                data = csv_file.read().decode("utf-8")
-                # Use csv.Sniffer to detect the delimiter
-                sniffer = csv.Sniffer()
-                detected_dialect = sniffer.sniff(data)
-                delimiter = detected_dialect.delimiter
-
-                # Read the file using the detected delimiter
-                reader = csv.reader(StringIO(data), delimiter=delimiter)
-                # Skip the header row if present
-                header = next(reader, None)
-
-                # Check if header matches the expected columns
-                if len(header) != 11:
-                    print(
-                        f"Unexpected header format. Expected 9 columns, got {len(header)}."
-                    )
+                # Check if the file is a CSV
+                if not csv_file.name.endswith(".csv"):
+                    print("This is not a CSV file.")
                     return redirect("upload_students")
 
-                # Iterate through each row in the CSV
-                for row in reader:
-                    if len(row) != 11:
+                try:
+                    # Decode the uploaded file and read its content with correct delimiter
+                    data = csv_file.read().decode("utf-8")
+                    # Use csv.Sniffer to detect the delimiter
+                    sniffer = csv.Sniffer()
+                    detected_dialect = sniffer.sniff(data)
+                    delimiter = detected_dialect.delimiter
+
+                    # Read the file using the detected delimiter
+                    reader = csv.reader(StringIO(data), delimiter=delimiter)
+                    # Skip the header row if present
+                    header = next(reader, None)
+
+                    # Check if header matches the expected columns
+                    if len(header) != 11:
                         print(
-                            f"Error processing row: {row}. Incorrect number of columns."
+                            f"Unexpected header format. Expected 9 columns, got {len(header)}."
                         )
-                        continue
+                        return redirect("upload_students")
 
-                    # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
-                    try:
-                        (
-                            titre,
-                            first_name,
-                            last_name,
-                            mail,
-                            phone_number,
-                            rue,
-                            ville,
-                            code_postal,
-                            pays,
-                            depart,
-                            promo,
-                        ) = row
-                        je = request.user.je
-                        # Create or update the student record
-                        Student.objects.get_or_create(
-                            je=je,
-                            first_name=first_name.strip(),
-                            last_name=last_name.strip(),
-                            mail=mail.strip(),
-                            titre=titre.strip(),
-                            phone_number=phone_number.strip(),
-                            adress=rue.strip(),
-                            ville=ville.strip(),
-                            code_postal=code_postal.strip(),
-                            country=pays.strip(),
-                            departement=depart.strip(),
-                            promotion=promo.strip(),
-                        )
-                    except Exception as e:
-                        print(f"Error processing row {row}: {e}")
-            except Exception as e:
-                print(f"Error reading file: {e}")  # Debugging statement
+                    # Iterate through each row in the CSV
+                    for row in reader:
+                        if len(row) != 11:
+                            print(
+                                f"Error processing row: {row}. Incorrect number of columns."
+                            )
+                            continue
 
-            print("Students have been successfully added!")
-            return redirect("upload_students")
+                        # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
+                        try:
+                            (
+                                titre,
+                                first_name,
+                                last_name,
+                                mail,
+                                phone_number,
+                                rue,
+                                ville,
+                                code_postal,
+                                pays,
+                                depart,
+                                promo,
+                            ) = row
+                            je = request.user.je
+                            # Create or update the student record
+                            Student.objects.get_or_create(
+                                je=je,
+                                first_name=first_name.strip(),
+                                last_name=last_name.strip(),
+                                mail=mail.strip(),
+                                titre=titre.strip(),
+                                phone_number=phone_number.strip(),
+                                adress=rue.strip(),
+                                ville=ville.strip(),
+                                code_postal=code_postal.strip(),
+                                country=pays.strip(),
+                                departement=depart.strip(),
+                                promotion=promo.strip(),
+                            )
+                        except Exception as e:
+                            print(f"Error processing row {row}: {e}")
+                except Exception as e:
+                    print(f"Error reading file: {e}")  # Debugging statement
+
+                print("Students have been successfully added!")
+                return redirect("upload_students")
+        else:
+            form = StudentCSVUploadForm()
+
+        return redirect("annuaire")
     else:
-        form = StudentCSVUploadForm()
-
-    return redirect("annuaire")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+    
     # return render(request, 'polls/annuaire.html', {'form': form})
 
 
 def upload_clients(request):
-    if request.method == "POST":
-        form = ClientCSVUploadForm(request.POST, request.FILES)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            form = ClientCSVUploadForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            csv_file = request.FILES.get("csv_file")
+            if form.is_valid():
+                csv_file = request.FILES.get("csv_file")
 
-            # Check if the file is a CSV
-            if not csv_file.name.endswith(".csv"):
-                print("This is not a CSV file.")
-                return redirect("upload_students")
-
-            try:
-                # Decode the uploaded file and read its content with correct delimiter
-                data = csv_file.read().decode("utf-8")
-                # Use csv.Sniffer to detect the delimiter
-                sniffer = csv.Sniffer()
-                detected_dialect = sniffer.sniff(data)
-                delimiter = detected_dialect.delimiter
-
-                # Read the file using the detected delimiter
-                reader = csv.reader(StringIO(data), delimiter=delimiter)
-                # Skip the header row if present
-                header = next(reader, None)
-
-                # Check if header matches the expected columns
-                if len(header) != 6:
-                    print(
-                        f"Unexpected header format. Expected 9 columns, got {len(header)}."
-                    )
+                # Check if the file is a CSV
+                if not csv_file.name.endswith(".csv"):
+                    print("This is not a CSV file.")
                     return redirect("upload_students")
 
-                # Iterate through each row in the CSV
-                for row in reader:
-                    if len(row) != 6:
+                try:
+                    # Decode the uploaded file and read its content with correct delimiter
+                    data = csv_file.read().decode("utf-8")
+                    # Use csv.Sniffer to detect the delimiter
+                    sniffer = csv.Sniffer()
+                    detected_dialect = sniffer.sniff(data)
+                    delimiter = detected_dialect.delimiter
+
+                    # Read the file using the detected delimiter
+                    reader = csv.reader(StringIO(data), delimiter=delimiter)
+                    # Skip the header row if present
+                    header = next(reader, None)
+
+                    # Check if header matches the expected columns
+                    if len(header) != 6:
                         print(
-                            f"Error processing row: {row}. Incorrect number of columns."
+                            f"Unexpected header format. Expected 9 columns, got {len(header)}."
                         )
-                        continue
+                        return redirect("upload_students")
 
-                    # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
-                    try:
-                        (
-                            nom_societe,
-                            raison_sociale,
-                            rue,
-                            ville,
-                            code_postal,
-                            country,
-                        ) = row
-                        je = request.user.je
-                        # Create or update the student record
-                        Client.objects.get_or_create(
-                            je=je,
-                            nom_societe=nom_societe.strip(),
-                            raison_sociale=raison_sociale.strip(),
-                            rue=rue.strip(),
-                            ville=ville.strip(),
-                            code_postal=code_postal.strip(),
-                            country=country.strip(),
-                        )
-                    except Exception as e:
-                        print(f"Error processing row {row}: {e}")
-            except Exception as e:
-                print(f"Error reading file: {e}")  # Debugging statement
+                    # Iterate through each row in the CSV
+                    for row in reader:
+                        if len(row) != 6:
+                            print(
+                                f"Error processing row: {row}. Incorrect number of columns."
+                            )
+                            continue
 
-            print("Students have been successfully added!")
-            return redirect("upload_students")
+                        # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
+                        try:
+                            (
+                                nom_societe,
+                                raison_sociale,
+                                rue,
+                                ville,
+                                code_postal,
+                                country,
+                            ) = row
+                            je = request.user.je
+                            # Create or update the student record
+                            Client.objects.get_or_create(
+                                je=je,
+                                nom_societe=nom_societe.strip(),
+                                raison_sociale=raison_sociale.strip(),
+                                rue=rue.strip(),
+                                ville=ville.strip(),
+                                code_postal=code_postal.strip(),
+                                country=country.strip(),
+                            )
+                        except Exception as e:
+                            print(f"Error processing row {row}: {e}")
+                except Exception as e:
+                    print(f"Error reading file: {e}")  # Debugging statement
+
+                print("Students have been successfully added!")
+                return redirect("upload_students")
+        else:
+            form = ClientCSVUploadForm()
+
+        return redirect("annuaire")
     else:
-        form = ClientCSVUploadForm()
-
-    return redirect("annuaire")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
     # return render(request, 'polls/annuaire.html', {'form': form})
 
 
 def update_etude(request, id):
-    etude = Etude.objects.get(id=id)
+    if request.user.is_authenticated:
+        etude = Etude.objects.get(id=id)
 
-    if request.method == "POST":
-        suivi_document = etude.suivi_document  # Get the existing suivi_document
+        if request.method == "POST":
+            suivi_document = etude.suivi_document  # Get the existing suivi_document
 
-        if "delete_document_name" in request.POST:
-            document_name = request.POST["delete_document_name"]
-            # Perform delete logic, e.g., removing document by name
-            if document_name in etude.suivi_document:
-                del etude.suivi_document[document_name]
-                etude.suivi_document = suivi_document
+            if "delete_document_name" in request.POST:
+                document_name = request.POST["delete_document_name"]
+                # Perform delete logic, e.g., removing document by name
+                if document_name in etude.suivi_document:
+                    del etude.suivi_document[document_name]
+                    etude.suivi_document = suivi_document
+                etude.save()
+                return redirect("index")
+
+            # Loop through the keys in suivi_document and update both status and date
+            for key in suivi_document.keys():
+                new_status = request.POST.get(f"suivi_document_{key}_status")
+                new_date = request.POST.get(f"suivi_document_{key}_date")
+                new_remarque = request.POST.get(f"suivi_document_{key}_remarque")
+                if new_status:
+                    suivi_document[key]["status"] = new_status
+                if new_date:
+                    suivi_document[key]["date"] = new_date
+                else:
+                    suivi_document[key]["date"] = None
+
+                if new_remarque:
+                    suivi_document[key]["remarque"] = new_remarque
+            etude.suivi_document = suivi_document
             etude.save()
-            return redirect("index")
+            suivi_document = etude.suivi_document
+            # Check if the form is adding a new document (new_document_name is filled)
+            new_document_name = request.POST.get("new_document_name")
+            new_document_status = request.POST.get("new_document_status")
+            new_document_date = request.POST.get("new_document_date")
+            new_remarque_name = request.POST.get("new_remarque_name")
 
-        # Loop through the keys in suivi_document and update both status and date
-        for key in suivi_document.keys():
-            new_status = request.POST.get(f"suivi_document_{key}_status")
-            new_date = request.POST.get(f"suivi_document_{key}_date")
-            new_remarque = request.POST.get(f"suivi_document_{key}_remarque")
-            if new_status:
-                suivi_document[key]["status"] = new_status
-            if new_date:
-                suivi_document[key]["date"] = new_date
-            else:
-                suivi_document[key]["date"] = None
+            if new_document_name and new_document_status:
+                suivi_document[new_document_name] = {
+                    "status": new_document_status,
+                    "date": new_document_date,
+                    "remarque": new_remarque_name,
+                }
 
-            if new_remarque:
-                suivi_document[key]["remarque"] = new_remarque
-        etude.suivi_document = suivi_document
-        etude.save()
-        suivi_document = etude.suivi_document
-        # Check if the form is adding a new document (new_document_name is filled)
-        new_document_name = request.POST.get("new_document_name")
-        new_document_status = request.POST.get("new_document_status")
-        new_document_date = request.POST.get("new_document_date")
-        new_remarque_name = request.POST.get("new_remarque_name")
+            etude.suivi_document = suivi_document  # Update the dictionary with new entries
+            etude.save()
+            # Save the changes
 
-        if new_document_name and new_document_status:
-            suivi_document[new_document_name] = {
-                "status": new_document_status,
-                "date": new_document_date,
-                "remarque": new_remarque_name,
-            }
+            return redirect("index")  # Redirect after saving
 
-        etude.suivi_document = suivi_document  # Update the dictionary with new entries
-        etude.save()
-        # Save the changes
-
-        return redirect("index")  # Redirect after saving
-
-    # Render the template with the existing data (in case you need GET logic)
-    return render(request, "index.html")
+        # Render the template with the existing data (in case you need GET logic)
+        return render(request, "index.html")
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
-def ref_facture(numero):
-    date = datetime.now()
-    annee = str(date.year)
-    an = annee[-2:]
-    return f"{an}{numero:03d}"
 
 
 def generate_facture_pdf(request, id_facture):
@@ -1428,7 +1505,7 @@ def generate_facture_pdf(request, id_facture):
 
             # Generate PDF from the full HTML
             pdf_file = HTML(string=html_string).write_pdf()
-            ref1 = ref_facture(facture.numero_facture)
+            ref1 = facture
             refFA = f"FA{ref1}.pdf"
             # Serve the PDF as a download
             response = HttpResponse(pdf_file, content_type="application/pdf")
@@ -1438,7 +1515,10 @@ def generate_facture_pdf(request, id_facture):
         except Exception as e:
             return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
-    return HttpResponse("Unauthorized", status=401)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def facture(request, id_facture):
@@ -1497,19 +1577,24 @@ def facture(request, id_facture):
 
 
 def update_facture(request, iD):
-    if request.method == "POST":
-        facture_id = request.POST.get("facture_id")
-        try:
-            instance = Etude.objects.get(id=iD)
-            facture = Facture.objects.get(id=facture_id)
-            facture.facturé = True
-            client = instance.client
-            facture.save()
-            context = {"etude": instance, "client": client}
-            template = loader.get_template("polls/facpdf.html")
-        except Facture.DoesNotExist:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": "facture n'existe pas."}
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            facture_id = request.POST.get("facture_id")
+            try:
+                instance = Etude.objects.get(id=iD)
+                facture = Facture.objects.get(id=facture_id)
+                facture.facturé = True
+                client = instance.client
+                facture.save()
+                context = {"etude": instance, "client": client}
+                template = loader.get_template("polls/facpdf.html")
+            except Facture.DoesNotExist:
+                template = loader.get_template("polls/page_error.html")
+                context = {"error_message": "facture n'existe pas."}
+        return HttpResponse(template.render(context, request))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
     return HttpResponse(template.render(context, request))
 
 
@@ -2700,24 +2785,24 @@ def editer_acf_client(request, iD):
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
         try:
+            ba_nombre = request.POST.get("ba_nombre")
             eleve = Student.objects.get(id=id_eleve)
             je_president_nom = "Debray"
             je_president_prenom = "Thomas"
             date = timezone.now()
             general_date_creation = date.strftime("%d %B %Y")
-            num_conv_etudiant = "CE_20231017"
             template = DocxTemplate("polls/templates/polls/BA_026.docx")
-            model = BA
-            dernier_ba = BA.objects.order_by("-number").first()
-
-            if dernier_ba:
-                number = dernier_ba.number + 1
+            ba_dej_exist = BA.objects.filter(eleve=eleve).first()
+            if ba_dej_exist:
+                ba_dej_exist.number= ba_nombre
+                ba_dej_exist.save()
             else:
-                number = 636
-            ba = model(eleve=eleve, number=number)
-            ba.save()
+                model = BA
+                ba = model(eleve=eleve, number=int(ba_nombre))
+                ba.save()
 
-            ref = f"20240{number}"
+            year = datetime.now().year  # Get the current year
+            ref = f"{year}{int(ba_nombre):04d}" 
             context = {
                 "etudiant": eleve,
                 "je_president_nom": je_president_nom,
@@ -3828,7 +3913,7 @@ def ajouter_facture(request, id_etude):
 
 def nouveau_BV(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        #try:
+        try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             je = eleve.je
@@ -3847,7 +3932,7 @@ def nouveau_BV(request, id_etude, id_eleve):
             
             return redirect("BVs")
 
-        #except:
+        except:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
@@ -3905,8 +3990,9 @@ def generer_BV(request, id_bv):
             if ref_rdm:
                 feuille["C14"] = ref_rdm
             else:
-                messages.error(request, "pas de référence au rdm")
+                raise ValueError("Pas de référence au rdm")
 
+        
             # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
             # feuille['C13']= assignation_jeh.reference
             feuille["H10"] = eleve.numero_ss
@@ -3920,7 +4006,7 @@ def generer_BV(request, id_bv):
             output.seek(0)
 
             # Specify a new name for the downloaded file
-            download_filename = f"BV_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
+            download_filename = f"BV_{bv}_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
 
             # Return the file with the new filename
             response = FileResponse(
@@ -3928,6 +4014,10 @@ def generer_BV(request, id_bv):
             )
 
             return response
+        except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+            return HttpResponse(template.render(context, request))
         except:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
@@ -4075,29 +4165,35 @@ def recrutement(request, id_url):  # Controler les dates
 
 
 def modifier_je(request, id):
-    je = get_object_or_404(JE, id=id)
+    if request.user.is_authenticated:
+        je = get_object_or_404(JE, id=id)
 
-    if request.method == "POST":
-        # Met à jour les champs avec les données du formulaire
-        je.nom = request.POST.get("nom")
-        je.raison_sociale = request.POST.get("raison_sociale")
-        je.rue = request.POST.get("rue")
-        je.ville = request.POST.get("ville")
-        je.code_postal = request.POST.get("code_postal")
-        je.siret = request.POST.get("siret")
-        je.APE = request.POST.get("APE")
-        je.TVA = request.POST.get("TVA")
-        je.IBAN = request.POST.get("IBAN")
-        je.BIC = request.POST.get("BIC")
-        je.chiffres_affaires = request.POST.get("chiffres_affaires")
-        je.save()
+        if request.method == "POST":
+            # Met à jour les champs avec les données du formulaire
+            je.nom = request.POST.get("nom")
+            je.raison_sociale = request.POST.get("raison_sociale")
+            je.rue = request.POST.get("rue")
+            je.ville = request.POST.get("ville")
+            je.code_postal = request.POST.get("code_postal")
+            je.siret = request.POST.get("siret")
+            je.APE = request.POST.get("APE")
+            je.TVA = request.POST.get("TVA")
+            je.IBAN = request.POST.get("IBAN")
+            je.BIC = request.POST.get("BIC")
+            je.chiffres_affaires = request.POST.get("chiffres_affaires")
+            je.save()
 
-        # Redirection vers la page je_detail après la sauvegarde
-        return HttpResponseRedirect(reverse("je_detail"))
+            # Redirection vers la page je_detail après la sauvegarde
+            return HttpResponseRedirect(reverse("je_detail"))
 
-    return JsonResponse(
-        {"success": False, "message": "Invalid request method"}, status=400
-    )
+        return JsonResponse(
+            {"success": False, "message": "Invalid request method"}, status=400
+        )
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
 
 
 def modifier_recrutement_etude(request, iD):
@@ -4124,42 +4220,53 @@ def modifier_recrutement_etude(request, iD):
 
 
 def modifier_etude(request, iD):
+    if request.user.is_authenticated:
+        etude = get_object_or_404(Etude, id=iD)
+        numero_ori = etude.numero
+        numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
+        numero_list.remove(numero_ori)
+        if request.method == "POST":
+            # Get the form data from the request
+            debut = request.POST.get("debut")
+            frais_dossier = request.POST.get("frais_dossier")
+            remarque = request.POST.get("remarque")
+            numero = int(request.POST.get("numero"))
+
+            # Allow 'debut' to be null, and only update if it's provided
+            if debut:
+                etude.debut = debut
+
+            if numero:
+                
+                if numero not in numero_list:
+                    etude.numero = numero
+
+                else:
+                    etude_deja_exist = Etude.objects.filter(numero=numero).first()
+                    return JsonResponse(
+                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
+                        status=400
+                    )
+
+
+                    
+
+            # 'fin' should not be updated, as it's set to readonly in the form
+
+            # Update the other fields
+            etude.frais_dossier = frais_dossier
+            etude.remarque = remarque
+            etude.save()
+
+            # Redirect to the details page with the correct modelName
+            modelName = "Etude"
+            return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
     # Fetch the Etude instance using the provided iD
-    etude = get_object_or_404(Etude, id=iD)
-    numero_ori = etude.numero
-    numero_list = list(Etude.objects.values_list("numero", flat=True))
-    numero_list.remove(numero_ori)
-    print(f"numero d'etudes {numero_list}")
-    if request.method == "POST":
-        # Get the form data from the request
-        debut = request.POST.get("debut")
-        frais_dossier = request.POST.get("frais_dossier")
-        remarque = request.POST.get("remarque")
-        numero = int(request.POST.get("numero"))
-
-        # Allow 'debut' to be null, and only update if it's provided
-        if debut:
-            etude.debut = debut
-
-        if numero:
-            if numero not in numero_list:
-                print(numero == 1)
-                print(f"numero : {numero}, numero_list: {numero_list}")
-                etude.numero = numero
-
-            else:
-                etude.numero = numero_ori
-
-        # 'fin' should not be updated, as it's set to readonly in the form
-
-        # Update the other fields
-        etude.frais_dossier = frais_dossier
-        etude.remarque = remarque
-        etude.save()
-
-        # Redirect to the details page with the correct modelName
-        modelName = "Etude"
-        return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
+    
 
     return JsonResponse(
         {"success": False, "message": "Invalid request method"}, status=400
@@ -4167,65 +4274,71 @@ def modifier_etude(request, iD):
 
 
 def verifier_etude(request, iD):
+    if request.user.is_authenticated:
     # Fetch the Etude instance using the provided iD
-    etude = get_object_or_404(Etude, id=iD)
+        etude = get_object_or_404(Etude, id=iD)
 
-    client = etude.client
-    if request.method == "POST":
-        # Get the form data from the request
-        debut = request.POST.get("debut")
-        frais_dossier = request.POST.get("frais_dossier")
-        remarque = request.POST.get("remarque")
-        client_description = request.POST.get("client_description")
-        etude_contexte = request.POST.get("etude_contexte")
-        paragraphe_intervenant_devis = request.POST.get("paragraphe_intervenant_devis")
-        cdp_mail = request.POST.get("chefdep")
-        cdp = Member.objects.filter(email=cdp_mail).first()
-        quali_mail = request.POST.get("qualite")
-        quali = Member.objects.filter(email=quali_mail).first()
-        garantie = request.POST.get("per_gara")
-        objectifs = request.POST.get("objectifs")
-        methodologie = request.POST.get("methodologie")
-        element_a_fournir = request.POST.get("element_a_fournir")
+        client = etude.client
+        if request.method == "POST":
+            # Get the form data from the request
+            debut = request.POST.get("debut")
+            frais_dossier = request.POST.get("frais_dossier")
+            remarque = request.POST.get("remarque")
+            client_description = request.POST.get("client_description")
+            etude_contexte = request.POST.get("etude_contexte")
+            paragraphe_intervenant_devis = request.POST.get("paragraphe_intervenant_devis")
+            cdp_mail = request.POST.get("chefdep")
+            cdp = Member.objects.filter(email=cdp_mail).first()
+            quali_mail = request.POST.get("qualite")
+            quali = Member.objects.filter(email=quali_mail).first()
+            garantie = request.POST.get("per_gara")
+            objectifs = request.POST.get("objectifs")
+            methodologie = request.POST.get("methodologie")
+            element_a_fournir = request.POST.get("element_a_fournir")
 
-        keys = request.POST.getlist("keys[]")
-        values = request.POST.getlist("values[]")
+            keys = request.POST.getlist("keys[]")
+            values = request.POST.getlist("values[]")
 
-        # Create a new dictionary from the submitted keys and values
-        cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+            # Create a new dictionary from the submitted keys and values
+            cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
 
-        # Update the JSONField with the new dictionary
-        etude.cahier_des_charges = cahier_des_charges
-        # Allow 'debut' to be null, and only update if it's provided
-        if debut:
-            etude.debut = debut
-        client.description = client_description
+            # Update the JSONField with the new dictionary
+            etude.cahier_des_charges = cahier_des_charges
+            # Allow 'debut' to be null, and only update if it's provided
+            if debut:
+                etude.debut = debut
+            client.description = client_description
 
-        # 'fin' should not be updated, as it's set to readonly in the form
+            # 'fin' should not be updated, as it's set to readonly in the form
 
-        # Update the other fields
-        etude.frais_dossier = frais_dossier
-        etude.remarque = remarque
-        etude.contexte = etude_contexte
-        etude.paragraphe_intervenant_devis = paragraphe_intervenant_devis
-        etude.responsable = cdp
-        etude.resp_qualite = quali
-        etude.periode_de_garantie = garantie
-        etude.objectifs = objectifs
-        etude.methodologie = methodologie
-        etude.element_a_fournir = element_a_fournir
+            # Update the other fields
+            etude.frais_dossier = frais_dossier
+            etude.remarque = remarque
+            etude.contexte = etude_contexte
+            etude.paragraphe_intervenant_devis = paragraphe_intervenant_devis
+            etude.responsable = cdp
+            etude.resp_qualite = quali
+            etude.periode_de_garantie = garantie
+            etude.objectifs = objectifs
+            etude.methodologie = methodologie
+            etude.element_a_fournir = element_a_fournir
 
-        etude.save()
-        client.description = client_description
-        client.save()
+            etude.save()
+            client.description = client_description
+            client.save()
 
-        # Redirect to the details page with the correct modelName
-        modelName = "Etude"
-        return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
+            # Redirect to the details page with the correct modelName
+            modelName = "Etude"
+            return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
 
-    return JsonResponse(
-        {"success": False, "message": "Invalid request method"}, status=400
-    )
+        return JsonResponse(
+            {"success": False, "message": "Invalid request method"}, status=400
+        )
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
 
 
 def remarque_etude(request, iD):
@@ -4237,7 +4350,6 @@ def remarque_etude(request, iD):
                 content = data.get("content", "")
                 etude = Etude.objects.get(id=iD)
                 etude.remarque = content
-                print("Texte de la remarque : ", etude.remarque)
                 etude.save()
                 return JsonResponse({"success": True})
             except:
@@ -4713,13 +4825,16 @@ def supprimer_representant(request, id_representant):
         representant.delete()
         return redirect("details", modelName="Client", iD=id_client)
     else:
-        return redirect("login")
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+    
 
 
 def factures(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        factures = Facture.objects.all().order_by("numero_facture")
+        factures = Facture.objects.all().order_by("-numero_facture")
         # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
@@ -4733,7 +4848,7 @@ def factures(request):
 def BVs(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        BVs = BV.objects.all().order_by("numero_bv")
+        BVs = BV.objects.all().order_by("-numero_bv")
         # pas optimale mais faudrait potentiellement crééer un champs je
         BVs = [bv for bv in BVs if bv.je() == user_je and bv.date_emission]
         template = loader.get_template("polls/BVs.html")

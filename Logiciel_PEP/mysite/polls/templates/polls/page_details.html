@@ -847,36 +847,66 @@
                                             var modifier_etude = document.getElementById('modifier-etude');
                                             var etude_info = document.getElementById('etude-info');
                                             var etude_form = document.getElementById('etude-form');
-
+                                    
                                             // Toggle between info view and form view when the Modify button is clicked
-                                            modifier_etude.addEventListener('click', function() {
+                                            modifier_etude.addEventListener('click', function () {
                                                 etude_info.classList.toggle('d-none');
                                                 etude_form.classList.toggle('d-none');
                                             });
-
+                                    
                                             var annuler_etude = document.getElementById('annuler-etude');
-                                            annuler_etude.addEventListener('click', function() {
+                                            annuler_etude.addEventListener('click', function () {
                                                 etude_info.classList.toggle('d-none');
                                                 etude_form.classList.toggle('d-none');
                                             });
-
-                                            // Validate form before submission
-                                            document.getElementById('etude-f-form').addEventListener('submit', function(event) {
-                                                var debut = document.querySelector('input[name="debut"]').value;
-
+                                    
+                                            // Handle form submission and display server responses as pop-up messages
+                                            document.getElementById('etude-f-form').addEventListener('submit', function (event) {
+                                                event.preventDefault(); // Prevent the default form submission
+                                                
+                                                var form = this;
+                                                var formData = new FormData(form);
+                                                var url = form.action; // The form's action URL
+                                    
+                                                // Basic client-side validation
+                                                var debut = form.querySelector('input[name="debut"]').value;
+                                                var numero = form.querySelector('input[name="numero"]').value;
+                                    
                                                 if (!debut) {
-                                                    event.preventDefault();  // Prevent form submission
-                                                    alert('Veuillez renseigner les dates de début et de fin.');  // Display alert
+                                                    alert('Veuillez renseigner les dates de début et de fin.');
                                                     return false;
                                                 }
                                                 if (!numero) {
-                                                    event.preventDefault();  // Prevent form submission
-                                                    alert('Veuillez renseigner un numéro');  // Display alert
+                                                    alert('Veuillez renseigner un numéro.');
                                                     return false;
                                                 }
+                                    
+                                                // AJAX request to handle server response
+                                                fetch(url, {
+                                                    method: "POST",
+                                                    body: formData,
+                                                    headers: {
+                                                        "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+                                                    },
+                                                })
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    if (!data.success) {
+                                                        // Display error message as a pop-up
+                                                        alert(data.message); // Replace with a toast or modal if desired
+                                                    } else {
+                                                        // Display success message or handle success logic
+                                                        alert('Action réussie : ' + data.message);
+                                                    }
+                                                })
+                                                .catch(error => {
+                                                    console.error("Error:", error);
+                                                    alert("Une erreur s'est produite. Veuillez réessayer.");
+                                                });
                                             });
                                         });
                                     </script>
+                                    
                                     <br>
                                     <!-- Fin de la ligne avec Graphe et Card Infos -->
                                     <!--Fin Responsable et statut-->
@@ -2474,13 +2504,13 @@
                                         <div class="card shadow">
                                             <div class="card-header" id="cardHeaderEleve{{eleve.id}}" data-toggle="collapse" data-target="#cardBodyEleve{{eleve.id}}" aria-expanded="false" aria-controls="cardBodyEleve{{eleve.id}}" style="cursor: pointer;">
                                                 <i class="fas fa-user-circle mr-2"></i>
-                                                <strong>{{eleve}}</strong>
+                                                <strong>{{eleve}}, </strong> {{eleve|JEH:etude}}
                                             </div>
                                             <div class="collapse" id="cardBodyEleve{{eleve.id}}" aria-labelledby="cardHeaderEleve{{eleve.id}}">
                                                 <div class="card-body">
                                                     <div class="container">
                                                         <div class="row justify-content-between">
-                                                            <p class="card-text mr-2">{{eleve|JEH:etude}}</p>
+                                                            
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                                             <a class="btn btn-success">Ajouter un avenant au RdM</a>
                                                             <a href="{% url 'editer_acf' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
@@ -2798,14 +2828,14 @@
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
-                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture">
+                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
                                                             Supprimer la facture
                                                         </button>
                                                     </div>
                                                 </div>
 
                                                 <!-- Modal -->
-                                                <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                                <div class="modal fade" id="deleteModalFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog" role="document">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
@@ -2896,14 +2926,14 @@
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
-                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture">
+                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
                                                             Supprimer la facture
                                                         </button>
                                                     </div>
                                                 </div>
 
                                                 <!-- Modal -->
-                                                <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                                <div class="modal fade" id="deleteModalFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog" role="document">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
@@ -3692,7 +3722,41 @@
                             <div class="tab-pane fade" id="pills-documents">
                                 <div class="col-12 mb-4">
                                     <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
-                                    <a href="{% url 'editer_ba' id_eleve=eleve.id %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le Bulletin d'adhésion</a>
+                                    
+
+
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#numeroBA">
+                                        <i class="fas fa-download mr-2"></i> Générer le Bulletin d'adhésion
+                                    </button>
+                                    
+                                               
+                                    <div class="modal fade" id="numeroBA" tabindex="-1" role="dialog" aria-labelledby="editBAModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <form id="numeroBA" method="POST" action="{% url 'editer_ba' id_eleve=eleve.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                            <label for="ba_nombre">Numéro du Bulletin d'Adhésion</label>
+                                                            <input type="number" class="form-control" id="ba_nombre" name="ba_nombre">
+                                                        </div>
+                                                
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Générer le BA</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    
+
 
                                     <div class="nav-item">
                                         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase1"

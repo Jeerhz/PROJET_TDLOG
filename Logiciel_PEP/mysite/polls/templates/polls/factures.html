@@ -505,14 +505,15 @@
                                                     <span style="cursor:pointer; font-weight: 650;"  data-toggle="modal" data-target="#numeroFacture_{{facture.id}}"> {{facture}} </span>
                                                     <a style="color: #6d7379; font-weight: 400;" href="{% url 'details' modelName='Etude' iD=facture.etude.id %}">
                                                         {{facture.etude.ref}} - {{facture.etude}}
-                                                    </a>                                                </td>
+                                                    </a>                                                
+                                                </td>
                                                 <div class="modal fade" id="numeroFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="editFactureModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog" role="document">
                                                         <div class="modal-content">
                                                             <form id="editFactureForm_{{facture.id}}" method="POST" action="{% url 'numero_facture' facture.id %}">
                                                                 {% csrf_token %}
                                                                 <div class="modal-header">
-                                                                    <h5 class="modal-title" id="editFactureModalLabel_{{facture.id}}">Modifier Facture</h5>
+                                                                    <h5 class="modal-title" id="editFactureModalLabel_{{facture.id}}">Modifier le numéro de la facture</h5>
                                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                         <span aria-hidden="true">&times;</span>
                                                                     </button>

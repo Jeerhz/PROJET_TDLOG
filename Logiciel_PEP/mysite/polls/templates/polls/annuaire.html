@@ -407,13 +407,13 @@
                         <!-- Boutons pour basculer entre les annuaires -->
                         <ul class="nav nav-pills mb-3" style="background-color: #f8f9fc; display: flex; justify-content: center;" id="pills-tab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiant</a>
+                                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiants</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Client</a>
+                                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Clients</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false">Annuaire Etudes</a>
+                                <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false">Annuaire Études</a>
                             </li>
                             
                         </ul>
@@ -485,9 +485,9 @@
                                     <table class="table table-borderless table-hover">
                                         <thead class="thead-dark">
                                             <tr>
-                                                <th class="text-center">Client </th>
+                                                <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Client </th>
                                                 <th class="text-center">Secteur</th>
-                                                <th class="text-center">Type d'entreprise</th>
+                                                <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Type d'entreprise</th>
                                             </tr>
                                         </thead>
                                         <tbody id="clientTableBody">
@@ -495,9 +495,9 @@
                                             {% for client in client_list %}
 
                                             <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
-                                                <td class="text-center"> {{ client.nom_societe }} </td>
+                                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left"> {{ client.nom_societe }} </td>
                                                 <td class="text-center"> {{ client.get_secteur_display }} </td>
-                                                <td class="text-center"> {{ client.get_type_display }} </td>
+                                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ client.get_type_display }} </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -555,7 +555,6 @@
                             <div class="card">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     
-                                    <h2 class="m-0 font-weight-bold text-primary">Etudes</h2>
                                     <!-- Barre de recherche -->
                                     <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                                 </div>

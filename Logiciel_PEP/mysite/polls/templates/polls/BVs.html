@@ -537,10 +537,10 @@
                                                 <td> {{BV.nb_JEH}} {% if BV.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} - {{BV.retr_brute|FormatNombres}}€ de rétribution </td>
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'generer_BV' BV.id %}"></a>
-                                                    <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalBV"> </button>
+                                                    <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalBV_{{BV.id}}"> </button>
                                                     
                                                 </td>
-                                                <div class="modal fade" id="deleteModalBV" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                                <div class="modal fade" id="deleteModalBV_{{BV.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                                                     <div class="modal-dialog" role="document">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
