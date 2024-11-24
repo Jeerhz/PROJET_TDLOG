@@ -22,13 +22,16 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.urls import path
 
+# Uncomment the next when local settings to use debug toolbar
+#from debug_toolbar.toolbar import debug_toolbar_urls
+
 
 urlpatterns = [
     path("", RedirectView.as_view(url="/polls/")),
     path("admin/", admin.site.urls),
     path("polls/", include("polls.urls")),
     path("auth/", include("social_django.urls", namespace="social")),
-]
+] #+ debug_toolbar_urls()
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
