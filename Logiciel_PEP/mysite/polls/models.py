@@ -747,6 +747,7 @@ class Etude(models.Model):
         default="Pour réaliser votre étude, nous rechercherons un ou des étudiants de l’École des Ponts ParisTech. Les cours dispensés à l’École tel(s) que [exemples(s) de cours qui peuvent être utile pour réaliser la mission], apportent aux étudiants les outils nécessaires pour [ce en quoi l'étude va consister]. Ils auront donc les connaissances requises pour [ce que veut le client]."
     )
     cahier_des_charges = models.JSONField(default=dict)
+    date_creation = models.DateTimeField(auto_now_add=True)
 
     class Etat_Doc:
         EN_COURS = "En cours"
@@ -837,7 +838,7 @@ class Etude(models.Model):
         return self.titre
 
     def ref(self):
-        current_year = timezone.now().year
+        current_year = self.date_creation.year
         current_year_last_two_digits = current_year % 100
         return f"{current_year_last_two_digits}e{self.numero:02d}"
 

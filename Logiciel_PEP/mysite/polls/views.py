@@ -2222,17 +2222,18 @@ def editer_convention(request, iD):
             client = instance.client
             phases = Phase.objects.filter(etude=instance).order_by("numero")
             if instance.type_convention == "Convention d'étude":
-                model = ConventionEtude
 
-                template = DocxTemplate(
-                    "polls/templates/polls/Convention_Etude_026.docx"
-                )
+                template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Etude_026.docx")
+
+                template = DocxTemplate(template_path)
+              
+                model = ConventionEtude
                 nom_doc = "Convention_Etude_"
             elif instance.type_convention == "Convention cadre":
+                template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Cadre_026.docx")
+                template = DocxTemplate(template_path)
                 model = ConventionCadre
-                template = DocxTemplate(
-                    "polls/templates/polls/Convention_Cadre_026.docx"
-                )
+                
                 nom_doc = "Convention_Cadre_"
             else:
                 raise ValueError("Type de convention non défini.")
@@ -2386,7 +2387,10 @@ def editer_convention_cadre(request, iD):
             phases = Phase.objects.filter(etude=instance).order_by("numero")
 
             model = ConventionCadre
-            template = DocxTemplate("polls/templates/polls/Convention_Cadre_026.docx")
+
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Cadre_026.docx")
+            template = DocxTemplate(template_path)
+
             nom_doc = "Convention_Cadre_"
             if instance.convention:
                 ce = instance.convention()
@@ -2504,10 +2508,17 @@ def editer_pv(request, iD, type):
                     avenant = avenants[len(avenants) - 1]
                     num_avenant = avenant
                 if type == "PVRF":
-                    template = DocxTemplate("polls/templates/polls/PVRF_026_CE.docx")
+
+                    template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/PVRF_026_CE.docx")
+                    template = DocxTemplate(template_path)
+
+                    
                     filename = f"PVRF_{ref_m}.docx"
                 else:
-                    template = DocxTemplate("polls/templates/polls/PVRI_026_CE.docx")
+                    template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/PVRI_026_CE.docx")
+                    template = DocxTemplate(template_path)
+
+                    
                     filename = f"PVRI_{ref_m}.docx"
 
             else:
@@ -2618,7 +2629,12 @@ def editer_rdm(request, id_etude, id_eleve):
             etudiant_nb_JEH = sum(
                 assignation.nombre_JEH for assignation in assignations
             )
-            template = DocxTemplate("polls/templates/polls/RDM_026.docx")
+
+
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/RDM_026.docx")
+            template = DocxTemplate(template_path)
+
+
             model = RDM
             if etude.rdm_edited():
                 # a modifier
@@ -2690,7 +2706,12 @@ def editer_acf(request, id_etude, id_eleve):
             etude_titre = etude.titre
             date = timezone.now().date()
             annee = date.strftime("%Y")
-            template = DocxTemplate("polls/templates/polls/ACF_etudiant_026.docx")
+
+
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx")
+            template = DocxTemplate(template_path)
+            
+
 
             context = {
                 "etude": etude,
@@ -2772,7 +2793,9 @@ def editer_acf_client(request, iD):
             # Format the date
             general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
             annee = date.strftime("%Y")
-            template = DocxTemplate("polls/templates/polls/ACF_Client_026.docx")
+            general_date_creation = date.strftime("%d %B %Y")
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx")
+            template = DocxTemplate(template_path)
 
             context = {
                 "etude": etude,
@@ -2830,7 +2853,9 @@ def editer_ba(request, id_eleve):
             je_president_prenom = "Thomas"
             date = timezone.now()
             general_date_creation = date.strftime("%d %B %Y")
-            template = DocxTemplate("polls/templates/polls/BA_026.docx")
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/BA_026.docx")
+            template = DocxTemplate(template_path)
+                
             ba_dej_exist = BA.objects.filter(eleve=eleve).first()
             if ba_dej_exist:
                 ba_dej_exist.number= ba_nombre
@@ -3225,7 +3250,13 @@ def editer_avenant_ce(request, iD):
             total_HT_lettres = chiffre_lettres(etude.montant_HT_total())
             total_TTC = format_nombres(etude.total_ttc())
             total_TTC_lettres = chiffre_lettres(etude.total_ttc())
-            template = DocxTemplate("polls/templates/polls/avenant_ce_026.docx")
+
+
+            template_path = os.path.join( conf_settings.BASE_DIR,"polls/templates/polls/avenant_ce_026.docx")
+
+            template = DocxTemplate(template_path)
+
+
             logo_client = InlineImage(
                 template, client.logo, width=Mm(20)
             )  # width is in millimetres
@@ -3294,7 +3325,11 @@ def editer_avenant_ce(request, iD):
 def editer_bon(request, id_bon):
     if request.user.is_authenticated:
         try:
-            template = DocxTemplate("polls/templates/polls/BDC_026.docx")
+
+
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/BDC_026.docx")
+
+            template = DocxTemplate(template_path)
 
             bon = BonCommande.objects.get(id=id_bon)
             etude = bon.etude

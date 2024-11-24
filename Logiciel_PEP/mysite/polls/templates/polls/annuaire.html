@@ -378,20 +378,17 @@
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
+                                    Profil
                                 </a>
                                 <a class="dropdown-item" href="{% url 'settings' %}">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
+                                    Réglages
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
+                                
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
+                                    Déconnection
                                 </a>
                             </div>
                         </li>
@@ -425,7 +422,7 @@
                             <div class="card">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 
-                                <a class="btn btn-primary float-right" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                <a style="color: black;" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                             </div>
                             </div>
                             
@@ -433,14 +430,14 @@
                             
                             <div class="table-responsive" style="background-color: #FFFFFF;">
                                 <table class="table table-borderless table-hover">
-                                        <thead class="thead-dark">
-                                            <tr>
+                                        <thead style="background-color: rgba(26, 61, 2, 0.479);">
+                                            <tr style="color: white;">
                                                 <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Étudiant</th>
                                                 <th class="text-center">Promotion</th>
                                                 <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Département</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="etudiantTableBody">
+                                        <tbody id="etudiantTableBody" style="color: rgba(8, 20, 1, 0.828);">
                                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                             {% for student in student_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
@@ -478,19 +475,19 @@
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     
                                     <!-- Barre de recherche -->
-                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                    <a style="color: black;" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                                 </div>
                             </div>
                                 <div class="table-responsive" style="background-color: #FFFFFF;">
                                     <table class="table table-borderless table-hover">
-                                        <thead class="thead-dark">
-                                            <tr>
+                                        <thead style="background-color: rgba(106, 65, 23, 0.607);">
+                                            <tr style="color: white;">
                                                 <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Client </th>
                                                 <th class="text-center">Secteur</th>
                                                 <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Type d'entreprise</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="clientTableBody">
+                                        <tbody id="clientTableBody" style="color: rgba(44, 31, 6, 0.863);">
                                             <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
                                             {% for client in client_list %}
 
@@ -556,21 +553,21 @@
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     
                                     <!-- Barre de recherche -->
-                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                    <a style="color: black;" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                                 </div>
                             </div>
 
                             <div class="table-responsive" style="background-color: #FFFFFF;">
                                 <table class="table table-borderless table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
+                                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
+                                        <tr style="color:white">
                                             <th class="text-left" style="padding-left: 30px;">Étude</th>
                                             <th class="text-center">Client</th>
                                             <th class="text-center">Debut</th>
                                             <th class="text-center">Suiveur</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="etudesTableBody">
+                                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
                                         <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
@@ -607,15 +604,14 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
                 </div>
             </div>
         </div>
