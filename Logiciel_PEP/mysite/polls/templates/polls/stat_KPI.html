@@ -540,58 +540,7 @@
                     
                     <!-- Content Row -->
 
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                             aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Action:</div>
-                                            <a class="dropdown-item" href="#" onclick="downloadChart()">Télécharger</a>
-                                            <div class="dropdown-divider"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="row mb-3">
-                                        <div class="col-md-3">
-                                            <label for="start_date">Date de début:</label>
-                                            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="end_date">Date de fin:</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
-                                        </div>
-                                        <div class="col-md-3 d-flex align-items-end">
-                                            <button class="btn btn-primary" onclick="updateChart()">Mettre à jour</button>
-                                        </div>
-                                    </div>
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart1"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                                                
-                        <script>
-                            var chiffre_affaire_par_departement = [{% for value in chiffre_affaire_par_departement %}{{ value }},{% endfor %}];
-                            var chiffre_affaire_par_type = [{% for value in chiffre_affaire_par_type %}{{ value }},{% endfor %}];
-                            var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}];
-                            var repartition_CA_etudes = {{ repartition_CA_etudes|safe }};
-
-
-                        </script>
-                    </div>
-
+                    
                     <div class="row">
 
                         <!-- Area Chart -->
@@ -955,6 +904,7 @@
                         // Converting the repartition_CA_etudes dictionary to a JavaScript object
                         var dico_ca_secteur = {{ dico_ca_secteur|safe }};
                         </script>
+
                         
 
                         
@@ -964,6 +914,58 @@
 
                     </div>
                     
+                    <div class="row">
+
+                        <!-- Area Chart -->
+                        <div class="col-xl-12 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                             aria-labelledby="dropdownMenuLink">
+                                            <div class="dropdown-header">Action:</div>
+                                            <a class="dropdown-item" href="#" onclick="downloadChart()">Télécharger</a>
+                                            <div class="dropdown-divider"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <label for="start_date">Date de début:</label>
+                                            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="end_date">Date de fin:</label>
+                                            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button class="btn btn-primary" onclick="updateChart()">Mettre à jour</button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-area">
+                                        <canvas id="myAreaChart1"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                                                
+                        <script>
+                            var chiffre_affaire_par_departement = [{% for value in chiffre_affaire_par_departement %}{{ value }},{% endfor %}];
+                            var chiffre_affaire_par_type = [{% for value in chiffre_affaire_par_type %}{{ value }},{% endfor %}];
+                            var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}];
+                            var repartition_CA_etudes = {{ repartition_CA_etudes|safe }};
+
+
+                        </script>
+                    </div>
+
                     
                     
                       

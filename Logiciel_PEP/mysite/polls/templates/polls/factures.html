@@ -533,8 +533,8 @@
                                                         </div>
                                                     </div>
                                                  </div>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{facture.montant_HT|FormatNombres}} EUR.</td>
+                                                <td style="text-align: center; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
+                                                <td style="text-align: center;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
                                                 
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'facture' facture.id %}"></a>

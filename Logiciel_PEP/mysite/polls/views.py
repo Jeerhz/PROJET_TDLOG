@@ -1505,8 +1505,8 @@ def generate_facture_pdf(request, id_facture):
 
             # Generate PDF from the full HTML
             pdf_file = HTML(string=html_string).write_pdf()
-            ref1 = facture
-            refFA = f"FA{ref1}.pdf"
+            date_emission = datetime.strptime(facture.date_emission, "%d/%m/%Y").year
+            refFA = f"FA{date_emission % 100}{facture.numero_facture:03d}"
             # Serve the PDF as a download
             response = HttpResponse(pdf_file, content_type="application/pdf")
             response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
