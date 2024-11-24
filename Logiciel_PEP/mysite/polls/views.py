@@ -270,59 +270,6 @@ def custom_logout(request):
     return HttpResponse(template.render(context, request))
 
 
-# Failed Asyncroneous view
-# async def annuaire(request):
-#     """Renvoie la page de l'annuaire des études, clients et élèves"""
-#     user = await request.auser()
-#     if not await sync_to_async(lambda: user.is_authenticated)():
-#         template = loader.get_template("polls/login.html")
-#         return HttpResponse(await sync_to_async(template.render)({}, request))
-
-#     user_je = await sync_to_async(lambda: request.user.je)()
-
-#     def fetch_data_annuaire():
-#         client_list = Client.objects.filter(je=user_je)
-#         etude_list = Etude.objects.filter(je=user_je)
-#         student_list = Student.objects.filter(je=user_je)
-#         user_photo_url = user.photo.url  # Preload the photo URL
-#         return {
-#             "user_photo_url": user_photo_url,
-#             "liste_messages": list(
-#                 Message.objects.filter(
-#                     destinataire=request.user,
-#                     read=False,
-#                     date__range=(
-#                         timezone.now() - timezone.timedelta(days=20),
-#                         timezone.now(),
-#                     ),
-#                 ).order_by("date")[:3]
-#             ),
-#             "client_list": client_list,
-#             "student_list": student_list,
-#             "etude_list": etude_list,
-#             "all_notifications": list(
-#                 request.user.notifications.order_by("-date_effet")
-#             ),
-#         }
-
-#     data = await sync_to_async(fetch_data_annuaire)()
-#     context = {
-#         "user": user,
-#         "user_photo_url": data["user_photo_url"],
-#         "client_list": data["client_list"],
-#         "student_list": data["student_list"],
-#         "etude_list": data["etude_list"],
-#         "liste_messages": data["liste_messages"],
-#         "message_count": len(data.get("liste_messages")),
-#         "notification_list": data.get("all_notifications"),
-#         "notification_count": len(data.get("all_notifications")),
-#     }
-
-#     template = loader.get_template("polls/annuaire.html")
-#     return HttpResponse(template.render(context, request))
-
-
-
 def run_query(func, *args):
     result = func(*args)
     connection.close()
@@ -384,6 +331,8 @@ def je_detail(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
+
+        
 
         context = {
             "liste_messages": liste_messages,
@@ -1554,6 +1503,7 @@ def stat_KPI(request):
             etude__in=etudes, date_signature__isnull=False
         )
 
+        #TODO : optimise this boucle for
         for devis in devis_envoye:
             dico_devis_envoye[devis.id] = {
                 "date": f"{devis.date_signature.month}-{devis.date_signature.year}",
