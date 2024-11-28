@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",#TODO
     "django_celery_beat",
-    "django_celery_results",
     "social_django",
 ]
 
