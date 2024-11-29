@@ -734,9 +734,7 @@
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
@@ -766,9 +764,7 @@
                                         </td>
                                                 
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
@@ -966,9 +962,7 @@
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
@@ -995,9 +989,7 @@
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
@@ -1212,9 +1204,7 @@
                                         {% if user.parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
@@ -1241,9 +1231,7 @@
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}

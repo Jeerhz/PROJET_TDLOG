@@ -426,18 +426,18 @@
                                 <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                                     <div id="je-info">
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item"><i class="fas fa-file-alt mr-2"></i><strong>Nom:</strong> {{ je.nom }}</li>
-                                            <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Raison Sociale:</strong> {{ je.raison_sociale }}</li>
-                                            <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse:</strong> {{ je.rue }}, {{ je.ville }}, {{ je.code_postal }}</li>
-                                            <li class="list-group-item"><i class="fas fa-id-badge mr-2"></i><strong>SIRET:</strong> {{ je.siret }}</li>
-                                            <li class="list-group-item"><i class="fas fa-layer-group mr-2"></i><strong>APE:</strong> {{ je.APE }}</li>
-                                            <li class="list-group-item"><i class="fas fa-percent mr-2"></i><strong>TVA:</strong> {{ je.TVA }}</li>
-                                            <li class="list-group-item"><i class="fas fa-credit-card mr-2"></i><strong>IBAN:</strong> {{ je.IBAN }}</li>
-                                            <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>BIC:</strong> {{ je.BIC }}</li>
-                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre de Membres:</strong> {{ je.member_set.count }}</li>
-                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre d'Inscrits:</strong> {{ je.student_set.count }}</li>
-                                            <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires:</strong> {{ je.chiffres_affaires }} €</li>
-                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Président</strong> {% if je.president %} {{ je.president }} {% else %} pas encore de président {% endif %} </li>
+                                            <li class="list-group-item"><i class="fas fa-file-alt mr-2"></i><strong>Nom :</strong> {{ je.nom }}</li>
+                                            <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Raison Sociale :</strong> {{ je.raison_sociale }}</li>
+                                            <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse :</strong> {{ je.rue }}, {{ je.ville }}, {{ je.code_postal }}</li>
+                                            <li class="list-group-item"><i class="fas fa-id-badge mr-2"></i><strong>SIRET :</strong> {{ je.siret }}</li>
+                                            <li class="list-group-item"><i class="fas fa-layer-group mr-2"></i><strong>APE :</strong> {{ je.APE }}</li>
+                                            <li class="list-group-item"><i class="fas fa-percent mr-2"></i><strong>TVA :</strong> {{ je.TVA }}</li>
+                                            <li class="list-group-item"><i class="fas fa-credit-card mr-2"></i><strong>IBAN :</strong> {{ je.IBAN }}</li>
+                                            <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>BIC :</strong> {{ je.BIC }}</li>
+                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre de Membres :</strong> {{ je.member_set.count }}</li>
+                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Nombre d'Inscrits :</strong> {{ je.student_set.count }}</li>
+                                            <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires :</strong> {{ je.chiffres_affaires }} €</li>
+                                            <li class="list-group-item"><i class="fas fa-users mr-2"></i><strong>Président :</strong> {% if je.president %} {{ je.president }} {% else %} pas encore de président {% endif %} </li>
 
                                         </ul>
                                         <!-- Modifier Button -->
@@ -480,8 +480,8 @@
                                                 <div class="card-body">
                                                     <div class="text-center">
                                                         <img src="{{ membre.photo.url }}" class="img-fluid rounded-circle mb-3" alt="Photo de {{ membre.student.first_name }} {{ membre.student.last_name }}" style="width: 140px; height: 140px; object-fit: cover;">
-                                                        <h6 class="font-weight-bold text-primary">{{ membre.student.first_name }} {{ membre.student.last_name }}</h6>
-                                                        <a href="{% url 'details' modelName='Student' iD=request.user.student.id %}" class="stretched-link"></a>
+                                                        <h6 class="font-weight-bold text-primary">{{ membre.student.first_name }} {{ membre.student.last_name }} : {{membre.poste}} </h6>
+                                                        <a href="{% url 'details' modelName='Student' iD=membre.student.id %}" class="stretched-link"></a>
                                                     </div>
                                                 </div>
                                             </div>
