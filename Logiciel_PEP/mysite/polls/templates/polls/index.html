@@ -565,9 +565,9 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{user}}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{request.user.photo.url}}"/>
+                                    src="{{user.photo.url}}"/>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -708,7 +708,7 @@
                 </div>
 
 
-                {% if user.parametres.param_statut_etude_ed %}
+                {% if user_parametres.param_statut_etude_ed %}
                 <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
                     <div class="row">
@@ -722,23 +722,23 @@
                                 <thead style="background-color: #ffffff;">
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
                                         <th scope="col">Montant</th>
 
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
                                         
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <th scope="col">Avancement</th>
                                         {% endif%}
                                         <th scope="col" style="width: 5%;">Global</th>
@@ -748,15 +748,15 @@
                                     {% for etude in etudes_en_negociation %}
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
-                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             
                                                 
@@ -764,11 +764,13 @@
                                         </td>
                                                 
                                         {% endif %}
-                                        
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
+                                        {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <td class="align-middle" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
@@ -791,7 +793,7 @@
                                     </tr>
                                     <tr class="collapse" id="sec_table_ed_{{etude.id}}">
                                         
-                                            <td colspan="{{user.parametres.nombre_colonnes}}">
+                                            <td colspan="{{user_parametres.nombre_colonnes}}">
                                                 <table class="table table-bordered">
                                                     <colgroup>
                                                         <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
@@ -937,7 +939,7 @@
                 {% endif %}
 
 
-                {% if user.parametres.param_statut_etude_ec %}
+                {% if user_parametres.param_statut_etude_ec %}
                 <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
                     <div class="row">
@@ -951,22 +953,24 @@
                                 <thead style="background-color: #ffffff;">
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
                                         <th scope="col">Montant</th>
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <th scope="col">Budget HT</th>
+                                        {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <th scope="col">Avancement</th>
                                         {% endif%}
                                         <th scope="col" style="width: 5%;">Global</th>
@@ -976,24 +980,26 @@
                                     {% for etude in etudes_en_cours %}
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
-                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
+                                        {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <td class="align-middle" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
@@ -1016,7 +1022,7 @@
                                     </tr>
                                     <tr class="collapse" id="sec_table_ec_{{etude.id}}">
                                         
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
+                                        <td colspan="{{user_parametres.nombre_colonnes}}">
                                             <table class="table table-bordered">
                                                 <colgroup>
                                                     <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
@@ -1179,7 +1185,7 @@
                 
 
                 
-                {% if user.parametres.param_statut_etude_t %}
+                {% if user_parametres.param_statut_etude_t %}
                 <!-- Beginning of container-fluid -->
                 <div class="container-fluid">
                     <div class="row">
@@ -1193,22 +1199,24 @@
                                 <thead style="background-color: #ffffff;">
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <th scope="col" style="width: 3%;">Étude</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
                                         <th scope="col">Montant</th>
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <th scope="col">Budget HT</th>
+                                        {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <th scope="col">Avancement</th>
                                         {% endif%}
                                         <th scope="col" style="width: 5%;">Global</th>
@@ -1218,24 +1226,26 @@
                                     {% for etude in etudes_terminees %}
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user.parametres.param_col_etude_numero %}
+                                        {% if user_parametres.param_col_etude_numero %}
                                         <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_client %}
+                                        {% if user_parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
-                                        <td class="align-middle">{{etude.montant_HT_total|FormatNombres}} €</td>
-                                        {% if user.parametres.param_col_etude_responsable %}
+                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        {% if user_parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
+                                        {% endif %}
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_avancement %}
+                                        {% if user_parametres.param_col_etude_avancement %}
                                         <td class="align-middle" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
@@ -1259,7 +1269,7 @@
                                     </tr>
                                     <tr class="collapse" id="sec_table_t_{{etude.id}}">
                                         
-                                        <td colspan="{{user.parametres.nombre_colonnes}}">
+                                        <td colspan="{{user_parametres.nombre_colonnes}}">
                                             <table class="table table-bordered">
                                                 <colgroup>
                                                     <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->

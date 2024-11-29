@@ -25,10 +25,6 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 
-import logging  # pour gérer plus facilement les erreurs
-
-logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger(__name__)
 
 from io import BytesIO
 from uuid import UUID
@@ -44,7 +40,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.html import strip_tags
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Prefetch
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
@@ -181,63 +177,79 @@ def confidentialite_donnees(request):
     return HttpResponse(template.render(context, request))
 
 
-async def index(request):
-    user = await request.auser()
-    if not user.is_authenticated:  # See django docu for asyncronous authentification
-        template = loader.get_template("polls/login.html")
-        return HttpResponse(await sync_to_async(template.render)({}, request))
+def index(request):
+    user = request.user
+    if not user.is_authenticated:
+        return render(request, "polls/login.html")
 
-    user_je = await sync_to_async(lambda: request.user.je)()
-    mandat_select = request.POST.getlist("mandat-select")
-    mandat_select = mandat_select or [choice[0] for choice in Etude.Mandat.choices]
+    user_je = user.je
+    mandat_select = request.POST.getlist("mandat-select") or [choice[0] for choice in Etude.Mandat.choices]
 
-    # Fetch data using sync_to_async
-    def fetch_etudes_filtrees():
-        recent_etudes = Etude.objects.filter(je=user_je).order_by("-debut")
-        return {
-            "liste_messages": list(
+    # Use ThreadPoolExecutor to handle blocking operations
+    with ThreadPoolExecutor() as executor:
+        # Fetch all etudes in one query with related objects
+        recent_etudes = list(
+            Etude.objects.filter(je=user_je, mandat__in=mandat_select)
+            .select_related('responsable', 'client', 'resp_qualite')  # Assuming these are foreign keys
+            .prefetch_related(
+                Prefetch('etude', queryset=Phase.objects.all())
+            )
+            .order_by("-debut")
+        )
+
+        # Pre-calculate montant_HT_total for each etude
+        for etude in recent_etudes:
+            # Calculate montant_phase_HT using pre-fetched phases
+            etude_phases = etude.etude.all()  # Access pre-fetched phases
+            montant_phase_HT = sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in etude_phases
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            )
+            etude.montant_ht_total = etude.frais_dossier + montant_phase_HT
+
+        # Filter etudes in Python
+        etudes_terminees = [etude for etude in recent_etudes if etude.status == "TERMINEE"]
+        etudes_en_cours = [etude for etude in recent_etudes if etude.status == "EN_COURS"]
+        etudes_en_negociation = [etude for etude in recent_etudes if etude.status == "EN_NEGOCIATION"]
+
+        user_parametres = user.parametres
+
+        # Fetch messages and notifications
+        liste_messages_future = executor.submit(
+            lambda: list(
                 Message.objects.filter(
                     destinataire=request.user,
                     read=False,
-                    date__range=(
-                        timezone.now() - timezone.timedelta(days=20),
-                        timezone.now(),
-                    ),
+                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
                 ).order_by("date")[:3]
-            ),
-            "etudes_terminees": recent_etudes.filter(
-                status="TERMINEE", mandat__in=mandat_select
-            ),
-            "etudes_en_cours": recent_etudes.filter(
-                status="EN_COURS", mandat__in=mandat_select
-            ),
-            "etudes_en_negociation": recent_etudes.filter(
-                status="EN_NEGOCIATION", mandat__in=mandat_select
-            ),
-            "all_notifications": list(
-                request.user.notifications.order_by("-date_effet")
-            ),
-        }
+            )
+        )
 
-    data = await sync_to_async(fetch_etudes_filtrees)()
+        all_notifications_future = executor.submit(
+            lambda: list(request.user.notifications.order_by("-date_effet"))
+        )
+
+        # Wait for futures to complete
+        liste_messages = liste_messages_future.result()
+        all_notifications = all_notifications_future.result()
 
     # Prepare the context
     context = {
-        "liste_messages": data["liste_messages"],
-        "message_count": len(data["liste_messages"]),
-        "etudes_terminees": data["etudes_terminees"],
-        "etudes_en_cours": data["etudes_en_cours"],
-        "etudes_en_negociation": data["etudes_en_negociation"],
-        "notification_list": [
-            notif for notif in data["all_notifications"] if notif.active()
-        ],
-        "notification_count": len(data["all_notifications"]),
+        "user": user,
+        "user_parametres": user_parametres,
+        "liste_messages": liste_messages,
+        "message_count": len(liste_messages),
+        "etudes_terminees": etudes_terminees,
+        "etudes_en_cours": etudes_en_cours,
+        "etudes_en_negociation": etudes_en_negociation,
+        "notification_list": [notif for notif in all_notifications if notif.active()],
+        "notification_count": len(all_notifications),
         "mandat_choices": Etude.Mandat.choices,
         "mandat_default": mandat_select,
     }
 
-    template = loader.get_template("polls/index.html")
-    return HttpResponse(await sync_to_async(template.render)(context, request))
+    return render(request, "polls/index.html", context)
 
 
 def custom_login(request):
@@ -3672,6 +3684,7 @@ def charts(request):
 def search_suggestions(request):
     query = request.GET.get("query", "")
     if query:
+        print(f"query: {query}")
         keywords = query.split()
         suggestions_etude = Etude.objects.filter(je=request.user.je)
         suggestions_client = Client.objects.filter(je=request.user.je)
@@ -3693,18 +3706,36 @@ def search_suggestions(request):
                 Q(first_name__icontains=keyword) | Q(last_name__icontains=keyword)
             )
         count_client = suggestions_client.count()
+
+        print("count_client: ", count_client)
+
         count_student = suggestions_student.count()
+
+        print("count_student: ", count_student)
+        #We set this variable in the case there is no studies in the suggestions to not count 1 for an empty set ?
         suppression_etude_c = max(1, count_client)
+
+        print(f" Suppression_etude_c:{suppression_etude_c}")
+
         suppression_etude_s = max(1, count_student)
+
+        print(f" Suppression_etude_s:{suppression_etude_s}")
+
         suggestions_etude = suggestions_etude.order_by("-debut")[
             : 5 - suppression_etude_c - suppression_etude_s
         ]
+
+        print(f"suggestions etude: {suggestions_etude}")
         nombre_etude = suggestions_etude.count()
         suggestions_client = suggestions_client[
             : 5 - nombre_etude - suppression_etude_s
         ]
+        
+        print(f"suggestions client: {suggestions_client}")
         nombre_client = suggestions_client.count()
         suggestions_student = suggestions_student[: 5 - nombre_etude - nombre_client]
+
+        print(f"suggestions student: {suggestions_student}")
         return JsonResponse(
             {
                 "suggestions_etude": list(suggestions_etude.values_list("titre", "id")),
