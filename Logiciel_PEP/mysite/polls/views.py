@@ -126,6 +126,7 @@ from .models import (
     AssociationPhaseBDC,
     BA,
     AssociationFactureBDC,
+    BV,
 )
 
 
