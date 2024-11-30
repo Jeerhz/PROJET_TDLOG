@@ -287,35 +287,48 @@ def run_query(func, *args):
     connection.close()
     return result
 
-
 def annuaire(request):
-    """Render the annuaire page with parallel thread execution."""
+    """Render the annuaire page with optimized queries using ThreadPoolExecutor."""
     user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
 
-    user_je_id = user.je.id
+    user_je = user.je
+    user_student = user.student
+    user_je_id = user_je.id
 
     # Define the functions to be executed in parallel
-    tasks = [
-        (fetch_clients, user_je_id),
-        (fetch_students, user_je_id),
-        (fetch_etudes, user_je_id),
-        (fetch_messages, user.pk),
-        (fetch_notifications, user),
-    ]
+    def fetch_clients_annuaire():
+        return list(Client.objects.filter(je=user_je_id))
+
+    def fetch_students_annuaire():
+        return list(Student.objects.filter(je=user_je_id))
+
+    def fetch_etudes_annuaire():
+        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite'))
+
 
     # Use ThreadPoolExecutor to run tasks concurrently
-    with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
-        results = list(executor.map(lambda x: run_query(*x), tasks))
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        clients_future = executor.submit(fetch_clients_annuaire)
+        students_future = executor.submit(fetch_students_annuaire)
+        etudes_future = executor.submit(fetch_etudes_annuaire)
+        messages_future = executor.submit(fetch_messages, user)
+        notifications_future = executor.submit(fetch_notifications, user)
 
-    # Extract results
-    client_list, student_list, etude_list, liste_messages, notification_list = results
+        # Extract results
+        client_list = clients_future.result()
+        student_list = students_future.result()
+        etude_list = etudes_future.result()
+        liste_messages = messages_future.result()
+        notification_list = notifications_future.result()
 
     # Context for rendering the page
     context = {
         "user": user,
+        "user_je": user_je,
+        "user_student": user_student,
         "user_photo_url": user.photo.url,
         "client_list": client_list,
         "student_list": student_list,
@@ -328,6 +341,10 @@ def annuaire(request):
 
     template = loader.get_template("polls/annuaire.html")
     return HttpResponse(template.render(context, request))
+
+
+
+
 
 
 def je_detail(request):
@@ -472,47 +489,48 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-# Updated details function with async support
-async def details(request, modelName, iD):
-    user = await request.auser()
+def details(request, modelName, iD):
+    # Create a ThreadPoolExecutor instance
+    executor = ThreadPoolExecutor(max_workers=10)
+    user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
-        return HttpResponse(await sync_to_async(template.render)({}, request))
+        return HttpResponse(template.render({}, request))
 
-    # Fetch messages and notifications asynchronously
-    liste_messages = await sync_to_async(lambda: Message.objects.filter(
+    # Fetch messages and notifications synchronously using ThreadPoolExecutor
+    liste_messages = executor.submit(lambda: list(Message.objects.filter(
         destinataire=request.user,
         read=False,
         date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-    ).order_by("date")[:3])()
-    message_count = await sync_to_async(lambda: len(liste_messages))()
-    all_notifications = await sync_to_async(lambda: list(request.user.notifications.order_by("-date_effet")))()
+    ).order_by("date")[:3])).result()
+    message_count = len(liste_messages)
+    all_notifications = executor.submit(lambda: list(request.user.notifications.order_by("-date_effet"))).result()
     notification_list = [notif for notif in all_notifications if notif.active()]
     notification_count = len(notification_list)
 
     model = apps.get_model(app_label="polls", model_name=modelName)
     try:
-        instance = await sync_to_async(lambda: model.objects.get(id=iD))()
+        instance = executor.submit(lambda: model.objects.get(id=iD)).result()
         if modelName == "Message":
             instance.read = True
-            await sync_to_async(instance.save)()
+            executor.submit(instance.save).result()
 
         # Initialize context variables
         etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
 
         if modelName == "Etude":
             etude = instance
-            phases = await sync_to_async(lambda: list(Phase.objects.filter(etude=instance).order_by("numero")))()
-            factures = await sync_to_async(lambda: list(Facture.objects.filter(etude=instance).order_by("numero_facture")))()
-            intervenants = await sync_to_async(etude.get_li_students)()
-            members = await sync_to_async(lambda: list(Member.objects.all()))()
-            respo = await sync_to_async(lambda: instance.responsable.student)()
+            phases = executor.submit(lambda: list(Phase.objects.filter(etude=instance).order_by("numero"))).result()
+            factures = executor.submit(lambda: list(Facture.objects.filter(etude=instance).order_by("numero_facture"))).result()
+            intervenants = executor.submit(etude.get_li_students).result()
+            members = executor.submit(lambda: list(Member.objects.all())).result()
+            respo = executor.submit(lambda: instance.responsable.student).result()
             poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
 
-            client = await sync_to_async(lambda: etude.client)()
+            client = executor.submit(lambda: etude.client).result()
             if client:
-                representants_interlocuteurs = await sync_to_async(client.representants)()
-                representants_legaux = await sync_to_async(client.representants)()
+                representants_interlocuteurs = executor.submit(client.representants).result()
+                representants_legaux = executor.submit(client.representants).result()
             else:
                 representants_interlocuteurs, representants_legaux = [], []
 
@@ -522,8 +540,8 @@ async def details(request, modelName, iD):
             client = instance
 
         context = {
-            "attribute_list": await sync_to_async(instance.get_display_dict)(),
-            "title": await sync_to_async(instance.get_title_details)(),
+            "attribute_list": executor.submit(instance.get_display_dict).result(),
+            "title": executor.submit(instance.get_title_details).result(),
             "modelName": modelName,
             "iD": iD,
             "liste_messages": liste_messages,
@@ -549,7 +567,7 @@ async def details(request, modelName, iD):
                 "poste": poste,
             })
             if etude.type_convention == "Convention cadre":
-                context["bons"] = await sync_to_async(lambda: list(BonCommande.objects.filter(etude=etude).order_by("numero")))()
+                context["bons"] = executor.submit(lambda: list(BonCommande.objects.filter(etude=etude).order_by("numero"))).result()
 
         if client is not None:
             context.update({
@@ -571,7 +589,7 @@ async def details(request, modelName, iD):
         }
         template = loader.get_template("polls/page_error.html")
 
-    return HttpResponse(await sync_to_async(template.render)(context, request))
+    return HttpResponse(template.render(context, request))
 
 
 
