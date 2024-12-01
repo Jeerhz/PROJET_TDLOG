@@ -41,7 +41,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.db.models import Sum, Count, Q, Prefetch
-from datetime import datetime, timedelta, date, time
+import datetime
+from datetime import timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
 
@@ -192,7 +193,7 @@ def index(request):
             Etude.objects.filter(je=user_je, mandat__in=mandat_select)
             .select_related('responsable', 'client', 'resp_qualite')  # Assuming these are foreign keys
             .prefetch_related(
-                Prefetch('etude', queryset=Phase.objects.all())
+                Prefetch('phases', queryset=Phase.objects.all())
             )
             .order_by("-debut")
         )
@@ -200,7 +201,7 @@ def index(request):
         # Pre-calculate montant_HT_total for each etude
         for etude in recent_etudes:
             # Calculate montant_phase_HT using pre-fetched phases
-            etude_phases = etude.etude.all()  # Access pre-fetched phases
+            etude_phases = etude.phases.all()  # Access pre-fetched phases
             montant_phase_HT = sum(
                 phase.montant_HT_par_JEH * phase.nb_JEH
                 for phase in etude_phases
@@ -342,9 +343,6 @@ def annuaire(request):
 
     template = loader.get_template("polls/annuaire.html")
     return HttpResponse(template.render(context, request))
-
-
-
 
 
 
@@ -491,105 +489,211 @@ def page_detail_etude(request):
 
 
 def details(request, modelName, iD):
-    # Create a ThreadPoolExecutor instance
-    executor = ThreadPoolExecutor(max_workers=10)
     user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
+    
 
-    # Fetch messages and notifications synchronously using ThreadPoolExecutor
-    liste_messages = executor.submit(lambda: list(Message.objects.filter(
+    user_je = user.je
+    user_student = user.student
+
+    # Fetch messages and notifications
+    liste_messages = list(Message.objects.filter(
         destinataire=request.user,
         read=False,
         date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-    ).order_by("date")[:3])).result()
+    ).order_by("date")[:3])
     message_count = len(liste_messages)
-    all_notifications = executor.submit(lambda: list(request.user.notifications.order_by("-date_effet"))).result()
+    all_notifications = list(request.user.notifications.order_by("-date_effet"))
     notification_list = [notif for notif in all_notifications if notif.active()]
     notification_count = len(notification_list)
 
     model = apps.get_model(app_label="polls", model_name=modelName)
-    try:
-        instance = executor.submit(lambda: model.objects.get(id=iD)).result()
-        if modelName == "Message":
-            instance.read = True
-            executor.submit(instance.save).result()
+    instance = get_object_or_404(model, id=iD)
 
-        # Initialize context variables
-        etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
+    if modelName == "Message":
+        instance.read = True
+        instance.save()
 
-        if modelName == "Etude":
-            etude = instance
-            phases = executor.submit(lambda: list(Phase.objects.filter(etude=instance).order_by("numero"))).result()
-            factures = executor.submit(lambda: list(Facture.objects.filter(etude=instance).order_by("numero_facture"))).result()
-            intervenants = executor.submit(etude.get_li_students).result()
-            members = executor.submit(lambda: list(Member.objects.all())).result()
-            respo = executor.submit(lambda: instance.responsable.student).result()
-            poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
+    # Initialize context variables
+    etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
 
-            client = executor.submit(lambda: etude.client).result()
-            if client:
-                representants_interlocuteurs = executor.submit(client.representants).result()
-                representants_legaux = executor.submit(client.representants).result()
-            else:
-                representants_interlocuteurs, representants_legaux = [], []
+    if modelName == "Etude":
+        # Use select_related and prefetch_related for optimization
+        etude = Etude.objects.select_related(
+            'resp_qualite', 'responsable', 'client', 'client_interlocuteur', 'client_representant_legale', 'je'
+        ).prefetch_related(
+            Prefetch('phases', queryset=Phase.objects.order_by('numero')),
+            Prefetch('factures', queryset=Facture.objects.order_by('numero_facture')),
+            Prefetch('conventions_etude', queryset=ConventionEtude.objects.order_by('date_signature')),
+            Prefetch('conventions_cadre', queryset=ConventionCadre.objects.order_by('date_signature')),
+            'responsable__student',
+            'resp_qualite__student'
+        ).get(id=iD)
+        members = Member.objects.select_related("student").all()
+        respo = etude.responsable.student
+        factures = etude.factures.all()
 
-        if modelName == "Student":
-            eleve = instance
-        if modelName == "Client":
-            client = instance
+        for facture in factures:
+            facture.cached_montant_HT = facture.montant_HT()
+            facture.cached_montant_TVA = facture.montant_TVA()
+            facture.cached_montant_TTC = facture.montant_TTC()
 
-        context = {
-            "attribute_list": executor.submit(instance.get_display_dict).result(),
-            "title": executor.submit(instance.get_title_details).result(),
-            "modelName": modelName,
-            "iD": iD,
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": notification_count,
+        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
+        phases = etude.phases.prefetch_related(
+    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.select_related("eleve").all()))
+        
+
+        def compute_total_retribution(phases):
+            total_retribution = 0
+            for phase in phases:
+                nb_JEHs = 0
+                retr_totale = 0
+                # Access preloaded AssignationJEH objects
+                assignations = phase.assignationjeh_set.all()
+                for assignation in assignations:
+                    retr_totale += assignation.retribution_brute_totale()
+                    nb_JEHs += assignation.nombre_JEH
+                # Calculate remaining retribution
+                retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
+                total_retribution += retr_totale
+            return total_retribution
+        
+        etude_retributions_totales = compute_total_retribution(phases)
+
+        # Fetch client representatives with optimized query
+        if client:
+            client_representants = client.representants
+            representants_interlocuteurs = [
+                rep for rep in client_representants if rep.role == "interlocuteur"
+            ]
+            representants_legaux = [
+                rep for rep in client_representants if rep.role == "legal"
+            ]
+        else:
+            representants_interlocuteurs, representants_legaux = [], []
+
+
+        # We use the loaded data to calculate the end date of the study
+        duree = max(
+                phase.duree_semaine + phase.debut_relatif
+                for phase in phases
+                if phase.duree_semaine is not None and phase.debut_relatif is not None
+            ) if phases else 0
+        
+        etude_fin = etude.debut + datetime.timedelta(weeks=duree) if (etude.debut and duree) else None
+
+        # Same for the total amount of the study
+        etude_montant_total_phases = (
+            sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in phases
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            )
+            if phases
+            else 0
+        )
+
+        etude_total_montant_HT = etude_montant_total_phases + etude.frais_dossier
+
+        # We also compute the number of JEH for the study
+        etude_nbJEH = (
+            sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None)
+            if phases
+            else 0
+        )
+
+        etude_charge_URSSAF = etude_nbJEH * user_je.base_urssaf * user_je.taux_cotisations / 100 if etude_nbJEH else 0
+        # At least we do not make research with the phases
+
+        etude_marge_JE = etude_total_montant_HT - etude_retributions_totales - etude_charge_URSSAF
+
+
+        etude_facture_solde = None
+        for facture in factures:
+            if facture.type_facture == facture.Status.SOLDE:
+                etude_facture_solde = facture
+        
+        attribute_list = {"Titre": etude.titre,
+            "Description": etude.description,
+            "Numéro": etude.numero,
+            "Client": str(etude.client.nom_societe),
+            "Début": etude.debut,
+            "Fin": etude_fin,
+            "Responsable": str(respo),
+            "Nombre de JEH": etude_nbJEH,
+            "Montant HT": etude_total_montant_HT,
         }
 
-        # Add additional context if applicable
-        if etude is not None:
-            context.update({
-                "etude": etude,
-                "phases": phases,
-                "factures": factures,
-                "intervenants": intervenants,
-                "phase_form": AddPhase(),
-                "facture_form": AddFacture(),
-                "intervenant_form": AddIntervenant(),
-                "etude_form": AddEtude(instance=etude),
-                "representants_interlocuteurs": representants_interlocuteurs,
-                "representants_legaux": representants_legaux,
-                "members": members,
-                "poste": poste,
-            })
-            if etude.type_convention == "Convention cadre":
-                context["bons"] = executor.submit(lambda: list(BonCommande.objects.filter(etude=etude).order_by("numero"))).result()
 
-        if client is not None:
-            context.update({
-                "client": client,
-                "representant_form": AddRepresentant(),
-            })
 
-        if eleve is not None:
-            context["eleve"] = eleve
+    if modelName == "Student":
+        eleve = instance
+    if modelName == "Client":
+        client = instance
 
-        template = loader.get_template("polls/page_details.html")
-    except model.DoesNotExist:
-        context = {
-            "error_message": "The selected object does not exist in the database.",
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": notification_count,
-        }
-        template = loader.get_template("polls/page_error.html")
 
+    context = {
+        "modelName": modelName,
+        "iD": iD,
+        "user": user,
+        "user_student": user_student,
+        "user_je": user_je,
+        "liste_messages": liste_messages,
+        "message_count": message_count,
+        "notification_list": notification_list,
+        "notification_count": notification_count,
+    }
+
+    # Add additional context if applicable
+    if etude is not None:
+        etude_convention = etude.conventions_etude.first() if etude.type_convention == "Convention d'étude" else etude.conventions_cadre.first()
+
+
+        context.update({
+            "attribute_list": attribute_list,
+            "title": "Détails de la mission",
+            "etude": etude,
+            "etude_convention": etude_convention,
+            "etude_devis": etude.devis.first(),
+            "etude_fac_solde": etude_facture_solde,
+            "etude_fin": etude_fin,
+            "etude_duree": duree,
+            "etude_nbJEH": etude_nbJEH,
+            "etude_total_montant_phases": etude_montant_total_phases,
+            "etude_total_ttc": etude_total_montant_HT * (1 + etude.taux_tva / 100),
+            "etude_tva": (etude.taux_tva/100) * etude_total_montant_HT,
+            "etude_marge_JE": etude_marge_JE,
+            "etude_retributions_totales": etude_retributions_totales,
+            "etude_charge_URSSAF": etude_charge_URSSAF,
+            "resp_qualite": etude.resp_qualite.student,
+            "responsable": respo,
+            "phases": phases,
+            "factures": factures,
+            "intervenants": intervenants,
+            "phase_form": AddPhase(),
+            "facture_form": AddFacture(),
+            "intervenant_form": AddIntervenant(),
+            "etude_form": AddEtude(instance=etude),
+            "representants_interlocuteurs": representants_interlocuteurs,
+            "representants_legaux": representants_legaux,
+            "members": members,
+            "poste": poste,
+        })
+        if etude.type_convention == "Convention cadre":
+            context["bons"] = list(BonCommande.objects.filter(etude=etude).order_by("numero"))
+
+    if client is not None:
+        context.update({
+            "client": client,
+            "representant_form": AddRepresentant(),
+        })
+
+    if eleve is not None:
+        context["eleve"] = eleve
+
+    template = loader.get_template("polls/page_details.html")
     return HttpResponse(template.render(context, request))
 
 
