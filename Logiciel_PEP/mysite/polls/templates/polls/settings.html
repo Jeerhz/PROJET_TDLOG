@@ -638,20 +638,20 @@
                                         </div>
                                     </div>
                                     <hr>
-                                    <br>
+                                    <br> 
                                     <div class="container mb-5">
                                         <h5><i class="fas fa-table mr-2"></i><strong>Colonnes études :</strong></h5>
                                         <div class="card border-left-secondary">
                                             <ul class="list-group list-group-flush">
                                                 {% for field in form_param %}
-                                                {% if field.name in form_param.col_etude %}
+                                                
                                                 <li class="list-group-item">
                                                     <div class="custom-control custom-checkbox">
                                                         {{ field }}
                                                         <label class="custom-control-label" for="{{field.id_for_label}}"><strong>{{field.label}}</strong></label>
                                                     </div>
                                                 </li>
-                                                {% endif %}
+                                                
                                                 {% endfor %}
                                             </ul>
                                         </div>
