@@ -600,112 +600,94 @@
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-secondary">Signaler un problème</button>
                     </div>
-                    <div class="card-body p-4">
-                        <div class="row">
-                
-                            <!-- Earnings (Annual) -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-success shadow h-100">
+                    <div class="col-12 mt-3 mb-3">
+                        <form action="{% url 'index'%}" method="post" class="row">
+                            {% csrf_token %}
+                            <div class="col-3">
+                                
+                            </div>
+                            <div class="col-5">
+                                <div class="dl-horizontal">
+                                <div class="form-group row">
+                                    <label for="mandat-select" class="col-sm-4 col-form-label">Mandat</label>
+                                    <div class="col-sm-8 justify-content-center">
+                                        <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                            {% for choice in mandat_choices %}
+                                            <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>{{ choice.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <button type="submit" class="btn btn-primary">Choisir</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row justify-content-between">
+                            <!-- Card Mission terminée (Annuel) -->
+                            <div class="col-xl-3 col-md-6 mb-3">
+                                <div class="card shadow h-100" style="border-left: 4px solid #f7c8a1;"> <!-- Custom border color -->
                                     <div class="card-body">
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    Chiffre d'Affaire Annuel</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> {{chiffre_affaire}} € </div>
+                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #f7c8a1; font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                                    En négociations
+                                                </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_nego}} missions : {{ca_etudes_nego|FormatNombres}} €</div>
                                             </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Missions en cours -->
+                            <div class="col-xl-3 col-md-6 mb-3">
+                                <div class="card shadow h-100" style="border-left: 4px solid #fcdd78;"> <!-- Custom border color -->
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                
+                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #fcd143; font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                                    En cours</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_ec}} missions : {{ca_etudes_ec|FormatNombres}} €</div>
+
                                             </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <!-- Pending Requests -->
+                            <div class="col-xl-3 col-md-6 mb-3">
+                                <div class="card shadow h-100" style="border-left: 4px solid #b6f7bc;"> <!-- Custom border color -->
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+
+                                               
+
+                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #b6f7bc;font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                                    Terminées
+                                                </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_term}} missions : {{ca_etudes_term|FormatNombres}} €</div>
+                                                </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Card Mission termininée (Annuel) -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-primary shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Missions terminées</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"> {{nombre_mission_terminee}}</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <!-- Missions en cours -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-info shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Missions en cours</div>
-                                                <div class="row no-gutters align-items-center">
-                                                    <div class="col-auto">
-                                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{nombre_mission_en_cours}}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <!-- Pending Requests -->
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-warning shadow h-100">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                    Missions en négociation</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{nombre_mission_en_negociation}}</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
+                    
                 </div>
                     
-                <div class="col-12 mt-3 mb-3">
-                    <form action="{% url 'index'%}" method="post" class="row">
-                        {% csrf_token %}
-                        <div class="col-3">
-                            
-                        </div>
-                        <div class="col-5">
-                            <div class="dl-horizontal">
-                            <div class="form-group row">
-                                <label for="mandat-select" class="col-sm-4 col-form-label">Mandat</label>
-                                <div class="col-sm-8 justify-content-center">
-                                    <select multiple class="form-control" id="mandat-select" name="mandat-select">
-                                        {% for choice in mandat_choices %}
-                                        <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>{{ choice.1 }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <div class="col-2">
-                            <button type="submit" class="btn btn-primary">Choisir</button>
-                        </div>
-                    </form>
-                </div>
+                
 
 
                 {% if user_parametres.param_statut_etude_ed %}
@@ -738,9 +720,7 @@
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <th scope="col">Avancement</th>
-                                        {% endif%}
+                                        
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
                                 </thead>
@@ -764,31 +744,11 @@
                                         </td>
                                                 
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <td class="align-middle" style="padding:0px;">
-                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
-                                                <!-- Centered text on top of the progress bar -->
-                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
-                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
-                                                </span>
                                         
-                                                <!-- Progress bar itself -->
-                                                <div class="progress-bar bg-success" 
-                                                     role="progressbar" 
-                                                     style="width: {{ etude.progress_percentage }}%;" 
-                                                     aria-valuenow="{{ etude.progress_percentage }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                </div>
-                                            </div>
-                                        </td>
-                                        {% endif %}
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ed_{{etude.id}}">
@@ -960,13 +920,13 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
                                         <th scope="col">Montant</th>
+                                        {% endif %}
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
@@ -987,15 +947,16 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
-                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        {% if user.parametres.param_col_etude_montant_HT %}
+                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}}€</td>
+                                        {% endif %}
+                                        
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
@@ -1206,19 +1167,18 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <th scope="col">Client</th>
                                         {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
                                         <th scope="col">Montant</th>
+                                        {% endif %}
+                                        
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <th scope="col">Suiveur</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Budget HT</th>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <th scope="col">Remarque</th>
                                         {% endif %}
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <th scope="col">Avancement</th>
-                                        {% endif%}
+                                        
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
                                 </thead>
@@ -1233,38 +1193,19 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <td class="align-middle">{{etude.client}}</td>
                                         {% endif %}
+                                        {% if user.parametres.param_col_etude_montant_HT %}
                                         <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        {% endif %}
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td class="align-middle" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_phase_HT}}€</td>
-                                        {% endif %}
+                                        
                                         {% if user.parametres.param_col_etude_remarque %}
                                         <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
                                         {% endif %}
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <td class="align-middle" style="padding:0px;">
-                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
-                                                <!-- Centered text on top of the progress bar -->
-                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
-                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
-                                                </span>
                                         
-                                                <!-- Progress bar itself -->
-                                                <div class="progress-bar bg-success" 
-                                                     role="progressbar" 
-                                                     style="width: {{ etude.progress_percentage }}%;" 
-                                                     aria-valuenow="{{ etude.progress_percentage }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                </div>
-                                            </div>
-                                        </td>
-                                        </td>
-                                        {% endif %}
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_t_{{etude.id}}">

@@ -24,7 +24,7 @@ import base64
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
-
+from asgiref.sync import sync_to_async
 
 from io import BytesIO
 from uuid import UUID
@@ -248,6 +248,12 @@ def index(request):
         "notification_count": len(all_notifications),
         "mandat_choices": Etude.Mandat.choices,
         "mandat_default": mandat_select,
+        "nb_etudes_ec": len(etudes_en_cours),
+        "nb_etudes_term": len(etudes_terminees),
+        "nb_etudes_nego": len(etudes_en_negociation),
+        "ca_etudes_ec": sum(etude.montant_HT_total() for etude in etudes_en_cours),
+        "ca_etudes_term": sum(etude.montant_HT_total() for etude in etudes_terminees),
+        "ca_etudes_nego": sum(etude.montant_HT_total() for etude in etudes_en_negociation),
     }
 
     return render(request, "polls/index.html", context)
