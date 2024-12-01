@@ -1846,7 +1846,7 @@ def stat_KPI(request):
                 dico_devis_envoye[devis.id]["mission"] = 1
 
         dico_suivi_devis = {}
-        date_ajd = datetime.now()  
+        date_ajd = datetime.datetime.now()  
         derniere_date = date_ajd.strftime("%m-%Y")  
         for devis in dico_devis_envoye:
             mois = dico_devis_envoye[devis]["date"]
@@ -1869,7 +1869,7 @@ def stat_KPI(request):
             dico_suivi_devis[derniere_date] = {"envoyés": 0, "signées": 0}
 
         
-        date_ajd = datetime.now()  
+        date_ajd = datetime.datetime.now()  
         derniere_date = date_ajd.strftime("%m-%Y")  
         dico_avenants_mois_ce = (
             {}
@@ -1970,7 +1970,7 @@ def stat_KPI(request):
 
 
         dico_CA_mois = {}
-        date_ajd = datetime.now()  
+        date_ajd = datetime.datetime.now()  
         derniere_date_CA = date_ajd.strftime("%m-%Y")  
 
         for etude in liste_etudes_ec_term:
