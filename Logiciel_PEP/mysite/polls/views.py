@@ -2019,26 +2019,27 @@ def stat_KPI(request):
 
 
         for etude in liste_etudes_ec_term:
-            secteur = etude.client.get_secteur_display()
-            if secteur in dico_ca_secteur:
-                dico_ca_secteur[secteur] += etude.montant_HT_total()
-            else:
-                dico_ca_secteur[secteur] = etude.montant_HT_total()
-
-            if etude.client.get_type_display() in dico_ca_typeentreprise:
-                dico_ca_typeentreprise[
-                    etude.client.get_type_display()
-                ] += etude.montant_HT_total()
-            else:
-                dico_ca_typeentreprise[etude.client.get_type_display()] = (
-                    etude.montant_HT_total()
-                )
-            departements = etude.departement
-            for depart in departements:
-                if depart in dico_ca_departement:
-                    dico_ca_departement[depart] += etude.montant_HT_total()
+            if etude.client:
+                secteur = etude.client.get_secteur_display()
+                if secteur in dico_ca_secteur:
+                    dico_ca_secteur[secteur] += etude.montant_HT_total()
                 else:
-                    dico_ca_departement[depart] = etude.montant_HT_total()
+                    dico_ca_secteur[secteur] = etude.montant_HT_total()
+
+                if etude.client.get_type_display() in dico_ca_typeentreprise:
+                    dico_ca_typeentreprise[
+                        etude.client.get_type_display()
+                    ] += etude.montant_HT_total()
+                else:
+                    dico_ca_typeentreprise[etude.client.get_type_display()] = (
+                        etude.montant_HT_total()
+                    )
+                departements = etude.departement
+                for depart in departements:
+                    if depart in dico_ca_departement:
+                        dico_ca_departement[depart] += etude.montant_HT_total()
+                    else:
+                        dico_ca_departement[depart] = etude.montant_HT_total()
 
         bar_chart_CA = {}
         for etude in liste_etudes_ec_term:
@@ -3753,9 +3754,10 @@ def calculate_chiffre_affaire_par_type(user_je):
     }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT_total = study.montant_HT_total()
-        if montant_HT_total > 0:
-            revenues[type_index[study.client.type]] += montant_HT_total
+        if study.client:
+            montant_HT_total = study.montant_HT_total()
+            if montant_HT_total > 0:
+                revenues[type_index[study.client.type]] += montant_HT_total
     return revenues
 
 
@@ -3773,9 +3775,10 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT_total = study.montant_HT_total()
-        if montant_HT_total > 0:
-            revenues[secteur_index[study.client.secteur]] += montant_HT_total
+        if study.client:
+            montant_HT_total = study.montant_HT_total()
+            if montant_HT_total > 0:
+                revenues[secteur_index[study.client.secteur]] += montant_HT_total
     return revenues
 
 
@@ -4523,8 +4526,8 @@ def verifier_etude(request, iD):
     if request.user.is_authenticated:
     # Fetch the Etude instance using the provided iD
         etude = get_object_or_404(Etude, id=iD)
-
-        client = etude.client
+        if etude.client:
+            client = etude.client
         if request.method == "POST":
             # Get the form data from the request
             debut = request.POST.get("debut")
@@ -4553,7 +4556,6 @@ def verifier_etude(request, iD):
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
-            client.description = client_description
 
             # 'fin' should not be updated, as it's set to readonly in the form
 
@@ -4570,8 +4572,9 @@ def verifier_etude(request, iD):
             etude.element_a_fournir = element_a_fournir
 
             etude.save()
-            client.description = client_description
-            client.save()
+            if etude.client:
+                client.description = client_description
+                client.save()
 
             # Redirect to the details page with the correct modelName
             modelName = "Etude"
