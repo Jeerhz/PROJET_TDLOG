@@ -223,7 +223,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
+            <img class="my-custom-logo" src="{{ user_je.logo.url }}">
             
 
             <!-- Divider -->
@@ -527,14 +527,14 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user_student }}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
+                                    src="{{ user.photo.url }}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
+                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=user_student.id %}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profil
                                 </a>
@@ -667,11 +667,11 @@
                                             <table style="width: 80%;">
                                                 <tr >
                                                     <td style="padding-bottom: 10px;">
-                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{{ etude.responsable.student.last_name }} {{ etude.responsable.student.first_name }}</span>
+                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{{ responsable.last_name }} {{ responsable.first_name }}</span>
 
                                                     </td>
                                                     <td style="padding-bottom: 10px; text-align: right;">
-                                                        <span style="font-style: italic;">Qualité : </span> <span style="color: #000;">{{ etude.resp_qualite.student.last_name }} {{ etude.resp_qualite.student.first_name }}</span>
+                                                        <span style="font-style: italic;">Qualité : </span> <span style="color: #000;">{{ resp_qualite.last_name }} {{ resp_qualite.first_name }}</span>
                                                     </td>
                                                     
                                                 </tr>
@@ -763,9 +763,9 @@
                                                     <div class="tab-content" id="etude-info">
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude.fin }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_phase_HT|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude_fin }}</span></li>
+                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
+                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
@@ -783,9 +783,9 @@
                                                             {% csrf_token %}
                                                             <ul class="list-group list-group-flush">
                                                                 <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" readonly></li>
-                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
-                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_phase_HT }}" readonly></li>
+                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude_fin|date:'Y-m-d' }}" readonly></li>
+                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
+                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
@@ -821,9 +821,9 @@
                                                     </div>
                                                     <script>
                                                         var etudeData = {
-                                                            marge_JE: "{{ etude.marge_JE|FormatNombres }}",
-                                                            charges_URSSAF: "{{ etude.charges_URSSAF|FormatNombres }}",
-                                                            retributions_totales: "{{ etude.retributions_totales|FormatNombres }}"
+                                                            marge_JE: "{{ etude_marge_JE|FormatNombres }}",
+                                                            charges_URSSAF: "{{ etude_charges_URSSAF|FormatNombres }}",
+                                                            retributions_totales: "{{ etude_retributions_totales|FormatNombres }}"
                                                         };
                                                     </script>
                                                     <div class="text-center small">
@@ -1197,10 +1197,10 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% if phase.li_eleves %}
-                                                                    {% for assignation_JEH in phase.get_assignations_JEH %}
+                                                                {% if phase.assignationjeh_set.all %}
+                                                                    {% for assignation_JEH in phase.assignationjeh_set.all %}
                                                                     <tr>
-                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
                                                                         <td>{{ assignation_JEH.nombre_JEH }}</td>
                                                                         <td>{{ assignation_JEH.pourcentage_retribution }}</td>
                                                                         <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
@@ -1275,11 +1275,11 @@
                                             <table class="table_planning">
                                                 <thead>
                                                     <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
+                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
                                                         <th class="th_planning"></th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
-                                                                {% for i in 1|Range_boucle:etude.duree_semaine %}
+                                                                {% for i in 1|Range_boucle:etude_duree %}
                                                                 <span>{{ i }}</span>
                                                                 {% endfor %}
                                                             </div>
@@ -1319,7 +1319,7 @@
                                                 // Set width of bars based on database values
                                                 {% if phases %}
                                                     {% for phase in phases %}
-                                                        setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
+                                                        setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude_duree}}); // Set width based on database values
                                                     {% endfor %}
                                                 {% endif %}
                                             </script>
@@ -1470,10 +1470,10 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {% if phase.li_eleves %}
-                                                                    {% for assignation_JEH in phase.get_assignations_JEH %}
+                                                                {% if phase.assignationjeh_set.all %}
+                                                                {% for assignation_JEH in phase.assignationjeh_set.all %}
                                                                     <tr>
-                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.last_name }}</th>
+                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
                                                                         <td>{{ assignation_JEH.nombre_JEH }}</td>
                                                                         <td>{{ assignation_JEH.pourcentage_retribution }}</td>
                                                                         <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
@@ -1579,11 +1579,11 @@
                                             <table class="table_planning">
                                                 <thead>
                                                     <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
+                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
                                                         <th class="th_planning"></th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
-                                                                {% for i in 1|Range_boucle:etude.duree_semaine %}
+                                                                {% for i in 1|Range_boucle:etude_duree %}
                                                                 <span>{{ i }}</span>
                                                                 {% endfor %}
                                                             </div>
@@ -1623,7 +1623,7 @@
                                                 // Set width of bars based on database values
                                                 {% if phases %}
                                                     {% for phase in phases %}
-                                                        setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
+                                                        setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude_duree}}); // Set width based on database values
                                                     {% endfor %}
                                                 {% endif %}
                                             </script>
@@ -1858,10 +1858,10 @@
                                                         
                                                                                                        
                                                         <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}" ><i class="fas fa-download mr-2"></i>Générer le Devis</a>
-                                                        <p style="margin: 20px;">{% if etude.get_devis %} {% if etude.get_devis.date_signature %} Le devis a été envoyé le {{ etude.get_devis.date_signature }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
+                                                        <p style="margin: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
 
-                                                        {% if etude.get_devis %}
-                                                        <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude.get_devis.id %}">
+                                                        {% if etude_devis %}
+                                                        <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude_devis.id %}">
                                                             {% csrf_token %}
                                                             
                                                             <input  type="date" name="new_date" value="{{ devis.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
@@ -1880,12 +1880,12 @@
                                                             
                                                             <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention d'Étude</a>
                                                             
-                                                            <p style="margin: 20px;">{% if etude.convention %} {% if etude.convention.date_signature %} La CE a été signé le {{ etude.convention.date_signature }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
+                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
 
-                                                            {% if etude.convention %}
-                                                            <form method="POST" action="{% url 'signature_document' model='CE' iD=etude.convention.id %}">
+                                                            {% if etude_convention %}
+                                                            <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}">
                                                                 {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
+                                                                <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
                                                                 <button type="submit" class="btn btn-primary">Modifier date </button>
  
                                                             </form>
@@ -1898,12 +1898,12 @@
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                             <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                             
-                                                            <p style="margin: 20px;">{% if etude.convention %} {% if etude.convention.date_signature %} La CC a été signé le {{ etude.convention.date_signature }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
+                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CC a été signé le {{ etude_convention.date_signature }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
       
-                                                            {% if etude.convention %}
-                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude.convention.id %}">
+                                                            {% if etude_convention %}
+                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}">
                                                                 {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude.convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
+                                                                <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
                                                                 <button type="submit" class="btn btn-primary">Modifier date </button>
  
                                                             </form>
@@ -2033,10 +2033,10 @@
                                                 <div class="card">
                                                     <div class="card-body">
                                                         <h5 class="card-title">Avenant Convention d'Étude</h5>
-                                                        {% if etude.convention.avenants %}
+                                                        {% if etude_convention.avenants %}
                                                         <table class="table">
                                                             <tbody>
-                                                                {% for avenant in etude.convention.avenants_modification.all %}
+                                                                {% for avenant in etude_convention.avenants_modification.all %}
                                                                 <tr margin-bottom: 20px;>
                                                                     <td style="color: #000;">{{avenant}}</td>
                                                                     <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
@@ -2193,8 +2193,8 @@
                                                             client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
                                                         </li>
                                                         {% if etude.type_convention == "Convention d'étude" %}
-                                                            {% if etude.facture_solde %}
-                                                            <li class="list-group-item"> Facture de solde : <span style="color:#000" id="etude-frais">frais : {{ etude.facture_solde.pourcentage_frais|FormatNombres }} %, phases : {{ etude.facture_solde.pourcentage_JEH|FormatNombres }} %</span></li>
+                                                            {% if etude_facture_solde %}
+                                                            <li class="list-group-item"> Facture de solde : <span style="color:#000" id="etude-frais">frais : {{ etude_facture_solde.pourcentage_frais|FormatNombres }} %, phases : {{ etude_facture_solde.pourcentage_JEH|FormatNombres }} %</span></li>
  
                                                             {% else %}
                                                             <li class="list-group-item">
@@ -2216,8 +2216,8 @@
                                                         </li>
                                                         <li class="list-group-item">
                                                             Vos interlocuteurs : 
-                                                            <div style="color:#000">{% if etude.responsable.student %} {{etude.responsable.student.first_name}} {{etude.responsable.student.last_name}} - {{poste}} - {{etude.responsable.student.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
-                                                            <div style="color:#000">{% if etude.resp_qualite.student %} {{etude.resp_qualite.student.first_name}} {{etude.resp_qualite.student.last_name}} - Qualité - {{etude.resp_qualite.student.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
+                                                            <div style="color:#000">{% if responsable %} {{responsable.first_name}} {{responsable.last_name}} - {{poste}} - {{responsable.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
+                                                            <div style="color:#000">{% if resp_qualite %} {{resp_qualite.first_name}} {{resp_qualite.last_name}} - Qualité - {{resp_qualite.mail}} {% else %} <span style="color: red;"> manquant</span> {% endif %}</span></div> 
             
                                                         </li>
                                                         
@@ -2238,7 +2238,7 @@
                                                         </li>
                                                         
                                                         <li class="list-group-item">
-                                                            L’étude prendra fin <span style="color:#000">{{etude.duree_semaine}}</span> semaines après la date de signature de la Convention d’Étude sous réserve de fourniture des documents nécessaires à la réalisation de l’étude tels que précisés dans le cahier des charges. L’ensemble des documents devront être remis au Client et/ou signés avant la fin.
+                                                            L’étude prendra fin <span style="color:#000">{{etude_duree}}</span> semaines après la date de signature de la Convention d’Étude sous réserve de fourniture des documents nécessaires à la réalisation de l’étude tels que précisés dans le cahier des charges. L’ensemble des documents devront être remis au Client et/ou signés avant la fin.
     Si l’étude se termine dans un délai plus court, la signature du document d’acceptation du livrable la clôture. Si l’étude dure plus longtemps, elle pourra faire l’objet d’avenants de délai.
     Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</span> jours à partir de la livraison, délai durant lequel le Client pourra demander à PEP des modifications.
 
@@ -2556,11 +2556,11 @@
                                                             <table class="table_planning">
                                                                 <thead>
                                                                     <tr>
-                                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude.fin}}</th>
+                                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
                                                                         <th class="th_planning"></th>
                                                                         <th class="th_planning">
                                                                             <div class="semaines_plan">
-                                                                                {% for i in 1|Range_boucle:etude.duree_semaine %}
+                                                                                {% for i in 1|Range_boucle:etude_duree %}
                                                                                 <span>{{ i }}</span>
                                                                                 {% endfor %}
                                                                             </div>
@@ -2600,7 +2600,7 @@
                                                         
                                                                 {% if eleve|assignation:etude %}
                                                                     {% for assignation in eleve|assignation:etude %}
-                                                                        setBarWidth('bar_plan-{{eleve.id}}-{{assignation.phase.numero}}', {{assignation.phase.duree_semaine}}, {{assignation.phase.debut_relatif}}, {{etude.duree_semaine}}); // Set width based on database values
+                                                                        setBarWidth('bar_plan-{{eleve.id}}-{{assignation.phase.numero}}', {{assignation.phase.duree_semaine}}, {{assignation.phase.debut_relatif}}, {{etude_duree}}); // Set width based on database values
                                                                     
                                                                     {% endfor %}
                                                                 {% endif %}
@@ -2728,17 +2728,17 @@
                                                     <td  >Sommes à verser (HT)</td>
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                    <td  > {{facture.montant_HT|FormatNombres}} EUR </td>
+                                                    <td  > {{facture.cached_montant_HT|FormatNombres}} EUR </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <td > {{facture.montant_HT|FormatNombres}} EUR </td>
+                                                    <td > {{facture.cached_montant_HT|FormatNombres}} EUR </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <td > {{facture.montant_HT|FormatNombres}} EUR </td>
+                                                    <td > {{facture.cached_montant_HT|FormatNombres}} EUR </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                 </tr>
@@ -2747,17 +2747,17 @@
                                                     <td  >Sommes à verser (TTC) à titre indicatif</td>
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.ACOMPTE %}
-                                                    <td > {{facture.montant_TTC|FormatNombres}} EUR </td>
+                                                    <td > {{facture.cached_montant_TTC|FormatNombres}} EUR </td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.INTERMEDIAIRE %}
-                                                    <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
+                                                    <td > {{facture.cached_montant_TTC|FormatNombres}} EUR</td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     {% for facture in factures %}
                                                     {% if facture.type_facture ==  facture.Status.SOLDE %}
-                                                    <td > {{facture.montant_TTC|FormatNombres}} EUR</td>
+                                                    <td > {{facture.cached_montant_TTC|FormatNombres}} EUR</td>
                                                     {% endif %}
                                                     {% endfor %} 
                                                     
@@ -2771,7 +2771,7 @@
                                                 <thead>
                                                     <tr>
                                                         <th >Total H.T. hors frais</th>
-                                                        <th  style="text-align:center;">{{etude.montant_phase_HT|FormatNombres}} €</th>
+                                                        <th  style="text-align:center;">{{etude_total_montant_phases|FormatNombres}} €</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -2791,16 +2791,16 @@
                                                         <td ></td>
                                                     </tr>
                                                     <tr>
-                                                        <td style="text-align: left;"> {{etude.montant_HT_total|FormatNombres}} € HT</td>
-                                                        <td style="text-align: right;"> {{etude.montant_HT_total|ChiffreLettre}} HT</td>
+                                                        <td style="text-align: left;"> {{etude_total_montant_phases|FormatNombres}} € HT</td>
+                                                        <td style="text-align: right;"> {{etude_total_montant_phases|ChiffreLettre}} HT</td>
                                                     </tr>
                                                     <tr>
-                                                        <td style="text-align: left;"> TVA (20%) : {{etude.TVA|FormatNombres}} €</td>
+                                                        <td style="text-align: left;"> TVA (20%) : {{etude_tva|FormatNombres}} €</td>
                                                         <td style="text-align: right;"> </td>
                                                     </tr>
                                                     <tr>
-                                                        <td style="text-align: left;"> {{etude.total_ttc|FormatNombres }} € TTC</td>
-                                                        <td style="text-align: right;"> {{etude.total_ttc|ChiffreLettre}} TTC</td>
+                                                        <td style="text-align: left;"> {{etude_total_ttc|FormatNombres }} € TTC</td>
+                                                        <td style="text-align: right;"> {{etude_total_ttc|ChiffreLettre}} TTC</td>
                                                     </tr>
                                                     
                                                 </tbody>
@@ -2890,7 +2890,7 @@
                                                         <th scope="row">Total</th>
                                                         <td></td>
                                                         <td></td>
-                                                        <td><strong>{{facture.montant_HT|FormatNombres}}€</strong></td>
+                                                        <td><strong>{{facture.cached_montant_HT|FormatNombres}}€</strong></td>
                                                         
                                                         
                                                     </tr>
@@ -2988,7 +2988,7 @@
                                                         <th scope="row">Total</th>
                                                         <td></td>
                                                         <td></td>
-                                                        <td><strong>{{facture.montant_HT|FormatNombres}}€</strong></td>
+                                                        <td><strong>{{facture.cached_montant_HT|FormatNombres}}€</strong></td>
                                                         
                                                         
                                                     </tr>

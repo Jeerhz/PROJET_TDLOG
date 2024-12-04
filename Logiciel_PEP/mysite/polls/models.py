@@ -886,6 +886,7 @@ class Etude(models.Model):
             return self.debut + datetime.timedelta(weeks=self.duree_semaine())
         else:
             return None
+        
 
     def nb_JEH(self):
         phases = Phase.objects.filter(etude=self)
@@ -1650,7 +1651,7 @@ class BA(models.Model):
 
 
 class Phase(models.Model):
-    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name="etude")
+    etude = models.ForeignKey(Etude, on_delete=models.CASCADE, related_name="phases")
     debut_relatif = models.IntegerField(default=0)
     duree_semaine = models.IntegerField(default=2)
     date_debut = models.DateField(default=date.today)
