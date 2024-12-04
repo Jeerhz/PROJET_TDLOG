@@ -25,6 +25,12 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
+import executor
+from concurrent.futures import ThreadPoolExecutor
+
+executor = ThreadPoolExecutor(max_workers=4)  # Adjust max_workers as needed
+
+
 
 from io import BytesIO
 from uuid import UUID
@@ -498,8 +504,9 @@ def page_detail_etude(request):
 
 # Updated details function with async support
 async def details(request, modelName, iD):
-    user = await request.auser()
-    if not user.is_authenticated:
+    user = request.user
+    is_authenticated = await sync_to_async(lambda: user.is_authenticated)()
+    if not is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
 
@@ -1498,9 +1505,10 @@ def update_etude(request, id):
 
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
-        try:
+        #try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
+            print(facture.ref())
             etude = facture.etude
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by("numero")
@@ -1530,6 +1538,7 @@ def generate_facture_pdf(request, id_facture):
             # Context for the invoice
             context = {
                 "facture": facture,
+                "ref": facture.ref(),
                 "etude": etude,
                 "client": client,
                 "phases": phases,
@@ -1555,7 +1564,7 @@ def generate_facture_pdf(request, id_facture):
             response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
             return response
 
-        except Exception as e:
+        #except Exception as e:
             return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
     else:

@@ -1110,6 +1110,16 @@ class Facture(models.Model):
             return f"{current_year_last_two_digits}{self.numero_facture:03d}"
         else:
             return f"{self.numero_facture:03d}"
+    def ref(self):
+        if self.date_emission:
+            if isinstance(self.date_emission, str):
+                current_year = datetime.strptime(self.date_emission, "%Y-%m-%d").year
+            else:
+                current_year = self.date_emission.year
+            current_year_last_two_digits = current_year % 100
+            return f"{current_year_last_two_digits}{self.numero_facture:03d}"
+        else:
+            return f"{self.numero_facture:03d}"
 
     def bdc(self):
         if self.etude.type_convention == "Convention cadre":
