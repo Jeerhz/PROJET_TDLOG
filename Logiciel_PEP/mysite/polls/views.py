@@ -25,10 +25,6 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
-import executor
-from concurrent.futures import ThreadPoolExecutor
-
-executor = ThreadPoolExecutor(max_workers=4)  # Adjust max_workers as needed
 
 
 
@@ -500,17 +496,10 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-<<<<<<< HEAD
-# Updated details function with async support
-async def details(request, modelName, iD):
-    user = request.user
-    is_authenticated = await sync_to_async(lambda: user.is_authenticated)()
-    if not is_authenticated:
-=======
+
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
->>>>>>> 51220dfa15f5928ab5d356187b3beb8999cfcb6e
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
     
@@ -594,7 +583,6 @@ def details(request, modelName, iD):
         else:
             representants_interlocuteurs, representants_legaux = [], []
 
-
         # We use the loaded data to calculate the end date of the study
         duree = max(
                 phase.duree_semaine + phase.debut_relatif
@@ -634,11 +622,14 @@ def details(request, modelName, iD):
         for facture in factures:
             if facture.type_facture == facture.Status.SOLDE:
                 etude_facture_solde = facture
-        
+        if etude.client:
+            client_nom =str(etude.client.nom_societe)
+        else:
+            client_nom="pas de client"
         attribute_list = {"Titre": etude.titre,
             "Description": etude.description,
             "Numéro": etude.numero,
-            "Client": str(etude.client.nom_societe),
+            "Client": client_nom,
             "Début": etude.debut,
             "Fin": etude_fin,
             "Responsable": str(respo),
@@ -2780,7 +2771,7 @@ def editer_rdm(request, id_etude, id_eleve):
             eleve = Student.objects.get(id=id_eleve)
             client = etude.client
             assignations = list(
-                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude)
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by("phase__numero")
             )
             je = eleve.je
             president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
@@ -4484,15 +4475,23 @@ def modifier_etude(request, iD):
         numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
         numero_list.remove(numero_ori)
         if request.method == "POST":
-            # Get the form data from the request
+           
             debut = request.POST.get("debut")
+            fin_etude= request.POST.get("fin")
             frais_dossier = request.POST.get("frais_dossier")
             remarque = request.POST.get("remarque")
             numero = int(request.POST.get("numero"))
+            
 
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
+            if fin_etude:
+                etude.fin_etude=fin_etude
+            
+            if not numero:
+                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+
 
             if numero:
                 
@@ -4506,29 +4505,18 @@ def modifier_etude(request, iD):
                         status=400
                     )
 
-
-                    
-
-            # 'fin' should not be updated, as it's set to readonly in the form
-
-            # Update the other fields
             etude.frais_dossier = frais_dossier
             etude.remarque = remarque
             etude.save()
 
             # Redirect to the details page with the correct modelName
-            modelName = "Etude"
-            return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
-    # Fetch the Etude instance using the provided iD
-    
+            return JsonResponse({"success": True, "message": "Étude modifiée avec succès.", "redirect": reverse("details", args=["Etude", iD])})
 
-    return JsonResponse(
-        {"success": False, "message": "Invalid request method"}, status=400
-    )
+    else:
+        return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
+
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
+
 
 
 def verifier_etude(request, iD):

@@ -399,6 +399,18 @@
                             <div class="list-group" id="suggestions-results"></div>
                         </div>
                     </form>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter une étude</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un client</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un étudiant</span>
+                    </a>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -692,7 +704,7 @@
 
                 {% if user_parametres.param_statut_etude_ed %}
                 <!-- Beginning of container-fluid -->
-                <div class="container-fluid">
+                <div class="container-fluid" >
                     <div class="row">
                         <div class="col-12 ml-4">
                             <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
@@ -705,21 +717,19 @@
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Étude</th>
+                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col">Client</th>
+                                        <th scope="col" style="text-align: left;">Client</th>
                                         {% endif %}
-                                        <th scope="col">Montant</th>
+                                        <th scope="col" style="text-align: left;">Montant</th>
 
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col">Suiveur</th>
+                                        <th scope="col" style="text-align: left;">Suiveur</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <th scope="col">Remarque</th>
-                                        {% endif %}
+                                       
                                         
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
@@ -729,15 +739,15 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <td class="align-middle">{{etude.client}}</td>
+                                        <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
-                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <td class="align-middle" style=" padding: 6px;">
+                                        <td style="text-align: left;" style=" padding: 6px;">
                                             
                                                 
                                                     <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
@@ -745,15 +755,34 @@
                                                 
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
-                                        {% endif %}
+                                        
                                         
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                        
-                                            <td colspan="{{user_parametres.nombre_colonnes}}">
+                                            
+                                            <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                                <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+
+                                                    <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                                        Remarque de l'étude :
+                                                    </div>
+                                                
+                                                    <!-- Second Container -->
+                                                    <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                                        <div contenteditable="True" 
+                                                             data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                             class="editableDiv" 
+                                                             style="background-color: #ffe5d0d6; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                            {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                
+                                                
+                                                
+                                                
                                                 <table class="table table-bordered">
                                                     <colgroup>
                                                         <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
@@ -809,7 +838,7 @@
                                                                 {% elif value.status == 'Fait' %}status-fait
                                                                 {% else %}status-default
                                                                 {% endif %}"
-                                                                style="padding: 2px;  border: none; color: white; text-align: center; font-weight: 600;">
+                                                                style="padding: 2px;  border: none;  text-align: center; font-weight: 600;">
                                                                     <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                     <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                     <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
@@ -912,27 +941,26 @@
                             <table class="table table-hover text-center">
                                 <thead style="background-color: #ffffff;">
                                     <tr>
+                                        
                                         <th scope="col" style="width: 5%;"></th>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Étude</th>
+                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col">Client</th>
+                                        <th scope="col" style="text-align: left;">Client</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Montant</th>
-                                        {% endif %}
+                                        <th scope="col" style="text-align: left;">Montant</th>
+
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col">Suiveur</th>
+                                        <th scope="col" style="text-align: left;">Suiveur</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <th scope="col">Remarque</th>
-                                        {% endif %}
+                                        
                                         {% if user_parametres.param_col_etude_avancement %}
                                         <th scope="col">Avancement</th>
                                         {% endif%}
+                                        
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
                                 </thead>
@@ -941,27 +969,25 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <td class="align-middle">{{etude.client}}</td>
+                                        <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}}€</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}}€</td>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <td class="align-middle" style=" padding: 6px;">
+                                        <td  style=" padding: 6px;text-align: left;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
-                                        {% endif %}
+                                        
                                         {% if user_parametres.param_col_etude_avancement %}
-                                        <td class="align-middle" style="padding:0px;">
+                                        <td style="text-align: left;" style="padding:0px;">
                                             <div class="progress custom-progress" style="position: relative; height: 30px;">
                                                 <!-- Centered text on top of the progress bar -->
                                                 <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
@@ -983,7 +1009,26 @@
                                     </tr>
                                     <tr class="collapse" id="sec_table_ec_{{etude.id}}">
                                         
-                                        <td colspan="{{user_parametres.nombre_colonnes}}">
+
+                                        <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                            <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+
+                                                <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                                    Remarque de l'étude :
+                                                </div>
+                                            
+                                                <!-- Second Container -->
+                                                <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                                    <div contenteditable="True" 
+                                                            data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                            class="editableDiv" 
+                                                            style="background-color: #fff3cda1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                        {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+
                                             <table class="table table-bordered">
                                                 <colgroup>
                                                     <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
@@ -1039,7 +1084,7 @@
                                                             {% elif value.status == 'Fait' %}status-fait
                                                             {% else %}status-default
                                                             {% endif %}"
-                                                            style="padding: 2px; border: none; color: white; text-align: center; font-weight: 600;">
+                                                            style="padding: 2px; border: none;  text-align: center; font-weight: 600;">
                                                                 <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                 <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                 <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
@@ -1161,23 +1206,20 @@
                                     <tr>
                                         <th scope="col" style="width: 5%;"></th>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;">Étude</th>
+                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col">Client</th>
+                                        <th scope="col" style="text-align: left;">Client</th>
                                         {% endif %}
-                                        {% if user.parametres.param_col_etude_montant_HT %}
-                                        <th scope="col">Montant</th>
-                                        {% endif %}
-                                        
+                                        <th scope="col" style="text-align: left;">Montant</th>
+
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col">Suiveur</th>
+                                        <th scope="col" style="text-align: left;">Suiveur</th>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <th scope="col">Remarque</th>
-                                        {% endif %}
+                                       
+                                        
                                         
                                         <th scope="col" style="width: 5%;">Global</th>
                                     </tr>
@@ -1187,30 +1229,45 @@
                                     <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                         <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                         {% if user_parametres.param_col_etude_numero %}
-                                        <td class="align-middle" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_client %}
-                                        <td class="align-middle">{{etude.client}}</td>
+                                        <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td class="align-middle">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
                                         {% endif %}
                                         {% if user_parametres.param_col_etude_responsable %}
-                                        <td class="align-middle" style=" padding: 6px;">
+                                        <td style="text-align: left;" style=" padding: 6px;">
                                             <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
                                         </td>
                                         {% endif %}
                                         
-                                        {% if user.parametres.param_col_etude_remarque %}
-                                        <td class="align-middle"><span contenteditable="True" data-url="{% url 'remarque_etude' iD=etude.id %}" class="editableDiv">{{etude.remarque}}</span></td>
-                                        {% endif %}
+                                        
                                         
                                         <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
                                     </tr>
                                     <tr class="collapse" id="sec_table_t_{{etude.id}}">
                                         
-                                        <td colspan="{{user_parametres.nombre_colonnes}}">
+                                        <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                            <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+
+                                                <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                                    Remarque de l'étude :
+                                                </div>
+                                            
+                                                <!-- Second Container -->
+                                                <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                                    <div contenteditable="True" 
+                                                            data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                            class="editableDiv" 
+                                                            style="background-color: #d4eddabd; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                        {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
                                             <table class="table table-bordered">
                                                 <colgroup>
                                                     <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
@@ -1266,7 +1323,7 @@
                                                             {% elif value.status == 'Fait' %}status-fait
                                                             {% else %}status-default
                                                             {% endif %}"
-                                                            style="padding: 2px; border: none; color: white; text-align: center; font-weight: 600;">
+                                                            style="padding: 2px; border: none; text-align: center; font-weight: 600;">
                                                                 <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
                                                                 <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
                                                                 <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>

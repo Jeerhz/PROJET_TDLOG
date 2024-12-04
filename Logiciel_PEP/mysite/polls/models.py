@@ -693,14 +693,14 @@ class Etude(models.Model):
         related_name="responsable_etudes",
         verbose_name="suiveur",
     )
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
     client_interlocuteur = models.ForeignKey(
-        Representant, on_delete=models.CASCADE, related_name="client_interlocuteur"
+        Representant, on_delete=models.CASCADE, related_name="client_interlocuteur", null=True, blank=True
     )
     client_representant_legale = models.ForeignKey(
         Representant,
         on_delete=models.CASCADE,
-        related_name="client_representant_legale",
+        related_name="client_representant_legale", null=True, blank=True
     )
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0, verbose_name="frais de dossier")
@@ -748,6 +748,7 @@ class Etude(models.Model):
     )
     cahier_des_charges = models.JSONField(default=dict)
     date_creation = models.DateTimeField(auto_now_add=True)
+    fin_etude = models.DateField(blank=True, null=True)
 
     class Etat_Doc:
         EN_COURS = "En cours"
@@ -882,10 +883,23 @@ class Etude(models.Model):
             return 0
 
     def fin(self):
+        if self.fin_etude:
+            return self.fin_etude
+        elif self.debut and self.duree_semaine():
+            self.fin_etude = self.debut + datetime.timedelta(weeks=self.duree_semaine())
+            self.save()
+            return self.fin_etude
+        else:
+            return None
+    
+    def fin_test(self):
+        
         if self.debut and self.duree_semaine():
+            
             return self.debut + datetime.timedelta(weeks=self.duree_semaine())
         else:
             return None
+       
         
 
     def nb_JEH(self):
