@@ -1,7 +1,7 @@
 from celeryy import app as celery_app
 from datetime import date
 from .models import Notification
-from django.utils.timezone import now, timedelta
+from django.utils import timezone
 from .models import Client, Etude, Student, Message
 
 
@@ -14,31 +14,23 @@ def send_reminder_emails():
 
 #------------------------------------------------------------
 #(ADLE): called in views.annuaire to refactore the code
-def fetch_clients(je_id):
-    return list(Client.objects.filter(je=je_id))
+def fetch_clients(user_je_id):
+    return list(Client.objects.filter(je=user_je_id))
 
+def fetch_students(user_je_id):
+    return list(Student.objects.filter(je=user_je_id))
 
-def fetch_students(je_id):
-    return list(Student.objects.filter(je=je_id))
+def fetch_etudes(user_je_id):
+    return list(Etude.objects.filter(je=user_je_id))
 
-
-def fetch_etudes(je_id):
-    return list(Etude.objects.filter(je=je_id))
-
-
-def fetch_messages(user_id):
-    return list(
-        Message.objects.filter(
-            destinataire_id=user_id,
-            read=False,
-            date__range=(now() - timedelta(days=20), now()),
-        )
-        .order_by("date")[:3]
-        .values()
-    )
-
+def fetch_messages(user):
+    return list(Message.objects.filter(
+        destinataire=user,
+        read=False,
+        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+    ).order_by("date")[:3])
 
 def fetch_notifications(user):
-    return user.notifications.order_by("-date_effet")
+    return list(user.notifications.order_by("-date_effet"))
 
 
