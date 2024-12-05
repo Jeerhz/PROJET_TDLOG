@@ -266,6 +266,18 @@
                             <div class="list-group" id="suggestions-results"></div>
                         </div>
                     </form>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter une étude</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un client</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un étudiant</span>
+                    </a>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -490,11 +502,11 @@
                                 </div>
                                 <!-- Card Body -->
                                 
-                                {% for facture in factures %}
-                                    {% if facture.date_emission %}
+                                
             
                                     <table style="margin-top:20px;" class="table_demarchage">
-                                        
+                                    {% for facture in factures %}
+                                        {% if facture.date_emission %}
                                         <tbody>
                                             
                                             <tr >
@@ -530,8 +542,8 @@
                                                         </div>
                                                     </div>
                                                  </div>
-                                                <td style="text-align: center; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
-                                                <td style="text-align: center;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
+                                                <td style="text-align: left; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
+                                                <td style="text-align: left;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
                                                 
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'facture' facture.id %}"></a>
@@ -568,10 +580,10 @@
                                         </tbody>
                                     
                                     
-
+                                        {% endif %}
+                                    {% endfor %}  
                                     </table>
-                                    {% endif %}
-                                {% endfor %}   
+                                     
                                 
                                     
                             </div>

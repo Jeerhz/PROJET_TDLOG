@@ -26,6 +26,8 @@ from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
 
+
+
 from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
@@ -159,17 +161,7 @@ def general_context(request):
     return context
 
 
-def my_view(request):
-    return render(request, "polls/facpdf.html")
 
-
-def generate_pdf(request):
-    html_content = render_to_string("polls/facpdf.html")
-    pdf_file = HTML(string=html_content).write_pdf()
-
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="page.pdf"'
-    return response
 
 
 def confidentialite_donnees(request):
@@ -195,7 +187,7 @@ def index(request):
             .prefetch_related(
                 Prefetch('phases', queryset=Phase.objects.all())
             )
-            .order_by("-debut")
+            .order_by("numero")
         )
 
         # Pre-calculate montant_HT_total for each etude
@@ -328,13 +320,13 @@ def annuaire(request):
 
     # Define the functions to be executed in parallel
     def fetch_clients_annuaire():
-        return list(Client.objects.filter(je=user_je_id))
+        return list(Client.objects.filter(je=user_je_id).order_by('nom_societe'))
 
     def fetch_students_annuaire():
-        return list(Student.objects.filter(je=user_je_id))
+        return list(Student.objects.filter(je=user_je_id).order_by('last_name'))
 
     def fetch_etudes_annuaire():
-        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite'))
+        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite').order_by('numero'))
 
 
     # Use ThreadPoolExecutor to run tasks concurrently
@@ -514,6 +506,7 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
+
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
@@ -600,7 +593,6 @@ def details(request, modelName, iD):
         else:
             representants_interlocuteurs, representants_legaux = [], []
 
-
         # We use the loaded data to calculate the end date of the study
         duree = max(
                 phase.duree_semaine + phase.debut_relatif
@@ -640,11 +632,14 @@ def details(request, modelName, iD):
         for facture in factures:
             if facture.type_facture == facture.Status.SOLDE:
                 etude_facture_solde = facture
-        
+        if etude.client:
+            client_nom =str(etude.client.nom_societe)
+        else:
+            client_nom="pas de client"
         attribute_list = {"Titre": etude.titre,
             "Description": etude.description,
             "Numéro": etude.numero,
-            "Client": str(etude.client.nom_societe),
+            "Client": client_nom,
             "Début": etude.debut,
             "Fin": etude_fin,
             "Responsable": str(respo),
@@ -675,7 +670,6 @@ def details(request, modelName, iD):
     # Add additional context if applicable
     if etude is not None:
         etude_convention = etude.conventions_etude.first() if etude.type_convention == "Convention d'étude" else etude.conventions_cadre.first()
-
 
         context.update({
             "attribute_list": attribute_list,
@@ -1414,17 +1408,13 @@ def upload_students(request):
 
                     # Check if header matches the expected columns
                     if len(header) != 11:
-                        print(
-                            f"Unexpected header format. Expected 9 columns, got {len(header)}."
-                        )
+                        
                         return redirect("upload_students")
 
                     # Iterate through each row in the CSV
                     for row in reader:
                         if len(row) != 12:
-                            print(
-                                f"Error processing row: {row}. Incorrect number of columns."
-                            )
+                            
                             continue
 
                         # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
@@ -1626,6 +1616,7 @@ def generate_facture_pdf(request, id_facture):
         try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
+            print(facture.ref())
             etude = facture.etude
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by("numero")
@@ -1655,6 +1646,7 @@ def generate_facture_pdf(request, id_facture):
             # Context for the invoice
             context = {
                 "facture": facture,
+                "ref": facture.ref(),
                 "etude": etude,
                 "client": client,
                 "phases": phases,
@@ -2032,26 +2024,27 @@ def stat_KPI(request):
 
 
         for etude in liste_etudes_ec_term:
-            secteur = etude.client.get_secteur_display()
-            if secteur in dico_ca_secteur:
-                dico_ca_secteur[secteur] += etude.montant_HT_total()
-            else:
-                dico_ca_secteur[secteur] = etude.montant_HT_total()
-
-            if etude.client.get_type_display() in dico_ca_typeentreprise:
-                dico_ca_typeentreprise[
-                    etude.client.get_type_display()
-                ] += etude.montant_HT_total()
-            else:
-                dico_ca_typeentreprise[etude.client.get_type_display()] = (
-                    etude.montant_HT_total()
-                )
-            departements = etude.departement
-            for depart in departements:
-                if depart in dico_ca_departement:
-                    dico_ca_departement[depart] += etude.montant_HT_total()
+            if etude.client:
+                secteur = etude.client.get_secteur_display()
+                if secteur in dico_ca_secteur:
+                    dico_ca_secteur[secteur] += etude.montant_HT_total()
                 else:
-                    dico_ca_departement[depart] = etude.montant_HT_total()
+                    dico_ca_secteur[secteur] = etude.montant_HT_total()
+
+                if etude.client.get_type_display() in dico_ca_typeentreprise:
+                    dico_ca_typeentreprise[
+                        etude.client.get_type_display()
+                    ] += etude.montant_HT_total()
+                else:
+                    dico_ca_typeentreprise[etude.client.get_type_display()] = (
+                        etude.montant_HT_total()
+                    )
+                departements = etude.departement
+                for depart in departements:
+                    if depart in dico_ca_departement:
+                        dico_ca_departement[depart] += etude.montant_HT_total()
+                    else:
+                        dico_ca_departement[depart] = etude.montant_HT_total()
 
         bar_chart_CA = {}
         for etude in liste_etudes_ec_term:
@@ -2784,7 +2777,7 @@ def editer_rdm(request, id_etude, id_eleve):
             eleve = Student.objects.get(id=id_eleve)
             client = etude.client
             assignations = list(
-                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude)
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by("phase__numero")
             )
             je = eleve.je
             president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
@@ -3766,9 +3759,10 @@ def calculate_chiffre_affaire_par_type(user_je):
     }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT_total = study.montant_HT_total()
-        if montant_HT_total > 0:
-            revenues[type_index[study.client.type]] += montant_HT_total
+        if study.client:
+            montant_HT_total = study.montant_HT_total()
+            if montant_HT_total > 0:
+                revenues[type_index[study.client.type]] += montant_HT_total
     return revenues
 
 
@@ -3786,9 +3780,10 @@ def calculate_chiffre_affaire_par_secteur(user_je):
     }
     studies = Etude.objects.filter(je=user_je)
     for study in studies:
-        montant_HT_total = study.montant_HT_total()
-        if montant_HT_total > 0:
-            revenues[secteur_index[study.client.secteur]] += montant_HT_total
+        if study.client:
+            montant_HT_total = study.montant_HT_total()
+            if montant_HT_total > 0:
+                revenues[secteur_index[study.client.secteur]] += montant_HT_total
     return revenues
 
 
@@ -4488,15 +4483,23 @@ def modifier_etude(request, iD):
         numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
         numero_list.remove(numero_ori)
         if request.method == "POST":
-            # Get the form data from the request
+           
             debut = request.POST.get("debut")
+            fin_etude= request.POST.get("fin")
             frais_dossier = request.POST.get("frais_dossier")
             remarque = request.POST.get("remarque")
             numero = int(request.POST.get("numero"))
+            
 
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
+            if fin_etude:
+                etude.fin_etude=fin_etude
+            
+            if not numero:
+                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+
 
             if numero:
                 
@@ -4510,37 +4513,26 @@ def modifier_etude(request, iD):
                         status=400
                     )
 
-
-                    
-
-            # 'fin' should not be updated, as it's set to readonly in the form
-
-            # Update the other fields
             etude.frais_dossier = frais_dossier
             etude.remarque = remarque
             etude.save()
 
             # Redirect to the details page with the correct modelName
-            modelName = "Etude"
-            return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
-    else:
-        template = loader.get_template("polls/login.html")
-        context = {}
-        return HttpResponse(template.render(context, request))
-    # Fetch the Etude instance using the provided iD
-    
+            return JsonResponse({"success": True, "message": "Étude modifiée avec succès.", "redirect": reverse("details", args=["Etude", iD])})
 
-    return JsonResponse(
-        {"success": False, "message": "Invalid request method"}, status=400
-    )
+    else:
+        return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
+
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
+
 
 
 def verifier_etude(request, iD):
     if request.user.is_authenticated:
     # Fetch the Etude instance using the provided iD
         etude = get_object_or_404(Etude, id=iD)
-
-        client = etude.client
+        if etude.client:
+            client = etude.client
         if request.method == "POST":
             # Get the form data from the request
             debut = request.POST.get("debut")
@@ -4569,7 +4561,6 @@ def verifier_etude(request, iD):
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
-            client.description = client_description
 
             # 'fin' should not be updated, as it's set to readonly in the form
 
@@ -4586,8 +4577,9 @@ def verifier_etude(request, iD):
             etude.element_a_fournir = element_a_fournir
 
             etude.save()
-            client.description = client_description
-            client.save()
+            if etude.client:
+                client.description = client_description
+                client.save()
 
             # Redirect to the details page with the correct modelName
             modelName = "Etude"

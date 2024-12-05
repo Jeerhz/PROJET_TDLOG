@@ -157,7 +157,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Définir le format de date et d'heure
 DATE_FORMAT = "d/m/Y"
 DATETIME_FORMAT = "d/m/Y H:i:s"

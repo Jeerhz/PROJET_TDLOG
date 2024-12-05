@@ -229,6 +229,7 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-md-0">
 
+            
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
                 <a class="nav-link" href="{% url 'index' %}">
@@ -361,6 +362,18 @@
                             <div class="list-group" id="suggestions-results"></div>
                         </div>
                     </form>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter une étude</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un client</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un étudiant</span>
+                    </a>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -667,7 +680,7 @@
                                             <table style="width: 80%;">
                                                 <tr >
                                                     <td style="padding-bottom: 10px;">
-                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{{ responsable.last_name }} {{ responsable.first_name }}</span>
+                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{% if etude.responsables.all %} {{ etude.responsables.all|FormatListeNoms }} {% else %} {{ responsable.last_name }} {{ responsable.first_name }} {% endif %} </span>
 
                                                     </td>
                                                     <td style="padding-bottom: 10px; text-align: right;">
@@ -677,10 +690,10 @@
                                                 </tr>
                                                 <tr >
                                                     <td>
-                                                       <span style="font-style: italic;">Interlocuteur client :</span> <span style="color: #000;">{{ etude.client_interlocuteur }}</span>
+                                                       <span style="font-style: italic;">Interlocuteur client :</span> <span style="color: #000;"> {% if etude.client %} {{ etude.client_interlocuteur }} {% else %} pas de client {% endif %}</span>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <span style="font-style: italic;">Responsable légale :</span> <span style="color: #000;">{{ etude.client_representant_legale }}</span>
+                                                        <span style="font-style: italic;">Responsable légale :</span> <span style="color: #000;">{% if etude.client %} {{ etude.client_representant_legale }} {% else %} pas de client {% endif %}</span>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -763,7 +776,7 @@
                                                     <div class="tab-content" id="etude-info">
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin:</strong> <span id="etude-fin">{{ etude_fin }}</span></li>
+                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin  }} {% else %} pas de fin {% endif %}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
@@ -783,7 +796,7 @@
                                                             {% csrf_token %}
                                                             <ul class="list-group list-group-flush">
                                                                 <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude_fin|date:'Y-m-d' }}" readonly></li>
+                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
                                                                 <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
                                                                 <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
@@ -893,12 +906,12 @@
                                                         alert(data.message); // Replace with a toast or modal if desired
                                                     } else {
                                                         // Display success message or handle success logic
-                                                        alert('Action réussie : ' + data.message);
+                                                        window.location.href = data.redirect;
                                                     }
                                                 })
                                                 .catch(error => {
                                                     console.error("Error:", error);
-                                                    alert("Une erreur s'est produite. Veuillez réessayer.");
+                                                    alert(`Une erreur s'est produite: ${error.message}`);
                                                 });
                                             });
                                         });
@@ -1183,32 +1196,65 @@
                                                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
                                                     aria-expanded="true" aria-controls="intervenants_phase{{ phase.id }}">
                                                     <i style="color: #2E3653;" class="fas fa-caret-down"></i>
-                                                    <span style="color: #2E3653;">Intervenants</span>
+                                                    <span style="color: #2E3653; padding-left: 20px;">Intervenants</span>
                                                 </a>
                                                 <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
                                                     <div class="bg-white py-2 collapse-inner rounded">
                                                         <table class="table table-striped clearfix">
                                                             <thead>
                                                                 <tr>
-                                                                    <th scope="col">Intervenant </th>
-                                                                    <th scope="col">Nombre de JEH</th>
-                                                                    <th scope="col">Pourcentage de rétribution</th>
-                                                                    <th scope="col">Rétribution brute</th>
+                                                                    <th scope="col" style="color: #000;">Intervenant </th>
+                                                                    <th scope="col" style="color: #000;">Nombre de JEHs</th>
+                                                                    <th scope="col" style="color: #000;">% de rétribution</th>
+                                                                    <th scope="col" style="color: #000;">Rétribution brute</th>
+                                                                    <th></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 {% if phase.assignationjeh_set.all %}
                                                                     {% for assignation_JEH in phase.assignationjeh_set.all %}
                                                                     <tr>
-                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
-                                                                        <td>{{ assignation_JEH.nombre_JEH }}</td>
-                                                                        <td>{{ assignation_JEH.pourcentage_retribution }}</td>
-                                                                        <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
+                                                                        <th scope="row" style="color: #000;">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
+                                                                        <td style="color: #000;">{{ assignation_JEH.nombre_JEH }}</td>
+                                                                        <td style="color: #000;">{{ assignation_JEH.pourcentage_retribution|FormatNombres }}</td>
+                                                                        <td style="color: #000;">{{ assignation_JEH.retribution_brute_totale|FormatNombres }} €</td>
+                                                                        <td>
+                                                                            
+                                                                            <!-- Delete Button -->
+                                                                            <button type="button" class="close" data-toggle="modal" data-target="#deleteModalAssignation{{ assignation_JEH.id }}" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                    
+                                                                            <!-- Modal for Deleting Assignation -->
+                                                                            <div class="modal fade" id="deleteModalAssignation{{ assignation_JEH.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ assignation_JEH.id }}" aria-hidden="true">
+                                                                                <div class="modal-dialog" role="document">
+                                                                                    <div class="modal-content">
+                                                                                        <div class="modal-header">
+                                                                                            <h5 class="modal-title" id="deleteModalLabel{{ assignation_JEH.id }}">Supprimer l'assignation</h5>
+                                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        <div class="modal-body">
+                                                                                            Êtes-vous sûr de vouloir supprimer cette assignation ?
+                                                                                        </div>
+                                                                                        <div class="modal-footer">
+                                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                            <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
+                                                                                                {% csrf_token %}
+                                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                            </form>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
                                                                     </tr>
                                                                     {% endfor %}
                                                                 {% else %}
                                                                 <tr>
                                                                     <td>Aucun</td>
+                                                                    <td></td>
                                                                     <td></td>
                                                                     <td></td>
                                                                     <td></td>
@@ -1218,7 +1264,8 @@
                                                         </table>
                                                         
                                                         <!-- Bouton et formulaire pour ajouter une assignation JEH -->
-                                                        <a class="btn btn-primary" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}">Ajouter une Assignation JEH</a>
+                                                        <a class="nav-link" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}"><i class="fas fa-plus"></i>Ajouter une Assignation JEH</a>
+                                                        
                                                         <div class="modal fade" id="formAssignationJEHModal{{ phase.numero }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ phase.numero }}" aria-hidden="true">
                                                             <div class="modal-dialog" role="document">
                                                                 <div class="modal-content">
@@ -1257,7 +1304,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="padding: 20px;text-align: center;">{{phase.description}}</div>
+                                            <div style="padding: 20px;text-align: center; color: #000;">{{phase.description}}</div>
                                         </div> 
                                     </div>
                                     {% endfor %}    
@@ -1456,27 +1503,28 @@
                                                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#intervenants_phase{{ phase.id }}"
                                                     aria-expanded="true" aria-controls="intervenants_phase{{ phase.id }}">
                                                     <i style="color: #2E3653;" class="fas fa-caret-down"></i>
-                                                    <span style="color: #2E3653;">Intervenants</span>
+                                                    <span style="color: #2E3653; padding-left: 20px;">Intervenants</span>
                                                 </a>
                                                 <div id="intervenants_phase{{ phase.id }}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSidebar">
                                                     <div class="bg-white py-2 collapse-inner rounded">
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th scope="col">Intervenant </th>
-                                                                    <th scope="col">Nombre de JEH</th>
-                                                                    <th scope="col">Pourcentage de rétribution</th>
-                                                                    <th scope="col">Rétribution brute</th>
+                                                                    <th scope="col"  style="color: #000;">Intervenant </th>
+                                                                    <th scope="col"  style="color: #000;">Nombre de JEH</th>
+                                                                    <th scope="col"  style="color: #000;">% de rétribution</th>
+                                                                    <th scope="col"  style="color: #000;">Rétribution brute</th>
+                                                                    <th></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 {% if phase.assignationjeh_set.all %}
                                                                 {% for assignation_JEH in phase.assignationjeh_set.all %}
                                                                     <tr>
-                                                                        <th scope="row">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
-                                                                        <td>{{ assignation_JEH.nombre_JEH }}</td>
-                                                                        <td>{{ assignation_JEH.pourcentage_retribution }}</td>
-                                                                        <td>{{ assignation_JEH.retribution_brute_totale }} €</td>
+                                                                        <th scope="row"  style="color: #000;">{{ assignation_JEH.eleve.first_name }} {{ assignation_JEH.eleve.last_name }}</th>
+                                                                        <td style="color: #000;">{{ assignation_JEH.nombre_JEH }}</td>
+                                                                        <td style="color: #000;">{{ assignation_JEH.pourcentage_retribution|FormatNombres }}</td>
+                                                                        <td style="color: #000;">{{ assignation_JEH.retribution_brute_totale|FormatNombres }} €</td>
                                                                         <td>
                                                                             
                                                                             <!-- Delete Button -->
@@ -1516,13 +1564,15 @@
                                                                     <td></td>
                                                                     <td></td>
                                                                     <td></td>
+                                                                    <td></td>
                                                                 </tr>
                                                                 {% endif %}                                  
                                                             </tbody>
                                                         </table>
                                                         
                                                         <!-- Bouton et formulaire pour ajouter une assignation JEH -->
-                                                        <a class="btn btn-primary" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}">Ajouter une Assignation JEH</a>
+                                                        <a class="nav-link" data-toggle="modal" data-target="#formAssignationJEHModal{{ phase.numero }}"><i class="fas fa-plus"></i>Ajouter une Assignation JEH</a>
+
                                                         <div class="modal fade" id="formAssignationJEHModal{{ phase.numero }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ phase.numero }}" aria-hidden="true">
                                                             <div class="modal-dialog" role="document">
                                                                 <div class="modal-content">
@@ -1561,7 +1611,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="padding: 20px; text-align: center;">{{phase.description}}</div>
+                                            <div style="padding: 20px; text-align: center; color: #000;">{{phase.description}}</div>
                                         </div>  
                                     </div>
                                     {% endfor %}    
@@ -2190,7 +2240,7 @@
                                                         <div style="text-align: center; font-weight: bold; font-size: large;color: #000;">Informations Devis</div>
                                                         <br>
                                                         <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
-                                                            client : <span id="verifier-client_nom" style="color:#000">{{ etude.client.nom_societe }}</span> 
+                                                            client : <span id="verifier-client_nom" style="color:#000">{% if etude.client %} {{ etude.client.nom_societe  }} {% else %} pas de client {% endif %}</span> 
                                                         </li>
                                                         {% if etude.type_convention == "Convention d'étude" %}
                                                             {% if etude_facture_solde %}
@@ -2267,12 +2317,12 @@
                                                         
                                                         <li class="list-group-item">
                                                             <div>
-                                                                Interlocuteur client : <span id="verifier-client_interlocuteur" style="color:#000">{% if etude.client_interlocuteur  %} {{ etude.client_interlocuteur  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                                Interlocuteur client : <span id="verifier-client_interlocuteur" style="color:#000">{% if etude.client and etude.client_interlocuteur  %} {{ etude.client_interlocuteur  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
                                                             </div>
                                                             <div>
-                                                                Responsable légal client : <span id="verifier-client_representant_legale" style="color:#000">{% if etude.client_representant_legale  %} {{ etude.client_representant_legale  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                                Responsable légal client : <span id="verifier-client_representant_legale" style="color:#000">
+                                                                   {% if etude.client and etude.client_representant_legale  %} {{ etude.client_representant_legale  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
                                                             </div>
-
                                                         </li>
                                                         <li class="list-group-item">
                                                             Objectifs de l'étude : <span id="verifier-objectifs" style="color:#000">{% if etude.objectifs  %} {{ etude.objectifs  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
@@ -2326,7 +2376,7 @@
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
                                                             <li class="list-group-item">
-                                                                Votre structure : <input type="char" name="client_description" class="form-control" value="{{ etude.client.description }}">
+                                                                Votre structure : <input type="char" name="client_description" class="form-control" value="{% if etude.client %} {{ etude.client.description }} {% else %} pas de client {% endif %}">
                                                             </li>
                                                             <li class="list-group-item">
                                                                 Contexte de l'étude : 
@@ -2487,7 +2537,7 @@
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text">Ajouter intervenant</span>
                                                     </div>
-                                                    <input type="text" class="form-control bg-light border-0" placeholder="Cherchez un élève..."
+                                                    <input type="text" class="form-control bg-light border-0" placeholder="Chercher un élève..."
                                                         aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
                                                 </div>
                                                 <div class="list-group w-100" id="suggestions-results-student"></div>
@@ -3493,7 +3543,10 @@
                                             <div class="modal-body">
                                                 <!-- Titre Field -->
                                                 
-
+                                                <div class="form-group">
+                                                    <label for="remarque">Remarque</label>
+                                                    <input type="text" class="form-control" id="remarque" name="remarque" value="{{ eleve.remarque }}">
+                                                </div>
                                                 <div class="form-group">
                                                     <label for="titre">Titre</label>
                                                     <select class="form-control" id="titre" name="titre">

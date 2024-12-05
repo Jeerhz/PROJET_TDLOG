@@ -121,7 +121,15 @@ def superieur_a(value, arg):
 @register.filter(name='dateJJMM')
 def datejjmm(date):
     return date.strftime("%d/%m")
-    
+
+@register.filter(name='FormatListeNoms')
+def FormatListeNoms(responsables):
+    liste = ""
+    for resp in responsables:
+        liste= f"{liste}{resp} - "
+
+    return liste[:-3]
+
 
 @register.filter
 def order_dict_by_keys(dictionary):

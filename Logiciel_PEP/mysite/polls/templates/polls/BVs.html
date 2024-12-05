@@ -266,6 +266,19 @@
                             <div class="list-group" id="suggestions-results"></div>
                         </div>
                     </form>
+                    
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter une étude</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un client</span>
+                    </a>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
+                        <i class="fas fa-plus"></i>
+                        <span>Ajouter un étudiant</span>
+                    </a>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -490,11 +503,11 @@
                                 </div>
                                 <!-- Card Body -->
                                 
-                                {% for BV in BVs %}
-                                    {% if BV.date_emission %}
+                                
+                                    <table style="margin-top:20px; border-collapse: collapse;" class="table_demarchage">
+                                    {% for BV in BVs %}
+                                        {% if BV.date_emission %}
             
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        
                                         <tbody>
                                             
                                             <tr >
@@ -529,9 +542,9 @@
                                                             </form>
                                                         </div>
                                                     </div>
-                                                 </div>
+                                                </div>
                                                 
-                                                <td> {{BV.nb_JEH}} {% if BV.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} - {{BV.retr_brute|FormatNombres}}€ de rétribution </td>
+                                                <td style="text-align: left;"> {{BV.nb_JEH}} {% if BV.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} - {{BV.retr_brute|FormatNombres}}€ de rétribution </td>
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'generer_BV' BV.id %}"></a>
                                                     <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalBV_{{BV.id}}"> </button>
@@ -565,10 +578,10 @@
                                         </tbody>
                                     
                                     
-
+                                        {% endif %}
+                                    {% endfor %}
                                     </table>
-                                    {% endif %}
-                                {% endfor %}   
+                                       
                                 
                                     
                             </div>
