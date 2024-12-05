@@ -910,7 +910,7 @@ class Etude(models.Model):
                 for phase in phases
                 if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
             )
-            if phases.exists()
+            if phases
             else 0
         )
         return total_montant_HT

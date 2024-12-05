@@ -216,6 +216,26 @@ def index(request):
 
         user_parametres = user.parametres
 
+
+        ca_etudes_ec = sum(etude.frais_dossier + sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in etude.phases.all()
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            ) for etude in etudes_en_cours)
+        
+        ca_etudes_nego = sum(etude.frais_dossier + sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in etude.phases.all()
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            ) for etude in etudes_en_negociation)
+
+        ca_etudes_term = sum(etude.frais_dossier + sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in etude.phases.all()
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            ) for etude in etudes_terminees)
+
+
         # Fetch messages and notifications
         liste_messages_future = executor.submit(
             lambda: list(
@@ -251,9 +271,9 @@ def index(request):
         "nb_etudes_ec": len(etudes_en_cours),
         "nb_etudes_term": len(etudes_terminees),
         "nb_etudes_nego": len(etudes_en_negociation),
-        "ca_etudes_ec": sum(etude.montant_HT_total() for etude in etudes_en_cours),
-        "ca_etudes_term": sum(etude.montant_HT_total() for etude in etudes_terminees),
-        "ca_etudes_nego": sum(etude.montant_HT_total() for etude in etudes_en_negociation),
+        "ca_etudes_ec": ca_etudes_ec,
+        "ca_etudes_term": ca_etudes_term,
+        "ca_etudes_nego": ca_etudes_nego,
     }
 
     return render(request, "polls/index.html", context)
