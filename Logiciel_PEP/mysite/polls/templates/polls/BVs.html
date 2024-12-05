@@ -503,11 +503,11 @@
                                 </div>
                                 <!-- Card Body -->
                                 
-                                {% for BV in BVs %}
-                                    {% if BV.date_emission %}
+                                
+                                    <table style="margin-top:20px; border-collapse: collapse;" class="table_demarchage">
+                                    {% for BV in BVs %}
+                                        {% if BV.date_emission %}
             
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        
                                         <tbody>
                                             
                                             <tr >
@@ -542,9 +542,9 @@
                                                             </form>
                                                         </div>
                                                     </div>
-                                                 </div>
+                                                </div>
                                                 
-                                                <td> {{BV.nb_JEH}} {% if BV.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} - {{BV.retr_brute|FormatNombres}}€ de rétribution </td>
+                                                <td style="text-align: left;"> {{BV.nb_JEH}} {% if BV.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} - {{BV.retr_brute|FormatNombres}}€ de rétribution </td>
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'generer_BV' BV.id %}"></a>
                                                     <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalBV_{{BV.id}}"> </button>
@@ -578,10 +578,10 @@
                                         </tbody>
                                     
                                     
-
+                                        {% endif %}
+                                    {% endfor %}
                                     </table>
-                                    {% endif %}
-                                {% endfor %}   
+                                       
                                 
                                     
                             </div>

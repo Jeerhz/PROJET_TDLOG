@@ -563,9 +563,9 @@
                                     <thead style="background-color: rgba(41, 48, 92, 0.814);">
                                         <tr style="color:white">
                                             <th class="text-left" style="padding-left: 30px;">Étude</th>
-                                            <th class="text-center">Client</th>
-                                            <th class="text-center">Debut</th>
-                                            <th class="text-center">Suiveur</th>
+                                            <th class="text-left">Client</th>
+                                            <th class="text-left">Montant</th>
+                                            <th class="text-right" style="padding-right: 30px;">Suiveur</th>
                                         </tr>
                                     </thead>
                                     <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
@@ -573,9 +573,9 @@
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
                                                 <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
-                                                <td class="text-center"> {{ etude.client|slice:":30" }} </td>
-                                                <td class="text-center"> {{ etude.debut }} </td>
-                                                <td class="text-center"> {{ etude.responsable }} </td>
+                                                <td class="text-left"> {{ etude.client|slice:":30" }} </td>
+                                                <td class="text-left"> {{ etude.montant_HT_total|FormatNombres }} </td>
+                                                <td class="text-right" style="padding-right: 30px;"> {{ etude.responsable }} </td>
                                             </tr>
                                             {% endfor %}
                                     </tbody>

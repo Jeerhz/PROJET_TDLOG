@@ -197,7 +197,7 @@ def index(request):
             .prefetch_related(
                 Prefetch('phases', queryset=Phase.objects.all())
             )
-            .order_by("-debut")
+            .order_by("numero")
         )
 
         # Pre-calculate montant_HT_total for each etude
@@ -310,13 +310,13 @@ def annuaire(request):
 
     # Define the functions to be executed in parallel
     def fetch_clients_annuaire():
-        return list(Client.objects.filter(je=user_je_id))
+        return list(Client.objects.filter(je=user_je_id).order_by('nom_societe'))
 
     def fetch_students_annuaire():
-        return list(Student.objects.filter(je=user_je_id))
+        return list(Student.objects.filter(je=user_je_id).order_by('last_name'))
 
     def fetch_etudes_annuaire():
-        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite'))
+        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite').order_by('numero'))
 
 
     # Use ThreadPoolExecutor to run tasks concurrently

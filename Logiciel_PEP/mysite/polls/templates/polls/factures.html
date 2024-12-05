@@ -502,11 +502,11 @@
                                 </div>
                                 <!-- Card Body -->
                                 
-                                {% for facture in factures %}
-                                    {% if facture.date_emission %}
+                                
             
                                     <table style="margin-top:20px;" class="table_demarchage">
-                                        
+                                    {% for facture in factures %}
+                                        {% if facture.date_emission %}
                                         <tbody>
                                             
                                             <tr >
@@ -542,8 +542,8 @@
                                                         </div>
                                                     </div>
                                                  </div>
-                                                <td style="text-align: center; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
-                                                <td style="text-align: center;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
+                                                <td style="text-align: left; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
+                                                <td style="text-align: left;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
                                                 
                                                 <td style="text-align: right;">
                                                     <a class="fas fa-download mr-2" target="_blank" href="{% url 'facture' facture.id %}"></a>
@@ -580,10 +580,10 @@
                                         </tbody>
                                     
                                     
-
+                                        {% endif %}
+                                    {% endfor %}  
                                     </table>
-                                    {% endif %}
-                                {% endfor %}   
+                                     
                                 
                                     
                             </div>

@@ -745,7 +745,7 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}} €</td>
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td style="text-align: left;" style=" padding: 6px;">
                                             
@@ -976,7 +976,7 @@
                                         <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}}€</td>
+                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}}€</td>
                                         {% endif %}
                                         
                                         {% if user_parametres.param_col_etude_responsable %}
@@ -1236,7 +1236,7 @@
                                         <td style="text-align: left;">{{etude.client}}</td>
                                         {% endif %}
                                         {% if user.parametres.param_col_etude_montant_HT %}
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}} €</td>
                                         {% endif %}
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td style="text-align: left;" style=" padding: 6px;">
