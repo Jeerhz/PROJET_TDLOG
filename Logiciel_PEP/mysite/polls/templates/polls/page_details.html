@@ -680,7 +680,7 @@
                                             <table style="width: 80%;">
                                                 <tr >
                                                     <td style="padding-bottom: 10px;">
-                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{{ responsable.last_name }} {{ responsable.first_name }}</span>
+                                                       <span style="font-style: italic;">Suiveur : </span> <span style="color: #000;">{% if etude.responsables.all %} {{ etude.responsables.all|FormatListeNoms }} {% else %} {{ responsable.last_name }} {{ responsable.first_name }} {% endif %} </span>
 
                                                     </td>
                                                     <td style="padding-bottom: 10px; text-align: right;">

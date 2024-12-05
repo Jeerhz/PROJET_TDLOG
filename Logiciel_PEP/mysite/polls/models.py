@@ -693,6 +693,15 @@ class Etude(models.Model):
         related_name="responsable_etudes",
         verbose_name="suiveur",
     )
+
+    # pour avoir plusieurs responasbles sur une mission :
+    responsables = models.ManyToManyField(
+        'Member',
+        related_name='etudes_responsables',
+        verbose_name="suiveurs"
+    )
+
+
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
     client_interlocuteur = models.ForeignKey(
         Representant, on_delete=models.CASCADE, related_name="client_interlocuteur", null=True, blank=True
@@ -2163,6 +2172,7 @@ class AddEtude(forms.ModelForm):
             "periode_de_garantie",
             "cahier_des_charges",
             "suivi_document",
+            "fin_etude",
         ]
         widgets = {
             "client": SelectSearch(
@@ -2203,8 +2213,10 @@ class AddEtude(forms.ModelForm):
             etude.numero = max_numero + 1
 
         if commit:
+            
+            if "responsables" in self.cleaned_data:
+                etude.responsables.set(self.cleaned_data["responsables"])
             etude.save()
-
         return etude
 
     def __init__(self, *args, **kwargs):

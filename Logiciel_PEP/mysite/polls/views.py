@@ -161,17 +161,7 @@ def general_context(request):
     return context
 
 
-def my_view(request):
-    return render(request, "polls/facpdf.html")
 
-
-def generate_pdf(request):
-    html_content = render_to_string("polls/facpdf.html")
-    pdf_file = HTML(string=html_content).write_pdf()
-
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="page.pdf"'
-    return response
 
 
 def confidentialite_donnees(request):
@@ -660,7 +650,6 @@ def details(request, modelName, iD):
     # Add additional context if applicable
     if etude is not None:
         etude_convention = etude.conventions_etude.first() if etude.type_convention == "Convention d'étude" else etude.conventions_cadre.first()
-
 
         context.update({
             "attribute_list": attribute_list,
@@ -1399,17 +1388,13 @@ def upload_students(request):
 
                     # Check if header matches the expected columns
                     if len(header) != 11:
-                        print(
-                            f"Unexpected header format. Expected 9 columns, got {len(header)}."
-                        )
+                        
                         return redirect("upload_students")
 
                     # Iterate through each row in the CSV
                     for row in reader:
                         if len(row) != 12:
-                            print(
-                                f"Error processing row: {row}. Incorrect number of columns."
-                            )
+                            
                             continue
 
                         # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
@@ -1608,7 +1593,7 @@ def update_etude(request, id):
 
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
-        #try:
+        try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
             print(facture.ref())
@@ -1667,7 +1652,7 @@ def generate_facture_pdf(request, id_facture):
             response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
             return response
 
-        #except Exception as e:
+        except Exception as e:
             return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
     else:
