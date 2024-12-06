@@ -745,7 +745,7 @@
                                         {% if user_parametres.param_col_etude_client %}
                                         <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
                                         {% endif %}
-                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td style="text-align: left;" style=" padding: 6px;">
 
@@ -986,7 +986,7 @@
                                         <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
                                         {% endif %}
                                         
-                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}}€</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}}€</td>
                                         
                                         
                                         {% if user_parametres.param_col_etude_responsable %}
@@ -1019,8 +1019,8 @@
                                                 <!-- Progress bar itself -->
                                                 <div class="progress-bar bg-success" 
                                                      role="progressbar" 
-                                                     style="width: {{ etude.progress_percentage }}%;" 
-                                                     aria-valuenow="{{ etude.progress_percentage }}" 
+                                                     style="width: {{ etude.progress_bar }}%;" 
+                                                     aria-valuenow="{{ etude.progress_bar }}" 
                                                      aria-valuemin="0" 
                                                      aria-valuemax="100">
                                                 </div>
@@ -1258,7 +1258,7 @@
                                         <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
                                         {% endif %}
                                         
-                                        <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}} €</td>
+                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
                                         
                                         {% if user_parametres.param_col_etude_responsable %}
                                         <td style="text-align: left;" style=" padding: 6px;">

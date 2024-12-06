@@ -60,7 +60,7 @@ from polls.tasks import (
     fetch_notifications,
 )
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.http import HttpResponse
 from django.template import loader
 from django.db import connection
@@ -170,6 +170,8 @@ def confidentialite_donnees(request):
     return HttpResponse(template.render(context, request))
 
 
+
+##TODO: Refacto this code to be more readable with functions to be reimplemented
 def index(request):
     user = request.user
     if not user.is_authenticated:
@@ -178,74 +180,101 @@ def index(request):
     user_je = user.je
     mandat_select = request.POST.getlist("mandat-select") or [choice[0] for choice in Etude.Mandat.choices]
 
-    # Use ThreadPoolExecutor to handle blocking operations
-    with ThreadPoolExecutor() as executor:
-        # Fetch all etudes in one query with related objects
-        recent_etudes = list(
+    # Define helper functions for fetching data
+    def fetch_recent_etudes():
+        return list(
             Etude.objects.filter(je=user_je, mandat__in=mandat_select)
-            .select_related('responsable', 'client', 'resp_qualite')  # Assuming these are foreign keys
+            .select_related('responsable', 'client', 'resp_qualite')  # Ensure 'client' is a ForeignKey
             .prefetch_related(
-                Prefetch('phases', queryset=Phase.objects.all())
+                Prefetch('phases', queryset=Phase.objects.all()),
+                Prefetch('responsables', queryset=Member.objects.all())
             )
             .order_by("numero")
         )
 
-        # Pre-calculate montant_HT_total for each etude
-        for etude in recent_etudes:
-            # Calculate montant_phase_HT using pre-fetched phases
-            etude_phases = etude.phases.all()  # Access pre-fetched phases
-            montant_phase_HT = sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in etude_phases
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            )
-            etude.montant_ht_total = etude.frais_dossier + montant_phase_HT
-
-        # Filter etudes in Python
-        etudes_terminees = [etude for etude in recent_etudes if etude.status == "TERMINEE"]
-        etudes_en_cours = [etude for etude in recent_etudes if etude.status == "EN_COURS"]
-        etudes_en_negociation = [etude for etude in recent_etudes if etude.status == "EN_NEGOCIATION"]
-
-        user_parametres = user.parametres
-
-
-        ca_etudes_ec = sum(etude.frais_dossier + sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in etude.phases.all()
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            ) for etude in etudes_en_cours)
-        
-        ca_etudes_nego = sum(etude.frais_dossier + sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in etude.phases.all()
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            ) for etude in etudes_en_negociation)
-
-        ca_etudes_term = sum(etude.frais_dossier + sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in etude.phases.all()
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            ) for etude in etudes_terminees)
-
-
-        # Fetch messages and notifications
-        liste_messages_future = executor.submit(
-            lambda: list(
-                Message.objects.filter(
-                    destinataire=request.user,
-                    read=False,
-                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
-                ).order_by("date")[:3]
-            )
+    def fetch_messages():
+        return list(
+            Message.objects.filter(
+                destinataire=user,
+                read=False,
+                date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
+            ).order_by("date")[:3]
         )
 
-        all_notifications_future = executor.submit(
-            lambda: list(request.user.notifications.order_by("-date_effet"))
+    def fetch_notifications():
+        return list(user.notifications.order_by("-date_effet"))
+
+    # Use ThreadPoolExecutor to handle blocking operations
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        # Submit tasks to the executor
+        future_etudes = executor.submit(fetch_recent_etudes)
+        future_messages = executor.submit(fetch_messages)
+        future_notifications = executor.submit(fetch_notifications)
+
+        # Collect results as they complete
+        results = {}
+        for future in as_completed([future_etudes, future_messages, future_notifications]):
+            if future == future_etudes:
+                results['recent_etudes'] = future.result()
+            elif future == future_messages:
+                results['liste_messages'] = future.result()
+            elif future == future_notifications:
+                results['all_notifications'] = future.result()
+
+    # Extract results
+    recent_etudes = results.get('recent_etudes', [])
+    liste_messages = results.get('liste_messages', [])
+    all_notifications = results.get('all_notifications', [])
+
+    # Pre-calculate montant_HT_total and progress_bar for each etude
+    for etude in recent_etudes:
+        # Calculate montant_phase_HT using pre-fetched phases
+        montant_phase_HT = sum(
+            phase.montant_HT_par_JEH * phase.nb_JEH
+            for phase in etude.phases.all()
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        )
+        etude.montant_ht_total = etude.frais_dossier + montant_phase_HT
+
+        # Calculate total_duree_semaine
+        total_duree_semaine = max(
+            (
+                (phase.duree_semaine + phase.debut_relatif)
+                for phase in etude.phases.all()
+                if phase.duree_semaine is not None and phase.debut_relatif is not None
+            ),
+            default=0
+        ) * 7 if recent_etudes else 0
+
+        # Calculate progress_bar
+        if total_duree_semaine > 0:
+            days_passed = (timezone.now().date() - etude.debut).days
+            progress = (days_passed / total_duree_semaine) * 100
+            etude.progress_bar = int(max(min(100, progress), 0))
+        else:
+            etude.progress_bar = 0
+
+    # Filter etudes by status
+    etudes_terminees = [etude for etude in recent_etudes if etude.status == Etude.Status.TERMINEE]
+    etudes_en_cours = [etude for etude in recent_etudes if etude.status == Etude.Status.EN_COURS]
+    etudes_en_negociation = [etude for etude in recent_etudes if etude.status == Etude.Status.EN_NEGOCIATION]
+
+    user_parametres = user.parametres
+
+    # Calculate CA (Chiffre d'Affaires)
+    def calculate_ca(etudes):
+        return sum(
+            etude.frais_dossier + sum(
+                phase.montant_HT_par_JEH * phase.nb_JEH
+                for phase in etude.phases.all()
+                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+            )
+            for etude in etudes
         )
 
-        # Wait for futures to complete
-        liste_messages = liste_messages_future.result()
-        all_notifications = all_notifications_future.result()
+    ca_etudes_ec = calculate_ca(etudes_en_cours)
+    ca_etudes_nego = calculate_ca(etudes_en_negociation)
+    ca_etudes_term = calculate_ca(etudes_terminees)
 
     # Prepare the context
     context = {
@@ -259,7 +288,7 @@ def index(request):
         "notification_list": [notif for notif in all_notifications if notif.active()],
         "notification_count": len(all_notifications),
         "mandat_choices": Etude.Mandat.choices,
-        "mandat_default": mandat_select,
+        "mandat_default": mandat_select,  # Ensure this is a list if used in templates
         "nb_etudes_ec": len(etudes_en_cours),
         "nb_etudes_term": len(etudes_terminees),
         "nb_etudes_nego": len(etudes_en_negociation),

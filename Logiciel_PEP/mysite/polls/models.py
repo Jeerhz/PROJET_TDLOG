@@ -694,12 +694,13 @@ class Etude(models.Model):
         verbose_name="suiveur",
     )
 
-    # pour avoir plusieurs responasbles sur une mission :
+    # pour avoir plusieurs responsables sur une mission :
     responsables = models.ManyToManyField(
         'Member',
         related_name='etudes_responsables',
         verbose_name="suiveurs"
     )
+
 
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
