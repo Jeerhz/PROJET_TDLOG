@@ -2505,8 +2505,6 @@
                                         
                                     </div>
                                     
-                                            
-                                        
                                     <br>
                                         
                                     <script>
@@ -2627,7 +2625,7 @@
                                                         </div>
                                                     </div>
                                                     <br>
-                                                    {% if eleve|assignation:etude %}
+                                                    {% if eleve.assignations_for_etude %}
                                                     <form action="{% url 'nouveau_BV' id_etude=iD id_eleve=eleve.id %}" method="post">
                                                         {% csrf_token %}
                                                         <div class="bg-white py-2 collapse-inner rounded">
@@ -2640,7 +2638,7 @@
                                                                     <th>Montant</th>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {% for assignation in eleve|assignation:etude %}
+                                                                    {% for assignation in eleve.assignations_for_etude %}
                                                                 <tr>
                                                                     <th><div class="form-check form-switch">
                                                                         <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
@@ -2681,8 +2679,8 @@
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {% if eleve|assignation:etude %}
-                                                                    {% for assignation in eleve|assignation:etude %}
+                                                                    {% if  eleve.assignations_for_etude %}
+                                                                    {% for assignation in  eleve.assignations_for_etude %}
                                                                     <tr>
                                                                         <td class="td_planning">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
                                                                         <td class="td_planning" style="text-align: center;">{{assignation.nombre_JEH}} JEHs</td>
@@ -2711,8 +2709,8 @@
                                                                     
                                                                 }
                                                         
-                                                                {% if eleve|assignation:etude %}
-                                                                    {% for assignation in eleve|assignation:etude %}
+                                                                {% if  eleve.assignations_for_etude %}
+                                                                    {% for assignation in  eleve.assignations_for_etude %}
                                                                         setBarWidth('bar_plan-{{eleve.id}}-{{assignation.phase.numero}}', {{assignation.phase.duree_semaine}}, {{assignation.phase.debut_relatif}}, {{etude_duree}}); // Set width based on database values
                                                                     
                                                                     {% endfor %}
@@ -3747,7 +3745,7 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                        {% for assignation in eleve|assignation:mission %}
+                                                        {% for assignation in  eleve.assignations_for_etude %}
                                                             <tr>
                                                                 <th>{{assignation.phase.numero}} - {{assignation.phase.titre|slice:":50"}}</th>
                                                                 <th>{{assignation.nombre_JEH}}</th>

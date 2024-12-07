@@ -553,6 +553,75 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
+def load_user_messages_and_notifications(user):
+    # Load messages
+    liste_messages = list(
+        Message.objects.filter(
+            destinataire=user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+    )
+    message_count = len(liste_messages)
+
+    # Load notifications
+    all_notifications = list(user.notifications.order_by("-date_effet"))
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
+
+    return liste_messages, message_count, notification_list, notification_count
+
+
+def compute_total_retribution(phases):
+    total_retribution = 0
+    for phase in phases:
+        assignations = phase.assignationjeh_set.all()  # Prefetched
+        retr_totale = sum(a.retribution_brute_totale() for a in assignations)
+        nb_JEHs = sum(a.nombre_JEH for a in assignations)
+        # Add remaining JEH retribution
+        retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
+        total_retribution += retr_totale
+    return total_retribution
+
+
+def compute_phase_assignations(phases):
+    assignations_by_eleve = {}
+    assignations_for_each_eleve = {}
+    for phase in phases:
+        for assignment in phase.assignationjeh_set.all():
+            eleve_id = assignment.eleve_id
+            if eleve_id not in assignations_by_eleve:
+                assignations_by_eleve[eleve_id] = {"JEH_count": 0, "montant_total": 0.0}
+                assignations_for_each_eleve[eleve_id] = []
+            assignations_by_eleve[eleve_id]["JEH_count"] += assignment.nombre_JEH
+            assignations_by_eleve[eleve_id]["montant_total"] += (
+                assignment.retribution_brute_totale()
+            )
+            assignations_for_each_eleve[eleve_id].append(assignment)
+    return assignations_by_eleve, assignations_for_each_eleve
+
+
+def compute_jeh_base_and_frais(
+    etude, bdc, etude_montant_total_phases, associations_phase
+):
+    # Compute JEH and frais depending on type_convention
+    if etude.type_convention == "Convention cadre":
+        bdc_id = bdc.id if bdc else None
+        bdc_phases = associations_phase.get(bdc_id, [])
+        bdc_montant_total_phases = sum(
+            (phase.montant_HT_par_JEH * phase.nb_JEH)
+            for phase in bdc_phases
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        )
+        jeh_base = bdc_montant_total_phases if bdc else 0
+        frais_base = bdc.frais_dossier if bdc else 0
+    else:
+        # Fallback to etude-level data (already in memory from select_related)
+        jeh_base = etude_montant_total_phases
+        frais_base = etude.frais_dossier
+    return jeh_base, frais_base
+
+
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
@@ -562,21 +631,18 @@ def details(request, modelName, iD):
     user_je = user.je
     user_student = user.student
 
-    # Preload messages and notifications
-    liste_messages = list(
-        Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[:3]
-    )
-    message_count = len(liste_messages)
-    all_notifications = list(request.user.notifications.order_by("-date_effet"))
-    notification_list = [notif for notif in all_notifications if notif.active()]
-    notification_count = len(notification_list)
+    # We will load messages/notifications in parallel with another task (if needed)
+    # Since loading messages and notifications is independent, we can parallelize this.
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future_messages = executor.submit(load_user_messages_and_notifications, user)
 
-    model = apps.get_model(app_label="polls", model_name=modelName)
-    instance = get_object_or_404(model, id=iD)
+        # Loading model instance
+        model = apps.get_model(app_label="polls", model_name=modelName)
+        instance = get_object_or_404(model, id=iD)
+
+        liste_messages, message_count, notification_list, notification_count = (
+            future_messages.result()
+        )
 
     if modelName == "Message":
         instance.read = True
@@ -598,6 +664,7 @@ def details(request, modelName, iD):
             Etude.objects.select_related(
                 "resp_qualite",
                 "responsable",
+                "responsable__student",
                 "client",
                 "client_interlocuteur",
                 "client_representant_legale",
@@ -610,7 +677,11 @@ def details(request, modelName, iD):
                         Prefetch(
                             "assignationjeh_set",
                             queryset=AssignationJEH.objects.select_related("eleve"),
-                        )
+                        ),
+                        "modif_duree",
+                        "modif_debut",
+                        "modif_jeh",
+                        "suppression",
                     ),
                 ),
                 Prefetch(
@@ -640,12 +711,12 @@ def details(request, modelName, iD):
         factures = etude.factures.all()
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
 
-        # Intervenants: distinct students that have assignations in phases
+        # Intervenants
         intervenants = Student.objects.filter(
             assignationjeh__phase__etude=etude
         ).distinct()
 
-        # Preload AssociationFactureBDC for all factures
+        # Preload AssociationFactureBDC
         associations_bdc = {
             asso.facture.numero_facture: asso.bon_de_commande
             for asso in AssociationFactureBDC.objects.filter(
@@ -653,8 +724,7 @@ def details(request, modelName, iD):
             ).select_related("bon_de_commande")
         }
 
-        # Compute associations_phase dict: { bdc_id: [phase1, phase2, ...], ... }
-        # First, fetch all BDC related to this etude with their phase associations
+        # Preload BDC and associations
         bons = list(
             BonCommande.objects.filter(etude=etude)
             .prefetch_related(
@@ -671,21 +741,7 @@ def details(request, modelName, iD):
             for bdc in bons
         }
 
-        # Recompute poste for clarity (already done above, but keeping for reference)
-        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-
-        # Compute total retribution from phases (all data already prefetched)
-        def compute_total_retribution(phases):
-            total_retribution = 0
-            for phase in phases:
-                assignations = phase.assignationjeh_set.all()  # Prefetched
-                retr_totale = sum(a.retribution_brute_totale() for a in assignations)
-                nb_JEHs = sum(a.nombre_JEH for a in assignations)
-                # Add remaining JEH retribution
-                retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
-                total_retribution += retr_totale
-            return total_retribution
-
+        # Compute total retribution
         etude_retributions_totales = compute_total_retribution(phases)
 
         if etude.client:
@@ -738,60 +794,28 @@ def details(request, modelName, iD):
             (f for f in factures if f.type_facture == f.Status.SOLDE), None
         )
 
-        def jeh_base_and_frais(etude, bdc):
-            # Compute JEH and frais depending on type_convention
-            if etude.type_convention == "Convention cadre":
-                # Use preloaded bdc data
-                # Here we use associations_phase dictionary
-                bdc_id = bdc.id if bdc else None
-                bdc_phases = associations_phase.get(bdc_id, [])
-
-                bdc_montant_total_phases = sum(
-                    (phase.montant_HT_par_JEH * phase.nb_JEH)
-                    for phase in bdc_phases
-                    if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-                )
-
-                jeh_base = bdc_montant_total_phases if bdc else 0
-                frais_base = bdc.frais_dossier if bdc else 0
-            else:
-                # Fallback to etude-level data (already in memory from select_related)
-                jeh_base = etude_montant_total_phases
-                frais_base = etude.frais_dossier
-            return (jeh_base, frais_base)
-
         # Update factures cached values
         for facture in factures:
             bdc = associations_bdc.get(facture.numero_facture)
-            jeh_base, frais_base = jeh_base_and_frais(etude, bdc)
+            jeh_base, frais_base = compute_jeh_base_and_frais(
+                etude, bdc, etude_montant_total_phases, associations_phase
+            )
 
             fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
             fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
 
             facture.cached_montant_HT = fac_JEH + fac_frais
             facture.cached_montant_TVA = (
-                facture.TVA_per * facture.cached_montant_HT / 100.0
-            )
+                facture.TVA_per * facture.cached_montant_HT
+            ) / 100.0
             facture.cached_montant_TTC = (
-                (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
-            )
+                (facture.TVA_per + 100) * facture.cached_montant_HT
+            ) / 100.0
 
-        assignations_by_eleve = {}
-
-        # On charge pour chaque intervenant son nombre de JEH et le montant associé
-        for phase in phases:
-            for assignment in phase.assignationjeh_set.all():
-                eleve_id = assignment.eleve_id
-                # Initialize a dictionary entry if not present
-                if eleve_id not in assignations_by_eleve:
-                    assignations_by_eleve[eleve_id] = {
-                        "JEH_count": 0,
-                        "montant_total": 0.0,
-                    }
-                assignations_by_eleve[eleve_id]["JEH_count"] += assignment.nombre_JEH
-                assignations_by_eleve[eleve_id]["montant_total"] += (
-                    assignment.retribution_brute_totale()
-                )
+        # Compute assignations for each eleve
+        assignations_by_eleve, assignations_for_each_eleve = compute_phase_assignations(
+            phases
+        )
 
         for eleve in intervenants:
             data = assignations_by_eleve.get(
@@ -799,6 +823,7 @@ def details(request, modelName, iD):
             )
             eleve.precomputed_JEH_count = data["JEH_count"]
             eleve.precomputed_montant_total = data["montant_total"]
+            eleve.assignations_for_etude = assignations_for_each_eleve.get(eleve.id, [])
 
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
 
@@ -831,7 +856,6 @@ def details(request, modelName, iD):
         "notification_count": notification_count,
     }
 
-    # Add context for Etude
     if etude is not None:
         etude_convention = (
             etude.conventions_etude.first()
@@ -839,7 +863,6 @@ def details(request, modelName, iD):
             else etude.conventions_cadre.first()
         )
 
-        # Pass this queryset to your form
         intervenant_form = AddIntervenant(intervenant_queryset=intervenants)
 
         context.update(
@@ -872,8 +895,8 @@ def details(request, modelName, iD):
                 "representants_legaux": representants_legaux,
                 "members": members,
                 "poste": poste,
-                "bons": bons,  # List of BDCs
-                "associations_phase": associations_phase,  # The dictionary from BDC to phases
+                "bons": bons,
+                "associations_phase": associations_phase,
             }
         )
 
