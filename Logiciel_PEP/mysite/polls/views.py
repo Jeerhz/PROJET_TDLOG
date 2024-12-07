@@ -664,42 +664,9 @@ def details(request, modelName, iD):
             facture.cached_montant_TTC = facture.montant_TTC()
 
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-        phases = etude.phases.prefetch_related(
-            Prefetch(
-                "assignationjeh_set",
-                queryset=AssignationJEH.objects.select_related("eleve").all(),
-            )
-        )
-        intervenants = Student.objects.prefetch_related(
-            Prefetch(
-                "assignationjeh_set",
-                queryset=AssignationJEH.objects.filter(phase__etude=etude),
-                to_attr="filtered_a_set",
-            )
-        ).distinct()
+        phases = etude.phases.all()
 
-        # Determine BDC (if any) from cached dict
-        asso_fac = associations_bdc.get(facture.id)
-        bdc = asso_fac.bon_de_commande if asso_fac else None
-
-        # Compute JEH and frais depending on type_convention
-        if etude.type_convention == "Convention cadre":
-            # Use preloaded bdc data
-            jeh_base = bdc.montant_phase_HT() if bdc else 0
-            frais_base = bdc.frais_dossier if bdc else 0
-        else:
-            # Fallback to etude-level data (already in memory from select_related)
-            jeh_base = etude.montant_phase_HT()
-            frais_base = etude.frais_dossier
-
-        fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
-        fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
-
-        facture.cached_montant_HT = fac_JEH + fac_frais
-        facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
-        facture.cached_montant_TTC = (
-            (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
-        )
+        intervenants = Student.objects.distinct()
 
         # Compute total retribution from phases (all data already prefetched)
         def compute_total_retribution(phases):
@@ -716,11 +683,8 @@ def details(request, modelName, iD):
         etude_retributions_totales = compute_total_retribution(phases)
 
         if etude.client:
-            representants = etude.client.representants.all()  # Already prefetched
-            representants_interlocuteurs = [
-                rep for rep in representants if rep.role == "interlocuteur"
-            ]
-            representants_legaux = [rep for rep in representants if rep.role == "legal"]
+            representants_interlocuteurs = [etude.client_interlocuteur]
+            representants_legaux = [etude.client_representant_legale]
         else:
             representants_interlocuteurs = []
             representants_legaux = []
@@ -766,6 +730,29 @@ def details(request, modelName, iD):
         # Find solde facture if any
         etude_facture_solde = next(
             (f for f in factures if f.type_facture == f.Status.SOLDE), None
+        )
+
+        # Determine BDC (if any) from cached dict
+        asso_fac = associations_bdc.get(facture.id)
+        bdc = asso_fac.bon_de_commande if asso_fac else None
+
+        # Compute JEH and frais depending on type_convention
+        if etude.type_convention == "Convention cadre":
+            # Use preloaded bdc data
+            jeh_base = etude_montant_total_phases if bdc else 0
+            frais_base = bdc.frais_dossier if bdc else 0
+        else:
+            # Fallback to etude-level data (already in memory from select_related)
+            jeh_base = etude_montant_total_phases
+            frais_base = etude.frais_dossier
+
+        fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
+        fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+
+        facture.cached_montant_HT = fac_JEH + fac_frais
+        facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
+        facture.cached_montant_TTC = (
+            (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
         )
 
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
