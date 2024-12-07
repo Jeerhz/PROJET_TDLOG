@@ -776,6 +776,30 @@ def details(request, modelName, iD):
                 (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
             )
 
+        assignations_by_eleve = {}
+
+        # On charge pour chaque intervenant son nombre de JEH et le montant associé
+        for phase in phases:
+            for assignment in phase.assignationjeh_set.all():
+                eleve_id = assignment.eleve_id
+                # Initialize a dictionary entry if not present
+                if eleve_id not in assignations_by_eleve:
+                    assignations_by_eleve[eleve_id] = {
+                        "JEH_count": 0,
+                        "montant_total": 0.0,
+                    }
+                assignations_by_eleve[eleve_id]["JEH_count"] += assignment.nombre_JEH
+                assignations_by_eleve[eleve_id]["montant_total"] += (
+                    assignment.retribution_brute_totale()
+                )
+
+        for eleve in intervenants:
+            data = assignations_by_eleve.get(
+                eleve.id, {"JEH_count": 0, "montant_total": 0.0}
+            )
+            eleve.precomputed_JEH_count = data["JEH_count"]
+            eleve.precomputed_montant_total = data["montant_total"]
+
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
 
         attribute_list = {
