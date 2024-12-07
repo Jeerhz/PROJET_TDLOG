@@ -656,13 +656,6 @@ def details(request, modelName, iD):
             ).select_related("bon_de_commande")
         }
 
-        # Compute facture values without additional queries
-        # Avoid calling methods that do queries inside the loop. Instead, compute directly.
-        for facture in factures:
-            facture.cached_montant_HT = facture.montant_HT()
-            facture.cached_montant_TVA = facture.montant_TVA()
-            facture.cached_montant_TTC = facture.montant_TTC()
-
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
         phases = etude.phases.all()
 
