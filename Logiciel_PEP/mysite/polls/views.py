@@ -610,6 +610,18 @@ def details(request, modelName, iD):
         # Compute facture values without additional queries
         # Avoid calling methods that do queries inside the loop. Instead, compute directly.
         for facture in factures:
+            facture.cached_montant_HT = facture.montant_HT()
+            facture.cached_montant_TVA = facture.montant_TVA()
+            facture.cached_montant_TTC = facture.montant_TTC()
+
+        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
+        phases = etude.phases.prefetch_related(
+    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.select_related("eleve").all()))
+        intervenants = Student.objects.prefetch_related(
+    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.filter(phase__etude=etude), to_attr='filtered_a_set')
+        ).distinct()
+        
+
             # Determine BDC (if any) from cached dict
             asso_fac = associations_bdc.get(facture.id)
             bdc = asso_fac.bon_de_commande if asso_fac else None
@@ -4223,7 +4235,7 @@ def nouveau_BV(request, id_etude, id_eleve):
             nb_JEH = 0
             montant_HT = 0.0
             if request.method == "POST":
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     my_checkbox_value = request.POST.get(f"checkInputPhase{phase.id}")
                    
                     if my_checkbox_value is not None:
@@ -4893,7 +4905,7 @@ def add_intervenant(request, id_etude, id_student):
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
-            for phase in etude.phases():
+            for phase in etude.phases.all():
                 nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
                 pourcentage_retribution = request.POST[
                     ("pourcentage_retribution_phase" + str(phase.numero))
@@ -4920,27 +4932,9 @@ def add_intervenant(request, id_etude, id_student):
             return redirect("details", modelName="Etude", iD=id_etude)
 
         except:
-            liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).order_by("date")
-            message_count = liste_messages.count()
-            liste_messages = liste_messages[:3]
-            all_notifications = request.user.notifications.order_by("-date_effet")
-            notification_list = [notif for notif in all_notifications if notif.active()]
-            notification_count = len(notification_list)
+            context = general_context(request)
             template = loader.get_template("polls/page_error.html")
-            context = {
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "error_message": "Erreur dans l'identification de la mission.",
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
+            context["error_message"] = "Erreur dans l'identification de la mission."
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -4965,7 +4959,7 @@ def ajouter_avenant_ce(request, id_etude):
                 signature = None
                 modif_budget = False
                 modif_delais = False
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
                         modif_budget = True
@@ -4998,7 +4992,7 @@ def ajouter_avenant_ce(request, id_etude):
                     new_avenant.ancien_frais_dossier = etude.frais_dossier
                     etude.frais_dossier = nouveau_frais_dossier
                 new_avenant.save()
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
                         print(f"supprimer phase {phase.id}")
