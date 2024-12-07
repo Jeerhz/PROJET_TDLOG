@@ -256,7 +256,7 @@ class Representant(models.Model):
     )
     # je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, related_name="representants")
     fonction = models.CharField(max_length=100, null=True)
     contact_recent = models.BooleanField(default=False, blank=True, null=True)
     date_mail = models.DateField(
