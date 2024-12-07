@@ -593,8 +593,7 @@ def details(request, modelName, iD):
     )
 
     if modelName == "Etude":
-        # Optimize: preload all needed relations
-        # Note: Adjust the prefetch and select_related calls based on your actual model structure.
+        # Preload all needed relations
         etude = (
             Etude.objects.select_related(
                 "resp_qualite",
@@ -630,7 +629,6 @@ def details(request, modelName, iD):
                 ),
                 "responsable__student",
                 "resp_qualite__student",
-                # Add this line to prefetch representants from the client
                 Prefetch("client__representants", queryset=Representant.objects.all()),
             )
             .get(id=iD)
@@ -647,19 +645,34 @@ def details(request, modelName, iD):
             assignationjeh__phase__etude=etude
         ).distinct()
 
-        # Preload AssociationFactureBDC for all factures to avoid repeated lookups
-        # Store them in a dict for O(1) access
+        # Preload AssociationFactureBDC for all factures
         associations_bdc = {
-            asso.facture_id: asso
+            asso.facture.numero_facture: asso.bon_de_commande
             for asso in AssociationFactureBDC.objects.filter(
                 facture__in=factures
             ).select_related("bon_de_commande")
         }
 
-        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-        phases = etude.phases.all()
+        # Compute associations_phase dict: { bdc_id: [phase1, phase2, ...], ... }
+        # First, fetch all BDC related to this etude with their phase associations
+        bons = list(
+            BonCommande.objects.filter(etude=etude)
+            .prefetch_related(
+                Prefetch(
+                    "associations_phase",
+                    queryset=AssociationPhaseBDC.objects.select_related("phase"),
+                )
+            )
+            .order_by("numero")
+        )
 
-        intervenants = Student.objects.distinct()
+        associations_phase = {
+            bdc.id: [assoc.phase for assoc in bdc.associations_phase.all()]
+            for bdc in bons
+        }
+
+        # Recompute poste for clarity (already done above, but keeping for reference)
+        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
 
         # Compute total retribution from phases (all data already prefetched)
         def compute_total_retribution(phases):
@@ -692,7 +705,7 @@ def details(request, modelName, iD):
             default=0,
         )
         etude_fin = (
-            etude.debut + datetime.timedelta(weeks=duree)
+            (etude.debut + datetime.timedelta(weeks=duree))
             if (etude.debut and duree)
             else None
         )
@@ -725,28 +738,43 @@ def details(request, modelName, iD):
             (f for f in factures if f.type_facture == f.Status.SOLDE), None
         )
 
-        # Determine BDC (if any) from cached dict
-        asso_fac = associations_bdc.get(facture.id)
-        bdc = asso_fac.bon_de_commande if asso_fac else None
+        def jeh_base_and_frais(etude, bdc):
+            # Compute JEH and frais depending on type_convention
+            if etude.type_convention == "Convention cadre":
+                # Use preloaded bdc data
+                # Here we use associations_phase dictionary
+                bdc_id = bdc.id if bdc else None
+                bdc_phases = associations_phase.get(bdc_id, [])
 
-        # Compute JEH and frais depending on type_convention
-        if etude.type_convention == "Convention cadre":
-            # Use preloaded bdc data
-            jeh_base = etude_montant_total_phases if bdc else 0
-            frais_base = bdc.frais_dossier if bdc else 0
-        else:
-            # Fallback to etude-level data (already in memory from select_related)
-            jeh_base = etude_montant_total_phases
-            frais_base = etude.frais_dossier
+                bdc_montant_total_phases = sum(
+                    (phase.montant_HT_par_JEH * phase.nb_JEH)
+                    for phase in bdc_phases
+                    if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+                )
 
-        fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
-        fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+                jeh_base = bdc_montant_total_phases if bdc else 0
+                frais_base = bdc.frais_dossier if bdc else 0
+            else:
+                # Fallback to etude-level data (already in memory from select_related)
+                jeh_base = etude_montant_total_phases
+                frais_base = etude.frais_dossier
+            return (jeh_base, frais_base)
 
-        facture.cached_montant_HT = fac_JEH + fac_frais
-        facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
-        facture.cached_montant_TTC = (
-            (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
-        )
+        # Update factures cached values
+        for facture in factures:
+            bdc = associations_bdc.get(facture.numero_facture)
+            jeh_base, frais_base = jeh_base_and_frais(etude, bdc)
+
+            fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
+            fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+
+            facture.cached_montant_HT = fac_JEH + fac_frais
+            facture.cached_montant_TVA = (
+                facture.TVA_per * facture.cached_montant_HT / 100.0
+            )
+            facture.cached_montant_TTC = (
+                (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
+            )
 
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
 
@@ -817,12 +845,10 @@ def details(request, modelName, iD):
                 "representants_legaux": representants_legaux,
                 "members": members,
                 "poste": poste,
+                "bons": bons,  # List of BDCs
+                "associations_phase": associations_phase,  # The dictionary from BDC to phases
             }
         )
-        if etude.type_convention == "Convention cadre":
-            context["bons"] = list(
-                BonCommande.objects.filter(etude=etude).order_by("numero")
-            )
 
     if client is not None:
         context.update(
