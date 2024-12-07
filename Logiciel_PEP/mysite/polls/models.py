@@ -257,7 +257,7 @@ class Representant(models.Model):
     )
     # je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, related_name="representants")
     fonction = models.CharField(max_length=100, null=True)
     contact_recent = models.BooleanField(default=False, blank=True, null=True)
     date_mail = models.DateField(
@@ -701,12 +701,13 @@ class Etude(models.Model):
         verbose_name="suiveur",
     )
 
-    # pour avoir plusieurs responasbles sur une mission :
+    # pour avoir plusieurs responsables sur une mission :
     responsables = models.ManyToManyField(
         'Member',
         related_name='etudes_responsables',
         verbose_name="suiveurs"
     )
+
 
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
@@ -940,7 +941,7 @@ class Etude(models.Model):
                 for phase in phases
                 if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
             )
-            if phases.exists()
+            if phases
             else 0
         )
         return total_montant_HT
@@ -1049,10 +1050,6 @@ class Etude(models.Model):
 
     def nombre_phases(self):
         return Phase.objects.filter(etude=self).count()
-
-    def phases(self):
-        phases = Phase.objects.filter(etude=self).order_by("numero")
-        return phases
 
     def ce_editable(self):
         return self.responsable is not None and self.resp_qualite is not None

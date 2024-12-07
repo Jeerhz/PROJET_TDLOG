@@ -27,7 +27,6 @@ from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
 
 
-
 from io import BytesIO
 from uuid import UUID
 from openpyxl import load_workbook
@@ -60,7 +59,7 @@ from polls.tasks import (
     fetch_notifications,
 )
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.http import HttpResponse
 from django.template import loader
 from django.db import connection
@@ -161,71 +160,138 @@ def general_context(request):
     return context
 
 
-
-
-
 def confidentialite_donnees(request):
     template = loader.get_template("polls/confidentialite_donnees.html")
     context = {}
     return HttpResponse(template.render(context, request))
 
 
+##TODO: Refacto this code to be more readable with functions to be reimplemented
 def index(request):
     user = request.user
     if not user.is_authenticated:
         return render(request, "polls/login.html")
 
     user_je = user.je
-    mandat_select = request.POST.getlist("mandat-select") or [choice[0] for choice in Etude.Mandat.choices]
+    mandat_select = request.POST.getlist("mandat-select") or [
+        choice[0] for choice in Etude.Mandat.choices
+    ]
 
-    # Use ThreadPoolExecutor to handle blocking operations
-    with ThreadPoolExecutor() as executor:
-        # Fetch all etudes in one query with related objects
-        recent_etudes = list(
+    # Define helper functions for fetching data
+    def fetch_recent_etudes():
+        return list(
             Etude.objects.filter(je=user_je, mandat__in=mandat_select)
-            .select_related('responsable', 'client', 'resp_qualite')  # Assuming these are foreign keys
+            .select_related(
+                "responsable", "client", "resp_qualite"
+            )  # Ensure 'client' is a ForeignKey
             .prefetch_related(
-                Prefetch('phases', queryset=Phase.objects.all())
+                Prefetch("phases", queryset=Phase.objects.all()),
+                Prefetch("responsables", queryset=Member.objects.all()),
             )
             .order_by("numero")
         )
 
-        # Pre-calculate montant_HT_total for each etude
-        for etude in recent_etudes:
-            # Calculate montant_phase_HT using pre-fetched phases
-            etude_phases = etude.phases.all()  # Access pre-fetched phases
-            montant_phase_HT = sum(
+    def fetch_messages():
+        return list(
+            Message.objects.filter(
+                destinataire=user,
+                read=False,
+                date__range=(
+                    timezone.now() - timezone.timedelta(days=20),
+                    timezone.now(),
+                ),
+            ).order_by("date")[:3]
+        )
+
+    def fetch_notifications():
+        return list(user.notifications.order_by("-date_effet"))
+
+    # Use ThreadPoolExecutor to handle blocking operations
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        # Submit tasks to the executor
+        future_etudes = executor.submit(fetch_recent_etudes)
+        future_messages = executor.submit(fetch_messages)
+        future_notifications = executor.submit(fetch_notifications)
+
+        # Collect results as they complete
+        results = {}
+        for future in as_completed(
+            [future_etudes, future_messages, future_notifications]
+        ):
+            if future == future_etudes:
+                results["recent_etudes"] = future.result()
+            elif future == future_messages:
+                results["liste_messages"] = future.result()
+            elif future == future_notifications:
+                results["all_notifications"] = future.result()
+
+    # Extract results
+    recent_etudes = results.get("recent_etudes", [])
+    liste_messages = results.get("liste_messages", [])
+    all_notifications = results.get("all_notifications", [])
+
+    # Pre-calculate montant_HT_total and progress_bar for each etude
+    for etude in recent_etudes:
+        # Calculate montant_phase_HT using pre-fetched phases
+        montant_phase_HT = sum(
+            phase.montant_HT_par_JEH * phase.nb_JEH
+            for phase in etude.phases.all()
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        )
+        etude.montant_ht_total = etude.frais_dossier + montant_phase_HT
+
+        # Calculate total_duree_semaine
+        total_duree_semaine = (
+            max(
+                (
+                    (phase.duree_semaine + phase.debut_relatif)
+                    for phase in etude.phases.all()
+                    if phase.duree_semaine is not None
+                    and phase.debut_relatif is not None
+                ),
+                default=0,
+            )
+            * 7
+            if recent_etudes
+            else 0
+        )
+
+        # Calculate progress_bar
+        if total_duree_semaine > 0:
+            days_passed = (timezone.now().date() - etude.debut).days
+            progress = (days_passed / total_duree_semaine) * 100
+            etude.progress_bar = int(max(min(100, progress), 0))
+        else:
+            etude.progress_bar = 0
+
+    # Filter etudes by status
+    etudes_terminees = [
+        etude for etude in recent_etudes if etude.status == Etude.Status.TERMINEE
+    ]
+    etudes_en_cours = [
+        etude for etude in recent_etudes if etude.status == Etude.Status.EN_COURS
+    ]
+    etudes_en_negociation = [
+        etude for etude in recent_etudes if etude.status == Etude.Status.EN_NEGOCIATION
+    ]
+
+    user_parametres = user.parametres
+
+    # Calculate CA (Chiffre d'Affaires)
+    def calculate_ca(etudes):
+        return sum(
+            etude.frais_dossier
+            + sum(
                 phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in etude_phases
+                for phase in etude.phases.all()
                 if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
             )
-            etude.montant_ht_total = etude.frais_dossier + montant_phase_HT
-
-        # Filter etudes in Python
-        etudes_terminees = [etude for etude in recent_etudes if etude.status == "TERMINEE"]
-        etudes_en_cours = [etude for etude in recent_etudes if etude.status == "EN_COURS"]
-        etudes_en_negociation = [etude for etude in recent_etudes if etude.status == "EN_NEGOCIATION"]
-
-        user_parametres = user.parametres
-
-        # Fetch messages and notifications
-        liste_messages_future = executor.submit(
-            lambda: list(
-                Message.objects.filter(
-                    destinataire=request.user,
-                    read=False,
-                    date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now())
-                ).order_by("date")[:3]
-            )
+            for etude in etudes
         )
 
-        all_notifications_future = executor.submit(
-            lambda: list(request.user.notifications.order_by("-date_effet"))
-        )
-
-        # Wait for futures to complete
-        liste_messages = liste_messages_future.result()
-        all_notifications = all_notifications_future.result()
+    ca_etudes_ec = calculate_ca(etudes_en_cours)
+    ca_etudes_nego = calculate_ca(etudes_en_negociation)
+    ca_etudes_term = calculate_ca(etudes_terminees)
 
     # Prepare the context
     context = {
@@ -239,13 +305,13 @@ def index(request):
         "notification_list": [notif for notif in all_notifications if notif.active()],
         "notification_count": len(all_notifications),
         "mandat_choices": Etude.Mandat.choices,
-        "mandat_default": mandat_select,
+        "mandat_default": mandat_select,  # Ensure this is a list if used in templates
         "nb_etudes_ec": len(etudes_en_cours),
         "nb_etudes_term": len(etudes_terminees),
         "nb_etudes_nego": len(etudes_en_negociation),
-        "ca_etudes_ec": sum(etude.montant_HT_total() for etude in etudes_en_cours),
-        "ca_etudes_term": sum(etude.montant_HT_total() for etude in etudes_terminees),
-        "ca_etudes_nego": sum(etude.montant_HT_total() for etude in etudes_en_negociation),
+        "ca_etudes_ec": ca_etudes_ec,
+        "ca_etudes_term": ca_etudes_term,
+        "ca_etudes_nego": ca_etudes_nego,
     }
 
     return render(request, "polls/index.html", context)
@@ -287,6 +353,7 @@ def run_query(func, *args):
     connection.close()
     return result
 
+
 def annuaire(request):
     """Render the annuaire page with optimized queries using ThreadPoolExecutor."""
     user = request.user
@@ -300,14 +367,17 @@ def annuaire(request):
 
     # Define the functions to be executed in parallel
     def fetch_clients_annuaire():
-        return list(Client.objects.filter(je=user_je_id).order_by('nom_societe'))
+        return list(Client.objects.filter(je=user_je_id).order_by("nom_societe"))
 
     def fetch_students_annuaire():
-        return list(Student.objects.filter(je=user_je_id).order_by('last_name'))
+        return list(Student.objects.filter(je=user_je_id).order_by("last_name"))
 
     def fetch_etudes_annuaire():
-        return list(Etude.objects.filter(je=user_je_id).select_related('responsable__student','client', 'resp_qualite').order_by('numero'))
-
+        return list(
+            Etude.objects.filter(je=user_je_id)
+            .select_related("responsable__student", "client", "resp_qualite")
+            .order_by("numero")
+        )
 
     # Use ThreadPoolExecutor to run tasks concurrently
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -343,7 +413,6 @@ def annuaire(request):
     return HttpResponse(template.render(context, request))
 
 
-
 def je_detail(request):
     """Renvoie la page de détail du JE de l'utilisateur connecté"""
     if request.user.is_authenticated:
@@ -357,8 +426,6 @@ def je_detail(request):
         all_notifications = request.user.notifications.order_by("-date_effet")
         notification_list = [notif for notif in all_notifications if notif.active()]
         notification_count = len(notification_list)
-
-        
 
         context = {
             "liste_messages": liste_messages,
@@ -486,23 +553,23 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
-
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
-    
 
     user_je = user.je
     user_student = user.student
 
-    # Fetch messages and notifications
-    liste_messages = list(Message.objects.filter(
-        destinataire=request.user,
-        read=False,
-        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-    ).order_by("date")[:3])
+    # Preload messages and notifications
+    liste_messages = list(
+        Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+    )
     message_count = len(liste_messages)
     all_notifications = list(request.user.notifications.order_by("-date_effet"))
     notification_list = [notif for notif in all_notifications if notif.active()]
@@ -516,114 +583,182 @@ def details(request, modelName, iD):
         instance.save()
 
     # Initialize context variables
-    etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
+    etude, phases, factures, intervenants, client, eleve = (
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
 
     if modelName == "Etude":
-        # Use select_related and prefetch_related for optimization
-        etude = Etude.objects.select_related(
-            'resp_qualite', 'responsable', 'client', 'client_interlocuteur', 'client_representant_legale', 'je'
-        ).prefetch_related(
-            Prefetch('phases', queryset=Phase.objects.order_by('numero')),
-            Prefetch('factures', queryset=Facture.objects.order_by('numero_facture')),
-            Prefetch('conventions_etude', queryset=ConventionEtude.objects.order_by('date_signature')),
-            Prefetch('conventions_cadre', queryset=ConventionCadre.objects.order_by('date_signature')),
-            'responsable__student',
-            'resp_qualite__student'
-        ).get(id=iD)
+        # Optimize: preload all needed relations
+        # Note: Adjust the prefetch and select_related calls based on your actual model structure.
+        etude = (
+            Etude.objects.select_related(
+                "resp_qualite",
+                "responsable",
+                "client",
+                "client_interlocuteur",
+                "client_representant_legale",
+                "je",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "phases",
+                    queryset=Phase.objects.order_by("numero").prefetch_related(
+                        Prefetch(
+                            "assignationjeh_set",
+                            queryset=AssignationJEH.objects.select_related("eleve"),
+                        )
+                    ),
+                ),
+                Prefetch(
+                    "factures",
+                    queryset=Facture.objects.order_by("numero_facture").select_related(
+                        "etude"
+                    ),
+                ),
+                Prefetch(
+                    "conventions_etude",
+                    queryset=ConventionEtude.objects.order_by("date_signature"),
+                ),
+                Prefetch(
+                    "conventions_cadre",
+                    queryset=ConventionCadre.objects.order_by("date_signature"),
+                ),
+                "responsable__student",
+                "resp_qualite__student",
+                # Add this line to prefetch representants from the client
+                Prefetch("client__representants", queryset=Representant.objects.all()),
+            )
+            .get(id=iD)
+        )
+
         members = Member.objects.select_related("student").all()
         respo = etude.responsable.student
+        phases = etude.phases.all()
         factures = etude.factures.all()
+        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
 
+        # Intervenants: distinct students that have assignations in phases
+        intervenants = Student.objects.filter(
+            assignationjeh__phase__etude=etude
+        ).distinct()
 
-        #CORRIGE ADLE !!!!!!
-        intervenants=etude.get_li_students()
+        # Preload AssociationFactureBDC for all factures to avoid repeated lookups
+        # Store them in a dict for O(1) access
+        associations_bdc = {
+            asso.facture_id: asso
+            for asso in AssociationFactureBDC.objects.filter(
+                facture__in=factures
+            ).select_related("bon_de_commande")
+        }
 
-
-
-
+        # Compute facture values without additional queries
+        # Avoid calling methods that do queries inside the loop. Instead, compute directly.
         for facture in factures:
             facture.cached_montant_HT = facture.montant_HT()
             facture.cached_montant_TVA = facture.montant_TVA()
             facture.cached_montant_TTC = facture.montant_TTC()
 
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-        phases = etude.phases.prefetch_related(
-    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.select_related("eleve").all()))
-        
+        phases = etude.phases.all()
 
+        intervenants = Student.objects.distinct()
+
+        # Compute total retribution from phases (all data already prefetched)
         def compute_total_retribution(phases):
             total_retribution = 0
             for phase in phases:
-                nb_JEHs = 0
-                retr_totale = 0
-                # Access preloaded AssignationJEH objects
-                assignations = phase.assignationjeh_set.all()
-                for assignation in assignations:
-                    retr_totale += assignation.retribution_brute_totale()
-                    nb_JEHs += assignation.nombre_JEH
-                # Calculate remaining retribution
+                assignations = phase.assignationjeh_set.all()  # Prefetched
+                retr_totale = sum(a.retribution_brute_totale() for a in assignations)
+                nb_JEHs = sum(a.nombre_JEH for a in assignations)
+                # Add remaining JEH retribution
                 retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
                 total_retribution += retr_totale
             return total_retribution
-        
+
         etude_retributions_totales = compute_total_retribution(phases)
 
-        # Fetch client representatives with optimized query
-        if client:
-            client_representants = client.representants
-            representants_interlocuteurs = [
-                rep for rep in client_representants if rep.role == "interlocuteur"
-            ]
-            representants_legaux = [
-                rep for rep in client_representants if rep.role == "legal"
-            ]
+        if etude.client:
+            representants_interlocuteurs = [etude.client_interlocuteur]
+            representants_legaux = [etude.client_representant_legale]
         else:
-            representants_interlocuteurs, representants_legaux = [], []
+            representants_interlocuteurs = []
+            representants_legaux = []
 
-        # We use the loaded data to calculate the end date of the study
+        # Compute study end date
         duree = max(
+            (
                 phase.duree_semaine + phase.debut_relatif
                 for phase in phases
                 if phase.duree_semaine is not None and phase.debut_relatif is not None
-            ) if phases else 0
-        
-        etude_fin = etude.debut + datetime.timedelta(weeks=duree) if (etude.debut and duree) else None
-
-        # Same for the total amount of the study
-        etude_montant_total_phases = (
-            sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in phases
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            )
-            if phases
-            else 0
+            ),
+            default=0,
+        )
+        etude_fin = (
+            etude.debut + datetime.timedelta(weeks=duree)
+            if (etude.debut and duree)
+            else None
         )
 
+        # Compute total amount of study
+        etude_montant_total_phases = sum(
+            (phase.montant_HT_par_JEH * phase.nb_JEH)
+            for phase in phases
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        )
         etude_total_montant_HT = etude_montant_total_phases + etude.frais_dossier
 
-        # We also compute the number of JEH for the study
-        etude_nbJEH = (
-            sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None)
-            if phases
+        # Compute total JEH
+        etude_nbJEH = sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None)
+
+        # Compute URSSAF charges
+        etude_charge_URSSAF = (
+            etude_nbJEH * user_je.base_urssaf * user_je.taux_cotisations / 100.0
+            if etude_nbJEH
             else 0
         )
 
-        etude_charge_URSSAF = etude_nbJEH * user_je.base_urssaf * user_je.taux_cotisations / 100 if etude_nbJEH else 0
-        # At least we do not make research with the phases
+        # Compute marge JE
+        etude_marge_JE = (
+            etude_total_montant_HT - etude_retributions_totales - etude_charge_URSSAF
+        )
 
-        etude_marge_JE = etude_total_montant_HT - etude_retributions_totales - etude_charge_URSSAF
+        # Find solde facture if any
+        etude_facture_solde = next(
+            (f for f in factures if f.type_facture == f.Status.SOLDE), None
+        )
 
+        # Determine BDC (if any) from cached dict
+        asso_fac = associations_bdc.get(facture.id)
+        bdc = asso_fac.bon_de_commande if asso_fac else None
 
-        etude_facture_solde = None
-        for facture in factures:
-            if facture.type_facture == facture.Status.SOLDE:
-                etude_facture_solde = facture
-        if etude.client:
-            client_nom =str(etude.client.nom_societe)
+        # Compute JEH and frais depending on type_convention
+        if etude.type_convention == "Convention cadre":
+            # Use preloaded bdc data
+            jeh_base = etude_montant_total_phases if bdc else 0
+            frais_base = bdc.frais_dossier if bdc else 0
         else:
-            client_nom="pas de client"
-        attribute_list = {"Titre": etude.titre,
+            # Fallback to etude-level data (already in memory from select_related)
+            jeh_base = etude_montant_total_phases
+            frais_base = etude.frais_dossier
+
+        fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
+        fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+
+        facture.cached_montant_HT = fac_JEH + fac_frais
+        facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
+        facture.cached_montant_TTC = (
+            (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
+        )
+
+        client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
+
+        attribute_list = {
+            "Titre": etude.titre,
             "Description": etude.description,
             "Numéro": etude.numero,
             "Client": client_nom,
@@ -634,13 +769,10 @@ def details(request, modelName, iD):
             "Montant HT": etude_total_montant_HT,
         }
 
-
-
     if modelName == "Student":
         eleve = instance
     if modelName == "Client":
         client = instance
-
 
     context = {
         "modelName": modelName,
@@ -654,55 +786,64 @@ def details(request, modelName, iD):
         "notification_count": notification_count,
     }
 
-    # Add additional context if applicable
+    # Add context for Etude
     if etude is not None:
-        etude_convention = etude.conventions_etude.first() if etude.type_convention == "Convention d'étude" else etude.conventions_cadre.first()
+        etude_convention = (
+            etude.conventions_etude.first()
+            if etude.type_convention == "Convention d'étude"
+            else etude.conventions_cadre.first()
+        )
 
-        context.update({
-            "attribute_list": attribute_list,
-            "title": "Détails de la mission",
-            "etude": etude,
-            "etude_convention": etude_convention,
-            "etude_devis": etude.devis.first(),
-            "etude_fac_solde": etude_facture_solde,
-            "etude_fin": etude_fin,
-            "etude_duree": duree,
-            "etude_nbJEH": etude_nbJEH,
-            "etude_total_montant_phases": etude_montant_total_phases,
-            "etude_total_ttc": etude_total_montant_HT * (1 + etude.taux_tva / 100),
-            "etude_tva": (etude.taux_tva/100) * etude_total_montant_HT,
-            "etude_marge_JE": etude_marge_JE,
-            "etude_retributions_totales": etude_retributions_totales,
-            "etude_charge_URSSAF": etude_charge_URSSAF,
-            "resp_qualite": etude.resp_qualite.student,
-            "responsable": respo,
-            "phases": phases,
-            "factures": factures,
-            "intervenants": intervenants,
-            "phase_form": AddPhase(),
-            "facture_form": AddFacture(),
-            "intervenant_form": AddIntervenant(),
-            "etude_form": AddEtude(instance=etude),
-            "representants_interlocuteurs": representants_interlocuteurs,
-            "representants_legaux": representants_legaux,
-            "members": members,
-            "poste": poste,
-        })
+        context.update(
+            {
+                "attribute_list": attribute_list,
+                "title": "Détails de la mission",
+                "etude": etude,
+                "etude_convention": etude_convention,
+                "etude_devis": etude.devis.first(),
+                "etude_fac_solde": etude_facture_solde,
+                "etude_fin": etude_fin,
+                "etude_duree": duree,
+                "etude_nbJEH": etude_nbJEH,
+                "etude_total_montant_phases": etude_montant_total_phases,
+                "etude_total_ttc": etude_total_montant_HT * (1 + etude.taux_tva / 100),
+                "etude_tva": (etude.taux_tva / 100) * etude_total_montant_HT,
+                "etude_marge_JE": etude_marge_JE,
+                "etude_retributions_totales": etude_retributions_totales,
+                "etude_charge_URSSAF": etude_charge_URSSAF,
+                "resp_qualite": etude.resp_qualite.student,
+                "responsable": respo,
+                "phases": phases,
+                "factures": factures,
+                "intervenants": intervenants,
+                "phase_form": AddPhase(),
+                "facture_form": AddFacture(),
+                "intervenant_form": AddIntervenant(),
+                "etude_form": AddEtude(instance=etude),
+                "representants_interlocuteurs": representants_interlocuteurs,
+                "representants_legaux": representants_legaux,
+                "members": members,
+                "poste": poste,
+            }
+        )
         if etude.type_convention == "Convention cadre":
-            context["bons"] = list(BonCommande.objects.filter(etude=etude).order_by("numero"))
+            context["bons"] = list(
+                BonCommande.objects.filter(etude=etude).order_by("numero")
+            )
 
     if client is not None:
-        context.update({
-            "client": client,
-            "representant_form": AddRepresentant(),
-        })
+        context.update(
+            {
+                "client": client,
+                "representant_form": AddRepresentant(),
+            }
+        )
 
     if eleve is not None:
         context["eleve"] = eleve
 
     template = loader.get_template("polls/page_details.html")
     return HttpResponse(template.render(context, request))
-
 
 
 def edit_etude(request, pk):
@@ -722,7 +863,6 @@ def edit_etude(request, pk):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def edit_student(request, pk):
@@ -794,22 +934,18 @@ def edit_pdp(request, pk):
         student = get_object_or_404(Student, pk=pk)
 
         if request.method == "POST":
-        # Handle form submission
-        
+            # Handle form submission
+
             member = student.is_member()
-            if member and 'pdp' in request.FILES:
-                uploaded_file = request.FILES['pdp']
+            if member and "pdp" in request.FILES:
+                uploaded_file = request.FILES["pdp"]
                 member.photo = uploaded_file  # Update the photo
                 member.save()
-                
+
             else:
                 messages.info(request, "photo pas modifiée")
 
-        
-
                 return redirect("details", modelName="Student", iD=student.id)
-            
-       
 
         context = {
             "eleve": student,
@@ -831,12 +967,11 @@ def edit_pdp(request, pk):
 
 def numero_facture(request, iD):
     if request.user.is_authenticated:
-        
         facture = get_object_or_404(Facture, pk=iD)
 
         if request.method == "POST":
-            numero= request.POST['numero_fac']
-            facture.numero_facture=numero
+            numero = request.POST["numero_fac"]
+            facture.numero_facture = numero
             id_etude = facture.etude.id
             facture.save(id_etude=id_etude)
         return redirect("factures")
@@ -846,15 +981,14 @@ def numero_facture(request, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
-    
+
 def numero_BV(request, iD):
     if request.user.is_authenticated:
-        
         bv = get_object_or_404(BV, pk=iD)
 
         if request.method == "POST":
-            numero= request.POST['numero_bv']
-            bv.numero_bv=numero
+            numero = request.POST["numero_bv"]
+            bv.numero_bv = numero
             bv.save()
         return redirect("BVs")
 
@@ -864,10 +998,8 @@ def numero_BV(request, iD):
     return HttpResponse(template.render(context, request))
 
 
-
 def modify_etude(request, pk):
     if request.user.is_authenticated:
-
         # Retrieve the etude instance, or return a 404 if not found
         etude = get_object_or_404(Etude, pk=pk)
 
@@ -885,7 +1017,6 @@ def modify_etude(request, pk):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def object_suppression(request, model_name, object_id):
@@ -913,18 +1044,20 @@ def object_suppression(request, model_name, object_id):
 
 
 def get_client_representants(request):
-    if request.user.is_authenticated: 
+    if request.user.is_authenticated:
         client_id = request.GET.get("client_id")
         if client_id:
             client = get_object_or_404(Client, id=client_id)
             representants = client.representants()
 
             interlocuteurs = [
-                {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
+                {"id": r.id, "name": f"{r.first_name} {r.last_name}"}
+                for r in representants
             ]
 
             legaux = [
-                {"id": r.id, "name": f"{r.first_name} {r.last_name}"} for r in representants
+                {"id": r.id, "name": f"{r.first_name} {r.last_name}"}
+                for r in representants
             ]
 
             return JsonResponse(
@@ -936,7 +1069,10 @@ def get_client_representants(request):
                         ]
                     ),
                     "legaux": "".join(
-                        [f'<option value="{r["id"]}">{r["name"]}</option>' for r in legaux]
+                        [
+                            f'<option value="{r["id"]}">{r["name"]}</option>'
+                            for r in legaux
+                        ]
                     ),
                 }
             )
@@ -945,7 +1081,6 @@ def get_client_representants(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def get_representants(request):
@@ -1395,13 +1530,11 @@ def upload_students(request):
 
                     # Check if header matches the expected columns
                     if len(header) != 11:
-                        
                         return redirect("upload_students")
 
                     # Iterate through each row in the CSV
                     for row in reader:
                         if len(row) != 12:
-                            
                             continue
 
                         # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
@@ -1435,7 +1568,7 @@ def upload_students(request):
                                 country=pays.strip(),
                                 departement=depart.strip(),
                                 promotion=promo.strip(),
-                                numero_ss=numero_ss.strip()
+                                numero_ss=numero_ss.strip(),
                             )
                         except Exception as e:
                             print(f"Error processing row {row}: {e}")
@@ -1452,7 +1585,7 @@ def upload_students(request):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-    
+
     # return render(request, 'polls/annuaire.html', {'form': form})
 
 
@@ -1582,7 +1715,9 @@ def update_etude(request, id):
                     "remarque": new_remarque_name,
                 }
 
-            etude.suivi_document = suivi_document  # Update the dictionary with new entries
+            etude.suivi_document = (
+                suivi_document  # Update the dictionary with new entries
+            )
             etude.save()
             # Save the changes
 
@@ -1594,8 +1729,6 @@ def update_etude(request, id):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
-
 
 
 def generate_facture_pdf(request, id_facture):
@@ -1670,10 +1803,11 @@ def generate_facture_pdf(request, id_facture):
 
 def facture(request, id_facture):
     if request.user.is_authenticated:
-        
         try:
             facture = Facture.objects.get(id=id_facture)
-            print(f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}")
+            print(
+                f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}"
+            )
             etude = facture.etude
             # etude = {'type_convention': etude.type_convention, }
             client = etude.client
@@ -1681,11 +1815,13 @@ def facture(request, id_facture):
             res = facture.montant_TTC()
             facture.date_emission = timezone.now().date()
             date_30 = timezone.now() + timedelta(30)
-            facture.date_echeance = date_30.date() 
+            facture.date_echeance = date_30.date()
             bdc = ""
             avenante_ref = None
-            
-            print(f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}")
+
+            print(
+                f"facture.montant_TVA: {facture.montant_TVA}, type: {type(facture.montant_TVA)}"
+            )
 
             avenants_signes = AvenantConventionEtude.objects.filter(
                 date_signature__isnull=False
@@ -1748,7 +1884,6 @@ def update_facture(request, iD):
 def ndf(request):
     if request.user.is_authenticated:
         try:
-
             template = loader.get_template("polls/ndf.html")
             context = {}
         except:
@@ -1827,14 +1962,12 @@ def stat_KPI(request):
 
         liste_etudes_ec_term = []
 
-        dico_devis_envoye = (
-            {}
-        )  # key : devis , valeurs : date et si la mission a été signé
+        dico_devis_envoye = {}  # key : devis , valeurs : date et si la mission a été signé
         devis_envoye = Devis.objects.filter(
             etude__in=etudes, date_signature__isnull=False
         )
 
-        #TODO : optimise this boucle for
+        # TODO : optimise this boucle for
         for devis in devis_envoye:
             dico_devis_envoye[devis.id] = {
                 "date": f"{devis.date_signature.month}-{devis.date_signature.year}",
@@ -1845,8 +1978,8 @@ def stat_KPI(request):
                 dico_devis_envoye[devis.id]["mission"] = 1
 
         dico_suivi_devis = {}
-        date_ajd = datetime.datetime.now()  
-        derniere_date = date_ajd.strftime("%m-%Y")  
+        date_ajd = datetime.datetime.now()
+        derniere_date = date_ajd.strftime("%m-%Y")
         for devis in dico_devis_envoye:
             mois = dico_devis_envoye[devis]["date"]
             if int(mois[3:]) >= int(derniere_date[3:]) and int(mois[0:2]) >= int(
@@ -1867,12 +2000,9 @@ def stat_KPI(request):
                 derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
             dico_suivi_devis[derniere_date] = {"envoyés": 0, "signées": 0}
 
-        
-        date_ajd = datetime.datetime.now()  
-        derniere_date = date_ajd.strftime("%m-%Y")  
-        dico_avenants_mois_ce = (
-            {}
-        )  # key : devis , valeurs : date et si la mission a été signé
+        date_ajd = datetime.datetime.now()
+        derniere_date = date_ajd.strftime("%m-%Y")
+        dico_avenants_mois_ce = {}  # key : devis , valeurs : date et si la mission a été signé
         avenants_signes = AvenantConventionEtude.objects.filter(
             date_signature__isnull=False, ce__etude__in=etudes
         )
@@ -1905,12 +2035,13 @@ def stat_KPI(request):
                 "délais": 0,
                 "budget": 0,
             }
-        
-       
+
         for etude in etudes:
             if etude.status == "EN_COURS" or etude.status == "TERMINEE":
                 liste_etudes_ec_term.append(etude)
-            if (etude.status == "EN_COURS" or etude.status == "TERMINEE") and etude.mandat == "026":
+            if (
+                etude.status == "EN_COURS" or etude.status == "TERMINEE"
+            ) and etude.mandat == "026":
                 ca_026 += etude.montant_HT_total()
                 if etude.status == "TERMINEE":
                     ca_026_cutoff += etude.montant_HT_total()
@@ -1920,9 +2051,15 @@ def stat_KPI(request):
                     if etude.fin() is not None and etude.fin() < date(2025, 5, 1):
                         ca_026_cutoff += etude.montant_HT_total()
                     elif etude.duree_semaine():
-                        ca_026_cutoff += (etude.montant_HT_total()  * ((date(2025, 5, 1) - etude.debut).days / 7) / etude.duree_semaine()  )
+                        ca_026_cutoff += (
+                            etude.montant_HT_total()
+                            * ((date(2025, 5, 1) - etude.debut).days / 7)
+                            / etude.duree_semaine()
+                        )
 
-            elif (etude.status == "EN_COURS" or etude.status == "TERMINEE") and etude.mandat == "025":
+            elif (
+                etude.status == "EN_COURS" or etude.status == "TERMINEE"
+            ) and etude.mandat == "025":
                 if etude.debut and etude.debut > date(2024, 5, 1):
                     ca_026_cutoff += etude.montant_HT_total()
                 elif etude.fin() is not None and etude.fin() > date(2024, 5, 1):
@@ -1940,7 +2077,6 @@ def stat_KPI(request):
                 nb_etudes_ec[1] += etude.montant_HT_total()
             if etude.mandat == "026":
                 if etude.status == "EN_COURS" or etude.status == "TERMINEE":
-
                     if etude.get_li_students():
                         nb_etudes_026_avec_interv += 1
                         for student in etude.get_li_students():
@@ -1967,20 +2103,21 @@ def stat_KPI(request):
                                 taux_ouverture += remuneration
                             retributions_etudes026 += remuneration
 
-
         dico_CA_mois = {}
-        date_ajd = datetime.datetime.now()  
-        derniere_date_CA = date_ajd.strftime("%m-%Y")  
+        date_ajd = datetime.datetime.now()
+        derniere_date_CA = date_ajd.strftime("%m-%Y")
 
         for etude in liste_etudes_ec_term:
             if etude.type_convention == "Convention d'étude":
                 mois = etude.debut.strftime("%m-%Y")
-            
-                if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(derniere_date_CA[0:2]):
+
+                if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(
+                    derniere_date_CA[0:2]
+                ):
                     derniere_date_CA = mois
                 if mois in dico_CA_mois:
                     dico_CA_mois[mois]["CA"] += etude.montant_HT_total()
-                    
+
                 else:
                     dico_CA_mois[mois] = {}
                     dico_CA_mois[mois]["CA"] = etude.montant_HT_total()
@@ -1988,27 +2125,26 @@ def stat_KPI(request):
                 bdcs = etude.get_bon_commandes()
                 for bdc in bdcs:
                     mois = bdc.debut.strftime("%m-%Y")
-            
-                    if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(derniere_date_CA[0:2]):
+
+                    if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(
+                        mois[0:2]
+                    ) >= int(derniere_date_CA[0:2]):
                         derniere_date_CA = mois
                     if mois in dico_CA_mois:
                         dico_CA_mois[mois]["CA"] += bdc.montant_HT_total()
-                        
+
                     else:
                         dico_CA_mois[mois] = {}
                         dico_CA_mois[mois]["CA"] = bdc.montant_HT_total()
-            
+
         if derniere_date_CA:
             if derniere_date_CA[0:2] == "12":
                 derniere_date_CA = f"01-{int(derniere_date_CA[3:])+1}"
             else:
-                derniere_date_CA = f"{(int(derniere_date_CA[0:2])+1):02}-{derniere_date_CA[3:]}"
+                derniere_date_CA = (
+                    f"{(int(derniere_date_CA[0:2])+1):02}-{derniere_date_CA[3:]}"
+                )
             dico_CA_mois[derniere_date_CA] = {"CA": 0}
-
-
-
-
-
 
         for etude in liste_etudes_ec_term:
             if etude.client:
@@ -2019,9 +2155,9 @@ def stat_KPI(request):
                     dico_ca_secteur[secteur] = etude.montant_HT_total()
 
                 if etude.client.get_type_display() in dico_ca_typeentreprise:
-                    dico_ca_typeentreprise[
-                        etude.client.get_type_display()
-                    ] += etude.montant_HT_total()
+                    dico_ca_typeentreprise[etude.client.get_type_display()] += (
+                        etude.montant_HT_total()
+                    )
                 else:
                     dico_ca_typeentreprise[etude.client.get_type_display()] = (
                         etude.montant_HT_total()
@@ -2035,7 +2171,6 @@ def stat_KPI(request):
 
         bar_chart_CA = {}
         for etude in liste_etudes_ec_term:
-
             etude_month = etude.debut.month
             etude_year = etude.debut.year
             if etude_year in bar_chart_CA:
@@ -2047,7 +2182,6 @@ def stat_KPI(request):
                 bar_chart_CA[etude_year] = {etude_month: etude.montant_HT_total()}
 
         for etude in liste_etudes_ec_term:
-
             etude_month = etude.debut.month
             etude_year = etude.debut.year
 
@@ -2064,7 +2198,6 @@ def stat_KPI(request):
                 current_year = etude_year
                 current_sum = etude.montant_HT_total()
 
-       
         nb_intervenants_diff_026 = len(dico_nb_intervenants_diff_026)
         if retributions_etudes026 > 0:
             taux_ouverture = 1 - taux_ouverture / retributions_etudes026
@@ -2242,7 +2375,7 @@ def stat_KPI(request):
             "bar_chart_CA": bar_chart_CA,
             "dico_suivi_devis": dico_suivi_devis,
             "dico_avenants_mois_ce": dico_avenants_mois_ce,
-            "dico_CA_mois":dico_CA_mois,
+            "dico_CA_mois": dico_CA_mois,
         }
 
     else:
@@ -2371,18 +2504,23 @@ def editer_convention(request, iD):
             client = instance.client
             phases = Phase.objects.filter(etude=instance).order_by("numero")
             if instance.type_convention == "Convention d'étude":
-
-                template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Etude_026.docx")
+                template_path = os.path.join(
+                    conf_settings.BASE_DIR,
+                    "polls/templates/polls/Convention_Etude_026.docx",
+                )
 
                 template = DocxTemplate(template_path)
-              
+
                 model = ConventionEtude
                 nom_doc = "Convention_Etude_"
             elif instance.type_convention == "Convention cadre":
-                template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Cadre_026.docx")
+                template_path = os.path.join(
+                    conf_settings.BASE_DIR,
+                    "polls/templates/polls/Convention_Cadre_026.docx",
+                )
                 template = DocxTemplate(template_path)
                 model = ConventionCadre
-                
+
                 nom_doc = "Convention_Cadre_"
             else:
                 raise ValueError("Type de convention non défini.")
@@ -2537,7 +2675,10 @@ def editer_convention_cadre(request, iD):
 
             model = ConventionCadre
 
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Convention_Cadre_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR,
+                "polls/templates/polls/Convention_Cadre_026.docx",
+            )
             template = DocxTemplate(template_path)
 
             nom_doc = "Convention_Cadre_"
@@ -2657,17 +2798,18 @@ def editer_pv(request, iD, type):
                     avenant = avenants[len(avenants) - 1]
                     num_avenant = avenant
                 if type == "PVRF":
-
-                    template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/PVRF_026_CE.docx")
+                    template_path = os.path.join(
+                        conf_settings.BASE_DIR, "polls/templates/polls/PVRF_026_CE.docx"
+                    )
                     template = DocxTemplate(template_path)
 
-                    
                     filename = f"PVRF_{ref_m}.docx"
                 else:
-                    template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/PVRI_026_CE.docx")
+                    template_path = os.path.join(
+                        conf_settings.BASE_DIR, "polls/templates/polls/PVRI_026_CE.docx"
+                    )
                     template = DocxTemplate(template_path)
 
-                    
                     filename = f"PVRI_{ref_m}.docx"
 
             else:
@@ -2764,7 +2906,9 @@ def editer_rdm(request, id_etude, id_eleve):
             eleve = Student.objects.get(id=id_eleve)
             client = etude.client
             assignations = list(
-                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by("phase__numero")
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
+                    "phase__numero"
+                )
             )
             je = eleve.je
             president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
@@ -2779,10 +2923,10 @@ def editer_rdm(request, id_etude, id_eleve):
                 assignation.nombre_JEH for assignation in assignations
             )
 
-
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/RDM_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/RDM_026.docx"
+            )
             template = DocxTemplate(template_path)
-
 
             model = RDM
             if etude.rdm_edited():
@@ -2948,16 +3092,9 @@ def editer_acf(request, id_etude, id_eleve):
             date = timezone.now().date()
             annee = date.strftime("%Y")
 
-            adresse= eleve.adress
-            code_postal = eleve.ville
-            ville= eleve.code_postal
-            portable= eleve.phone_number
-
 
             template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx")
             template = DocxTemplate(template_path)
-            
-
 
             context = {
                 "etude": etude,
@@ -3040,7 +3177,9 @@ def editer_acf_client(request, iD):
             general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
             annee = date.strftime("%Y")
             general_date_creation = date.strftime("%d %B %Y")
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx"
+            )
             template = DocxTemplate(template_path)
 
             context = {
@@ -3099,12 +3238,14 @@ def editer_ba(request, id_eleve):
             je_president_prenom = "Thomas"
             date = timezone.now()
             general_date_creation = date.strftime("%d %B %Y")
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/BA_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/BA_026.docx"
+            )
             template = DocxTemplate(template_path)
-                
+
             ba_dej_exist = BA.objects.filter(eleve=eleve).first()
             if ba_dej_exist:
-                ba_dej_exist.number= ba_nombre
+                ba_dej_exist.number = ba_nombre
                 ba_dej_exist.save()
             else:
                 model = BA
@@ -3112,7 +3253,7 @@ def editer_ba(request, id_eleve):
                 ba.save()
 
             year = datetime.now().year  # Get the current year
-            ref = f"{year}{int(ba_nombre):04d}" 
+            ref = f"{year}{int(ba_nombre):04d}"
             context = {
                 "etudiant": eleve,
                 "je_president_nom": je_president_nom,
@@ -3497,11 +3638,11 @@ def editer_avenant_ce(request, iD):
             total_TTC = format_nombres(etude.total_ttc())
             total_TTC_lettres = chiffre_lettres(etude.total_ttc())
 
-
-            template_path = os.path.join( conf_settings.BASE_DIR,"polls/templates/polls/avenant_ce_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/avenant_ce_026.docx"
+            )
 
             template = DocxTemplate(template_path)
-
 
             logo_client = InlineImage(
                 template, client.logo, width=Mm(20)
@@ -3571,9 +3712,9 @@ def editer_avenant_ce(request, iD):
 def editer_bon(request, id_bon):
     if request.user.is_authenticated:
         try:
-
-
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/BDC_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/BDC_026.docx"
+            )
 
             template = DocxTemplate(template_path)
 
@@ -3769,9 +3910,9 @@ def calculate_chiffre_affaire_par_departement(user_je):
             for student in students:
                 for phase in phases:
                     if student.departement:
-                        revenues[
-                            department_index[student.departement]
-                        ] += phase.get_montant_HT(student)
+                        revenues[department_index[student.departement]] += (
+                            phase.get_montant_HT(student)
+                        )
 
     return revenues
 
@@ -3939,7 +4080,7 @@ def search_suggestions(request):
         count_student = suggestions_student.count()
 
         print("count_student: ", count_student)
-        #We set this variable in the case there is no studies in the suggestions to not count 1 for an empty set ?
+        # We set this variable in the case there is no studies in the suggestions to not count 1 for an empty set ?
         suppression_etude_c = max(1, count_client)
 
         print(f" Suppression_etude_c:{suppression_etude_c}")
@@ -3957,7 +4098,7 @@ def search_suggestions(request):
         suggestions_client = suggestions_client[
             : 5 - nombre_etude - suppression_etude_s
         ]
-        
+
         print(f"suggestions client: {suggestions_client}")
         nombre_client = suggestions_client.count()
         suggestions_student = suggestions_student[: 5 - nombre_etude - nombre_client]
@@ -4261,16 +4402,21 @@ def nouveau_BV(request, id_etude, id_eleve):
             nb_JEH = 0
             montant_HT = 0.0
             if request.method == "POST":
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     my_checkbox_value = request.POST.get(f"checkInputPhase{phase.id}")
-                   
+
                     if my_checkbox_value is not None:
                         nb_JEH += phase.get_nb_JEH_eleve(eleve)
                         montant_HT += phase.get_montant_HT(eleve)
-            nouveau_BV= BV(etude=etude,eleve=eleve, date_emission= timezone.now().date(), nb_JEH=nb_JEH,retr_brute=montant_HT)
+            nouveau_BV = BV(
+                etude=etude,
+                eleve=eleve,
+                date_emission=timezone.now().date(),
+                nb_JEH=nb_JEH,
+                retr_brute=montant_HT,
+            )
             nouveau_BV.save()
 
-            
             return redirect("BVs")
 
         except:
@@ -4302,14 +4448,14 @@ def nouveau_BV(request, id_etude, id_eleve):
         context = {}
         return HttpResponse(template.render(context, request))
 
+
 def generer_BV(request, id_bv):
     if request.user.is_authenticated:
         try:
             bv = BV.objects.get(id=id_bv)
             eleve = bv.eleve
             je = eleve.je
-            etude=bv.etude
-            
+            etude = bv.etude
 
             chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
 
@@ -4327,13 +4473,12 @@ def generer_BV(request, id_bv):
             feuille["G8"] = eleve.code_postal + " " + eleve.country
             feuille["I3"] = datetime.now().strftime("%d %B %Y")
             feuille["C13"] = etude.ref()
-            ref_rdm=bv.ref_rdm()
+            ref_rdm = bv.ref_rdm()
             if ref_rdm:
                 feuille["C14"] = ref_rdm
             else:
                 raise ValueError("Pas de référence au rdm")
 
-        
             # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
             # feuille['C13']= assignation_jeh.reference
             feuille["H10"] = eleve.numero_ss
@@ -4536,7 +4681,6 @@ def modifier_je(request, id):
         return HttpResponse(template.render(context, request))
 
 
-
 def modifier_recrutement_etude(request, iD):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -4564,37 +4708,41 @@ def modifier_etude(request, iD):
     if request.user.is_authenticated:
         etude = get_object_or_404(Etude, id=iD)
         numero_ori = etude.numero
-        numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
+        numero_list = list(
+            Etude.objects.filter(je=request.user.je).values_list("numero", flat=True)
+        )
         numero_list.remove(numero_ori)
         if request.method == "POST":
-           
             debut = request.POST.get("debut")
-            fin_etude= request.POST.get("fin")
+            fin_etude = request.POST.get("fin")
             frais_dossier = request.POST.get("frais_dossier")
             remarque = request.POST.get("remarque")
             numero = int(request.POST.get("numero"))
-            
 
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
             if fin_etude:
-                etude.fin_etude=fin_etude
-            
-            if not numero:
-                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+                etude.fin_etude = fin_etude
 
+            if not numero:
+                return JsonResponse(
+                    {"success": False, "message": "Le numéro est obligatoire."},
+                    status=400,
+                )
 
             if numero:
-                
                 if numero not in numero_list:
                     etude.numero = numero
 
                 else:
                     etude_deja_exist = Etude.objects.filter(numero=numero).first()
                     return JsonResponse(
-                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
-                        status=400
+                        {
+                            "success": False,
+                            "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
+                        },
+                        status=400,
                     )
 
             etude.frais_dossier = frais_dossier
@@ -4602,18 +4750,31 @@ def modifier_etude(request, iD):
             etude.save()
 
             # Redirect to the details page with the correct modelName
-            return JsonResponse({"success": True, "message": "Étude modifiée avec succès.", "redirect": reverse("details", args=["Etude", iD])})
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Étude modifiée avec succès.",
+                    "redirect": reverse("details", args=["Etude", iD]),
+                }
+            )
 
     else:
-        return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Vous devez être connecté pour modifier l'étude.",
+            },
+            status=401,
+        )
 
-    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
-
+    return JsonResponse(
+        {"success": False, "message": "Invalid request method"}, status=400
+    )
 
 
 def verifier_etude(request, iD):
     if request.user.is_authenticated:
-    # Fetch the Etude instance using the provided iD
+        # Fetch the Etude instance using the provided iD
         etude = get_object_or_404(Etude, id=iD)
         if etude.client:
             client = etude.client
@@ -4624,7 +4785,9 @@ def verifier_etude(request, iD):
             remarque = request.POST.get("remarque")
             client_description = request.POST.get("client_description")
             etude_contexte = request.POST.get("etude_contexte")
-            paragraphe_intervenant_devis = request.POST.get("paragraphe_intervenant_devis")
+            paragraphe_intervenant_devis = request.POST.get(
+                "paragraphe_intervenant_devis"
+            )
             cdp_mail = request.POST.get("chefdep")
             cdp = Member.objects.filter(email=cdp_mail).first()
             quali_mail = request.POST.get("qualite")
@@ -4678,7 +4841,6 @@ def verifier_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-
 def remarque_etude(request, iD):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -4700,7 +4862,6 @@ def remarque_etude(request, iD):
 
 def signature_document(request, model, iD):
     if request.user.is_authenticated:
-
         if request.method == "POST":
             try:
                 new_date = request.POST.get("new_date")
@@ -4758,7 +4919,6 @@ def signature_document(request, model, iD):
 
 def signature_devis(request, iD):
     if request.user.is_authenticated:
-
         if request.method == "POST":
             try:
                 raw_data = request.body
@@ -4931,7 +5091,7 @@ def add_intervenant(request, id_etude, id_student):
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
-            for phase in etude.phases():
+            for phase in etude.phases.all():
                 nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
                 pourcentage_retribution = request.POST[
                     ("pourcentage_retribution_phase" + str(phase.numero))
@@ -4958,27 +5118,9 @@ def add_intervenant(request, id_etude, id_student):
             return redirect("details", modelName="Etude", iD=id_etude)
 
         except:
-            liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).order_by("date")
-            message_count = liste_messages.count()
-            liste_messages = liste_messages[:3]
-            all_notifications = request.user.notifications.order_by("-date_effet")
-            notification_list = [notif for notif in all_notifications if notif.active()]
-            notification_count = len(notification_list)
+            context = general_context(request)
             template = loader.get_template("polls/page_error.html")
-            context = {
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "error_message": "Erreur dans l'identification de la mission.",
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-            }
+            context["error_message"] = "Erreur dans l'identification de la mission."
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -5003,7 +5145,7 @@ def ajouter_avenant_ce(request, id_etude):
                 signature = None
                 modif_budget = False
                 modif_delais = False
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
                         modif_budget = True
@@ -5036,7 +5178,7 @@ def ajouter_avenant_ce(request, id_etude):
                     new_avenant.ancien_frais_dossier = etude.frais_dossier
                     etude.frais_dossier = nouveau_frais_dossier
                 new_avenant.save()
-                for phase in etude.phases():
+                for phase in etude.phases.all():
                     suppression_key = f"suppression{phase.id}"
                     if suppression_key in request.POST:
                         print(f"supprimer phase {phase.id}")
@@ -5166,7 +5308,6 @@ def supprimer_representant(request, id_representant):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-    
 
 
 def factures(request):
@@ -5200,7 +5341,6 @@ def BVs(request):
 def create_mail_template(request):
     if request.user.is_authenticated:
         if request.method == "POST":
-
             try:
                 message = request.POST["message"]
                 je = request.user.je
