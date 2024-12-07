@@ -1044,10 +1044,6 @@ class Etude(models.Model):
     def nombre_phases(self):
         return Phase.objects.filter(etude=self).count()
 
-    def phases(self):
-        phases = Phase.objects.filter(etude=self).order_by("numero")
-        return phases
-
     def ce_editable(self):
         return self.responsable is not None and self.resp_qualite is not None
 
