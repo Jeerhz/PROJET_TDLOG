@@ -4,7 +4,15 @@ from django.db.models import Sum, F
 from polls.models import AssignationJEH
 from num2words import num2words
 from datetime import datetime, timedelta
+import locale
 register = template.Library()
+
+@register.filter(name="FormatDate")
+def FormatDate(value):
+    if value:  # Check if value is not None
+        locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")  # Set locale to French
+        return value.strftime("%d %B %Y")
+    return value  
 
 @register.filter(name='format_duration')
 def format_duration(value):

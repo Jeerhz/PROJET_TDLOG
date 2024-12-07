@@ -267,8 +267,8 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user black-text"></i>
+                <a class="nav-link text-center" href="{% url 'index' %}">
+                    
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -282,13 +282,13 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'annuaire' %}">
-                    <i class="fas fa-book-open" ></i>
+                    
                     <span>Annuaire</span></a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    
                     <span>Stat/KPI</span></a>
             </li>
 
@@ -296,7 +296,7 @@
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
                     aria-expanded="true" aria-controls="pagetresorerie">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Trésorerie</span>
                 </a>
                 <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -312,13 +312,13 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'je_detail' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Ma Junior Entreprise</span></a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'demarchage' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Démarchage</span></a>
             </li>
             
@@ -328,7 +328,7 @@
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
                     aria-expanded="true" aria-controls="pageconnexion">
-                    <i class="fas fa-fw fa-folder"></i>
+                   
                     <span>Connexion</span>
                 </a>
                 <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -344,7 +344,7 @@
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
                     aria-expanded="true" aria-controls="pageautres">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Autres</span>
                 </a>
                 <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -353,7 +353,14 @@
                         
                         <a class="collapse-item" >Notifications</a>    
                     </div>
+
                 </div>
+                
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" >
+                    
+                    <span>Signaler un problème</span></a>
             </li>
             <!-- Heading -->
             
@@ -599,6 +606,7 @@
                                     Déconnection
                                 </a>
                             </div>
+                            
                         </li>
 
                     </ul>
@@ -609,34 +617,8 @@
                 <!-- Begin Page Content -->
                 
                 <div class="card-header mt-3">
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-secondary">Signaler un problème</button>
-                    </div>
-                    <div class="col-12 mt-3 mb-3">
-                        <form action="{% url 'index'%}" method="post" class="row">
-                            {% csrf_token %}
-                            <div class="col-3">
-                                
-                            </div>
-                            <div class="col-5">
-                                <div class="dl-horizontal">
-                                <div class="form-group row">
-                                    <label for="mandat-select" class="col-sm-4 col-form-label">Mandat</label>
-                                    <div class="col-sm-8 justify-content-center">
-                                        <select multiple class="form-control" id="mandat-select" name="mandat-select">
-                                            {% for choice in mandat_choices %}
-                                            <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>{{ choice.1 }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <button type="submit" class="btn btn-primary">Choisir</button>
-                            </div>
-                        </form>
-                    </div>
+                    
+                    
                     <div class="card-body p-3">
                         <div class="row justify-content-between">
                             <!-- Card Mission terminée (Annuel) -->
@@ -694,6 +676,30 @@
                                 </div>
                             </div>
 
+                            <div class="col-xl-3 col-md-6 mb-3">
+                                <div class="card shadow h-100 d-flex flex-column" style="border-left: 4px solid black;"> <!-- Add flex-column for Flexbox -->
+                                    <div class="card-body d-flex flex-column"> <!-- Make the card-body a flex container -->
+                                        <form action="{% url 'index' %}" method="post" class="h-100 d-flex flex-column">
+                                            {% csrf_token %}
+                                            <div class="form-group flex-grow-1"> <!-- Use flex-grow-1 to make the form expand -->
+                                                <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                                    {% for choice in mandat_choices %}
+                                                    <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>
+                                                        Mandat {{ choice.1 }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mt-auto"> <!-- Push the button to the bottom -->
+                                                <button type="submit" class="btn btn-primary btn-block">Choisir</button> <!-- Full-width button -->
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            
                         </div>
                     </div>
                     
