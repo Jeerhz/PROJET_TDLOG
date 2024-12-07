@@ -536,22 +536,25 @@ def page_detail_etude(request):
 
 
 
+
+
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
         template = loader.get_template("polls/login.html")
         return HttpResponse(template.render({}, request))
     
-
     user_je = user.je
     user_student = user.student
 
-    # Fetch messages and notifications
-    liste_messages = list(Message.objects.filter(
-        destinataire=request.user,
-        read=False,
-        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-    ).order_by("date")[:3])
+    # Preload messages and notifications
+    liste_messages = list(
+        Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+    )
     message_count = len(liste_messages)
     all_notifications = list(request.user.notifications.order_by("-date_effet"))
     notification_list = [notif for notif in all_notifications if notif.active()]
@@ -568,104 +571,120 @@ def details(request, modelName, iD):
     etude, phases, factures, intervenants, client, eleve = None, None, None, None, None, None
 
     if modelName == "Etude":
-        # Use select_related and prefetch_related for optimization
-        etude = Etude.objects.select_related(
-            'resp_qualite', 'responsable', 'client', 'client_interlocuteur', 'client_representant_legale', 'je'
-        ).prefetch_related(
-            Prefetch('phases', queryset=Phase.objects.order_by('numero')),
-            Prefetch('factures', queryset=Facture.objects.order_by('numero_facture')),
-            Prefetch('conventions_etude', queryset=ConventionEtude.objects.order_by('date_signature')),
-            Prefetch('conventions_cadre', queryset=ConventionCadre.objects.order_by('date_signature')),
-            'responsable__student',
-            'resp_qualite__student'
-        ).get(id=iD)
+        # Optimize: preload all needed relations
+        # Note: Adjust the prefetch and select_related calls based on your actual model structure.
+        etude = (
+            Etude.objects.select_related(
+                'resp_qualite', 'responsable', 'client', 'client_interlocuteur', 'client_representant_legale', 'je'
+            )
+            .prefetch_related(
+                Prefetch('phases', queryset=Phase.objects.order_by('numero').prefetch_related(
+                    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.select_related('eleve'))
+                )),
+                # Prefetch the factures and also prefetch related AssociationFactureBDC to avoid repeated queries.
+                Prefetch('factures', queryset=Facture.objects.order_by('numero_facture').select_related('etude')),
+                Prefetch('conventions_etude', queryset=ConventionEtude.objects.order_by('date_signature')),
+                Prefetch('conventions_cadre', queryset=ConventionCadre.objects.order_by('date_signature')),
+                'responsable__student',
+                'resp_qualite__student'
+            )
+            .get(id=iD)
+        )
+
         members = Member.objects.select_related("student").all()
         respo = etude.responsable.student
+        phases = etude.phases.all()
         factures = etude.factures.all()
-
-        for facture in factures:
-            facture.cached_montant_HT = facture.montant_HT()
-            facture.cached_montant_TVA = facture.montant_TVA()
-            facture.cached_montant_TTC = facture.montant_TTC()
-
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-        phases = etude.phases.prefetch_related(
-    Prefetch('assignationjeh_set', queryset=AssignationJEH.objects.select_related("eleve").all()))
-        
 
+        # Intervenants: distinct students that have assignations in phases
+        intervenants = Student.objects.filter(assignationjeh__phase__etude=etude).distinct()
+
+        # Preload AssociationFactureBDC for all factures to avoid repeated lookups
+        # Store them in a dict for O(1) access
+        associations_bdc = {
+            asso.facture_id: asso
+            for asso in AssociationFactureBDC.objects.filter(facture__in=factures).select_related('bon_de_commande')
+        }
+
+        # Compute facture values without additional queries
+        # Avoid calling methods that do queries inside the loop. Instead, compute directly.
+        for facture in factures:
+            # Determine BDC (if any) from cached dict
+            asso_fac = associations_bdc.get(facture.id)
+            bdc = asso_fac.bon_de_commande if asso_fac else None
+
+            # Compute JEH and frais depending on type_convention
+            if etude.type_convention == "Convention cadre":
+                # Use preloaded bdc data
+                jeh_base = bdc.montant_phase_HT() if bdc else 0
+                frais_base = bdc.frais_dossier if bdc else 0
+            else:
+                # Fallback to etude-level data (already in memory from select_related)
+                jeh_base = etude.montant_phase_HT()
+                frais_base = etude.frais_dossier
+
+            fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
+            fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+
+            facture.cached_montant_HT = fac_JEH + fac_frais
+            facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
+            facture.cached_montant_TTC = (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
+
+        # Compute total retribution from phases (all data already prefetched)
         def compute_total_retribution(phases):
             total_retribution = 0
             for phase in phases:
-                nb_JEHs = 0
-                retr_totale = 0
-                # Access preloaded AssignationJEH objects
-                assignations = phase.assignationjeh_set.all()
-                for assignation in assignations:
-                    retr_totale += assignation.retribution_brute_totale()
-                    nb_JEHs += assignation.nombre_JEH
-                # Calculate remaining retribution
+                assignations = phase.assignationjeh_set.all()  # Prefetched
+                retr_totale = sum(a.retribution_brute_totale() for a in assignations)
+                nb_JEHs = sum(a.nombre_JEH for a in assignations)
+                # Add remaining JEH retribution
                 retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
                 total_retribution += retr_totale
             return total_retribution
-        
+
         etude_retributions_totales = compute_total_retribution(phases)
 
-        # Fetch client representatives with optimized query
+        client = etude.client
         if client:
             client_representants = client.representants
-            representants_interlocuteurs = [
-                rep for rep in client_representants if rep.role == "interlocuteur"
-            ]
-            representants_legaux = [
-                rep for rep in client_representants if rep.role == "legal"
-            ]
+            representants_interlocuteurs = [rep for rep in client_representants if rep.role == "interlocuteur"]
+            representants_legaux = [rep for rep in client_representants if rep.role == "legal"]
         else:
             representants_interlocuteurs, representants_legaux = [], []
 
-        # We use the loaded data to calculate the end date of the study
+        # Compute study end date
         duree = max(
-                phase.duree_semaine + phase.debut_relatif
-                for phase in phases
-                if phase.duree_semaine is not None and phase.debut_relatif is not None
-            ) if phases else 0
-        
+            (phase.duree_semaine + phase.debut_relatif for phase in phases 
+             if phase.duree_semaine is not None and phase.debut_relatif is not None), 
+            default=0
+        )
         etude_fin = etude.debut + datetime.timedelta(weeks=duree) if (etude.debut and duree) else None
 
-        # Same for the total amount of the study
-        etude_montant_total_phases = (
-            sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in phases
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
-            )
-            if phases
-            else 0
+        # Compute total amount of study
+        etude_montant_total_phases = sum(
+            (phase.montant_HT_par_JEH * phase.nb_JEH) 
+            for phase in phases 
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
         )
-
         etude_total_montant_HT = etude_montant_total_phases + etude.frais_dossier
 
-        # We also compute the number of JEH for the study
-        etude_nbJEH = (
-            sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None)
-            if phases
-            else 0
-        )
+        # Compute total JEH
+        etude_nbJEH = sum(phase.nb_JEH for phase in phases if phase.nb_JEH is not None)
 
-        etude_charge_URSSAF = etude_nbJEH * user_je.base_urssaf * user_je.taux_cotisations / 100 if etude_nbJEH else 0
-        # At least we do not make research with the phases
+        # Compute URSSAF charges
+        etude_charge_URSSAF = etude_nbJEH * user_je.base_urssaf * user_je.taux_cotisations / 100.0 if etude_nbJEH else 0
 
+        # Compute marge JE
         etude_marge_JE = etude_total_montant_HT - etude_retributions_totales - etude_charge_URSSAF
 
+        # Find solde facture if any
+        etude_facture_solde = next((f for f in factures if f.type_facture == f.Status.SOLDE), None)
 
-        etude_facture_solde = None
-        for facture in factures:
-            if facture.type_facture == facture.Status.SOLDE:
-                etude_facture_solde = facture
-        if etude.client:
-            client_nom =str(etude.client.nom_societe)
-        else:
-            client_nom="pas de client"
-        attribute_list = {"Titre": etude.titre,
+        client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
+
+        attribute_list = {
+            "Titre": etude.titre,
             "Description": etude.description,
             "Numéro": etude.numero,
             "Client": client_nom,
@@ -676,13 +695,10 @@ def details(request, modelName, iD):
             "Montant HT": etude_total_montant_HT,
         }
 
-
-
     if modelName == "Student":
         eleve = instance
     if modelName == "Client":
         client = instance
-
 
     context = {
         "modelName": modelName,
@@ -696,7 +712,7 @@ def details(request, modelName, iD):
         "notification_count": notification_count,
     }
 
-    # Add additional context if applicable
+    # Add context for Etude
     if etude is not None:
         etude_convention = etude.conventions_etude.first() if etude.type_convention == "Convention d'étude" else etude.conventions_cadre.first()
 
@@ -712,7 +728,7 @@ def details(request, modelName, iD):
             "etude_nbJEH": etude_nbJEH,
             "etude_total_montant_phases": etude_montant_total_phases,
             "etude_total_ttc": etude_total_montant_HT * (1 + etude.taux_tva / 100),
-            "etude_tva": (etude.taux_tva/100) * etude_total_montant_HT,
+            "etude_tva": (etude.taux_tva / 100) * etude_total_montant_HT,
             "etude_marge_JE": etude_marge_JE,
             "etude_retributions_totales": etude_retributions_totales,
             "etude_charge_URSSAF": etude_charge_URSSAF,
@@ -744,6 +760,7 @@ def details(request, modelName, iD):
 
     template = loader.get_template("polls/page_details.html")
     return HttpResponse(template.render(context, request))
+
 
 
 
