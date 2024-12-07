@@ -102,12 +102,10 @@ class JE(models.Model):
         new_je.logo = "/static/polls/img/bdc.png"
         new_je.chiffres_affaires = 0.0
         return new_je
-    
+
     def president(self):
-        prez = Member.objects.filter(je=self, poste='PRESIDENT').first()
+        prez = Member.objects.filter(je=self, poste="PRESIDENT").first()
         return prez
-
-
 
 
 class JESerializer(BaseSerializer):
@@ -257,7 +255,9 @@ class Representant(models.Model):
     )
     # je = models.ForeignKey(JE, on_delete=models.CASCADE)
     remarque = models.TextField(blank=True, null=True, default="RAS")
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, related_name="representants")
+    client = models.ForeignKey(
+        Client, on_delete=models.CASCADE, null=True, related_name="representants"
+    )
     fonction = models.CharField(max_length=100, null=True)
     contact_recent = models.BooleanField(default=False, blank=True, null=True)
     date_mail = models.DateField(
@@ -556,12 +556,15 @@ class Member(AbstractUser):
             return AddMember(form, kwargs["files"])
         else:
             return AddMember(form)
-        
+
     def missions_suivis(self):
-        etudes = Etude.objects.filter(Q(responsables=self) | Q(responsable=self)).distinct().order_by('numero')
+        etudes = (
+            Etude.objects.filter(Q(responsables=self) | Q(responsable=self))
+            .distinct()
+            .order_by("numero")
+        )
         count = etudes.count()
         return {"etudes": etudes, "count": count}
-        
 
     def modifyForm(instance):
         return AddMember(instance=instance)
@@ -703,21 +706,23 @@ class Etude(models.Model):
 
     # pour avoir plusieurs responsables sur une mission :
     responsables = models.ManyToManyField(
-        'Member',
-        related_name='etudes_responsables',
-        verbose_name="suiveurs"
+        "Member", related_name="etudes_responsables", verbose_name="suiveurs"
     )
-
-
 
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
     client_interlocuteur = models.ForeignKey(
-        Representant, on_delete=models.CASCADE, related_name="client_interlocuteur", null=True, blank=True
+        Representant,
+        on_delete=models.CASCADE,
+        related_name="client_interlocuteur",
+        null=True,
+        blank=True,
     )
     client_representant_legale = models.ForeignKey(
         Representant,
         on_delete=models.CASCADE,
-        related_name="client_representant_legale", null=True, blank=True
+        related_name="client_representant_legale",
+        null=True,
+        blank=True,
     )
     je = models.ForeignKey(JE, on_delete=models.CASCADE)
     frais_dossier = models.FloatField(default=0, verbose_name="frais de dossier")
@@ -908,16 +913,12 @@ class Etude(models.Model):
             return self.fin_etude
         else:
             return None
-    
+
     def fin_test(self):
-        
         if self.debut and self.duree_semaine():
-            
             return self.debut + datetime.timedelta(weeks=self.duree_semaine())
         else:
             return None
-       
-        
 
     def nb_JEH(self):
         phases = Phase.objects.filter(etude=self)
@@ -1124,7 +1125,7 @@ class Facture(models.Model):
         max_length=100, choices=Status.choices, default=Status.ACOMPTE
     )
     numero_facture = models.IntegerField(null=True)
-    #fac_frais = models.FloatField(default=0)
+    # fac_frais = models.FloatField(default=0)
     # montant_HT=models.FloatField(default=30)
     TVA_per = models.IntegerField(default=20)
     date_emission = models.DateField(null=True)
@@ -1138,6 +1139,7 @@ class Facture(models.Model):
             return f"{current_year_last_two_digits}{self.numero_facture:03d}"
         else:
             return f"{self.numero_facture:03d}"
+
     def ref(self):
         if self.date_emission:
             if isinstance(self.date_emission, str):
@@ -1195,15 +1197,15 @@ class Facture(models.Model):
         id_etude = kwargs.pop("id_etude")
         etude = Etude.objects.get(id=id_etude)
         self.etude = etude
-        #self.etude = etude
-        #self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
+        # self.etude = etude
+        # self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
         if not self.numero_facture:
-            current_year= date.today().year
-            je_act= etude.je
+            current_year = date.today().year
+            je_act = etude.je
             max_numero = Facture.objects.filter(
                 date_emission__year=current_year,  # Filter by year
-                etude__je=je_act  # Filter by je_act
-            ).aggregate(Max('numero_facture'))['numero_facture__max'] 
+                etude__je=je_act,  # Filter by je_act
+            ).aggregate(Max("numero_facture"))["numero_facture__max"]
             self.numero_facture = max_numero + 1
         super(Facture, self).save(*args, **kwargs)
 
@@ -1216,19 +1218,12 @@ class AssociationFactureBDC(models.Model):
         "Facture", on_delete=models.CASCADE, related_name="associations_bdc_fac"
     )
 
+
 class BV(models.Model):
-    
-    etude = models.ForeignKey(
-        "Etude", on_delete=models.CASCADE, related_name="bvs"
-    )
-    eleve = models.ForeignKey(
-        "Student", on_delete=models.CASCADE, related_name="bvs"
-
-    )
+    etude = models.ForeignKey("Etude", on_delete=models.CASCADE, related_name="bvs")
+    eleve = models.ForeignKey("Student", on_delete=models.CASCADE, related_name="bvs")
     numero_bv = models.IntegerField(null=True)
-    
 
-    
     date_emission = models.DateField(null=True)
     # il faut les assignations jehs, dictionaire ?
     # il faut la ref au rdm ou au dernier avenant
@@ -1249,7 +1244,6 @@ class BV(models.Model):
 
             return asso_bdc_fac.bon_de_commande
         else:
-             
             rdm = RDM.objects.filter(etude=self.etude, eleve=self.eleve).first()
             if rdm:
                 dernier_avenant = rdm.dernier_avenant()
@@ -1257,7 +1251,7 @@ class BV(models.Model):
                     return dernier_avenant.ref()
                 else:
                     return rdm.ref()
-                
+
             else:
                 return None
 
@@ -1265,19 +1259,19 @@ class BV(models.Model):
         return self.etude.je
 
     def save(self):
-        
         if not self.numero_bv:
-            current_year= date.today().year
-            je_act= self.je()
+            current_year = date.today().year
+            je_act = self.je()
             max_numero = BV.objects.filter(
                 date_emission__year=current_year,  # Filter by year
-                etude__je=je_act  # Filter by je_act
-            ).aggregate(Max('numero_bv'))['numero_bv__max'] 
+                etude__je=je_act,  # Filter by je_act
+            ).aggregate(Max("numero_bv"))["numero_bv__max"]
             if max_numero:
                 self.numero_bv = max_numero + 1
             else:
-                self.numero_bv =   1
+                self.numero_bv = 1
         super(BV, self).save()
+
 
 class Devis(models.Model):
     etude = models.ForeignKey("Etude", on_delete=models.CASCADE, related_name="devis")
@@ -1609,18 +1603,19 @@ class RDM(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        initials =  self.eleve.last_name[0] + self.eleve.first_name[0]
+        initials = self.eleve.last_name[0] + self.eleve.first_name[0]
         return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
 
     def ref(self):
         initials = self.eleve.first_name[0] + self.eleve.last_name[0]
         return f"{self.etude.ref()}rdm-{initials}"
-    
+
     def dernier_avenant(self):
-        avenant = AvenantRDM.objects.filter(
-                rdm=self,  
-                date_signature__isnull=False  
-            ).order_by('-date_signature').first()
+        avenant = (
+            AvenantRDM.objects.filter(rdm=self, date_signature__isnull=False)
+            .order_by("-date_signature")
+            .first()
+        )
         return avenant
 
     def signe(self):
@@ -1648,10 +1643,11 @@ class AvenantRDM(models.Model):
 
     def save(self, *args, **kwargs):
         if self.numero is None:
-            avenant = AvenantRDM.objects.filter(
-                rdm=self.rdm,  
-                date_signature__isnull=False  
-            ).order_by('-date_signature').first()
+            avenant = (
+                AvenantRDM.objects.filter(rdm=self.rdm, date_signature__isnull=False)
+                .order_by("-date_signature")
+                .first()
+            )
             if avenant:
                 self.numero = avenant.numero + 1
             else:
@@ -2206,7 +2202,9 @@ class AddEtude(forms.ModelForm):
         if "expediteur" in kwargs:
             je = kwargs["expediteur"].je
 
-            max_numero = Etude.objects.filter(je=je).aggregate(max_numero=Max("numero"))["max_numero"]
+            max_numero = Etude.objects.filter(je=je).aggregate(
+                max_numero=Max("numero")
+            )["max_numero"]
         else:
             print("pas je")
             max_numero = Etude.objects.aggregate(max_numero=Max("numero"))["max_numero"]
@@ -2364,16 +2362,21 @@ class AddIntervenant(forms.ModelForm):
         return "AddIntervenant"
 
     def save(self, commit=True, **kwargs):
-        assignation_jeh = super(AddIntervenant, self).save(commit=False)
+        assignation_jeh = super().save(commit=False)
         if commit:
             assignation_jeh.save(**kwargs)
         return assignation_jeh
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, intervenant_queryset=None, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
             field = self.fields[field_name]
             field.widget.attrs["class"] = "form-control"
+
+        # If AssignationJEH has a foreign key to `eleve`, set its queryset here:
+        if "eleve" in self.fields and intervenant_queryset is not None:
+            # Use the preloaded intervenants from the view
+            self.fields["eleve"].queryset = intervenant_queryset
 
 
 class SetParametresUtilisateur(forms.ModelForm):
