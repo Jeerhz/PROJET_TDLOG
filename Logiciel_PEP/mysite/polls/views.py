@@ -643,10 +643,11 @@ def details(request, modelName, iD):
         liste_messages, message_count, notification_list, notification_count = (
             future_messages.result()
         )
-
     if modelName == "Message":
         instance.read = True
         instance.save()
+
+    # Une modif
 
     # Initialize context variables
     etude, phases, factures, intervenants, client, eleve = (
