@@ -534,6 +534,13 @@ def details(request, modelName, iD):
         respo = etude.responsable.student
         factures = etude.factures.all()
 
+
+        #CORRIGE ADLE !!!!!!
+        intervenants=etude.get_li_students()
+
+
+
+
         for facture in factures:
             facture.cached_montant_HT = facture.montant_HT()
             facture.cached_montant_TVA = facture.montant_TVA()
@@ -2831,6 +2838,98 @@ def editer_rdm(request, id_etude, id_eleve):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def editer_avenant_rdm_ce(request, id_etude, id_eleve):
+    if request.user.is_authenticated:
+        #try:
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_eleve)
+            num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
+            date_fin = request.POST.get("date_fin")
+            causes = request.POST.get("causes_avenants")
+            ref_ba = request.POST.get("ref_ba")
+            ref_rdm = request.POST.get("ref_rdm")
+            dico_mois = {1: "janvier",  2: "février",   3: "mars",   4: "avril", 5: "mai", 6: "juin", 7: "juillet", 8: "août", 9: "septembre",10: "octobre",  11: "novembre",  12: "décembre" }
+
+            annee_fin, mois_fin,jour_fin = date_fin[0:4],date_fin[5:7],date_fin[8:10]
+            
+            date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
+            ref_ce=etude.convention()
+
+            # num avenant
+            # ref avenant 
+            
+            assignations = list(
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by("phase__numero")
+            )
+            remuneration = sum(
+                assignment.retribution_brute_totale() for assignment in assignations
+            )
+            nb_JEH = sum(
+                assignment.nombre_JEH for assignment in assignations
+            )
+            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+            
+            ref_dernier_avenant = None
+            if num_dernier_avenant>0:
+                ref_dernier_avenant  = f"{etude.ref()}ae{num_dernier_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
+            num_avenant  = num_dernier_avenant+1
+            ref_avenant  = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
+            
+
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_test.docx")
+            template = DocxTemplate(template_path)
+
+            
+            date = timezone.now().date()
+            annee = date.strftime("%Y")
+            context = {
+                "etude": etude,
+                "eleve":eleve,
+                "date_fin_format":date_fin_format,
+                "ref_avenant":ref_avenant,
+                "ref_dernier_avenant":ref_dernier_avenant,
+                "ref_ba":ref_ba,
+                "annee":annee,
+                "remuneration":remuneration,
+                "assignations":assignations,
+                "ref_rdm":ref_rdm,
+                "nb_JEH":nb_JEH,
+                "president":president,
+                "causes":causes,
+                "ref_ce":ref_ce,
+                "ref_etude": etude.ref()
+            }
+
+            
+            env = Environment()
+            env.filters["FormatNombres"] = format_nombres
+            env.filters["EnLettres"] = en_lettres
+            env.filters["ChiffreLettre"] = chiffre_lettres
+            template.render(context, env)
+            output = BytesIO()
+            template.save(output)
+            output.seek(0)
+            filename = f"RDM_{ref_avenant}.docx"
+            name="testavenant.docx"
+            response = FileResponse(
+                output,
+                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+            response["Content-Disposition"] = f'attachment; filename="{name}"'
+            return response
+        
+        #except:
+            template = loader.get_template("polls/page_error.html")
+            context = {
+                "error_message": "Un problème a été détecté dans la base de données."
+            }
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 
 def editer_acf(request, id_etude, id_eleve):
     if request.user.is_authenticated:
@@ -2849,6 +2948,11 @@ def editer_acf(request, id_etude, id_eleve):
             date = timezone.now().date()
             annee = date.strftime("%Y")
 
+            adresse= eleve.adress
+            code_postal = eleve.ville
+            ville= eleve.code_postal
+            portable= eleve.phone_number
+
 
             template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx")
             template = DocxTemplate(template_path)
@@ -2866,7 +2970,7 @@ def editer_acf(request, id_etude, id_eleve):
                 "annee": annee,
                 "nom": nom,
                 "prenom": prenom,
-                "etude_titre": etude_titre,
+                "etude_titre": etude_titre,"adresse":adresse,"code_postal":code_postal,"ville":ville,"portable":portable
             }
 
             env = Environment()

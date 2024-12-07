@@ -223,17 +223,16 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ user_je.logo.url }}">
+            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
             
 
             <!-- Divider -->
             <hr class="sidebar-divider my-md-0">
 
-            
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user"></i>
+                <a class="nav-link text-center" href="{% url 'index' %}">
+                    
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -247,20 +246,21 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'annuaire' %}">
-                    <i class="fas fa-book-open" ></i>
+                    
                     <span>Annuaire</span></a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    
                     <span>Stat/KPI</span></a>
             </li>
 
+            
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
                     aria-expanded="true" aria-controls="pagetresorerie">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Trésorerie</span>
                 </a>
                 <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -276,22 +276,23 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'je_detail' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Ma Junior Entreprise</span></a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'demarchage' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Démarchage</span></a>
             </li>
+            
 
             <hr class="sidebar-divider">
 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
                     aria-expanded="true" aria-controls="pageconnexion">
-                    <i class="fas fa-fw fa-folder"></i>
+                   
                     <span>Connexion</span>
                 </a>
                 <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -307,7 +308,7 @@
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
                     aria-expanded="true" aria-controls="pageautres">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Autres</span>
                 </a>
                 <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -316,7 +317,14 @@
                         
                         <a class="collapse-item" >Notifications</a>    
                     </div>
+
                 </div>
+                
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" >
+                    
+                    <span>Signaler un problème</span></a>
             </li>
             <!-- Heading -->
             
@@ -653,7 +661,7 @@
 
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 text-center">
-                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.ref }} </span> - {{ etude.client.nom_societe }} : <span>{{ etude.titre }} </span> </h2>
+                            <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.ref }} </span> {% if etude.client %} - {{ etude.client.nom_societe }} {% endif %} : <span>{{ etude.titre }} </span> </h2>
                             <h5 style="font-size: 16px;">{{ etude.problematique}}</h5>
                         </div>
                         <div class="card-body">
@@ -702,7 +710,7 @@
 
                                         <div style="padding-right: 0px; text-align: center;">
                                             <h4 class="mb-2" style="font-size: 16px;">
-                                                Statut:
+                                                Statut :
                                                 {% if etude.status == 'TERMINEE' %}
                                                     <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
                                                 {% else %}
@@ -775,13 +783,13 @@
                                                 <div class="card-body">
                                                     <div class="tab-content" id="etude-info">
                                                         <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin  }} {% else %} pas de fin {% endif %}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
-                                                            <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
-                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
-                                                            <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
+                                                            <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
+                                                            <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
+                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
+                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
 
 
                                                         </ul>
@@ -795,13 +803,13 @@
                                                         <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
                                                             {% csrf_token %}
                                                             <ul class="list-group list-group-flush">
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
-                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
-                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
-                                                                <li class="list-group-item"><i class="fas fa-euro-sign"></i> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
-                                                                <li class="list-group-item"><i class="fas fa-list-ol"></i> <strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
+                                                                <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
+                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
+                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
+                                                                <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                                <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
 
                                                             </ul>
                                                             <!-- Save and Cancel Buttons -->
@@ -920,6 +928,7 @@
                                     <br>
                                     <!-- Fin de la ligne avec Graphe et Card Infos -->
                                     <!--Fin Responsable et statut-->
+                                    {% if phases %}
                                     <div class="col-lg-13 mb-3">
                                         <div class="card shadow">
                                             <table class="table_budget">
@@ -931,7 +940,7 @@
                                                         <th>Total H.T.</th>
                                                     </tr>
                                                 </thead>
-                                                {% if phases %}
+                                                
                                                 <tbody>
                                                     {% for phase in phases %}
                                                     <tr>
@@ -942,12 +951,13 @@
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
-                                                {% endif %}
+                                               
                                             </table>
                                             <br>
                                             
                                         </div>
                                     </div>
+                                    {% endif %}
                                     <br>
                                     <div class="card shadow" >
                                         <div class="card-header">
@@ -1010,7 +1020,7 @@
 
                                                     <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
                                                         <div class="card-body">
-                                                            <div class="text-info">
+                                                            <div style="color: #000;">
                                                                 {{ etude.description }}
                                                             </div>
                                                         </div>
@@ -1322,7 +1332,7 @@
                                             <table class="table_planning">
                                                 <thead>
                                                     <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
+                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
                                                         <th class="th_planning"></th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
@@ -1629,7 +1639,7 @@
                                             <table class="table_planning">
                                                 <thead>
                                                     <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
+                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
                                                         <th class="th_planning"></th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
@@ -1908,7 +1918,7 @@
                                                         
                                                                                                        
                                                         <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}" ><i class="fas fa-download mr-2"></i>Générer le Devis</a>
-                                                        <p style="margin: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
+                                                        <p style="margin: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature|FormatDate }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
 
                                                         {% if etude_devis %}
                                                         <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude_devis.id %}">
@@ -1930,7 +1940,7 @@
                                                             
                                                             <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention d'Étude</a>
                                                             
-                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
+                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
 
                                                             {% if etude_convention %}
                                                             <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}">
@@ -1948,7 +1958,7 @@
                                                             <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
                                                             <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                             
-                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CC a été signé le {{ etude_convention.date_signature }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
+                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CC a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
       
                                                             {% if etude_convention %}
                                                             <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}">
@@ -2096,7 +2106,7 @@
                                                                     <td colspan="3">
                                                                         <p>
                                                                             {% if avenant.date_signature %}
-                                                                                Avenant signé le {{ avenant.date_signature }}
+                                                                                Avenant signé le {{ avenant.date_signature|FormatDate }}
                                                                             {% else %}
                                                                                 Non signé
                                                                             {% endif %}
@@ -2559,7 +2569,60 @@
                                                         <div class="row justify-content-between">
                                                             
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
-                                                            <a class="btn btn-success">Ajouter un avenant au RdM</a>
+                                                            
+                                                            
+
+
+                                                            <button class="btn btn-primary" data-toggle="modal" data-target="#avenantRDM_{{eleve.id}}">
+                                                                <i class="fas fa-plus"></i></i> Ajouter un avenant au RdM
+                                                            </button>
+                                                            
+                                                                       
+                                                            <div class="modal fade" id="avenantRDM_{{eleve.id}}" tabindex="-1" role="dialog" aria-labelledby="editAvenantRDM" aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <form id="numeroBA" method="POST" action="{% url 'editer_avenant_rdm_ce' id_etude=etude.id id_eleve=eleve.id %}">
+                                                                            {% csrf_token %}
+                                                                            <div class="modal-header">
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                    <span aria-hidden="true">&times;</span>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="form-group">
+                                                                                    <label for="num_dernier_avenant">Numéro du dernier avenant (0 si aucun)</label>
+                                                                                    <input type="number" class="form-control" id="num_dernier_avenant" name="num_dernier_avenant" step="1" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="date_fin">Date de fin</label>
+                                                                                    <input type="date" class="form-control" id="date_fin" name="date_fin" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="causes_avenants">Les causes de l'avenant</label>
+                                                                                    <input type="text" class="form-control" id="causes_avenants" name="causes_avenants" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="ref_ba">Référence du Bulletin d'Adhésion</label>
+                                                                                    <input type="text" class="form-control" id="ref_ba" name="ref_ba" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="ref_rdm">Référence au RDM</label>
+                                                                                    <input type="text" class="form-control" id="ref_rdm" name="ref_rdm" value = "{{etude.ref}}rdm-{{eleve.first_name|slice:':1'}}{{eleve.last_name|slice:':1'}}" required>
+                                                                                </div>
+                                                                        
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                <button type="submit" class="btn btn-primary">Générer l'avenant</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+
+
+
                                                             <a href="{% url 'editer_acf' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
                                                         </div>
                                                     </div>
@@ -2584,8 +2647,8 @@
                                                                     </div></th>
                                                                     <th scope="row">{{assignation.phase.numero}}</th>
                                                                     <td>{{assignation.nombre_JEH}}</td>
-                                                                    <td>{{assignation.pourcentage_retribution}}%</td>
-                                                                    <td>{{assignation.retribution_brute_totale}}</td>
+                                                                    <td>{{assignation.pourcentage_retribution|FormatNombres}}%</td>
+                                                                    <td>{{assignation.retribution_brute_totale|FormatNombres}}</td>
                                                                 </tr>
                                                                     {% endfor %}
                                                                 </tbody>
@@ -2606,7 +2669,7 @@
                                                             <table class="table_planning">
                                                                 <thead>
                                                                     <tr>
-                                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut}} - {{etude_fin}}</th>
+                                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
                                                                         <th class="th_planning"></th>
                                                                         <th class="th_planning">
                                                                             <div class="semaines_plan">
@@ -2947,7 +3010,7 @@
                                                     </tbody>
                                                 </table>
                                                 <!-- Fin de la table-->
-                                                <a class="btn btn-primary" target="_blank" href="{% url 'facture' facture.id %}">Générer la Facture</a>
+                                                <a class="btn btn-primary" target="_blank" href="{% url 'factures' %}">Générer la Facture</a>
                                             </div>
                                         <br>
                                         {% endfor %}    
@@ -3045,7 +3108,7 @@
                                                     </tbody>
                                                 </table>
                                                 <!-- Fin de la table-->
-                                                <a class="btn btn-primary" target="_blank" href="{% url 'facture' facture.id %}">Générer la Facture</a>
+                                                <a class="btn btn-primary" target="_blank" href="{% url 'factures' %}">Générer la Facture</a>
                                                 
                                             </div>
                                                                                 
@@ -3435,9 +3498,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" id="pills-candidatures-tab" data-toggle="pill" href="#pills-candidatures" role="tab" aria-controls="pills-candidatures" aria-selected="false">Candidatures</a>
                             </li>
+                            {% if eleve.is_member %}
                             <li class="nav-item">
-                                <a class="nav-link" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="false">Missions suivies</a>
+                                <a class="nav-link" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="false">Études</a>
                             </li>
+                            {% endif %}
                         </ul>
                         <div class="tab-content mt-2" style="background-color: #FFFFFF;">
                     
@@ -3659,7 +3724,7 @@
                                         <div class="col-5">
                                             
                                                 <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
-                                                    <h3 class="m-0"><span class="badge badge-counter badge-info">{{eleve.nb_etudes_realisees}}</span> mission(s) réalisée(s)</h3>
+                                                    <div class="m-0" style="color: #000;"><strong>{{eleve.nb_etudes_realisees}}</strong>{% if eleve.nb_etudes_realisees == 1 %} mission réalisée {% else %} missions réalisées {% endif %}</div>
                                                 </div>
                                         </div>
                                     </div>
@@ -3667,82 +3732,116 @@
                                     <div class="card shadow">
                                         <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-toggle="collapse" data-target="#phases_realisees{{mission.id}}"
                                         aria-expanded="false" aria-controls="phases_realisees{{mission.id}}">
-                                            <h3>{{ mission.titre }}</h3>
-                                            <small>{{ mission.ref }}</small>
+                                            <div>{{ mission.ref }} - {{ mission.titre }}</div>
+                                            
                                         </div>
                                         <div class="collapse" id="phases_realisees{{mission.id}}" aria-labelledby="phases_realisees{{mission.id}}">
                                             <div class="card-body">
                                                 <div class="table-responsive">
-                                                    <table class="table table-bordered table-hover">
+                                                    <table class="table table-hover">
                                                         <thead>
-                                                            <tr>
+                                                            <tr style="color: #000;">
                                                                 <th>Phase</th>
-                                                                <th>JEH</th>
-                                                                <th>Montant HT</th>
+                                                                <th>Nombre de JEHs réalisés</th>
+                                                                <th>Rétribution</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                         {% for assignation in eleve|assignation:mission %}
                                                             <tr>
-                                                                <th>{{assignation.phase.numero}}</th>
-                                                                <th>{{assignation.nb_JEH}}</th>
-                                                                <th>{{assignation.retribution_brute_totale}}</th>
+                                                                <th>{{assignation.phase.numero}} - {{assignation.phase.titre|slice:":50"}}</th>
+                                                                <th>{{assignation.nombre_JEH}}</th>
+                                                                <th>{{assignation.retribution_brute_totale|FormatNombres}} €</th>
                                                             </tr>
                                                         {% endfor %}
                                                         </tbody>
                                                     </table>
                                                 </div>
+                                                
                                             </div>
                                             <div class="card-footer">
                                                 <a href="{% url 'details' modelName='Etude' iD=mission.id %}" class="btn btn-primary">Voir étude</a>
-                                                <button data-href="{% url 'nouveau_BV' id_etude=mission.id id_eleve=eleve.id %}" class="btn btn-success bv-trigger" data-toggle="modal" data-target="#bv-modal" data-formcontent="bv-form-content{{mission.id}}">Générer le BV</button>
                                             </div>
                                         </div>
                                         
                                     </div>
-                                    <div hidden id="bv-form-content{{mission.id}}">
-                                        <div class="bg-white py-2 collapse-inner rounded">
-                                            <table class="table table-striped">
-                                                <thead>
-                                                    <th>Selectionner</th>
-                                                    <th>Phase</th>
-                                                    <th>Nombre JEH</th>
-                                                    <th>Pourcentage</th>
-                                                    <th>Montant</th>
-                                                </thead>
-                                                <tbody>
-                                                    {% for assignation in eleve|assignation:mission %}
-                                                        <tr>
-                                                            <th><div class="form-check form-switch">
-                                                                <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
-                                                            </div></th>
-                                                            <th scope="row">{{assignation.phase.numero}}</th>
-                                                            <td>{{assignation.nombre_JEH}}</td>
-                                                            <td>{{assignation.pourcentage_retribution}}%</td>
-                                                            <td>{{assignation.retribution_brute_totale}}</td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-        
-                                        </div>
-                                    </div>
+                                    
                                     {% endfor %}
                                 </div>
                             </div>
+                            {% if eleve.is_member %}
                             <div class="tab-pane fade" id="pills-missions_suivies">
-                                <div> Missions suivies</div>
-                                
-                                            
-                            </div>
-                            <div class="tab-pane fade" id="pills-candidatures">
                                 <div class="container p-4">
                                     <div class="row mb-3 d-flex justify-content-center">
                                         <div class="col-5">
                                             
                                                 <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
-                                                    <h3 class="m-0"><span class="badge badge-counter badge-info">{{eleve.nb_candidatures}}</span> candidature(s)</h3>
+                                                    <div class="m-0" style="color: #000;"><strong>{{ eleve.is_member.missions_suivis.count }}</strong>{% if eleve.is_member.missions_suivis.count == 1 %} étude suivie {% else %} études suivies {% endif %}</div>
                                                 </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="container-fluid">
+                                        
+                                        <div class="card mb-4 ml-4 mr-3 shadow">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover text-center" style="padding-bottom: 0px;">
+                                                    <thead style="background-color: #ffffff;">
+                                                        <tr>
+                                                            
+                                                            
+                                                            <th scope="col" style="text-align: left; ">Étude</th>
+                                                            
+                                                            <th scope="col" style="text-align: left;">Client</th>
+                                                            
+                    
+                                                            <th scope="col" style="text-align: left;">Montant</th>
+                                                            <th scope="col" style="text-align: left;">Statut</th>
+
+                    
+                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for etude in eleve.is_member.missions_suivis.etudes %}
+                                                        <tr>
+                                                            <td style="text-align: left; padding-right: 50px;">
+                                                                <a href="{% url 'details' modelName='Etude' iD=etude.id %}">
+                                                                    <strong>{{ etude.ref }}</strong> - {{ etude.titre|slice:":50" }}
+                                                                </a>
+                                                            </td>                                                            
+                                                            <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
+                                                            
+                                                            <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}}€</td>
+                                                            <td style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}">
+                                                                {{ etude.get_status_display }}
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                        
+                        
+                                                        {% endfor %}
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>       
+                                    
+                                </div>
+                                
+                                            
+                            </div>
+                            {% endif %}
+                            <div class="tab-pane fade" id="pills-candidatures">
+                                <div class="container p-4">
+                                    <div class="row mb-3 d-flex justify-content-center">
+                                        <div class="col-5">
+                                            <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
+                                                <div class="m-0" style="color: #000;"><strong>{{eleve.nb_candidatures}}</strong>{% if eleve.nb_candidatures == 1 %} candidature {% else %} candidatures {% endif %}</div>
+                                            </div>
+                                            
+                                                
                                             
                                         </div>
                                     </div>
@@ -3804,7 +3903,7 @@
                                                 </form>
                                             </div>
                                         </div>
-                                        </div>
+                                    </div>
                                     
 
 

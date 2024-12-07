@@ -87,119 +87,129 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+       <!-- Sidebar -->
+       <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
-            
-            
-            <!-- Divider -->
-            <hr class="sidebar-divider my-md-0">
+        <!-- Sidebar - Brand -->
+        <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
+        
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user"></i>
-                    <span>ACCUEIL</span></a>
-            </li>
-            
-            <hr class="sidebar-divider">
-            
+        <!-- Divider -->
+        <hr class="sidebar-divider my-md-0">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Informations
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item active">
+            <a class="nav-link text-center" href="{% url 'index' %}">
+                
+                <span>ACCUEIL</span></a>
+        </li>
+        
+        <hr class="sidebar-divider">
+        
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Informations
+        </div>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'annuaire' %}">
+                
+                <span>Annuaire</span></a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'stat_KPI' %}">
+                
+                <span>Stat/KPI</span></a>
+        </li>
+
+        
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
+                aria-expanded="true" aria-controls="pagetresorerie">
+                
+                <span>Trésorerie</span>
+            </a>
+            <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
+                    <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
+                    <a class="collapse-item" href="#">DAS2</a>
+                    
+                    
+                </div>
             </div>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'annuaire' %}">
-                    <i class="fas fa-book-open" ></i>
-                    <span>Annuaire</span></a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'je_detail' %}">
+                
+                <span>Ma Junior Entreprise</span></a>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Stat/KPI</span></a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'demarchage' %}">
+                
+                <span>Démarchage</span></a>
+        </li>
+        
 
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                    aria-expanded="true" aria-controls="pagetresorerie">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Trésorerie</span>
-                </a>
-                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                        <a class="collapse-item" href="#">DAS2</a>
-                        
-                        
-                    </div>
+        <hr class="sidebar-divider">
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
+                aria-expanded="true" aria-controls="pageconnexion">
+               
+                <span>Connexion</span>
+            </a>
+            <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
+                    <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
+                    <a class="collapse-item" href="#">Mot de passe oublié</a>
+                    
+                    
                 </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
-                    <span>Ma Junior Entreprise</span></a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'demarchage' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
-                    <span>Démarchage</span></a>
-            </li>
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Connexion</span>
-                </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                    aria-expanded="true" aria-controls="pageautres">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Autres</span>
-                </a>
-                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                        
-                        <a class="collapse-item" >Notifications</a>    
-                    </div>
-                </div>
-            </li>
-            <!-- Heading -->
-            
-
-                        
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
+                aria-expanded="true" aria-controls="pageautres">
+                
+                <span>Autres</span>
+            </a>
+            <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
+                    
+                    <a class="collapse-item" >Notifications</a>    
+                </div>
 
-        </ul>
-        <!-- End of Sidebar -->
+            </div>
+            
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" >
+                
+                <span>Signaler un problème</span></a>
+        </li>
+        <!-- Heading -->
+        
+
+                    
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Sidebar Toggler (Sidebar) -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">

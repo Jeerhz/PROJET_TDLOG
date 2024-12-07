@@ -22,6 +22,7 @@ from .widgets import SelectSearch
 from datetime import date
 from datetime import timedelta
 import os
+from django.db.models import Q
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
@@ -555,6 +556,12 @@ class Member(AbstractUser):
             return AddMember(form, kwargs["files"])
         else:
             return AddMember(form)
+        
+    def missions_suivis(self):
+        etudes = Etude.objects.filter(Q(responsables=self) | Q(responsable=self)).distinct().order_by('numero')
+        count = etudes.count()
+        return {"etudes": etudes, "count": count}
+        
 
     def modifyForm(instance):
         return AddMember(instance=instance)
@@ -1605,14 +1612,12 @@ class RDM(models.Model):
     def __str__(self):
         current_year = timezone.now().year
         current_year_last_two_digits = current_year % 100
-        initials = self.eleve.first_name[0] + self.eleve.last_name[0]
+        initials =  self.eleve.last_name[0] + self.eleve.first_name[0]
         return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
 
     def ref(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
         initials = self.eleve.first_name[0] + self.eleve.last_name[0]
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
+        return f"{self.etude.ref()}rdm-{initials}"
     
     def dernier_avenant(self):
         avenant = AvenantRDM.objects.filter(
@@ -2201,7 +2206,13 @@ class AddEtude(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True, **kwargs):
-        max_numero = Etude.objects.aggregate(max_numero=Max("numero"))["max_numero"]
+        if "expediteur" in kwargs:
+            je = kwargs["expediteur"].je
+
+            max_numero = Etude.objects.filter(je=je).aggregate(max_numero=Max("numero"))["max_numero"]
+        else:
+            print("pas je")
+            max_numero = Etude.objects.aggregate(max_numero=Max("numero"))["max_numero"]
         if max_numero is None:
             max_numero = 0
 
@@ -2213,7 +2224,7 @@ class AddEtude(forms.ModelForm):
             etude.numero = max_numero + 1
 
         if commit:
-            
+            etude.save()
             if "responsables" in self.cleaned_data:
                 etude.responsables.set(self.cleaned_data["responsables"])
             etude.save()

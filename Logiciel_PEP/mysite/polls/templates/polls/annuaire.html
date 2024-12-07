@@ -65,17 +65,16 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ user_je.logo.url }}">
+            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
             
 
             <!-- Divider -->
             <hr class="sidebar-divider my-md-0">
 
-            
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="{% url 'index' %}">
-                    <i class="fas fa-fw fa-house-user"></i>
+                <a class="nav-link text-center" href="{% url 'index' %}">
+                    
                     <span>ACCUEIL</span></a>
             </li>
             
@@ -89,20 +88,21 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'annuaire' %}">
-                    <i class="fas fa-book-open" ></i>
+                    
                     <span>Annuaire</span></a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    
                     <span>Stat/KPI</span></a>
             </li>
 
+            
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
                     aria-expanded="true" aria-controls="pagetresorerie">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Trésorerie</span>
                 </a>
                 <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -118,22 +118,23 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'je_detail' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Ma Junior Entreprise</span></a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'demarchage' %}">
-                    <i class="fas fa-fw fa-cog" ></i>
+                    
                     <span>Démarchage</span></a>
             </li>
+            
 
             <hr class="sidebar-divider">
 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
                     aria-expanded="true" aria-controls="pageconnexion">
-                    <i class="fas fa-fw fa-folder"></i>
+                   
                     <span>Connexion</span>
                 </a>
                 <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -149,7 +150,7 @@
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
                     aria-expanded="true" aria-controls="pageautres">
-                    <i class="fas fa-fw fa-folder"></i>
+                    
                     <span>Autres</span>
                 </a>
                 <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -158,7 +159,14 @@
                         
                         <a class="collapse-item" >Notifications</a>    
                     </div>
+
                 </div>
+                
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" >
+                    
+                    <span>Signaler un problème</span></a>
             </li>
             <!-- Heading -->
             
@@ -400,7 +408,9 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                    <div class="container mt-4">
+                <div class="container mt-4" style="margin: 10px auto !important;">
+
+
 
                         <!-- Boutons pour basculer entre les annuaires -->
                         <ul class="nav nav-pills mb-3" style="background-color: #f8f9fc; display: flex; justify-content: center;" id="pills-tab" role="tablist">
@@ -549,9 +559,10 @@
                         </div>
 
                         <!-- Onglet Annuaire Études -->
-                        <div class="tab-pane fade shadow" id="pills-etudes">
+                        <div class="tab-pane fade shadow" id="pills-etudes" style="width: 100%; margin: 0 auto;">
                             <div class="card">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        
                                     
                                     <!-- Barre de recherche -->
                                     <a style="color: black;" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
