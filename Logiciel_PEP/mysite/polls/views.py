@@ -4688,7 +4688,7 @@ def nouveau_BV(request, id_etude, id_eleve):
 
 def generer_BV(request, id_bv):
     if request.user.is_authenticated:
-        try:
+        #try:
             bv = BV.objects.get(id=id_bv)
             eleve = bv.eleve
             je = eleve.je
@@ -4708,7 +4708,7 @@ def generer_BV(request, id_bv):
             feuille["G4"] = eleve.first_name + " " + eleve.last_name
             feuille["G6"] = eleve.adress
             feuille["G8"] = eleve.code_postal + " " + eleve.country
-            feuille["I3"] = datetime.now().strftime("%d %B %Y")
+            feuille["I3"] = datetime.datetime.now().strftime("%d %B %Y")
             feuille["C13"] = etude.ref()
             ref_rdm = bv.ref_rdm()
             if ref_rdm:
@@ -4737,11 +4737,11 @@ def generer_BV(request, id_bv):
             )
 
             return response
-        except ValueError as ve:
+        #except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
             return HttpResponse(template.render(context, request))
-        except:
+        #except:
             liste_messages = Message.objects.filter(
                 destinataire=request.user,
                 read=False,
