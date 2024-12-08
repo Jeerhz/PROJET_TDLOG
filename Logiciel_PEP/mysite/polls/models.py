@@ -1143,7 +1143,7 @@ class Facture(models.Model):
     def ref(self):
         if self.date_emission:
             if isinstance(self.date_emission, str):
-                current_year = datetime.strptime(self.date_emission, "%Y-%m-%d").year
+                current_year = datetime.datetime.strptime(self.date_emission, "%d/%m/%Y").year
             else:
                 current_year = self.date_emission.year
             current_year_last_two_digits = current_year % 100

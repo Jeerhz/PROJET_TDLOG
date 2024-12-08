@@ -1587,7 +1587,7 @@ def upload_students(request):
                 try:
                     # Decode the uploaded file and read its content with correct delimiter
                     data = csv_file.read().decode("utf-8")
-                    print(1)
+                    
                     # Use csv.Sniffer to detect the delimiter
                     sniffer = csv.Sniffer()
                     detected_dialect = sniffer.sniff(data)
@@ -1807,7 +1807,7 @@ def update_etude(request, id):
 
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
-        try:
+        #try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
             print(facture.ref())
@@ -1866,7 +1866,7 @@ def generate_facture_pdf(request, id_facture):
             response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
             return response
 
-        except Exception as e:
+        #except Exception as e:
             return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
     else:
@@ -3252,9 +3252,8 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             ref_avenant  = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
             
 
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_test.docx")
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_026.docx")
             template = DocxTemplate(template_path)
-
             
             date = timezone.now().date()
             annee = date.strftime("%Y")
@@ -3285,13 +3284,12 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             output = BytesIO()
             template.save(output)
             output.seek(0)
-            filename = f"RDM_{ref_avenant}.docx"
-            name="testavenant.docx"
+            filename = f"{ref_avenant}.docx"
             response = FileResponse(
                 output,
                 content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
-            response["Content-Disposition"] = f'attachment; filename="{name}"'
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
         
         #except:
@@ -3340,10 +3338,10 @@ def editer_acf(request, id_etude, id_eleve):
                 "nom": nom,
                 "prenom": prenom,
                 "etude_titre": etude_titre,
-                "adresse": adresse,
-                "code_postal": code_postal,
-                "ville": ville,
-                "portable": portable,
+                "adresse": eleve.adress,
+                "code_postal": eleve.code_postal,
+                "ville": eleve.ville,
+                "portable": eleve.phone_number,
             }
 
             env = Environment()

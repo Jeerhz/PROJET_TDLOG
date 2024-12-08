@@ -408,7 +408,7 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                <div class="container mt-4" style="margin: 10px auto !important;">
+                <div class="card-header" style="padding-top: 20; padding-bottom: 0;">
 
 
 
@@ -431,10 +431,30 @@
                         <!-- Onglet Annuaire Étudiant -->
                         <div class="tab-pane fade show active shadow" id="pills-etudiant">
                             <div class="card">
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
                                 
                                 <a style="color: black;" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+
+                                <form method="post" action="{% url 'upload_students' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                                    {% csrf_token %}
+                                    <div class="d-flex align-items-center mb-3">
+                                        <!-- File input -->
+                                        <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                                            <label for="csv_file" style="cursor: pointer;">
+                                                Choisir un csv (colonnes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss)
+                                            </label>
+                                            <input type="file" id="csv_file" name="csv_file" accept=".csv" style="display: none;">
+                                        </div>
+                                    
+                                        <!-- Submit button -->
+                                        <button type="submit" style="border: black;">Ajouter le csv</button>
+                                    </div>
+                                </form>
+    
+                                <!-- Column order instructions -->
+                                
                             </div>
+                            
                             </div>
                             
                             
@@ -463,31 +483,37 @@
                             </div>
                             <!-- Improved form with basic styling -->
                                                         <!-- Improved form with input and button side by side -->
-                            <form method="post" action="{% url 'upload_students' %}" enctype="multipart/form-data" class="form-upload mt-4">
-                                {% csrf_token %}
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <!-- File input -->
-                                    <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-control" style="max-width: 500px; border:10px;">
-                                    <!-- Submit button -->
-                                    <button type="submit" class="btn btn-primary" style="margin:15px; ">Ajouter</button>
-                                </div>
-                            </form>
-
-                            <!-- Column order instructions -->
-                            <div class="mt-3 text-muted" style="margin: Opx; margin-left: 15px;">
-                                <small>Ordre des colonnes avec les noms exactes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss; csv delimiter ';'</small>
-                            </div>
+                            
 
                         </div>
                 
                         <!-- Onglet Annuaire Client -->
                         <div class="tab-pane fade shadow" id="pills-client">
                             <div class="card">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
                                     
                                     <!-- Barre de recherche -->
                                     <a style="color: black;" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                                    <form method="post" action="{% url 'upload_clients' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                                        {% csrf_token %}
+                                        <div class="d-flex align-items-center mb-3">
+                                            <!-- File input -->
+                                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                                                <label for="csv_file" style="cursor: pointer;">
+                                                    Choisir un csv (colonnes : nom, raison sociale, rue, ville, code postal, pay)
+                                                </label>
+                                                <input type="file" id="csv_file" name="csv_file" accept=".csv" style="display: none;">
+                                            </div>
+                                        
+                                            <!-- Submit button -->
+                                            <button type="submit" style="border: black;">Ajouter le csv</button>
+                                        </div>
+                                    </form>
                                 </div>
+
+
+
+
                             </div>
                                 <div class="table-responsive" style="background-color: #FFFFFF;">
                                     <table class="table table-borderless table-hover">
@@ -511,18 +537,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <form method="post" action="{% url 'upload_clients' %}" enctype="multipart/form-data" class="form-upload mt-4">
-                                    {% csrf_token %}
-                                    <div class="d-flex align-items-center gap-2 mb-3">
-                                        <!-- File input -->
-                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-control" style="max-width: 500px; border:10px;">
-                                        <!-- Submit button -->
-                                        <button type="submit" class="btn btn-primary" style="margin:15px; ">Ajouter</button>
-                                    </div>
-                                </form>
-                                <div class="mt-3 text-muted" style="margin: Opx; margin-left: 15px;">
-                                    <small>Ordre des colonnes avec les noms exactes : nom, raison sociale, rue, ville, code postal, pays; csv delimiter ';'</small>
-                                </div>
+                                
                         </div>
 
                         <!-- Onglet Annuaire Représentants -->
