@@ -553,6 +553,75 @@ def page_detail_etude(request):
     return HttpResponse(template.render(context, request))
 
 
+def load_user_messages_and_notifications(user):
+    # Load messages
+    liste_messages = list(
+        Message.objects.filter(
+            destinataire=user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+    )
+    message_count = len(liste_messages)
+
+    # Load notifications
+    all_notifications = list(user.notifications.order_by("-date_effet"))
+    notification_list = [notif for notif in all_notifications if notif.active()]
+    notification_count = len(notification_list)
+
+    return liste_messages, message_count, notification_list, notification_count
+
+
+def compute_total_retribution(phases):
+    total_retribution = 0
+    for phase in phases:
+        assignations = phase.assignationjeh_set.all()  # Prefetched
+        retr_totale = sum(a.retribution_brute_totale() for a in assignations)
+        nb_JEHs = sum(a.nombre_JEH for a in assignations)
+        # Add remaining JEH retribution
+        retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
+        total_retribution += retr_totale
+    return total_retribution
+
+
+def compute_phase_assignations(phases):
+    assignations_by_eleve = {}
+    assignations_for_each_eleve = {}
+    for phase in phases:
+        for assignment in phase.assignationjeh_set.all():
+            eleve_id = assignment.eleve_id
+            if eleve_id not in assignations_by_eleve:
+                assignations_by_eleve[eleve_id] = {"JEH_count": 0, "montant_total": 0.0}
+                assignations_for_each_eleve[eleve_id] = []
+            assignations_by_eleve[eleve_id]["JEH_count"] += assignment.nombre_JEH
+            assignations_by_eleve[eleve_id]["montant_total"] += (
+                assignment.retribution_brute_totale()
+            )
+            assignations_for_each_eleve[eleve_id].append(assignment)
+    return assignations_by_eleve, assignations_for_each_eleve
+
+
+def compute_jeh_base_and_frais(
+    etude, bdc, etude_montant_total_phases, associations_phase
+):
+    # Compute JEH and frais depending on type_convention
+    if etude.type_convention == "Convention cadre":
+        bdc_id = bdc.id if bdc else None
+        bdc_phases = associations_phase.get(bdc_id, [])
+        bdc_montant_total_phases = sum(
+            (phase.montant_HT_par_JEH * phase.nb_JEH)
+            for phase in bdc_phases
+            if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        )
+        jeh_base = bdc_montant_total_phases if bdc else 0
+        frais_base = bdc.frais_dossier if bdc else 0
+    else:
+        # Fallback to etude-level data (already in memory from select_related)
+        jeh_base = etude_montant_total_phases
+        frais_base = etude.frais_dossier
+    return jeh_base, frais_base
+
+
 def details(request, modelName, iD):
     user = request.user
     if not user.is_authenticated:
@@ -562,25 +631,21 @@ def details(request, modelName, iD):
     user_je = user.je
     user_student = user.student
 
-    # Preload messages and notifications
-    liste_messages = list(
-        Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[:3]
-    )
-    message_count = len(liste_messages)
-    all_notifications = list(request.user.notifications.order_by("-date_effet"))
-    notification_list = [notif for notif in all_notifications if notif.active()]
-    notification_count = len(notification_list)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future_messages = executor.submit(load_user_messages_and_notifications, user)
 
-    model = apps.get_model(app_label="polls", model_name=modelName)
-    instance = get_object_or_404(model, id=iD)
+        # Loading model instance
+        model = apps.get_model(app_label="polls", model_name=modelName)
+        instance = get_object_or_404(model, id=iD)
 
+        liste_messages, message_count, notification_list, notification_count = (
+            future_messages.result()
+        )
     if modelName == "Message":
         instance.read = True
         instance.save()
+
+    # Une modif
 
     # Initialize context variables
     etude, phases, factures, intervenants, client, eleve = (
@@ -593,12 +658,12 @@ def details(request, modelName, iD):
     )
 
     if modelName == "Etude":
-        # Optimize: preload all needed relations
-        # Note: Adjust the prefetch and select_related calls based on your actual model structure.
+        # Preload all needed relations
         etude = (
             Etude.objects.select_related(
                 "resp_qualite",
                 "responsable",
+                "responsable__student",
                 "client",
                 "client_interlocuteur",
                 "client_representant_legale",
@@ -611,7 +676,11 @@ def details(request, modelName, iD):
                         Prefetch(
                             "assignationjeh_set",
                             queryset=AssignationJEH.objects.select_related("eleve"),
-                        )
+                        ),
+                        "modif_duree",
+                        "modif_debut",
+                        "modif_jeh",
+                        "suppression",
                     ),
                 ),
                 Prefetch(
@@ -630,7 +699,7 @@ def details(request, modelName, iD):
                 ),
                 "responsable__student",
                 "resp_qualite__student",
-                # Add this line to prefetch representants from the client
+                "responsables",
                 Prefetch("client__representants", queryset=Representant.objects.all()),
             )
             .get(id=iD)
@@ -642,44 +711,37 @@ def details(request, modelName, iD):
         factures = etude.factures.all()
         poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
 
-        # Intervenants: distinct students that have assignations in phases
+        # Intervenants
         intervenants = Student.objects.filter(
             assignationjeh__phase__etude=etude
         ).distinct()
 
-        # Preload AssociationFactureBDC for all factures to avoid repeated lookups
-        # Store them in a dict for O(1) access
+        # Preload AssociationFactureBDC
         associations_bdc = {
-            asso.facture_id: asso
+            asso.facture.numero_facture: asso.bon_de_commande
             for asso in AssociationFactureBDC.objects.filter(
                 facture__in=factures
             ).select_related("bon_de_commande")
         }
 
-        # Compute facture values without additional queries
-        # Avoid calling methods that do queries inside the loop. Instead, compute directly.
-        for facture in factures:
-            facture.cached_montant_HT = facture.montant_HT()
-            facture.cached_montant_TVA = facture.montant_TVA()
-            facture.cached_montant_TTC = facture.montant_TTC()
+        # Preload BDC and associations
+        bons = list(
+            BonCommande.objects.filter(etude=etude)
+            .prefetch_related(
+                Prefetch(
+                    "associations_phase",
+                    queryset=AssociationPhaseBDC.objects.select_related("phase"),
+                )
+            )
+            .order_by("numero")
+        )
 
-        poste = "Cheffe de Projet" if respo.titre == "Mme" else "Chef de Projet"
-        phases = etude.phases.all()
+        associations_phase = {
+            bdc.id: [assoc.phase for assoc in bdc.associations_phase.all()]
+            for bdc in bons
+        }
 
-        intervenants = Student.objects.distinct()
-
-        # Compute total retribution from phases (all data already prefetched)
-        def compute_total_retribution(phases):
-            total_retribution = 0
-            for phase in phases:
-                assignations = phase.assignationjeh_set.all()  # Prefetched
-                retr_totale = sum(a.retribution_brute_totale() for a in assignations)
-                nb_JEHs = sum(a.nombre_JEH for a in assignations)
-                # Add remaining JEH retribution
-                retr_totale += (phase.nb_JEH - nb_JEHs) * phase.montant_HT_par_JEH * 0.6
-                total_retribution += retr_totale
-            return total_retribution
-
+        # Compute total retribution
         etude_retributions_totales = compute_total_retribution(phases)
 
         if etude.client:
@@ -699,7 +761,7 @@ def details(request, modelName, iD):
             default=0,
         )
         etude_fin = (
-            etude.debut + datetime.timedelta(weeks=duree)
+            (etude.debut + datetime.timedelta(weeks=duree))
             if (etude.debut and duree)
             else None
         )
@@ -732,28 +794,36 @@ def details(request, modelName, iD):
             (f for f in factures if f.type_facture == f.Status.SOLDE), None
         )
 
-        # Determine BDC (if any) from cached dict
-        asso_fac = associations_bdc.get(facture.id)
-        bdc = asso_fac.bon_de_commande if asso_fac else None
+        # Update factures cached values
+        for facture in factures:
+            bdc = associations_bdc.get(facture.numero_facture)
+            jeh_base, frais_base = compute_jeh_base_and_frais(
+                etude, bdc, etude_montant_total_phases, associations_phase
+            )
 
-        # Compute JEH and frais depending on type_convention
-        if etude.type_convention == "Convention cadre":
-            # Use preloaded bdc data
-            jeh_base = etude_montant_total_phases if bdc else 0
-            frais_base = bdc.frais_dossier if bdc else 0
-        else:
-            # Fallback to etude-level data (already in memory from select_related)
-            jeh_base = etude_montant_total_phases
-            frais_base = etude.frais_dossier
+            fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
+            fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
 
-        fac_JEH = jeh_base * (facture.pourcentage_JEH / 100.0)
-        fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
+            facture.cached_montant_HT = fac_JEH + fac_frais
+            facture.cached_montant_TVA = (
+                facture.TVA_per * facture.cached_montant_HT
+            ) / 100.0
+            facture.cached_montant_TTC = (
+                (facture.TVA_per + 100) * facture.cached_montant_HT
+            ) / 100.0
 
-        facture.cached_montant_HT = fac_JEH + fac_frais
-        facture.cached_montant_TVA = facture.TVA_per * facture.cached_montant_HT / 100.0
-        facture.cached_montant_TTC = (
-            (facture.TVA_per + 100) * facture.cached_montant_HT / 100.0
+        # Compute assignations for each eleve
+        assignations_by_eleve, assignations_for_each_eleve = compute_phase_assignations(
+            phases
         )
+
+        for eleve in intervenants:
+            data = assignations_by_eleve.get(
+                eleve.id, {"JEH_count": 0, "montant_total": 0.0}
+            )
+            eleve.precomputed_JEH_count = data["JEH_count"]
+            eleve.precomputed_montant_total = data["montant_total"]
+            eleve.assignations_for_etude = assignations_for_each_eleve.get(eleve.id, [])
 
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
 
@@ -786,14 +856,15 @@ def details(request, modelName, iD):
         "notification_count": notification_count,
     }
 
-    # Add context for Etude
     if etude is not None:
         etude_convention = (
             etude.conventions_etude.first()
             if etude.type_convention == "Convention d'étude"
             else etude.conventions_cadre.first()
         )
-       
+
+        intervenant_form = AddIntervenant(intervenant_queryset=intervenants)
+
         context.update(
             {
                 "attribute_list": attribute_list,
@@ -818,18 +889,16 @@ def details(request, modelName, iD):
                 "intervenants": intervenants,
                 "phase_form": AddPhase(),
                 "facture_form": AddFacture(),
-                "intervenant_form": AddIntervenant(),
+                "intervenant_form": intervenant_form,
                 "etude_form": AddEtude(instance=etude),
                 "representants_interlocuteurs": representants_interlocuteurs,
                 "representants_legaux": representants_legaux,
                 "members": members,
                 "poste": poste,
+                "bons": bons,
+                "associations_phase": associations_phase,
             }
         )
-        if etude.type_convention == "Convention cadre":
-            context["bons"] = list(
-                BonCommande.objects.filter(etude=etude).order_by("numero")
-            )
 
     if client is not None:
         context.update(
@@ -3126,22 +3195,36 @@ def editer_rdm(request, id_etude, id_eleve):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def editer_avenant_rdm_ce(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        #try:
-            etude = Etude.objects.get(id=id_etude)
-            eleve = Student.objects.get(id=id_eleve)
-            num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
-            date_fin = request.POST.get("date_fin")
-            causes = request.POST.get("causes_avenants")
-            ref_ba = request.POST.get("ref_ba")
-            ref_rdm = request.POST.get("ref_rdm")
-            dico_mois = {1: "janvier",  2: "février",   3: "mars",   4: "avril", 5: "mai", 6: "juin", 7: "juillet", 8: "août", 9: "septembre",10: "octobre",  11: "novembre",  12: "décembre" }
+        # try:
+        etude = Etude.objects.get(id=id_etude)
+        eleve = Student.objects.get(id=id_eleve)
+        num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
+        date_fin = request.POST.get("date_fin")
+        causes = request.POST.get("causes_avenants")
+        ref_ba = request.POST.get("ref_ba")
+        ref_rdm = request.POST.get("ref_rdm")
+        dico_mois = {
+            1: "janvier",
+            2: "février",
+            3: "mars",
+            4: "avril",
+            5: "mai",
+            6: "juin",
+            7: "juillet",
+            8: "août",
+            9: "septembre",
+            10: "octobre",
+            11: "novembre",
+            12: "décembre",
+        }
 
-            annee_fin, mois_fin,jour_fin = date_fin[0:4],date_fin[5:7],date_fin[8:10]
-            
-            date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
-            ref_ce=etude.convention()
+        annee_fin, mois_fin, jour_fin = date_fin[0:4], date_fin[5:7], date_fin[8:10]
+
+        date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
+        ref_ce = etude.convention()
 
             # num avenant
             # ref avenant 
@@ -3164,7 +3247,7 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             ref_avenant  = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
             
 
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_026.docx")
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_test.docx")
             template = DocxTemplate(template_path)
 
             
@@ -3218,7 +3301,6 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
     return HttpResponse(template.render(context, request))
 
 
-
 def editer_acf(request, id_etude, id_eleve):
     if request.user.is_authenticated:
         try:
@@ -3236,8 +3318,9 @@ def editer_acf(request, id_etude, id_eleve):
             date = timezone.now().date()
             annee = date.strftime("%Y")
 
-
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx")
+            template_path = os.path.join(
+                conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx"
+            )
             template = DocxTemplate(template_path)
 
             context = {
@@ -3251,7 +3334,11 @@ def editer_acf(request, id_etude, id_eleve):
                 "annee": annee,
                 "nom": nom,
                 "prenom": prenom,
-                "etude_titre": etude_titre,"adresse":adresse,"code_postal":code_postal,"ville":ville,"portable":portable
+                "etude_titre": etude_titre,
+                "adresse": adresse,
+                "code_postal": code_postal,
+                "ville": ville,
+                "portable": portable,
             }
 
             env = Environment()
