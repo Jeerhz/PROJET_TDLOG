@@ -631,8 +631,6 @@ def details(request, modelName, iD):
     user_je = user.je
     user_student = user.student
 
-    # We will load messages/notifications in parallel with another task (if needed)
-    # Since loading messages and notifications is independent, we can parallelize this.
     with ThreadPoolExecutor(max_workers=2) as executor:
         future_messages = executor.submit(load_user_messages_and_notifications, user)
 
@@ -701,6 +699,7 @@ def details(request, modelName, iD):
                 ),
                 "responsable__student",
                 "resp_qualite__student",
+                "responsables",
                 Prefetch("client__representants", queryset=Representant.objects.all()),
             )
             .get(id=iD)
