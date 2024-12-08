@@ -549,6 +549,7 @@
                                                         </div>
                                                     </div>
                                                  </div>
+                                                <td style="text-align: left;" > {% if facture.etude.client %} <span href="{% url 'details' modelName='Client' iD=facture.etude.client.id %}"> {{facture.etude.client}} </span>{% endif %}</td>
                                                 <td style="text-align: left; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
                                                 <td style="text-align: left;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
                                                 

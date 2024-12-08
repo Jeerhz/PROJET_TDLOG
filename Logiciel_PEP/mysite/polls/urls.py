@@ -18,6 +18,9 @@ urlpatterns = [
     path("client/<int:pk>/delete/", views.delete_client, name='delete_client'),
     path("etude/<int:pk>/delete/", views.delete_etude, name='delete_etude'),
     path("etude/<int:pk>/<int:iD>/delete_phase/", views.delete_phase, name='delete_phase'),
+    path("etude/<int:pk>/<int:iD>/delete_avenant_ce/", views.delete_avenant_ce, name='delete_avenant_ce'),
+
+
     path("etude/<int:pk>/<int:iD>/edit_phase/", views.edit_phase, name='edit_phase'),
     path("phase/<int:pk>/<int:etude_id>/delete_assignation/", views.delete_assignation, name='delete_assignation'),
     path("etude/<int:pk>/<int:iD>/delete_facture/", views.delete_facture, name='delete_facture'),
@@ -72,6 +75,8 @@ urlpatterns = [
     path('ajouter_representant/<int:id_client>/', views.ajouter_representant, name='ajouter_representant'),
     path('supprimer_representant/<int:id_representant>/', views.supprimer_representant, name='supprimer_representant'),
     path("send_mail_demarchage", views.send_mail_demarchage, name="send_mail_demarchage"),
+    
+    path("facture_redirect/<int:fac_id>", views.facture_redirect, name="facture_redirect"),
     path("factures/", views.factures, name="factures"),
     path("BVs/", views.BVs, name="BVs"),
     path("create_mail_template/", views.create_mail_template, name="create_mail_template"),

@@ -1199,14 +1199,7 @@ class Facture(models.Model):
         self.etude = etude
         # self.etude = etude
         # self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
-        if not self.numero_facture:
-            current_year = date.today().year
-            je_act = etude.je
-            max_numero = Facture.objects.filter(
-                date_emission__year=current_year,  # Filter by year
-                etude__je=je_act,  # Filter by je_act
-            ).aggregate(Max("numero_facture"))["numero_facture__max"]
-            self.numero_facture = max_numero + 1
+        
         super(Facture, self).save(*args, **kwargs)
 
 

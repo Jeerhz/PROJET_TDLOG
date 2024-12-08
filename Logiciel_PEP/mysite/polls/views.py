@@ -25,6 +25,8 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
+from django.db.models import Sum, Max
+
 
 
 from io import BytesIO
@@ -1341,6 +1343,44 @@ def delete_phase(request, pk, iD):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def delete_avenant_ce(request, pk, iD):
+    if request.user.is_authenticated:
+        # Fetch messages and notifications
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")[:3]
+        message_count = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).count()
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+
+        avenant_ce = get_object_or_404(AvenantConventionEtude, pk=pk)
+        etude = get_object_or_404(Etude, pk=iD)
+
+        context = {
+            "etude": etude,
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": len(notification_list),
+            "modelName": "Etude",
+            "iD": etude.id,
+        }
+        print(1)
+        if request.method == "POST":
+            print(2)
+            avenant_ce.delete()
+            return redirect("details", modelName="Etude", iD=etude.id)
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
 
 def delete_assignation(request, pk, etude_id):
     if request.user.is_authenticated:
@@ -1411,7 +1451,7 @@ def delete_facture(request, pk, iD):
 
         if request.method == "POST":
             facture.delete()
-            return redirect("details", modelName="Etude", iD=etude.id)
+            return redirect("factures")
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -1810,7 +1850,6 @@ def generate_facture_pdf(request, id_facture):
         #try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
-            print(facture.ref())
             etude = facture.etude
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by("numero")
@@ -1859,7 +1898,7 @@ def generate_facture_pdf(request, id_facture):
 
             # Generate PDF from the full HTML
             pdf_file = HTML(string=html_string).write_pdf()
-            date_emission = datetime.strptime(facture.date_emission, "%d/%m/%Y").year
+            date_emission = datetime.datetime.strptime(facture.date_emission, "%d/%m/%Y").year
             refFA = f"FA{date_emission % 100}{facture.numero_facture:03d}"
             # Serve the PDF as a download
             response = HttpResponse(pdf_file, content_type="application/pdf")
@@ -1942,7 +1981,7 @@ def update_facture(request, iD):
                 facture = Facture.objects.get(id=facture_id)
                 facture.facturé = True
                 client = instance.client
-                facture.save()
+                facture.save(id_etude = facture.etude.id)
                 context = {"etude": instance, "client": client}
                 template = loader.get_template("polls/facpdf.html")
             except Facture.DoesNotExist:
@@ -2982,7 +3021,7 @@ def editer_convention_cadre(request, iD):
 
 def editer_pv(request, iD, type):
     if request.user.is_authenticated:
-        try:
+        #try:
             instance = Etude.objects.get(id=iD)
 
             convention = instance.convention()
@@ -3033,7 +3072,7 @@ def editer_pv(request, iD, type):
             else:
                 raise ValueError("Pas encore de pv pour les CCs")
 
-            date = datetime.now()
+            date = datetime.datetime.now()
 
             date_2 = timezone.now().date()
             mois = [
@@ -3102,10 +3141,10 @@ def editer_pv(request, iD, type):
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
 
-        except ValueError as ve:
+        #except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        except:
+        #except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
@@ -5544,10 +5583,42 @@ def supprimer_representant(request, id_representant):
         context = {}
     return HttpResponse(template.render(context, request))
 
+def facture_redirect(request,fac_id):
+    if request.user.is_authenticated:
+        print("redirect fonc")
+        user_je = request.user.je
+        facture = Facture.objects.get(id=fac_id)
+        facture.date_emission = date.today() 
+        
+
+        if not facture.numero_facture:
+            current_year = date.today().year
+            je_act = facture.etude.je
+            max_numero = Facture.objects.filter(
+                date_emission__year=current_year, 
+                etude__je=je_act,
+                date_emission__isnull=False  
+            ).aggregate(Max("numero_facture"))["numero_facture__max"]
+            facture.numero_facture = max_numero + 1
+
+        facture.save(id_etude = facture.etude.id)
+
+
+
+        factures = Facture.objects.all().order_by("-numero_facture")
+        # pas optimale mais faudrait potentiellement crééer un champs je
+        filtered_factures = [facture for facture in factures if facture.je() == user_je]
+        template = loader.get_template("polls/factures.html")
+        context = {"factures": filtered_factures}
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 def factures(request):
     if request.user.is_authenticated:
         user_je = request.user.je
+        
         factures = Facture.objects.all().order_by("-numero_facture")
         # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]

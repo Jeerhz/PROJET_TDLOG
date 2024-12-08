@@ -1910,24 +1910,32 @@
 
                                 <!-- Début de l'Onglet Documents -->
                                 <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
-                                    <div class="container mt-3">
+                                    <div class="card-body">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <!-- Link to the left -->
+                                                            <a href="{% url 'editer_devis' iD %}">
+                                                                <i class="fas fa-download mr-2"></i>Générer le Devis
+                                                            </a>
                                                         
-                                                                                                       
-                                                        <a href="{% url 'editer_devis' iD %}" class="{% if etude.devis_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}" ><i class="fas fa-download mr-2"></i>Générer le Devis</a>
-                                                        <p style="margin: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature|FormatDate }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
+                                                            <!-- Form to the right -->
+                                                            {% if etude_devis %}
+                                                                <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude_devis.id %}" class="d-flex align-items-center gap-2">
+                                                                    {% csrf_token %}
+                                                                    
+                                                                    <input id="new_date" type="date" name="new_date" value="{{ devis.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px;; margin-right: 10px;; margin-left: 50px;">
+                                                                    
+                                                                    <button type="submit" class="btn btn-light">Modifier la date</button>
+                                                                </form>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature|FormatDate }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
 
-                                                        {% if etude_devis %}
-                                                        <form method="POST" action="{% url 'signature_document' model='Devis' iD=etude_devis.id %}">
-                                                            {% csrf_token %}
-                                                            
-                                                            <input  type="date" name="new_date" value="{{ devis.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
-                                                            <button type="submit" class="btn btn-primary">Modifier date </button>
-                                                        </form>
-                                                        {% endif %}
+                                                        
                                                     </div>
                                                 </div>
                                             </div>    
@@ -1936,20 +1944,27 @@
                                                     <div class="card-body">
                                                         {% if etude.type_convention == "Convention d'étude" %}
                                                             
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <!-- Link to the left -->
+                                                                <a href="{% url 'editer_convention' iD %}">
+                                                                    <i class="fas fa-download mr-2"></i>Générer la Convention d'Étude
+                                                                </a>
+                                                            
+                                                                {% if etude_convention %}
+                                                                <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
+                                                                    {% csrf_token %}
+                                                                    <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
+                                                                    <button type="submit" class="btn btn-light">Modifier la date </button>
+    
+                                                                </form>
+                                                            
+                                                                {% endif %}
+                                                            </div>
                                                             
                                                             
-                                                            <a href="{% url 'editer_convention' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention d'Étude</a>
-                                                            
-                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
+                                                            <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
 
-                                                            {% if etude_convention %}
-                                                            <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}">
-                                                                {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
-                                                                <button type="submit" class="btn btn-primary">Modifier date </button>
- 
-                                                            </form>
-                                                            {% endif %}
+                                                            
                                                         
                                                         
                                                         {% elif etude.type_convention == "Convention cadre" %}
@@ -2092,46 +2107,10 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">Avenant Convention d'Étude</h5>
-                                                        {% if etude_convention.avenants %}
-                                                        <table class="table">
-                                                            <tbody>
-                                                                {% for avenant in etude_convention.avenants_modification.all %}
-                                                                <tr margin-bottom: 20px;>
-                                                                    <td style="color: #000;">{{avenant}}</td>
-                                                                    <td><a href="{% url 'editer_avenant_ce' avenant.id %}" class="btn btn-primary"><i class="fas fa-download"></i></a></td>
-                                                                    <td><button type="button" class="btn btn-primary"><i class="fas fa-times"></i></button></td>
-                                                                </tr>
-                                                                <tr padding-bottom: 10px;>
-                                                                    <td colspan="3">
-                                                                        <p>
-                                                                            {% if avenant.date_signature %}
-                                                                                Avenant signé le {{ avenant.date_signature|FormatDate }}
-                                                                            {% else %}
-                                                                                Non signé
-                                                                            {% endif %}
-                                                                        </p>
-                                                                        
-                                                                        
-                                                                            <form method="POST" action="{% url 'signature_document' model='AvCE' iD=avenant.id %}" class="form-inline">
-                                                                                {% csrf_token %}
-                                                                                <label for="new_date_{{ avenant.id }}" class="mr-2">Modifier la date:</label>
-                                                                                <input type="date" name="new_date" value="{{ avenant.date_signature|date:'Y-m-d' }}" class="form-control mr-2" id="new_date_{{ avenant.id }}">
-                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
-                                                                            </form>
-                                                                        
-                                                                    </td>
-                                                                </tr>
-                                                            
-                                                                {% endfor %}
-                                                            </tbody>
-                                                        </table>
-                                                                
-                                                        <hr>
-                                                        {% endif %} 
-                                                        <p class="card-text">Ajouter un avenant à la convention d'étude</p>
-                                                        <!-- Bouton et formulaire pour ajouter un avenant CE -->
-                                                        <a class="btn btn-primary" data-toggle="modal" data-target="#avenantCEModal">Ajout avenant CE</a>
+                                                        <a data-toggle="modal" data-target="#avenantCEModal" style="padding-bottom: 10px;"><i class="fas fa-plus"></i> Ajouter un avenant à la Convention d'Étude</a>
+                                                        <br>
+                                                        
+
                                                         <div class="modal fade" id="avenantCEModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelAvenantCE" aria-hidden="true">
                                                             <div class="modal-dialog" role="document">
                                                                 <div class="modal-content">
@@ -2169,6 +2148,69 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                        {% if etude_convention.avenants %}
+                                                        {% for avenant in etude_convention.avenants_modification.all %}
+                                                        <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <!-- Link to the left -->
+                                                            <a style="color: #000;" href="{% url 'editer_avenant_ce' avenant.id %}">
+                                                                <i class="fas fa-download"></i> {{avenant}}
+                                                            </a>
+                                                            <button type="button"  style="margin-left: 10px; margin-right: 10px;" data-toggle="modal"
+                                                            data-target="#deleteModalAvenantCE{{ avenant.id }}"><i class="fas fa-times"></i></button>
+
+                                                            <div class="modal fade" id="deleteModalAvenantCE{{ avenant.id }}" tabindex="-1" role="dialog"
+                                                                aria-labelledby="deleteModalAvenantCE{{ avenant.id }}" aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title" id="deleteModalAvenantCE{{ avenant.id }}">Supprimer l'avenant</h5>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            Êtes-vous sûr de vouloir supprimer cet avenant ?
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                            <form id="deleteAvenantCEForm" method="POST" action="{% url 'delete_avenant_ce' avenant.id etude.id %}">
+                                                                                {% csrf_token %}
+                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        
+                                                            <!-- Form to the right -->
+                                                            
+                                                            <form method="POST" action="{% url 'signature_document' model='AvCE' iD=avenant.id %}" class="d-flex align-items-center gap-2">
+                                                                {% csrf_token %}
+                                                                
+                                                                <input id="new_date" type="date" name="new_date" value="{{ avenant.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
+                                                                
+                                                                <button type="submit" class="btn btn-light">Modifier la date</button>
+                                                            </form>
+                                                            
+                                                        </div>
+
+
+                                                        <p style="margin-top: 10px;">
+                                                            {% if avenant.date_signature %}
+                                                                Avenant signé le {{ avenant.date_signature|FormatDate }}
+                                                            {% else %}
+                                                                Non signé
+                                                            {% endif %}
+                                                        </p>
+
+                                                        {% endfor %}
+                                                        {% endif %}
+
+                                                        
+                                                        
+                                                        
                                                         <!-- Fin formaulaire avenant CE -->
                                                     </div>
                                                 </div>
@@ -2220,15 +2262,15 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                            <a href="{% url 'editer_acf_client' iD %}"  class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer l'Accord de confidentialité client</a>
-                                                            <br>
-                                                            <br>
-                                                            <a href="{% url 'editer_pv' iD=iD type='PVRI'%}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
-
-                                                            <br>
+                                                            <a href="{% url 'editer_acf_client' iD %}"  ><i class="fas fa-download mr-2"></i>Générer l'Accord de confidentialité client</a>
                                                             <br>
                                                             
-                                                            <a href="{% url 'editer_pv' iD=iD type='PVRF'%}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
+                                                            <a href="{% url 'editer_pv' iD=iD type='PVRI'%}" ><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
+
+                                                            <br>
+                                                            
+                                                            
+                                                            <a href="{% url 'editer_pv' iD=iD type='PVRF'%}" ><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
 
                                                             
 
@@ -2543,7 +2585,7 @@
                                             <div class="input-group w-100 m-0">
                                                 <div class="row m-0 w-100">
                                                     <div class="input-group-prepend">
-                                                        <span class="input-group-text">Ajouter intervenant</span>
+                                                        <span class="input-group-text">Ajouter un intervenant</span>
                                                     </div>
                                                     <input type="text" class="form-control bg-light border-0" placeholder="Chercher un élève..."
                                                         aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
@@ -3015,7 +3057,7 @@
                                                     </tbody>
                                                 </table>
                                                 <!-- Fin de la table-->
-                                                <a class="btn btn-primary" target="_blank" href="{% url 'factures' %}">Générer la Facture</a>
+                                                <a class="btn btn-primary" target="_blank" href="{% url 'facture_redirect' fac_id=facture.id %}">Générer la Facture</a>
                                             </div>
                                         <br>
                                         {% endfor %}    
@@ -3113,7 +3155,7 @@
                                                     </tbody>
                                                 </table>
                                                 <!-- Fin de la table-->
-                                                <a class="btn btn-primary" target="_blank" href="{% url 'factures' %}">Générer la Facture</a>
+                                                <a class="btn btn-primary" target="_blank" href="{% url 'facture_redirect' fac_id=facture.id %}">Générer la Facture</a>
                                                 
                                             </div>
                                                                                 
@@ -3724,7 +3766,7 @@
                             
                             <!-- Onglet Annuaire Études -->
                             <div class="tab-pane fade" id="pills-missions_réalisées">
-                                <div class="container p-4">
+                                <div class="card-body">
                                     <div class="row mb-3 d-flex justify-content-center">
                                         <div class="col-5">
                                             
@@ -3776,7 +3818,7 @@
                             </div>
                             {% if eleve.is_member %}
                             <div class="tab-pane fade" id="pills-missions_suivies">
-                                <div class="container p-4">
+                                <div class="card-body">
                                     <div class="row mb-3 d-flex justify-content-center">
                                         <div class="col-5">
                                             
