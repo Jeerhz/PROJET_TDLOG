@@ -1587,6 +1587,7 @@ def upload_students(request):
                 try:
                     # Decode the uploaded file and read its content with correct delimiter
                     data = csv_file.read().decode("utf-8")
+                    print(1)
                     # Use csv.Sniffer to detect the delimiter
                     sniffer = csv.Sniffer()
                     detected_dialect = sniffer.sniff(data)
@@ -1598,16 +1599,19 @@ def upload_students(request):
                     header = next(reader, None)
 
                     # Check if header matches the expected columns
-                    if len(header) != 11:
+                    if len(header) != 12:
+                        
                         return redirect("upload_students")
 
                     # Iterate through each row in the CSV
                     for row in reader:
                         if len(row) != 12:
+                            print("len(row)",len(row))
                             continue
 
                         # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
                         try:
+                            
                             (
                                 titre,
                                 first_name,
@@ -1639,6 +1643,7 @@ def upload_students(request):
                                 promotion=promo.strip(),
                                 numero_ss=numero_ss.strip(),
                             )
+                            
                         except Exception as e:
                             print(f"Error processing row {row}: {e}")
                 except Exception as e:
@@ -3199,32 +3204,32 @@ def editer_rdm(request, id_etude, id_eleve):
 def editer_avenant_rdm_ce(request, id_etude, id_eleve):
     if request.user.is_authenticated:
         # try:
-        etude = Etude.objects.get(id=id_etude)
-        eleve = Student.objects.get(id=id_eleve)
-        num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
-        date_fin = request.POST.get("date_fin")
-        causes = request.POST.get("causes_avenants")
-        ref_ba = request.POST.get("ref_ba")
-        ref_rdm = request.POST.get("ref_rdm")
-        dico_mois = {
-            1: "janvier",
-            2: "février",
-            3: "mars",
-            4: "avril",
-            5: "mai",
-            6: "juin",
-            7: "juillet",
-            8: "août",
-            9: "septembre",
-            10: "octobre",
-            11: "novembre",
-            12: "décembre",
-        }
+            etude = Etude.objects.get(id=id_etude)
+            eleve = Student.objects.get(id=id_eleve)
+            num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
+            date_fin = request.POST.get("date_fin")
+            causes = request.POST.get("causes_avenants")
+            ref_ba = request.POST.get("ref_ba")
+            ref_rdm = request.POST.get("ref_rdm")
+            dico_mois = {
+                1: "janvier",
+                2: "février",
+                3: "mars",
+                4: "avril",
+                5: "mai",
+                6: "juin",
+                7: "juillet",
+                8: "août",
+                9: "septembre",
+                10: "octobre",
+                11: "novembre",
+                12: "décembre",
+            }
 
-        annee_fin, mois_fin, jour_fin = date_fin[0:4], date_fin[5:7], date_fin[8:10]
+            annee_fin, mois_fin, jour_fin = date_fin[0:4], date_fin[5:7], date_fin[8:10]
 
-        date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
-        ref_ce = etude.convention()
+            date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
+            ref_ce = etude.convention()
 
             # num avenant
             # ref avenant 
