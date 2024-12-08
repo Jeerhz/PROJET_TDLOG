@@ -584,7 +584,7 @@
                                         {% for etude in etude_list %}
                                             <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
                                                 <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
-                                                <td class="text-left"> {{ etude.client|slice:":30" }} </td>
+                                                <td class="text-left">{% if etude.client %} {{ etude.client|slice:":30" }} {% else %} aucun client {% endif %} </td>
                                                 <td class="text-left"> {{ etude.montant_HT_total|FormatNombres }} </td>
                                                 <td class="text-right" style="padding-right: 30px;"> {{ etude.responsable }} </td>
                                             </tr>

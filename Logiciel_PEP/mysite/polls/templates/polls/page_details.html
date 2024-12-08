@@ -594,8 +594,8 @@
                                 {% for phase in etude.phases.all %}
                                 <h6>Phase {{ phase.numero }}</h6>
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH:</strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
-                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution:</strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
                                 </ul>
                                 {% endfor %}
                             </div>
@@ -842,9 +842,9 @@
                                                     </div>
                                                     <script>
                                                         var etudeData = {
-                                                            marge_JE: "{{ etude_marge_JE|FormatNombres }}",
-                                                            charges_URSSAF: "{{ etude_charges_URSSAF|FormatNombres }}",
-                                                            retributions_totales: "{{ etude_retributions_totales|FormatNombres }}"
+                                                            marge_JE: "{{ etude.marge_JE|FormatNombres }}",
+                                                            charges_URSSAF: "{{ etude.charges_URSSAF|FormatNombres }}",
+                                                            retributions_totales: "{{ etude.retributions_totales|FormatNombres }}"
                                                         };
                                                     </script>
                                                     <div class="text-center small">
@@ -2633,7 +2633,7 @@
                                                         <div class="bg-white py-2 collapse-inner rounded">
                                                             <table class="table table-striped">
                                                                 <thead>
-                                                                    <th>Selectionner</th>
+                                                                    <th style="color: #000;"><strong>Selectionner</strong> </th>
                                                                     <th>Phase</th>
                                                                     <th>Nombre JEH</th>
                                                                     <th>Pourcentage</th>
@@ -2653,7 +2653,12 @@
                                                                     {% endfor %}
                                                                 </tbody>
                                                             </table>
-                                                            <div><button type="submit" class="btn btn-success">Générer le BV </a></div>
+                                                            <div>
+                                                                <button type="submit" class="btn btn-success d-flex align-items-center" style="gap: 0.5rem; padding: 0.5rem;">
+                                                                    <i class="fas fa-plus"></i>
+                                                                    <span>Générer le BV</span>
+                                                                </button>
+                                                            </div>                                                                
 
                                                         </div>
                                                     </form>

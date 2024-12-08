@@ -34,12 +34,7 @@ var myPieChart = new Chart(ctx, {
       caretPadding: 10,
     },
     legend: {
-      display: true,  // Display the legend
-      position: 'bottom',  // You can also use 'top', 'left', or 'right'
-      labels: {
-        boxWidth: 20,  // Size of the box next to the label
-        padding: 15,  // Space between labels
-      },
+      display: false,  // Disable the default Chart.js legend
     },
     cutoutPercentage: 80,
   },

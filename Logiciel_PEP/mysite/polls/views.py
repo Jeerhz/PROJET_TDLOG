@@ -793,7 +793,7 @@ def details(request, modelName, iD):
             if etude.type_convention == "Convention d'étude"
             else etude.conventions_cadre.first()
         )
-
+       
         context.update(
             {
                 "attribute_list": attribute_list,
@@ -2513,6 +2513,149 @@ def editer_convention(request, iD):
 
                 model = ConventionEtude
                 nom_doc = "Convention_Etude_"
+
+                css_planning = """
+                .table_planning {
+                    background-color:white;
+                    border-collapse: collapse;
+                    margin: 0px;
+                    padding: 8px;
+                    text-align: left;
+                    border: 2px solid black;
+                    width: 1700px;
+                    height: auto;
+                }
+
+                .th_planning, .td_planning {
+                    padding: 8px;
+                    border-top: 1px solid #ddd;
+                    position: relative;
+                    font-size: 20px;
+                }
+                .bar_container_plan {
+                    position: relative;
+                    height: 30px;
+                }
+
+                .bar_plan {
+                    height: 100%;
+                    background-color: rgb(48, 56, 84);
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                }
+
+                .bar_plan .label_plan {
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    font-size: 20px;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                }
+
+                .semaines_plan {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 20px;
+                    color: #777;
+                    margin-bottom: 0px;
+                }
+                .semaines_plan span {
+                    flex: 1; /* Equal width for each span */
+                    text-align: right; /* Center text within each span */
+                }
+                /* FIN PLANNING */
+                """
+                html_template = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Invoice</title>
+                    <style>
+                        {css}
+                    </style>
+                </head>
+                <body style="background-color:white;">
+                    <table class="table_planning">
+                        <thead>
+                            <tr>
+                                <th class="th_planning" style="font-size: 30px;">{duree_semaine} {semaine_s}</th>
+                                <th class="th_planning"></th>
+                                <th class="th_planning">
+                                    <div class="semaines_plan">
+                                        {semaines}
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+                """
+
+                semaines_html = ""
+                for i in range(instance.duree_semaine()):
+                    semaines_html += f"<span>{i + 1}</span>"
+
+                rows_html = ""
+                for phase in phases:
+                    width = (phase.duree_semaine / instance.duree_semaine()) * 100
+                    left = (phase.debut_relatif / instance.duree_semaine()) * 100
+                    duree_semaine = instance.duree_semaine()
+                    semaine_s = "semaine" if duree_semaine == 1 else "semaines"
+                    semaine_label = "semaine" if phase.duree_semaine == 1 else "semaines"
+                    JEH_label = "JEH" if phase.nb_JEH == 1 else "JEHs"
+                    row = f"""
+                    <tr>
+                        <td class='td_planning'> <strong>Phase {phase.numero} :</strong> {phase.duree_semaine} {semaine_label}</td>
+                        <td class='td_planning' style='text-align: center;'>{phase.nb_JEH} {JEH_label}</td>
+                        <td class='td_planning' style='width: 70%;'>
+                            <div class='bar_container_plan'>
+                                <div class='bar_plan' style='width: {width}%; left: {left}%;'>
+                                    <div class='label_plan'></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    """
+                    rows_html += row
+
+                semaine_s = "semaine" if duree_semaine == 1 else "semaines"
+                final_html = html_template.format(
+                    debut=instance.debut,
+                    fin=instance.fin(),
+                    rows=rows_html,
+                    css=css_planning,
+                    semaines=semaines_html,
+                    duree_semaine=duree_semaine,
+                    semaine_s=semaine_s,
+                )
+
+                output_dir = "polls/static/polls/img"
+                os.makedirs(output_dir, exist_ok=True)
+                os.chdir(output_dir)
+                filename = "tab_planning.png"
+                time1.sleep(1)
+                hti = Html2Image()
+                hti.size = (1720, 60 + 64 * instance.nb_phases())
+                hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
+                image_path = os.path.join(conf_settings.BASE_DIR, "tab_planning.png")
+                time1.sleep(1)
+                image_path = os.path.join(conf_settings.BASE_DIR, "tab_planning.png")
+                with open(image_path, "rb") as img_file:
+                    image_data = img_file.read()
+
+                image_stream = BytesIO(image_data)
+                image = InlineImage(template, image_stream, width=Mm(173))
+                time1.sleep(1)
+            
+
+
+
             elif instance.type_convention == "Convention cadre":
                 template_path = os.path.join(
                     conf_settings.BASE_DIR,
@@ -2603,6 +2746,7 @@ def editer_convention(request, iD):
             )  # width is in millimetres
 
             context = {
+                "planning_pre": image,
                 "etude": instance,
                 "phases": phases,
                 "nb_phases": nb_phases,
@@ -2964,7 +3108,7 @@ def editer_rdm(request, id_etude, id_eleve):
             output = BytesIO()
             template.save(output)
             output.seek(0)
-            filename = f"RDM_{ref_m}.docx"
+            filename = f"{ref_d}.docx"
             response = FileResponse(
                 output,
                 content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -3020,7 +3164,7 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             ref_avenant  = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
             
 
-            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_test.docx")
+            template_path = os.path.join( conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_026.docx")
             template = DocxTemplate(template_path)
 
             
@@ -3516,6 +3660,7 @@ def editer_devis(request, iD):
             image_stream = BytesIO(image_data)
             image = InlineImage(template, image_stream, width=Mm(173))
             time1.sleep(1)
+
             logo_client = InlineImage(
                 template, client.logo, width=Mm(20)
             )  # width is in millimetres
