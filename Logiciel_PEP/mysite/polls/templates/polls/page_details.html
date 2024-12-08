@@ -662,7 +662,7 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 text-center">
                             <h2 style="font-size: 22px;color: #000;font-weight: 400;"> <span style="font-weight: 600;" >{{ etude.ref }} </span> {% if etude.client %} - {{ etude.client.nom_societe }} {% endif %} : <span>{{ etude.titre }} </span> </h2>
-                            <h5 style="font-size: 16px;">{{ etude.problematique}}</h5>
+                            <h5 style="font-size: 16px;">{{ etude.problematique}} </h5>
                         </div>
                         <div class="card-body">
                             <!-- Navigation Tabs -->
@@ -1760,8 +1760,9 @@
                                 <div class="tab-pane fade" id="bons" role="tabpanel" aria-labelledby="bons-tab">
                                     <div class="card mb-3">
                                         <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
-                                    
-                                            <button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-plus mr-2"></i>Ajouter un bon de commande</button>
+                                            <a data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC">
+                                                <i class="fas fa-plus mr-2"></i>Ajouter un bon de commande
+                                            </a>
                                             {% if bons %}
                                             {% for bon in bons %}
                                             <br>
@@ -1826,7 +1827,7 @@
                                                             <div class="form-group row mb-3">
                                                                 <label for="numeroBDC" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
                                                                 <div class="col-sm-8 justify-content-center">
-                                                                    <input type="number" name="numero_bdc" class="form-control" id="numeroBDC" >
+                                                                    <input type="number" name="numero_bdc" class="form-control" id="numeroBDC" required>
                                                                 </div>
                                                             </div> 
                                                             <div class="form-group row mb-3">
@@ -1856,13 +1857,13 @@
                                                             <div style="padding-top: 20px;" class="form-group row mb-3">
                                                                 <label for="periode_de_garantieBDC" class="col-sm-4 col-form-label">Période de garantie :</label>
                                                                 <div class="col-sm-8 justify-content-center">
-                                                                    <input type="number" name="periode_de_garantie_bdc" class="form-control" id="periode_de_garantieBDC" value="{{bon.periode_de_garantie}}">
+                                                                    <input type="number" name="periode_de_garantie_bdc" class="form-control" id="periode_de_garantieBDC" value="{{bon.periode_de_garantie}}" required>
                                                                 </div>
                                                             </div> 
                                                             <div class="form-group row mb-3">
                                                                 <label for="acompte_pourcentageBDC" class="col-sm-4 col-form-label">Pourcentage de l'acompte :</label>
                                                                 <div class="col-sm-8 justify-content-center">
-                                                                    <input type="number" name="acompte_pourcentage_bdc" class="form-control" id="acompte_pourcentageBDC" value="{{bon.acompte_pourcentage}}">
+                                                                    <input type="number" name="acompte_pourcentage_bdc" class="form-control" id="acompte_pourcentageBDC" value="{{bon.acompte_pourcentage}}" required>
                                                                 </div>
                                                             </div> 
                                                             
@@ -1933,7 +1934,7 @@
                                                             {% endif %}
                                                         </div>
                                                         
-                                                        <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le devis a été envoyé le {{ etude_devis.date_signature|FormatDate }} {% else %} Le devis n'a pas été envoyé {% endif %}  {% else %} le devis n'a pas été édité {% endif %}</p>
+                                                        <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_devis %} {% if etude_devis.date_signature %} Le Devis a été envoyé le {{ etude_devis.date_signature|FormatDate }} {% else %} Le Devis n'a pas été envoyé {% endif %}  {% else %} Le Devis n'a pas été édité {% endif %}</p>
 
                                                         
                                                     </div>
@@ -1950,7 +1951,7 @@
                                                                     <i class="fas fa-download mr-2"></i>Générer la Convention d'Étude
                                                                 </a>
                                                             
-                                                                {% if etude_convention %}
+                                                                
                                                                 <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
                                                                     {% csrf_token %}
                                                                     <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
@@ -1958,31 +1959,40 @@
     
                                                                 </form>
                                                             
-                                                                {% endif %}
+                                                                
                                                             </div>
                                                             
                                                             
-                                                            <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CE a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CE n'a pas été signé {% endif %}  {% else %} La CE n'a pas été édité {% endif %}</p>
+                                                            <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La Convention d'Étude a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La Convention d'Étude n'a pas été signé {% endif %}  {% else %} La Convention d'Étude n'a pas été édité {% endif %}</p>
 
                                                             
                                                         
                                                         
                                                         {% elif etude.type_convention == "Convention cadre" %}
+                                                            
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <!-- Link to the left -->
+                                                                <a href="{% url 'editer_convention_cadre' iD %}">
+                                                                    <i class="fas fa-download mr-2"></i>Générer la Convention Cadre
+                                                                </a>
+                                                            
+                                                                
+                                                                <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
+                                                                    {% csrf_token %}
+                                                                    <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
+                                                                    <button type="submit" class="btn btn-light">Modifier la date </button>
+
+                                                                </form>
+                                                            
+                                                                
+                                                            </div>
+                                                            
+                                                            
+                                                            <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La Convention Cadre a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La Convention Cadre n'a pas été signé {% endif %}  {% else %} La Convention Cadre n'a pas été édité {% endif %}</p>
+
                                                                 
                                                             
-                                                            <p class="card-text">{% if etude.ce_editable %}Préparez la convention cadre pour cette étude.{% else %}Informations manquantes pour générer la convention cadre.{% endif %}</p>
-                                                            <a href="{% url 'editer_convention_cadre' iD %}" class="{% if etude.ce_editable %}btn btn-primary{% else %}btn btn-secondary{% endif %}"><i class="fas fa-download mr-2"></i>Générer la Convention Cadre</a>
                                                             
-                                                            <p style="margin: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La CC a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La CC n'a pas été signé {% endif %}  {% else %} La CC n'a pas été édité {% endif %}</p>
-      
-                                                            {% if etude_convention %}
-                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}">
-                                                                {% csrf_token %}
-                                                                <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control mb-2">
-                                                                <button type="submit" class="btn btn-primary">Modifier date </button>
- 
-                                                            </form>
-                                                            {% endif %}
 
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
@@ -2219,39 +2229,65 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">Bons de commande</h5>
+                                                        <h5>Bons de Commandes</h5>
+                                                        
+                                                        
                                                         {% if bons %}
-                                                        <table class="table">
-                                                            <tbody>
-                                                                {% for bon in bons %}
-                                                                <tr> 
-                                                                    <td>Bon n°{{bon.numero}}</td>
-                                                                    <td>
-
-                                                                        
-                                                                            <form method="POST" action="{% url 'signature_document' model='BDC' iD=bon.id %}" class="form-inline">
-                                                                                {% csrf_token %}
-                                                                                <input type="date" name="new_date" value="{{ bon.debut|date:'Y-m-d' }}" class="form-control mr-2" id="new_date_{{ bon.id }}">
-                                                                                <button type="submit" class="btn btn-primary">Modifier</button>
-                                                                            </form>
-                                                                        
-                                                                    
-                                                                    </td>
-                                                                    <td><a href="{% url 'editer_bon' bon.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i></a></td>
-                                                                    <td><button class="btn btn-danger bouton-suppression" data-objectname="Bon n°{{bon.numero}}" data-href="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}" data-toggle="modal" data-target="#suppressionModal"><i class="fas fa-times"></i></button></td>
-                                                                </tr>
-                                                                <tr padding-bottom: 10px;>
-                                                                    <td colspan="3" style="text-align: center;">
-                                                                        {% if bon.debut %}BDC signé le {{bon.debut}}{% else %}Non signé{% endif %}
-                                                                    </td>
-                                                                </tr>
+                                                        {% for bon in bons %}
+                                                        <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <!-- Link to the left -->
+                                                                <a style="color: #000;" href="{% url 'editer_bon' bon.id %}">
+                                                                    <i class="fas fa-download"></i> {{bon}}
+                                                                </a>
+                                                                <button type="button"  style="margin-left: 10px; margin-right: 10px;" data-toggle="modal"
+                                                                data-target="#deleteModalBon2{{ bon.id }}"><i class="fas fa-times"></i></button>
+    
+                                                                <div class="modal fade" id="deleteModalBon2{{ bon.id }}" tabindex="-1" role="dialog"
+                                                                    aria-labelledby="deleteModalBon2{{ bon.id }}" aria-hidden="true">
+                                                                    <div class="modal-dialog" role="document">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title" id="deleteModalBon2{{ bon.id }}">Supprimer le bon</h5>
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                    <span aria-hidden="true">&times;</span>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                Êtes-vous sûr de vouloir supprimer ce bon ?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                <form id="deleteAvenantBon2Form" method="POST" action="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}">
+                                                                                    {% csrf_token %}
+                                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+    
                                                             
+                                                                <!-- Form to the right -->
                                                                 
-                                                                {% endfor %}
-                                                            </tbody>
-                                                        </table>
-                                                        <hr>
+                                                                <form method="POST" action="{% url 'signature_document' model='BDC' iD=bon.id %}" class="d-flex align-items-center gap-2">
+                                                                    {% csrf_token %}
+                                                                    
+                                                                    <input id="new_date" type="date" name="new_date" value="{{ bon.debut|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
+                                                                    
+                                                                    <button type="submit" class="btn btn-light">Modifier la date</button>
+                                                                </form>
+                                                                
+                                                            </div>
+    
+    
+                                                            <p style="margin-top: 10px;">
+                                                                {% if bon.debut %}BDC signé le {{bon.debut|FormatDate}}{% else %}Non signé{% endif %}
+                                                            </p>
+    
+                                                        {% endfor %}
                                                         {% endif %}
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -2279,7 +2315,9 @@
                                             </div>
                                             
                                             
+                                        
                                         </div>
+                                        
                                     </div>
                                         
                                     <br>
@@ -3938,7 +3976,7 @@
                                                     <div class="modal-body">
                                                         <div class="form-group">
                                                             <label for="ba_nombre">Numéro du Bulletin d'Adhésion</label>
-                                                            <input type="number" class="form-control" id="ba_nombre" name="ba_nombre">
+                                                            <input type="number" class="form-control" id="ba_nombre" name="ba_nombre" required>
                                                         </div>
                                                 
                                                     </div>

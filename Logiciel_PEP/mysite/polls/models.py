@@ -23,6 +23,7 @@ from datetime import date
 from datetime import timedelta
 import os
 from django.db.models import Q
+import math
 
 
 IMAGE_STORAGE = FileSystemStorage(location="/static/polls/img")
@@ -891,19 +892,25 @@ class Etude(models.Model):
 
     def liste_doc(self):
         return []
+    
+    
 
     def duree_semaine(self):
-        phases = Phase.objects.filter(etude=self)
-        if phases.exists():
-            duree = max(
-                phase.duree_semaine + phase.debut_relatif
-                for phase in phases
-                if phase.duree_semaine is not None and phase.debut_relatif is not None
-            )
-            return duree
+        if self.fin_etude and self.debut:
+            return math.ceil((self.fin_etude - self.debut).days/7)
+            
         else:
-            return 0
-
+            phases = Phase.objects.filter(etude=self)
+            if phases.exists():
+                duree = max(
+                    phase.duree_semaine + phase.debut_relatif
+                    for phase in phases
+                    if phase.duree_semaine is not None and phase.debut_relatif is not None
+                )
+                return duree
+            else:
+                return 0
+    
     def fin(self):
         if self.fin_etude:
             return self.fin_etude
@@ -913,6 +920,8 @@ class Etude(models.Model):
             return self.fin_etude
         else:
             return None
+
+    
 
     def fin_test(self):
         if self.debut and self.duree_semaine():
@@ -1288,9 +1297,8 @@ class Devis(models.Model):
         super(Devis, self).save(*args, **kwargs)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}D"
+        
+        return f"{self.etude.ref()}D"
 
     def signe(self):
         return self.date_signature is not None
@@ -1332,9 +1340,8 @@ class PV(models.Model):
         super(Devis, self).save(*args, **kwargs)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}D"
+        
+        return f"{self.etude.ref()}D"
 
     def signe(self):
         return self.date_signature is not None
@@ -1348,9 +1355,8 @@ class ConventionEtude(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}ce"
+  
+        return f"{self.etude.ref():02d}ce"
 
     def signe(self):
         return self.date_signature is not None
@@ -1364,9 +1370,8 @@ class ConventionCadre(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}cc"
+        
+        return f"{self.etude.ref()}cc"
 
     def signe(self):
         return self.date_signature is not None
@@ -1380,9 +1385,8 @@ class AvenantRuptureConventionEtude(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.etude.numero}acc{self.numero}"
+        
+        return f"{self.etude.ref()}acc{self.numero}"
 
 
 class AvenantConventionEtude(models.Model):
@@ -1400,10 +1404,9 @@ class AvenantConventionEtude(models.Model):
     avenant_delais = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
+        
         return (
-            f"{current_year_last_two_digits}e{self.ce.etude.numero}ac{self.numero:02d}"
+            f"{self.etude.ref()}ac{self.numero:02d}"
         )
 
     def save(self, *args, **kwargs):
@@ -1563,7 +1566,8 @@ class BonCommande(models.Model):
         return str(f"{self.etude.ref()}bc{self.numero}")
 
     def __str__(self):
-        return str(self.numero).zfill(3)
+        return str(f"{self.etude.ref()}bc{self.numero}")
+
 
     def delete(self, *args, **kwargs):
         all_assoc_phase = self.associations_phase.all()
@@ -1594,10 +1598,9 @@ class RDM(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
+        
         initials = self.eleve.last_name[0] + self.eleve.first_name[0]
-        return f"{current_year_last_two_digits}e{self.etude.numero:02d}rdm-{initials}"
+        return f"{self.etude.ref()}rdm-{initials}"
 
     def ref(self):
         initials = self.eleve.first_name[0] + self.eleve.last_name[0]
@@ -1630,9 +1633,8 @@ class AvenantRDM(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        current_year = timezone.now().year
-        current_year_last_two_digits = current_year % 100
-        return f"{current_year_last_two_digits}e{self.rdm.etude.numero:02d}ardm{self.numero}"
+        
+        return f"{self.etude.ref()}ardm{self.numero}"
 
     def save(self, *args, **kwargs):
         if self.numero is None:

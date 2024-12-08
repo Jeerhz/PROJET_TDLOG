@@ -1095,8 +1095,12 @@ def object_suppression(request, model_name, object_id):
         try:
             model = apps.get_model(app_label="polls", model_name=model_name)
             object = model.objects.get(id=object_id)
+            if model_name=='BonCommande':
+                etude= object.etude
             # Attention checker la cohérence des JE
             object.delete()
+            if model_name=='BonCommande':
+                return redirect("details", modelName="Etude", iD=etude.id)
             return JsonResponse({"success": True})
         except:
             return JsonResponse(
@@ -2030,10 +2034,10 @@ def stat_KPI(request):
         end_date = request.GET.get("end_date")
 
         if start_date and end_date:
-            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").replace(
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.UTC
             )
-            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").replace(
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.UTC
             )
         else:
@@ -2503,10 +2507,10 @@ def fetch_data(request):
         end_date = request.GET.get("end_date")
 
         if start_date and end_date:
-            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").replace(
+            start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.UTC
             )
-            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").replace(
+            end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.UTC
             )
         else:
@@ -2614,6 +2618,9 @@ def editer_convention(request, iD):
         try:
             instance = Etude.objects.get(id=iD)
             je = instance.je
+            if not instance.client:
+                raise ValueError("Définir un client")
+
             client = instance.client
             phases = Phase.objects.filter(etude=instance).order_by("numero")
             if instance.type_convention == "Convention d'étude":
@@ -2795,13 +2802,15 @@ def editer_convention(request, iD):
                 poste = "Cheffe de Projet"
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
-            representant_client = (
-                instance.client_interlocuteur
-            )  # le gars de la boite qui interagit avec la PEP
-            representant_legale_client = (
-                instance.client_representant_legale
-            )  # souvent le patron de l boite qui a le droit de signer les documents
-            # souvent le client a un representant a qui on a affaie mais cest le representant legale (champs dans client) qui signe les papiers
+            if instance.client_interlocuteur is None:
+                raise ValueError("Définir un interlocuteur client")
+            
+            if instance.client_representant_legale is None:
+                raise ValueError("Définir un responsable légale (client)")
+            
+
+            representant_client = instance.client_interlocuteur
+            representant_legale_client = instance.client_representant_legale
             date = timezone.now()
             annee = date.strftime("%Y")
             nb_JEH = instance.nb_JEH()
@@ -3029,14 +3038,24 @@ def editer_pv(request, iD, type):
                 raise ValueError("pas de convention")
 
             je = instance.je
+            if not instance.client:
+                raise ValueError("Pas de client")
             client = instance.client
             model = PV
             pv = model(etude=instance, type=type)
+            if not instance.client_resp:
+                raise ValueError("Pas de responsable client")
             client_resp = instance.client_representant_legale
 
             president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
 
+            
+            if not instance.responsable:
+                raise ValueError("Pas de suiveur")
+            
             respo = instance.responsable.student
+            if not instance.qualite:
+                raise ValueError("Pas de qualité")
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
 
@@ -3160,7 +3179,11 @@ def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
         try:
             etude = Etude.objects.get(id=id_etude)
+
             eleve = Student.objects.get(id=id_eleve)
+            if not etude.client:
+                raise ValueError("Définir un client")
+
             client = etude.client
             assignations = list(
                 AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
@@ -3228,6 +3251,10 @@ def editer_rdm(request, id_etude, id_eleve):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
+        except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+
         except:
             template = loader.get_template("polls/page_error.html")
             context = {
@@ -3348,7 +3375,10 @@ def editer_acf(request, id_etude, id_eleve):
         try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
-            client = etude.client.nom_societe
+            if not etude.client:
+                raise ValueError("Définir un client")
+            else:
+                client = etude.client.nom_societe
             president_titre = "M."
             president_prenom = "Thomas"
             president_nom = "Debray"
@@ -3398,6 +3428,10 @@ def editer_acf(request, id_etude, id_eleve):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
+        except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+
         except:
             template = loader.get_template("polls/page_error.html")
             context = {
@@ -3414,6 +3448,9 @@ def editer_acf_client(request, iD):
     if request.user.is_authenticated:
         try:
             etude = Etude.objects.get(id=iD)
+            if not etude.client:
+                raise ValueError("Définir un client")
+            
             client = etude.client
             je_president_titre = "M."
             je_president_prenom = "Thomas"
@@ -3490,6 +3527,10 @@ def editer_acf_client(request, iD):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
+        except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+
         except:
             template = loader.get_template("polls/page_error.html")
             context = {
@@ -3504,7 +3545,7 @@ def editer_acf_client(request, iD):
 
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
-        try:
+        #try:
             ba_nombre = request.POST.get("ba_nombre")
             eleve = Student.objects.get(id=id_eleve)
             je_president_nom = "Debray"
@@ -3525,7 +3566,7 @@ def editer_ba(request, id_eleve):
                 ba = model(eleve=eleve, number=int(ba_nombre))
                 ba.save()
 
-            year = datetime.now().year  # Get the current year
+            year = datetime.datetime.now().year  # Get the current year
             ref = f"{year}{int(ba_nombre):04d}"
             context = {
                 "etudiant": eleve,
@@ -3549,7 +3590,7 @@ def editer_ba(request, id_eleve):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        except:
+        #except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
@@ -3565,6 +3606,10 @@ def editer_devis(request, iD):
     if request.user.is_authenticated:
         try:
             instance = Etude.objects.get(id=iD)
+            if instance.client is None:
+                raise ValueError("Définir un client")
+
+
             client = instance.client
             template_path = os.path.join(
                 conf_settings.BASE_DIR, "polls/templates/polls/Devis_026.docx"
@@ -3573,24 +3618,22 @@ def editer_devis(request, iD):
             model = Devis
             if instance.get_devis():
                 devis = instance.get_devis()
-                print("devis existe deja")
+                
 
             else:
                 devis = model(etude=instance)
-                print("creation devis")
-
+                
             responsable = instance.responsable.student
             if responsable is None:
                 raise ValueError("Définir un suiveur")
-            if responsable is None:
-                raise ValueError("Définir un suiveur")
-
+            
             poste = "Chef de Projet"
             if responsable.titre == "Mme":
                 poste = "Cheffe de Projet"
-            qualite = instance.resp_qualite.student
-            if qualite is None:
+            
+            if instance.resp_qualite is None:
                 raise ValueError("Définir un qualité")
+            qualite = instance.resp_qualite.student
 
             ref_m = instance.ref()
             ref_d = ref_m + "pv"
@@ -3882,6 +3925,9 @@ def editer_avenant_ce(request, iD):
                 num_bud = 1
 
             etude = ce.etude
+            if etude.client is None:
+                raise ValueError("Définir un client")
+
             client = etude.client
             representant_legale_client = (
                 etude.client_representant_legale
@@ -3995,10 +4041,17 @@ def editer_bon(request, id_bon):
             bon = BonCommande.objects.get(id=id_bon)
             etude = bon.etude
             responsable = etude.responsable
+            if not etude.client:
+                raise ValueError("Définir un client")
             client = etude.client
 
             phases = bon.phases()
+            if not etude.client_interlocuteur:
+                raise ValueError("Définir un interlocuteur client")
+            
             repr = etude.client_interlocuteur
+            if not etude.client_representant_legale:
+                raise ValueError("Définir un responsable client")
             repr_legale = etude.client_representant_legale
             quali = etude.resp_qualite.student
             respo = etude.responsable.student
@@ -4043,6 +4096,10 @@ def editer_bon(request, id_bon):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
+        except ValueError as ve:
+            template = loader.get_template("polls/page_error.html")
+            context = {"error_message": str(ve)}
+
         except:
             template = loader.get_template("polls/page_error.html")
             context = {
@@ -4092,7 +4149,7 @@ def get_object_info(request, model_name, object_id):
 
 def modifier_bon_commande(request, id_etude, id_bon):
     if request.user.is_authenticated:
-        try:
+        #try:
             etude = Etude.objects.get(id=id_etude)
             if id_bon == 0:
                 bon = BonCommande(
@@ -4100,7 +4157,21 @@ def modifier_bon_commande(request, id_etude, id_bon):
                     remarque=request.POST["remarque_bdc"],
                     numero=request.POST["numero_bdc"],
                     objectifs=request.POST["objectifs_bdc"],
-                ).save()
+                    periode_de_garantie=request.POST["periode_de_garantie_bdc"],
+                    acompte_pourcentage=request.POST["acompte_pourcentage_bdc"],
+                    
+                )
+                bon.save()
+                
+                keys = request.POST.getlist("keys_bdc[]")
+                
+                values = request.POST.getlist("values_bdc[]")
+                if keys:
+                    cahier_des_charges = {
+                        key: value for key, value in zip(keys, values) if key
+                    }
+                    bon.cahier_des_charges = cahier_des_charges
+                bon.save()
             else:
                 bon = BonCommande.objects.get(id=id_bon)
                 bon.remarque = request.POST["remarque_bdc"]
@@ -4125,7 +4196,7 @@ def modifier_bon_commande(request, id_etude, id_bon):
                 bon.save()
 
             return redirect("details", modelName="Etude", iD=id_etude)
-        except:
+        #except:
             context = general_context(request)
             template = loader.get_template("polls/page_error.html")
             context["error_message"] = (
@@ -5204,7 +5275,7 @@ def signature_devis(request, iD):
                     devis.date = None
                 else:
                     try:
-                        date_signature = datetime.strptime(content, "%d/%m/%Y").date()
+                        date_signature = datetime.datetime.strptime(content, "%d/%m/%Y").date()
                     except ValueError:
                         # Return a message if the date format is invalid
                         return JsonResponse(
