@@ -777,16 +777,16 @@
                                     <div class="row mt-3">
 
 
-                                        <!--Card avec les informations générales (à droite du PieChart) -->
+                                        <!--Card avec les informations générales (à gauche du PieChart) -->
                                         <div class="col-lg-7 pt-4">
                                             <div class="card shadow">
                                                 <div class="card-body">
                                                     <div class="tab-content" id="etude-info">
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
-                                                            <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
-                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
-                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_HT_total|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude_fin %} {{ etude_fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
+                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
+                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
                                                             <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
@@ -805,8 +805,8 @@
                                                             <ul class="list-group list-group-flush">
                                                                 <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
                                                                 <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin_etude" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
-                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_HT_total }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
                                                                 <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
                                                                 <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
                                                                 <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
@@ -842,9 +842,9 @@
                                                     </div>
                                                     <script>
                                                         var etudeData = {
-                                                            marge_JE: "{{ etude.marge_JE|FormatNombres }}",
-                                                            charges_URSSAF: "{{ etude.charges_URSSAF|FormatNombres }}",
-                                                            retributions_totales: "{{ etude.retributions_totales|FormatNombres }}"
+                                                            marge_JE: "{{ etude_marge_JE|FormatNombres }}",
+                                                            charges_URSSAF: "{{ etude_charges_URSSAF|FormatNombres }}",
+                                                            retributions_totales: "{{ etude_retributions_totales|FormatNombres }}"
                                                         };
                                                     </script>
                                                     <div class="text-center small">
@@ -1161,7 +1161,7 @@
 
                                     {% for bon in bons %}
                                     <div style = "color: #000; text-align: center; margin-top: 20px;margin-bottom: 10px; font-size: 20px;">Bon de Commande {{bon.numero}}</div> 
-                                    {% for phase in bon.phases %}
+                                    {% for phase in bon.preloaded_phases %}
                                     <div class="card mb-3">
                                         <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
                                             <!-- Card -->
@@ -2247,7 +2247,8 @@
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <!-- Link to the left -->
                                                                 <a style="color: #000;" href="{% url 'editer_bon' bon.id %}">
-                                                                    <i class="fas fa-download"></i> {{bon}}
+                                                                    <i class="fas fa-download"></i> {{ etude_ref|add:"bc"|add:bon.numero }}
+
                                                                 </a>
                                                                 <button type="button"  style="margin-left: 10px; margin-right: 10px;" data-toggle="modal"
                                                                 data-target="#deleteModalBon2{{ bon.id }}"><i class="fas fa-times"></i></button>
@@ -2657,15 +2658,12 @@
                                                             
                                                             <a href="{% url 'editer_rdm' id_etude=iD id_eleve=eleve.id %}" ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
                                                             
-                                                            
-
-
-                                                            <!-- Cette fonctionnalité sera implémentée dans le futur -->
-                                                            <a data-toggle="modal" data-target="#avenantRDM_{{eleve.id}}">
-                                                                <i class="fas fa-plus"></i></i> Ajouter un avenant au RdM
+                                                            <a href="#" class="text-decoration-none text-primary font-weight-bold d-inline-flex align-items-center" 
+                                                            data-toggle="modal" data-target="#avenantRDM_{{eleve.id}}">
+                                                                <i class="fas fa-plus me-2"></i> Ajouter un avenant au RdM
                                                             </a>
-                                                            
-                                                                       
+
+                                                            <!-- Modal -->      
                                                             <div class="modal fade" id="avenantRDM_{{eleve.id}}" tabindex="-1" role="dialog" aria-labelledby="editAvenantRDM" aria-hidden="true">
                                                                 <div class="modal-dialog" role="document">
                                                                     <div class="modal-content">
@@ -3019,9 +3017,9 @@
                                         {% if bons %}
                                         {% for bon in bons %}
                                         <div style="text-align: center; color: #000;">Bon de Commande {{bon.numero}}</div>
-                                        {% if bon.factures %}
+                                        {% if bon.preloaded_factures %}
                                         
-                                            {% for facture in bon.factures %}
+                                            {% for facture in bon.preloaded_factures %}
                                         
                                             <div class="card border border-primary border-5 mb-3">
                                                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -3073,8 +3071,8 @@
                                                         </thead>
                                                     <tbody>
                                                         
-                                                        {% if bon.phases %}
-                                                        {% for phase in bon.phases %}
+                                                        {% if bon.preloaded_phases %}
+                                                        {% for phase in bon.preloaded_phases %}
                                                     <tr>
                                                         <th scope="row">Phase {{ phase.numero }}</th>
                                                         <td>{{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €</td>
