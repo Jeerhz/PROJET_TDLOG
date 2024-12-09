@@ -3030,7 +3030,7 @@ def editer_convention_cadre(request, iD):
 
 def editer_pv(request, iD, type):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = Etude.objects.get(id=iD)
 
             convention = instance.convention()
@@ -3038,12 +3038,12 @@ def editer_pv(request, iD, type):
                 raise ValueError("pas de convention")
 
             je = instance.je
-            if not instance.client:
+            if instance.client is None:
                 raise ValueError("Pas de client")
             client = instance.client
             model = PV
             pv = model(etude=instance, type=type)
-            if not instance.client_resp:
+            if not instance.client_representant_legale:
                 raise ValueError("Pas de responsable client")
             client_resp = instance.client_representant_legale
 
@@ -3054,7 +3054,7 @@ def editer_pv(request, iD, type):
                 raise ValueError("Pas de suiveur")
             
             respo = instance.responsable.student
-            if not instance.qualite:
+            if not instance.resp_qualite:
                 raise ValueError("Pas de qualité")
             qualite = instance.resp_qualite.student
             ref_m = instance.ref()
@@ -3160,10 +3160,10 @@ def editer_pv(request, iD, type):
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
 
-        #except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
-        #except:
+        except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
@@ -3269,7 +3269,7 @@ def editer_rdm(request, id_etude, id_eleve):
 
 def editer_avenant_rdm_ce(request, id_etude, id_eleve):
     if request.user.is_authenticated:
-        # try:
+        try:
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_eleve)
             num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
@@ -3358,7 +3358,7 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
         
-        #except:
+        except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
@@ -3545,7 +3545,7 @@ def editer_acf_client(request, iD):
 
 def editer_ba(request, id_eleve):
     if request.user.is_authenticated:
-        #try:
+        try:
             ba_nombre = request.POST.get("ba_nombre")
             eleve = Student.objects.get(id=id_eleve)
             je_president_nom = "Debray"
@@ -3590,7 +3590,7 @@ def editer_ba(request, id_eleve):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        #except:
+        except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
@@ -5049,73 +5049,85 @@ def modifier_recrutement_etude(request, iD):
         return HttpResponse(template.render(context, request))
 
 
+
 def modifier_etude(request, iD):
-    if request.user.is_authenticated:
-        etude = get_object_or_404(Etude, id=iD)
-        numero_ori = etude.numero
-        numero_list = list(
-            Etude.objects.filter(je=request.user.je).values_list("numero", flat=True)
-        )
-        numero_list.remove(numero_ori)
-        if request.method == "POST":
-            debut = request.POST.get("debut")
-            fin_etude = request.POST.get("fin")
-            frais_dossier = request.POST.get("frais_dossier")
-            remarque = request.POST.get("remarque")
-            numero = int(request.POST.get("numero"))
+    try:
+        if request.user.is_authenticated:
+            etude = get_object_or_404(Etude, id=iD)
+            numero_ori = etude.numero
+            
+            numero_list = list(
+                Etude.objects.filter(je=request.user.je).values_list("numero", flat=True)
+            )
+            
+            
+            
+            numero_list.remove(numero_ori)
+            
 
-            # Allow 'debut' to be null, and only update if it's provided
-            if debut:
-                etude.debut = debut
-            if fin_etude:
-                etude.fin_etude = fin_etude
+            if request.method == "POST":
+                debut = request.POST.get("debut")
+                fin_etude = request.POST.get("fin_etude")
+                frais_dossier = request.POST.get("frais_dossier")
+                remarque = request.POST.get("remarque")
+                numero = int(request.POST.get("numero"))
+          
+                if debut:
+                    etude.debut = debut
+                
+                if fin_etude:
+                    etude.fin_etude = fin_etude
+       
+                if frais_dossier:
+                    etude.frais_dossier = frais_dossier
 
-            if not numero:
+                if remarque:
+                    etude.remarque = remarque
+
+                
+                if numero:
+                    if numero not in numero_list:
+                        etude.numero = numero
+
+                    else:
+                        etude_deja_exist = Etude.objects.filter(numero=numero).first()
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
+                            },
+                            status=400,
+                        )
+                
+                
+                
+
+            
+                etude.save()
+
                 return JsonResponse(
-                    {"success": False, "message": "Le numéro est obligatoire."},
-                    status=400,
+                    {
+                        "success": True,
+                        "message": "Étude modifiée avec succès.",
+                        "redirect": reverse("details", args=["Etude", iD]),
+                    }
                 )
 
-            if numero:
-                if numero not in numero_list:
-                    etude.numero = numero
-
-                else:
-                    etude_deja_exist = Etude.objects.filter(numero=numero).first()
-                    return JsonResponse(
-                        {
-                            "success": False,
-                            "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
-                        },
-                        status=400,
-                    )
-
-            etude.frais_dossier = frais_dossier
-            etude.remarque = remarque
-            etude.save()
-
-            # Redirect to the details page with the correct modelName
+        else:
             return JsonResponse(
                 {
-                    "success": True,
-                    "message": "Étude modifiée avec succès.",
-                    "redirect": reverse("details", args=["Etude", iD]),
-                }
+                    "success": False,
+                    "message": "Vous devez être connecté pour modifier l'étude.",
+                },
+                status=401,
             )
 
-    else:
         return JsonResponse(
-            {
-                "success": False,
-                "message": "Vous devez être connecté pour modifier l'étude.",
-            },
-            status=401,
+            {"success": False, "message": "Invalid request method"}, status=400
         )
-
-    return JsonResponse(
-        {"success": False, "message": "Invalid request method"}, status=400
-    )
-
+    except Exception as e:
+        # Log the error and return a JSON response
+        return JsonResponse({"success": False, "message": f"Erreur interne: {e}"}, status=500)
 
 def verifier_etude(request, iD):
     if request.user.is_authenticated:

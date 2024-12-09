@@ -897,7 +897,11 @@ class Etude(models.Model):
 
     def duree_semaine(self):
         if self.fin_etude and self.debut:
-            return math.ceil((self.fin_etude - self.debut).days/7)
+            if isinstance(self.fin_etude, str):
+                self.fin_etude = datetime.datetime.strptime(self.fin_etude, "%Y-%m-%d").date()
+            if isinstance(self.debut, str):
+                self.debut = datetime.datetime.strptime(self.debut, "%Y-%m-%d").date()
+            return math.ceil((self.fin_etude - self.debut).days / 7)
             
         else:
             phases = Phase.objects.filter(etude=self)
@@ -1356,7 +1360,7 @@ class ConventionEtude(models.Model):
 
     def __str__(self):
   
-        return f"{self.etude.ref():02d}ce"
+        return f"{self.etude.ref()}ce"
 
     def signe(self):
         return self.date_signature is not None
@@ -1386,7 +1390,7 @@ class AvenantRuptureConventionEtude(models.Model):
 
     def __str__(self):
         
-        return f"{self.etude.ref()}acc{self.numero}"
+        return f"{self.ce.etude.ref()}acc{self.numero}"
 
 
 class AvenantConventionEtude(models.Model):
@@ -1406,7 +1410,7 @@ class AvenantConventionEtude(models.Model):
     def __str__(self):
         
         return (
-            f"{self.etude.ref()}ac{self.numero:02d}"
+            f"{self.ce.etude.ref()}ac{self.numero:02d}"
         )
 
     def save(self, *args, **kwargs):
@@ -1634,7 +1638,7 @@ class AvenantRDM(models.Model):
 
     def __str__(self):
         
-        return f"{self.etude.ref()}ardm{self.numero}"
+        return f"{self.rdm.etude.ref()}ardm{self.numero}"
 
     def save(self, *args, **kwargs):
         if self.numero is None:

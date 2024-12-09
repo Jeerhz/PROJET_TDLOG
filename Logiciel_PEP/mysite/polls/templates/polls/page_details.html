@@ -785,8 +785,8 @@
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
                                                             <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
-                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
-                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude.nb_JEH }}</span></li>
+                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude.montant_HT_total|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
                                                             <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
                                                             <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
@@ -804,9 +804,9 @@
                                                             {% csrf_token %}
                                                             <ul class="list-group list-group-flush">
                                                                 <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
-                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
-                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin_etude" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}"></li>
+                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude.nb_JEH }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude.montant_HT_total }}" readonly></li>
                                                                 <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
                                                                 <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
                                                                 <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
@@ -881,7 +881,7 @@
                                             // Handle form submission and display server responses as pop-up messages
                                             document.getElementById('etude-f-form').addEventListener('submit', function (event) {
                                                 event.preventDefault(); // Prevent the default form submission
-                                                
+                                    
                                                 var form = this;
                                                 var formData = new FormData(form);
                                                 var url = form.action; // The form's action URL
@@ -907,23 +907,30 @@
                                                         "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
                                                     },
                                                 })
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (!data.success) {
-                                                        // Display error message as a pop-up
-                                                        alert(data.message); // Replace with a toast or modal if desired
-                                                    } else {
-                                                        // Display success message or handle success logic
-                                                        window.location.href = data.redirect;
-                                                    }
-                                                })
-                                                .catch(error => {
-                                                    console.error("Error:", error);
-                                                    alert(`Une erreur s'est produite: ${error.message}`);
-                                                });
+                                                    .then(response => {
+                                                        if (!response.ok) {
+                                                            // Attempt to extract error message from JSON response
+                                                            return response.json().then(data => {
+                                                                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                                                            });
+                                                        }
+                                                        return response.json();
+                                                    })
+                                                    .then(data => {
+                                                        if (!data.success) {
+                                                            alert(data.message);
+                                                        } else {
+                                                            window.location.href = data.redirect;
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        console.error("Error:", error);
+                                                        alert(`Une erreur s'est produite: ${error.message}`);
+                                                    });
                                             });
                                         });
                                     </script>
+                                    
                                     
                                     <br>
                                     <!-- Fin de la ligne avec Graphe et Card Infos -->
@@ -1090,13 +1097,70 @@
                                 <!-- Début de l'Onglet Phases -->
 
                                 <div class="tab-pane fade" id="phases" role="tabpanel" aria-labelledby="phases-tab" style=" margin: 0px;">
+                                    <div class="col-mb-3">
+                                        <div class="card shadow">
+                                            <form action="{% url 'ajouter_phase' id_etude=iD %}" method="post">
+                                                <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
+                                                    <i class="fas fa-plus"></i>
+                                                    <strong>Nouvelle phase</strong>
+                                                </div>
+                                                <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
+                                                    <div class="card-body">
+                                                        <dl class="dl-horizontal">
+                                                            {% csrf_token %}
+                                    
+                                                            {% for field in phase_form %}
+                                                            <div class="form-group row mb-3">
+                                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    {% if field.field.widget.input_type == 'select_multiple' %}
+                            
+                                                                    <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
+                                                                        {% for choice in field.choices %}
+                                                                        <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                        
+                                                                    {% else %}
+                                                                        {{ field }}
+                                                                    {% endif %}
+                                                                    {% if field.errors %}
+                                                                    <div class="text-danger">
+                                                                        {% for error in field.errors %}
+                                                                            {{ error }}
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            {% endfor %}
+                                                            {% if etude.type_convention == "Convention cadre" %}
+                                                            <div class="form-group row mb-3">
+                                                                <label for="numero_bdc" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="number" name="numero_bdc" class="form-control" id="numero_bdc">
+                                                                </div>
+                                                            </div>     
+                                                            {% endif %}               
+                                                        </dl>
+                                                    </div>
+                                                    <div class="card-footer text-center">
+                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        
+                                    </div>
+                                    <br>
                                     {% if etude.type_convention == "Convention cadre" %}
 
                                     {% if bons %}
                                     
 
                                     {% for bon in bons %}
-                                    <div style = "color: #000; text-align: center;">Bon de Commande {{bon.numero}}</div> 
+                                    <div style = "color: #000; text-align: center; margin-top: 20px;margin-bottom: 10px; font-size: 20px;">Bon de Commande {{bon.numero}}</div> 
                                     {% for phase in bon.phases %}
                                     <div class="card mb-3">
                                         <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
@@ -1324,7 +1388,7 @@
                                     {% endif %}
                                     <!-- Début Planning avec graphe-->
                                     <!--tableau planing-->
-                                    <div class="col-lg-13 mb-3">
+                                    <div class="col-lg-13 mb-3" style="margin-top: 40px;">
                                         <div class="card shadow">
                                             <div class="card-header">
                                                 <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude :</h6>
@@ -1693,63 +1757,8 @@
                                     <!--Fin planning avec graphe--> 
                                     {% endif %}
 
-                                    <br>
-                                    <div class="col-md-8">
-                                        <div class="card shadow">
-                                            <form action="{% url 'ajouter_phase' id_etude=iD %}" method="post">
-                                                <div class="card-header" id="cardHeader" data-toggle="collapse" data-target="#cardBody" aria-expanded="false" aria-controls="cardBody" style="cursor: pointer;">
-                                                    <i class="fas fa-plus"></i>
-                                                    <strong>Nouvelle phase</strong>
-                                                </div>
-                                                <div class="collapse" id="cardBody" aria-labelledby="cardHeader">
-                                                    <div class="card-body">
-                                                        <dl class="dl-horizontal">
-                                                            {% csrf_token %}
                                     
-                                                            {% for field in phase_form %}
-                                                            <div class="form-group row mb-3">
-                                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                                <div class="col-sm-8 justify-content-center">
-                                                                    {% if field.field.widget.input_type == 'select_multiple' %}
-                            
-                                                                    <select multiple class="form-select" id="{{ field.id_for_label }}" name="{{ field.html_name }}">
-                                                                        {% for choice in field.choices %}
-                                                                        <option value="{{ choice.0 }}"{% if choice.0 in field.value_list %} selected{% endif %}>{{ choice.1 }}</option>
-                                                                        {% endfor %}
-                                                                    </select>
-                                        
-                                                                    {% else %}
-                                                                        {{ field }}
-                                                                    {% endif %}
-                                                                    {% if field.errors %}
-                                                                    <div class="text-danger">
-                                                                        {% for error in field.errors %}
-                                                                            {{ error }}
-                                                                        {% endfor %}
-                                                                    </div>
-                                                                    
-                                                                    {% endif %}
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                            {% if etude.type_convention == "Convention cadre" %}
-                                                            <div class="form-group row mb-3">
-                                                                <label for="numero_bdc" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
-                                                                <div class="col-sm-8 justify-content-center">
-                                                                    <input type="number" name="numero_bdc" class="form-control" id="numero_bdc">
-                                                                </div>
-                                                            </div>     
-                                                            {% endif %}               
-                                                        </dl>
-                                                    </div>
-                                                    <div class="card-footer text-center">
-                                                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        
-                                    </div>
+                                    
                                 </div>                            
                                 <!-- Fin de l'Onglet Phase-->  
 
@@ -2300,11 +2309,11 @@
                                                     <div class="card-body">
                                                             <a href="{% url 'editer_acf_client' iD %}"  ><i class="fas fa-download mr-2"></i>Générer l'Accord de confidentialité client</a>
                                                             <br>
-                                                            
+                                                            <br>
                                                             <a href="{% url 'editer_pv' iD=iD type='PVRI'%}" ><i class="fas fa-download mr-2"></i>Générer le PVRI</a>
 
                                                             <br>
-                                                            
+                                                            <br>
                                                             
                                                             <a href="{% url 'editer_pv' iD=iD type='PVRF'%}" ><i class="fas fa-download mr-2"></i>Générer le PVRF</a>
 
@@ -2652,10 +2661,9 @@
 
 
                                                             <!-- Cette fonctionnalité sera implémentée dans le futur -->
-                                                            <button class="btn btn-primary" 
-                                                                    onclick="alert('Cette fonctionnalité sera implémentée dans le futur.'); return false;">
-                                                                <i class="fas fa-plus"></i> Ajouter un avenant au RdM
-                                                            </button>
+                                                            <a data-toggle="modal" data-target="#avenantRDM_{{eleve.id}}">
+                                                                <i class="fas fa-plus"></i></i> Ajouter un avenant au RdM
+                                                            </a>
                                                             
                                                                        
                                                             <div class="modal fade" id="avenantRDM_{{eleve.id}}" tabindex="-1" role="dialog" aria-labelledby="editAvenantRDM" aria-hidden="true">
