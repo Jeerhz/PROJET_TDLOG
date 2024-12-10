@@ -897,7 +897,6 @@ def details(request, modelName, iD):
         intervenant_form = AddIntervenant(intervenant_queryset=intervenants)
         #à rendre plus efficace ??????
         repartition_budget={"Junior": etude.marge_JE(), "Intervenants":etude.retributions_totales(), "URSSAF":etude.charges_URSSAF()}
-        print(repartition_budget)
         context.update(
             {
                 "attribute_list": attribute_list,
@@ -911,6 +910,7 @@ def details(request, modelName, iD):
                 "etude_ref": etude_ref(etude),
                 "etude_nbJEH": etude_nbJEH,
                 "etude_total_montant_phases": etude_montant_total_phases,
+                "etude_total_ht": etude_total_montant_HT,
                 "etude_total_ttc": etude_total_montant_HT * (1 + etude.taux_tva / 100),
                 "etude_tva": (etude.taux_tva / 100) * etude_total_montant_HT,
                 "etude_marge_JE": etude_marge_JE,
@@ -930,6 +930,7 @@ def details(request, modelName, iD):
                 "members": members,
                 "poste": poste,
                 "bons": bons,
+                "repartition_budget":repartition_budget,
                 "associations_phase": associations_bdc_phase,
             }
         )
@@ -2402,7 +2403,8 @@ def stat_KPI(request):
             "SEGF": chiffre_affaire_par_departement[3],
             "VET": chiffre_affaire_par_departement[4],
             "1A": chiffre_affaire_par_departement[5],
-            "AUTRE": chiffre_affaire_par_departement[6],
+            "GI": chiffre_affaire_par_departement[6],
+            "AUTRE": chiffre_affaire_par_departement[7],
         }
 
         dictionnaire_CA_par_secteur = {
@@ -2433,6 +2435,7 @@ def stat_KPI(request):
             "SEGF": "#FFFF99",
             "VET": "#00B3E6",
             "1A": "#E6B333",
+            "GI": "#4682B4",
             "AUTRE": "#3366E6",
         }
 
@@ -4262,7 +4265,7 @@ def calculate_monthly_sums(user_je):
 
 
 def calculate_chiffre_affaire_par_departement(user_je):
-    revenues = [0] * 7
+    revenues = [0] * 8
     department_index = {
         "IMI": 0,
         "GCC": 1,
@@ -4270,7 +4273,9 @@ def calculate_chiffre_affaire_par_departement(user_je):
         "SEGF": 3,
         "VET": 4,
         "1A": 5,
-        "AUTRE": 6,
+        "GI":6,
+        "AUTRE": 7
+        
     }
     studies = Etude.objects.filter(je=user_je)
 
