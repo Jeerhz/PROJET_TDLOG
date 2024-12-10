@@ -841,21 +841,15 @@
                                                         <canvas id="PieChartEtude"></canvas>
                                                     </div>
                                                     <script>
-                                                        var etudeData = {
-                                                            marge_JE: "{{ etude.marge_JE|FormatNombres }}",
-                                                            charges_URSSAF: "{{ etude.charges_URSSAF|FormatNombres }}",
-                                                            retributions_totales: "{{ etude.retributions_totales|FormatNombres }}"
-                                                        };
+                                                        var repartition_budget = {{ repartition_budget|safe }};
                                                     </script>
-                                                    <div class="text-center small">
-                                                        <span><i class="fas fa-circle text-primary"></i> Junior</span>
-                                                        <span><i class="fas fa-circle text-success"></i> Intervenants</span>
-                                                        <span><i class="fas fa-circle text-info"></i> Cotisations</span>
-                                                    </div>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
                                         <!-- Fin du Pie Chart -->
+                                        
+
                                     
                                     
                                     </div>
@@ -2627,6 +2621,7 @@
 
                                 <!-- Début de l'Onglet Intervenants -->
                                 <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
+                                    {% if etude.type_convention == "Convention d'étude" %}
                                     <div class="container col-md-7 mb-4 mt-4 ml-0 pl-3">
                                         <div class="d-none d-sm-inline-block form-inline navbar-search w-100">
                                             <div class="input-group w-100 m-0">
@@ -2819,6 +2814,11 @@
                                         <hr>
                                         {% endfor %}
                                     </div>
+                                    {% elif etude.type_convention == "Convention cadre" %}
+                                    <div>ca arrive</div>
+                                    {% else %}
+                                    <div>Définir le type de convention</div>
+                                    {% endif %}
                                     <!-- Fin Infos Eleve -->
                                 </div>
                                 <!-- Fin de l'Onglet Intervenants -->

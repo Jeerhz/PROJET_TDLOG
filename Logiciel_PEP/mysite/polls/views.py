@@ -866,7 +866,9 @@ def details(request, modelName, iD):
         )
 
         intervenant_form = AddIntervenant(intervenant_queryset=intervenants)
-
+        #à rendre plus efficace ??????
+        repartition_budget={"Junior": etude.marge_JE(), "Intervenants":etude.retributions_totales(), "URSSAF":etude.charges_URSSAF()}
+        print(repartition_budget)
         context.update(
             {
                 "attribute_list": attribute_list,
@@ -899,6 +901,7 @@ def details(request, modelName, iD):
                 "poste": poste,
                 "bons": bons,
                 "associations_phase": associations_phase,
+                "repartition_budget":repartition_budget,
             }
         )
 
@@ -5449,29 +5452,32 @@ def add_intervenant(request, id_etude, id_student):
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
             for phase in etude.phases.all():
-                nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
-                pourcentage_retribution = request.POST[
+                if request.POST[("nb_jeh_phase" + str(phase.numero))] and request.POST[
                     ("pourcentage_retribution_phase" + str(phase.numero))
-                ]
-                if nb_jeh is not None and pourcentage_retribution is not None:
-                    existing_ass_jeh = AssignationJEH.objects.filter(
-                        phase=phase, eleve=eleve
-                    )
-                    if existing_ass_jeh.exists():
-                        retrieve_ass_jeh = existing_ass_jeh[0]
-                        retrieve_ass_jeh.nombre_JEH = nb_jeh
-                        retrieve_ass_jeh.pourcentage_retribution = (
-                            pourcentage_retribution
+                ]:
+                    nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
+                    pourcentage_retribution = request.POST[
+                        ("pourcentage_retribution_phase" + str(phase.numero))
+                    ]
+                    if nb_jeh is not None and pourcentage_retribution is not None:
+                        existing_ass_jeh = AssignationJEH.objects.filter(
+                            phase=phase, eleve=eleve
                         )
-                        retrieve_ass_jeh.save()
-                    else:
-                        new_ass_jeh = AssignationJEH(
-                            phase=phase,
-                            eleve=eleve,
-                            nombre_JEH=nb_jeh,
-                            pourcentage_retribution=pourcentage_retribution,
-                        )
-                        new_ass_jeh.save()
+                        if existing_ass_jeh.exists():
+                            retrieve_ass_jeh = existing_ass_jeh[0]
+                            retrieve_ass_jeh.nombre_JEH = nb_jeh
+                            retrieve_ass_jeh.pourcentage_retribution = (
+                                pourcentage_retribution
+                            )
+                            retrieve_ass_jeh.save()
+                        else:
+                            new_ass_jeh = AssignationJEH(
+                                phase=phase,
+                                eleve=eleve,
+                                nombre_JEH=nb_jeh,
+                                pourcentage_retribution=pourcentage_retribution,
+                            )
+                            new_ass_jeh.save()
             return redirect("details", modelName="Etude", iD=id_etude)
 
         except:
