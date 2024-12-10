@@ -892,29 +892,30 @@ class Etude(models.Model):
 
     def liste_doc(self):
         return []
-    
-    
 
     def duree_semaine(self):
         if self.fin_etude and self.debut:
             if isinstance(self.fin_etude, str):
-                self.fin_etude = datetime.datetime.strptime(self.fin_etude, "%Y-%m-%d").date()
+                self.fin_etude = datetime.datetime.strptime(
+                    self.fin_etude, "%Y-%m-%d"
+                ).date()
             if isinstance(self.debut, str):
                 self.debut = datetime.datetime.strptime(self.debut, "%Y-%m-%d").date()
             return math.ceil((self.fin_etude - self.debut).days / 7)
-            
+
         else:
             phases = Phase.objects.filter(etude=self)
             if phases.exists():
                 duree = max(
                     phase.duree_semaine + phase.debut_relatif
                     for phase in phases
-                    if phase.duree_semaine is not None and phase.debut_relatif is not None
+                    if phase.duree_semaine is not None
+                    and phase.debut_relatif is not None
                 )
                 return duree
             else:
                 return 0
-    
+
     def fin(self):
         if self.fin_etude:
             return self.fin_etude
@@ -924,8 +925,6 @@ class Etude(models.Model):
             return self.fin_etude
         else:
             return None
-
-    
 
     def fin_test(self):
         if self.debut and self.duree_semaine():
@@ -1156,7 +1155,9 @@ class Facture(models.Model):
     def ref(self):
         if self.date_emission:
             if isinstance(self.date_emission, str):
-                current_year = datetime.datetime.strptime(self.date_emission, "%d/%m/%Y").year
+                current_year = datetime.datetime.strptime(
+                    self.date_emission, "%d/%m/%Y"
+                ).year
             else:
                 current_year = self.date_emission.year
             current_year_last_two_digits = current_year % 100
@@ -1212,7 +1213,7 @@ class Facture(models.Model):
         self.etude = etude
         # self.etude = etude
         # self.fac_frais = self.etude.frais_dossier * (self.pourcentage_frais / 100)
-        
+
         super(Facture, self).save(*args, **kwargs)
 
 
@@ -1301,7 +1302,6 @@ class Devis(models.Model):
         super(Devis, self).save(*args, **kwargs)
 
     def __str__(self):
-        
         return f"{self.etude.ref()}D"
 
     def signe(self):
@@ -1344,7 +1344,6 @@ class PV(models.Model):
         super(Devis, self).save(*args, **kwargs)
 
     def __str__(self):
-        
         return f"{self.etude.ref()}D"
 
     def signe(self):
@@ -1359,7 +1358,6 @@ class ConventionEtude(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-  
         return f"{self.etude.ref()}ce"
 
     def signe(self):
@@ -1374,7 +1372,6 @@ class ConventionCadre(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        
         return f"{self.etude.ref()}cc"
 
     def signe(self):
@@ -1389,7 +1386,6 @@ class AvenantRuptureConventionEtude(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        
         return f"{self.ce.etude.ref()}acc{self.numero}"
 
 
@@ -1408,10 +1404,7 @@ class AvenantConventionEtude(models.Model):
     avenant_delais = models.BooleanField(blank=True, null=True, default=False)
 
     def __str__(self):
-        
-        return (
-            f"{self.ce.etude.ref()}ac{self.numero:02d}"
-        )
+        return f"{self.ce.etude.ref()}ac{self.numero:02d}"
 
     def save(self, *args, **kwargs):
         if self.numero is None:
@@ -1572,7 +1565,6 @@ class BonCommande(models.Model):
     def __str__(self):
         return str(f"{self.etude.ref()}bc{self.numero}")
 
-
     def delete(self, *args, **kwargs):
         all_assoc_phase = self.associations_phase.all()
         for assoc in all_assoc_phase:
@@ -1602,7 +1594,6 @@ class RDM(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        
         initials = self.eleve.last_name[0] + self.eleve.first_name[0]
         return f"{self.etude.ref()}rdm-{initials}"
 
@@ -1637,7 +1628,6 @@ class AvenantRDM(models.Model):
     remarque = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        
         return f"{self.rdm.etude.ref()}ardm{self.numero}"
 
     def save(self, *args, **kwargs):

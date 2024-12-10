@@ -12,7 +12,12 @@ register = template.Library()
 @register.filter(name="FormatDate")
 def FormatDate(value):
     if value:  # Check if value is not None
-        locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")  # Set locale to French
+        try:
+            locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")  # Set locale to French
+        except locale.Error:
+            locale.setlocale(
+                locale.LC_TIME, "fr_FR"
+            )  # Fallback for environments without UTF-8 locale
         return value.strftime("%d %B %Y")
     return value
 
