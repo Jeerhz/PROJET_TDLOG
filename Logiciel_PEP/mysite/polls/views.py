@@ -2194,9 +2194,7 @@ def generate_facture_pdf(request, id_facture):
         facture.date_emission = timezone.now().strftime("%d/%m/%Y")
         date_30 = timezone.now() + timedelta(30)
         facture.date_echeance = date_30.strftime("%d/%m/%Y")
-        logo_url  = os.path.join(
-                conf_settings.BASE_DIR, "polls/templates/polls/logo_pep.png"
-            )
+        logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
         nb_JEH=0
         bdc = facture.bdc()
         
@@ -4266,7 +4264,7 @@ def editer_devis(request, iD):
 
 def editer_avenant_ce(request, iD):
     if request.user.is_authenticated:
-        #try:
+        try:
             instance = AvenantConventionEtude.objects.get(id=iD)
             ce = instance.ce
             avenants = AvenantConventionEtude.objects.filter(ce=ce).order_by("numero")
@@ -4382,11 +4380,11 @@ def editer_avenant_ce(request, iD):
             )
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
-        #except ValueError as ve:
+        except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
 
-        #except:
+        except:
             template = loader.get_template("polls/page_error.html")
             context = {
                 "error_message": "Un problème a été détecté dans la base de données."
