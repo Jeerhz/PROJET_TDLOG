@@ -3803,7 +3803,7 @@
                             
                         </ul>
                         <div class="tab-content mt-2" style="background-color: #FFFFFF;">
-                            {% if eleve.is_member %}
+                            {% if eleve.member %}
                             <div class="tab-pane fade show active" id="pills-missions_suivies">
                                 <div class="card-body">
                                     <div class="row mb-3 d-flex justify-content-center">
@@ -3869,50 +3869,48 @@
                             <div class="tab-pane fade" id="pills-fiche_info">
                                 <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                        <h5 class="m-1 font-weight-bold text-primary"> {% if eleve.is_member %} 
-
+                                        <h5 class="m-1 font-weight-bold text-primary"> 
+                                            {% if eleve.is_member %} 
                                             <!-- Trigger the modal by clicking on the photo -->
-                                                <img 
-                                                class="img-profile rounded-circle" 
-                                                style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px; cursor: pointer;" 
-                                                src="{{ eleve.is_member.photo.url }}" 
-                                                data-toggle="modal" 
-                                                data-target="#editPhotoModal">
+                                            <img 
+                                            class="img-profile rounded-circle" 
+                                            style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px; cursor: pointer;" 
+                                            src="{{ eleve.is_member.photo.url }}" 
+                                            data-toggle="modal" 
+                                            data-target="#editPhotoModal">
 
-                                                <!-- Bootstrap Modal -->
-                                                <div class="modal fade" id="editPhotoModal" tabindex="-1" role="dialog" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <form id="editpdp" method="POST" enctype="multipart/form-data" action="{% url 'edit_pdp' eleve.id %}">
-                                                    {% csrf_token %}
-                                                    <div class="modal-header">
-                                                        
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="form-group">
-                                                        <label for="pdp">Photo de profil</label>
-                                                        <input type="file" class="form-control" id="pdp" name="pdp">
-                                                        {% if eleve.is_member.photo.url %}
-                                                            <img src="{{ eleve.is_member.photo.url }}" alt="pdp actuelle" style="max-width: 100px; margin-top: 10px;">
-                                                        {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                    </div>
-                                                    </form>
+                                            <!-- Bootstrap Modal -->
+                                            <div class="modal fade" id="editPhotoModal" tabindex="-1" role="dialog" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <form id="editpdp" method="POST" enctype="multipart/form-data" action="{% url 'edit_pdp' eleve.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header">
+                                                    
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                    </button>
                                                 </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                    <label for="pdp">Photo de profil</label>
+                                                    <input type="file" class="form-control" id="pdp" name="pdp">
+                                                    {% if eleve.is_member.photo.url %}
+                                                        <img src="{{ eleve.is_member.photo.url }}" alt="pdp actuelle" style="max-width: 100px; margin-top: 10px;">
+                                                    {% endif %}
+                                                    </div>
                                                 </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
                                                 </div>
-
-    
-
-                                             {% endif %}
-                                            {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
+                                                </form>
+                                            </div>
+                                            </div>
+                                            </div>
+                                            {% endif %}
+                                            {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.member %} : {{ eleve.member.poste }} {% endif %}
+                                        </h5>
                                         <div>
                                             <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
                                             <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
@@ -3938,65 +3936,19 @@
                                                 
                                             </li>
                                             <div class="d-flex align-items-center mb-2 text-center" >
-                                                <span> <a href="mailto:{{ eleve.email }}"> {{ eleve.mail }}</a> - <a href="tel:{{ eleve.telephone }}"> {{ eleve.phone_number }}</a></span> 
-                                            </div>
-        
-                                            
-                                            
-                                            
+                                                <span> <a href="mailto:{{ eleve.email }}"> {{ eleve.mail }}</a> - <a href="tel:{{ eleve.telephone }}"> {{eleve.phone_number}}</a></span> 
+                                            </div>              
                                         </ul>
                                     </div>
                                 </div>
                             </div>
-
                             {% else %}
                             <div class="tab-pane fade show active" id="pills-fiche_info">
                                 <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                        <h5 class="m-1 font-weight-bold text-primary"> {% if eleve.is_member %} 
-
-                                            <!-- Trigger the modal by clicking on the photo -->
-                                                <img 
-                                                class="img-profile rounded-circle" 
-                                                style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px; cursor: pointer;" 
-                                                src="{{ eleve.is_member.photo.url }}" 
-                                                data-toggle="modal" 
-                                                data-target="#editPhotoModal">
-
-                                                <!-- Bootstrap Modal -->
-                                                <div class="modal fade" id="editPhotoModal" tabindex="-1" role="dialog" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <form id="editpdp" method="POST" enctype="multipart/form-data" action="{% url 'edit_pdp' eleve.id %}">
-                                                    {% csrf_token %}
-                                                    <div class="modal-header">
-                                                        
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="form-group">
-                                                        <label for="pdp">Photo de profil</label>
-                                                        <input type="file" class="form-control" id="pdp" name="pdp">
-                                                        {% if eleve.is_member.photo.url %}
-                                                            <img src="{{ eleve.is_member.photo.url }}" alt="pdp actuelle" style="max-width: 100px; margin-top: 10px;">
-                                                        {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                    </div>
-                                                    </form>
-                                                </div>
-                                                </div>
-                                                </div>
-
-    
-
-                                             {% endif %}
-                                            {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
+                                        <h5 class="m-1 font-weight-bold text-primary"> 
+                                            {{ eleve.last_name }} {{ eleve.first_name }}
+                                         </h5>
                                         <div>
                                             <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
                                             <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
@@ -4023,11 +3975,7 @@
                                             </li>
                                             <div class="d-flex align-items-center mb-2 text-center" >
                                                 <span> <a href="mailto:{{ eleve.email }}"> {{ eleve.mail }}</a> - <a href="tel:{{ eleve.telephone }}"> {{ eleve.phone_number }}</a></span> 
-                                            </div>
-        
-                                            
-                                            
-                                            
+                                            </div> 
                                         </ul>
                                     </div>
                                 </div>

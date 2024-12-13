@@ -375,7 +375,7 @@ def annuaire(request):
 
     def fetch_students_annuaire():
         return list(Student.objects.filter(je=user_je_id).order_by("last_name"))
-    
+
     def fetch_etudes_importees_annuaire():
         return list(EtudeImportee.objects.filter(je=user_je_id).order_by("ref"))
 
@@ -413,7 +413,7 @@ def annuaire(request):
         "client_list": client_list,
         "student_list": student_list,
         "etude_list": etude_list,
-        "etude_importe_list":etude_importe_list,
+        "etude_importe_list": etude_importe_list,
         "liste_messages": liste_messages,
         "message_count": len(liste_messages),
         "notification_list": notification_list,
@@ -613,47 +613,68 @@ def compute_phase_assignations(phases):
 
 
 def compute_assignations_bon(bon_preloaded_phases):
-    dico={}
-    dico_info={'montant_total_bon':0, 'nb_phases':0, 'nb_JEH':0}
+    dico = {}
+    dico_info = {"montant_total_bon": 0, "nb_phases": 0, "nb_JEH": 0}
     for phase in bon_preloaded_phases:
-        dico_info['nb_phases']+=1
-        dico_info['nb_JEH']+=phase.nb_JEH
-        dico_info['montant_total_bon']+=phase.calcul_mt_HT()
+        dico_info["nb_phases"] += 1
+        dico_info["nb_JEH"] += phase.nb_JEH
+        dico_info["montant_total_bon"] += phase.calcul_mt_HT()
         for assignment in phase.assignationjeh_set.all():
-            
             nb_JEH = assignment.nombre_JEH
-            retr= assignment.retribution_brute_totale()
+            retr = assignment.retribution_brute_totale()
             eleve_id = assignment.eleve_id
-            
+
             if eleve_id not in dico:
-                eleve=assignment.eleve
-                dico[eleve_id] = {'nom':eleve.last_name, 'prenom':eleve.first_name, 'total_nb_JEH':0, 'montant_total':0, 
-                                  'phases':{phase.id:{'numero':phase.numero,'nb_jeh':nb_JEH, 'montant':retr, 'pourc': assignment.pourcentage_retribution}}}
-            elif phase.id not in dico[eleve_id]['phases']:
-                dico[eleve_id]['phases'][phase.id]={'numero':phase.numero,'nb_jeh':nb_JEH, 'montant':retr, 'pourc': assignment.pourcentage_retribution}
+                eleve = assignment.eleve
+                dico[eleve_id] = {
+                    "nom": eleve.last_name,
+                    "prenom": eleve.first_name,
+                    "total_nb_JEH": 0,
+                    "montant_total": 0,
+                    "phases": {
+                        phase.id: {
+                            "numero": phase.numero,
+                            "nb_jeh": nb_JEH,
+                            "montant": retr,
+                            "pourc": assignment.pourcentage_retribution,
+                        }
+                    },
+                }
+            elif phase.id not in dico[eleve_id]["phases"]:
+                dico[eleve_id]["phases"][phase.id] = {
+                    "numero": phase.numero,
+                    "nb_jeh": nb_JEH,
+                    "montant": retr,
+                    "pourc": assignment.pourcentage_retribution,
+                }
             else:
-                nb_JEH_ori = dico[eleve_id]['phases'][phase.id]['nb_jeh']
-                pourc_ori = dico[eleve_id]['phases'][phase.id]['pourc']
-                pourc_assi =assignment.pourcentage_retribution
-                nv_pourc = ( nb_JEH_ori*pourc_ori + nb_JEH*assignment.pourcentage_retribution)/(nb_JEH_ori+nb_JEH)
-                dico[eleve_id]['phases'][phase.id]['nb_jeh']+=nb_JEH
-                dico[eleve_id]['phases'][phase.id]['montant']+=retr
-                dico[eleve_id]['phases'][phase.id]['pourc']=nv_pourc
-            
-            dico[eleve_id]['total_nb_JEH']+=nb_JEH
-            dico[eleve_id]['montant_total']+=retr
-    return dico,dico_info
-            
+                nb_JEH_ori = dico[eleve_id]["phases"][phase.id]["nb_jeh"]
+                pourc_ori = dico[eleve_id]["phases"][phase.id]["pourc"]
+                pourc_assi = assignment.pourcentage_retribution
+                nv_pourc = (
+                    nb_JEH_ori * pourc_ori + nb_JEH * assignment.pourcentage_retribution
+                ) / (nb_JEH_ori + nb_JEH)
+                dico[eleve_id]["phases"][phase.id]["nb_jeh"] += nb_JEH
+                dico[eleve_id]["phases"][phase.id]["montant"] += retr
+                dico[eleve_id]["phases"][phase.id]["pourc"] = nv_pourc
+
+            dico[eleve_id]["total_nb_JEH"] += nb_JEH
+            dico[eleve_id]["montant_total"] += retr
+    return dico, dico_info
+
 
 def compute_phase_assignations_bdc(bon_preloaded_phases):
     bons_assignations_by_eleve = {}
     bons_assignations_for_each_eleve = {}
-   
+
     for phase in bon_preloaded_phases:
         for assignment in phase.assignationjeh_set.all():
             eleve_id = assignment.eleve_id
             if eleve_id not in bons_assignations_by_eleve:
-                bons_assignations_by_eleve[eleve_id] = {"JEH_count": 0, "montant_total": 0.0}
+                bons_assignations_by_eleve[eleve_id] = {
+                    "JEH_count": 0,
+                    "montant_total": 0.0,
+                }
                 bons_assignations_for_each_eleve[eleve_id] = []
             bons_assignations_by_eleve[eleve_id]["JEH_count"] += assignment.nombre_JEH
             bons_assignations_by_eleve[eleve_id]["montant_total"] += (
@@ -661,8 +682,6 @@ def compute_phase_assignations_bdc(bon_preloaded_phases):
             )
             bons_assignations_for_each_eleve[eleve_id].append(assignment)
     return bons_assignations_by_eleve, bons_assignations_for_each_eleve
-
-
 
 
 def compute_jeh_base_and_frais(
@@ -897,12 +916,12 @@ def details(request, modelName, iD):
             ) / 100.0
 
         # Compute assignations for each eleve
-        type_convention=etude.type_convention
+        type_convention = etude.type_convention
         if type_convention == "Convention d'étude":
-            assignations_by_eleve, assignations_for_each_eleve = compute_phase_assignations(
-            phases
+            assignations_by_eleve, assignations_for_each_eleve = (
+                compute_phase_assignations(phases)
             )
-        
+
         if type_convention == "Convention d'étude":
             for eleve in intervenants:
                 data = assignations_by_eleve.get(
@@ -911,8 +930,10 @@ def details(request, modelName, iD):
                 eleve.precomputed_JEH_count = data["JEH_count"]
                 eleve.precomputed_montant_total = data["montant_total"]
 
-                eleve.assignations_for_etude = assignations_for_each_eleve.get(eleve.id, [])
-        
+                eleve.assignations_for_etude = assignations_for_each_eleve.get(
+                    eleve.id, []
+                )
+
         for bon in bons:
             for facture in bon.preloaded_factures:
                 jeh_base, frais_base = compute_jeh_base_and_frais(
@@ -920,10 +941,12 @@ def details(request, modelName, iD):
                 )
 
                 facture.fac_frais = frais_base * (facture.pourcentage_frais / 100.0)
-            
-            dico_assignations_JEH, dico_info =compute_assignations_bon(bon.preloaded_phases)
-            bon.dico_assignations_JEH =dico_assignations_JEH
-            bon.dico_info=dico_info
+
+            dico_assignations_JEH, dico_info = compute_assignations_bon(
+                bon.preloaded_phases
+            )
+            bon.dico_assignations_JEH = dico_assignations_JEH
+            bon.dico_info = dico_info
         client_nom = str(etude.client.nom_societe) if etude.client else "pas de client"
 
         attribute_list = {
@@ -963,8 +986,12 @@ def details(request, modelName, iD):
         )
 
         intervenant_form = AddIntervenant(intervenant_queryset=intervenants)
-        #à rendre plus efficace ??????
-        repartition_budget={"Junior": etude.marge_JE(), "Intervenants":etude.retributions_totales(), "URSSAF":etude.charges_URSSAF()}
+        # à rendre plus efficace ??????
+        repartition_budget = {
+            "Junior": etude.marge_JE(),
+            "Intervenants": etude.retributions_totales(),
+            "URSSAF": etude.charges_URSSAF(),
+        }
         context.update(
             {
                 "attribute_list": attribute_list,
@@ -998,9 +1025,9 @@ def details(request, modelName, iD):
                 "members": members,
                 "poste": poste,
                 "bons": bons,
-                "repartition_budget":repartition_budget,
+                "repartition_budget": repartition_budget,
                 "associations_phase": associations_bdc_phase,
-                "type_convention": etude.type_convention
+                "type_convention": etude.type_convention,
             }
         )
 
@@ -1018,12 +1045,13 @@ def details(request, modelName, iD):
     template = loader.get_template("polls/page_details.html")
     return HttpResponse(template.render(context, request))
 
-def details_etudes_importees(request,iD):
+
+def details_etudes_importees(request, iD):
     if request.user.is_authenticated:
         user_je = request.user.je
 
-        etude =  EtudeImportee.objects.get(id=iD, je=user_je)
-        
+        etude = EtudeImportee.objects.get(id=iD, je=user_je)
+
         template = loader.get_template("polls/page_detail_etude_importee.html")
         context = {"etude": etude}
     else:
@@ -1122,7 +1150,7 @@ def edit_pdp(request, pk):
         if request.method == "POST":
             # Handle form submission
 
-            member = student.is_member()
+            member = student.member
             if member and "pdp" in request.FILES:
                 uploaded_file = request.FILES["pdp"]
                 member.photo = uploaded_file  # Update the photo
@@ -1158,7 +1186,7 @@ def numero_facture(request, iD):
         if request.method == "POST":
             numero = request.POST["numero_fac"]
             facture.numero_facture = numero
-            objet_fac=request.POST["objet_fac"]
+            objet_fac = request.POST["objet_fac"]
             facture.objet = objet_fac
             id_etude = facture.etude.id
             facture.save(id_etude=id_etude)
@@ -1337,7 +1365,7 @@ def edit_client(request, pk):
             "notification_count": len(notification_list),
             "modelName": "Client",
             "iD": client.id,
-            #"user_student" : request.user.student
+            # "user_student" : request.user.student
         }
 
         return render(request, "polls/page_details.html", context)
@@ -1746,7 +1774,6 @@ def upload_students(request):
 
                     # Check if the file is a CSV
                     if not csv_file.name.endswith(".csv"):
-                        
                         raise ValueError("Ce n'est pas un csv")
 
                     try:
@@ -1765,13 +1792,14 @@ def upload_students(request):
 
                         # Check if header matches the expected columns
                         if len(header) != 12:
-                            raise ValueError("Le fichier csv doit contenir 12 colonnes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss")
+                            raise ValueError(
+                                "Le fichier csv doit contenir 12 colonnes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss"
+                            )
 
                         # Iterate through each row in the CSV
                         for row in reader:
                             if len(row) != 12:
                                 ValueError(f"problème à la ligne {row}")
-                                
 
                             # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
                             try:
@@ -1850,13 +1878,11 @@ def upload_clients(request):
         try:
             if request.method == "POST":
                 form = ClientCSVUploadForm(request.POST, request.FILES)
-                
+
                 if form.is_valid():
                     csv_file = request.FILES.get("csv_file_client")
 
                     # Check if the file is a CSV
-                    
-                
 
                     if not csv_file.name.endswith(".csv"):
                         raise ValueError("Ce n'est pas un csv")
@@ -1876,12 +1902,12 @@ def upload_clients(request):
 
                         # Check if header matches the expected columns
                         if len(header) != 6:
-                            raise ValueError("Le fichier csv doit contenir 6 colonnes : nom, raison sociale, rue, ville, code postal, pays")
-
+                            raise ValueError(
+                                "Le fichier csv doit contenir 6 colonnes : nom, raison sociale, rue, ville, code postal, pays"
+                            )
 
                         # Iterate through each row in the CSV
                         for row in reader:
-                            
                             if len(row) != 6:
                                 raise ValueError(f"La ligne {row} n'a pas 6 cellules")
 
@@ -1907,7 +1933,7 @@ def upload_clients(request):
                                     code_postal=code_postal.strip(),
                                     country=country.strip(),
                                 )
-                                
+
                             except ValueError as ve:
                                 template = loader.get_template("polls/page_error.html")
                                 context = {"error_message": str(ve)}
@@ -1949,82 +1975,89 @@ def upload_clients(request):
 
 def upload_etudes(request):
     if request.user.is_authenticated:
-        #try:
-            if request.method == "POST":
-                form = EtudeCSVUploadForm(request.POST, request.FILES)
-                print("one")
+        # try:
+        if request.method == "POST":
+            form = EtudeCSVUploadForm(request.POST, request.FILES)
+            print("one")
 
-                if form.is_valid():
-                    csv_file = request.FILES.get("csv_file_etudes")
-                    print("two")
+            if form.is_valid():
+                csv_file = request.FILES.get("csv_file_etudes")
+                print("two")
 
-                    # Check if the file is a CSV
-                    if not csv_file.name.endswith(".csv"):
-                        raise ValueError("Ce n'est pas un csv")
+                # Check if the file is a CSV
+                if not csv_file.name.endswith(".csv"):
+                    raise ValueError("Ce n'est pas un csv")
 
-                    try:
-                        # Decode the uploaded file and read its content with correct delimiter
-                        data = csv_file.read().decode("utf-8")
-                        print("three")
-                        # Use csv.Sniffer to detect the delimiter
-                        sniffer = csv.Sniffer()
-                        detected_dialect = sniffer.sniff(data)
-                        delimiter = detected_dialect.delimiter
+                try:
+                    # Decode the uploaded file and read its content with correct delimiter
+                    data = csv_file.read().decode("utf-8")
+                    print("three")
+                    # Use csv.Sniffer to detect the delimiter
+                    sniffer = csv.Sniffer()
+                    detected_dialect = sniffer.sniff(data)
+                    delimiter = detected_dialect.delimiter
 
-                        # Read the file using the detected delimiter
-                        reader = csv.reader(StringIO(data), delimiter=delimiter)
-                        # Skip the header row if present
-                        header = next(reader, None)
+                    # Read the file using the detected delimiter
+                    reader = csv.reader(StringIO(data), delimiter=delimiter)
+                    # Skip the header row if present
+                    header = next(reader, None)
 
-                        # Check if header matches the expected columns
-                        if len(header) != 12:
-                            raise ValueError("Le fichier csv doit contenir 12 colonnes : titre, ref, description, problematique, debut, nb_JEH, montant_HT_phases, frais_dossier, mandat, departement, remarque, fin_etude")
+                    # Check if header matches the expected columns
+                    if len(header) != 12:
+                        raise ValueError(
+                            "Le fichier csv doit contenir 12 colonnes : titre, ref, description, problematique, debut, nb_JEH, montant_HT_phases, frais_dossier, mandat, departement, remarque, fin_etude"
+                        )
 
+                    # Iterate through each row in the CSV
+                    for row in reader:
+                        if len(row) != 12:
+                            raise ValueError(f"Un problème à la ligne {row}")
 
-                        # Iterate through each row in the CSV
-                        for row in reader:
-                            if len(row) != 12:
-                                raise ValueError(f"Un problème à la ligne {row}")
-                                
+                        # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
 
-                            # Assuming the CSV columns are: titre, first_name, last_name, mail, phone_number, rue, ville, code_postal, pays
-        
-                            try:
-                                (
-                                    titre,
-                                    ref,
-                                    description,
-                                    problematique,
-                                    debut,
-                                    nb_JEH,
-                                    montant_HT_phases,
-                                    frais_dossier,
-                                    mandat,
-                                    departement,
-                                    remarque,
-                                    fin_etude,
+                        try:
+                            (
+                                titre,
+                                ref,
+                                description,
+                                problematique,
+                                debut,
+                                nb_JEH,
+                                montant_HT_phases,
+                                frais_dossier,
+                                mandat,
+                                departement,
+                                remarque,
+                                fin_etude,
+                            ) = row
+                            print("four")
+                            print(nb_JEH, montant_HT_phases)
+                            je = request.user.je
+                            etude, created = EtudeImportee.objects.get_or_create(
+                                je=je,
+                                ref=ref,
+                                titre=titre,
+                                description=description,
+                                problematique=problematique,
+                                remarque=remarque,
+                            )
+                            print(ref)
+                            print(etude.id)
+                            etude.montant_HT_phases = montant_HT_phases
+                            etude.nb_JEH = nb_JEH
 
-                                ) = row
-                                print("four")
-                                print(nb_JEH,montant_HT_phases)
-                                je = request.user.je
-                                etude, created = EtudeImportee.objects.get_or_create(je=je,ref=ref,titre=titre,description=description,problematique=problematique,
-                                                                                  remarque=remarque)
-                                print(ref)
-                                print(etude.id)
-                                etude.montant_HT_phases=montant_HT_phases
-                                etude.nb_JEH=nb_JEH
+                            if fin_etude:
+                                date_end = datetime.strptime(
+                                    fin_etude, "%d/%m/%Y"
+                                ).date()
+                                print(date_end)
+                                etude.fin_etude = date_end
 
-                                if fin_etude:
-                                    date_end = datetime.strptime(fin_etude, '%d/%m/%Y').date()
-                                    print(date_end)
-                                    etude.fin_etude=date_end
-                                
-                                if debut:
-                                    date_deb = datetime.strptime(debut, '%d/%m/%Y').date()
-                                    etude.debut=date_deb
-                                etude.save()
-                                """
+                            if debut:
+                                date_deb = datetime.strptime(debut, "%d/%m/%Y").date()
+                                etude.debut = date_deb
+                            etude.save()
+                            """
                                 if fin_etude:
                                     date_end=None
                                     try:
@@ -2077,46 +2110,43 @@ def upload_etudes(request):
                                 
                                 etude.save()
                                 """
-                                    
 
+                        except ValueError as ve:
+                            template = loader.get_template("polls/page_error.html")
+                            context = {"error_message": str(ve)}
+                        except Exception as e:
+                            template = loader.get_template("polls/page_error.html")
+                            context = {
+                                "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
+                            }
+                except ValueError as ve:
+                    template = loader.get_template("polls/page_error.html")
+                    context = {"error_message": str(ve)}
+                except Exception as e:
+                    template = loader.get_template("polls/page_error.html")
+                    context = {
+                        "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
+                    }
 
-                            except ValueError as ve:
-                                template = loader.get_template("polls/page_error.html")
-                                context = {"error_message": str(ve)}
-                            except Exception as e:
-                                template = loader.get_template("polls/page_error.html")
-                                context = {
-                                    "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
-                                }
-                    except ValueError as ve:
-                        template = loader.get_template("polls/page_error.html")
-                        context = {"error_message": str(ve)}
-                    except Exception as e:
-                        template = loader.get_template("polls/page_error.html")
-                        context = {
-                            "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
-                        }
+                print("Etudes have been successfully added!")
+                return redirect("upload_students")
+        else:
+            form = ClientCSVUploadForm()
 
-                    print("Etudes have been successfully added!")
-                    return redirect("upload_students")
-            else:
-                form = ClientCSVUploadForm()
-
-            return redirect("annuaire")
-        #except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-        #except Exception as e:
-            template = loader.get_template("polls/page_error.html")
-            context = {
-                "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
-            }
+        return redirect("annuaire")
+        # except ValueError as ve:
+        template = loader.get_template("polls/page_error.html")
+        context = {"error_message": str(ve)}
+        # except Exception as e:
+        template = loader.get_template("polls/page_error.html")
+        context = {
+            "error_message": f"Un problème a été détecté dans la base de données: {str(e)}"
+        }
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
     # return render(request, 'polls/annuaire.html', {'form': form})
-
 
 
 def update_etude(request, id):
@@ -2195,15 +2225,15 @@ def generate_facture_pdf(request, id_facture):
         date_30 = timezone.now() + timedelta(30)
         facture.date_echeance = date_30.strftime("%d/%m/%Y")
         logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
-        nb_JEH=0
+        nb_JEH = 0
         bdc = facture.bdc()
-        
+
         if bdc:
-            nb_JEH= bdc.nb_JEH()
-            montant_HT_totale=bdc.montant_HT_total
+            nb_JEH = bdc.nb_JEH()
+            montant_HT_totale = bdc.montant_HT_total
         else:
-            nb_JEH= etude.nb_JEH()
-            montant_HT_totale=etude.montant_HT_total()
+            nb_JEH = etude.nb_JEH()
+            montant_HT_totale = etude.montant_HT_total()
 
         avenante_ref = None
 
@@ -2221,7 +2251,7 @@ def generate_facture_pdf(request, id_facture):
                 ).order_by("numero")
                 avenante_ref = avenants_signes.last()
             else:
-                ce= f"{etude.ref()}ce"
+                ce = f"{etude.ref()}ce"
 
         # Context for the invoice
         context = {
@@ -2236,12 +2266,10 @@ def generate_facture_pdf(request, id_facture):
             "logo_url": logo_url,
             "bdc": bdc,
             "avenante_ref": avenante_ref,
-            "nb_JEH":nb_JEH,
-            "montant_HT_totale":montant_HT_totale
-
+            "nb_JEH": nb_JEH,
+            "montant_HT_totale": montant_HT_totale,
         }
 
-        
         # Render the full HTML of the invoice page (with full HTML structure and CSS link)
         html_string = render_to_string("polls/facpdfhtml.html", context)
 
@@ -2271,31 +2299,28 @@ def facture(request, id_facture):
     if request.user.is_authenticated:
         try:
             facture = Facture.objects.get(id=id_facture)
-            print(
-                f"facture.montant_TVA: {facture.montant_TVA()}"
-            )
+            print(f"facture.montant_TVA: {facture.montant_TVA()}")
             etude = facture.etude
             # etude = {'type_convention': etude.type_convention, }
             client = etude.client
             phases = Phase.objects.filter(etude=etude).order_by("numero")
             res = facture.montant_TTC()
             facture.date_emission = timezone.now().date()
-            date_emission=timezone.now().date().strftime("%d/%m/%Y")
+            date_emission = timezone.now().date().strftime("%d/%m/%Y")
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.date()
             date_echeance = date_30.date().strftime("%d/%m/%Y")
-            nb_JEH=0
+            nb_JEH = 0
             bdc = facture.bdc()
-            montant_HT_totale=etude.montant_HT_total()
+            montant_HT_totale = etude.montant_HT_total()
             if bdc:
-                nb_JEH= bdc.nb_JEH()
-                montant_HT_totale=bdc.montant_HT_total
+                nb_JEH = bdc.nb_JEH()
+                montant_HT_totale = bdc.montant_HT_total
             else:
-                nb_JEH= etude.nb_JEH()
+                nb_JEH = etude.nb_JEH()
 
             avenante_ref = None
 
-            
             avenants_signes = AvenantConventionEtude.objects.filter(
                 date_signature__isnull=False
             )
@@ -2319,11 +2344,10 @@ def facture(request, id_facture):
                 "date_echeance": facture.date_echeance,
                 "bdc": bdc,
                 "avenante_ref": avenante_ref,
-                "nb_JEH":nb_JEH,
-                "montant_HT_totale":montant_HT_totale,
-                "date_emission":date_emission,
-                "date_echeance":date_echeance
-
+                "nb_JEH": nb_JEH,
+                "montant_HT_totale": montant_HT_totale,
+                "date_emission": date_emission,
+                "date_echeance": date_echeance,
             }
             template = loader.get_template("polls/facpdf.html")
             facture.save(id_etude=etude.id)
@@ -2335,7 +2359,6 @@ def facture(request, id_facture):
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def ndf(request):
@@ -3641,15 +3664,15 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
 
             date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
             if etude.type_convention == "Convention cadre":
-                ref_ce=f"{etude.ref()}cc"
+                ref_ce = f"{etude.ref()}cc"
                 pass
-            
+
             if etude.type_convention == "Convention d'étude":
-                ref_ce=f"{etude.ref()}ce"
+                ref_ce = f"{etude.ref()}ce"
                 assignations = list(
-                    AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
-                        "phase__numero"
-                    )
+                    AssignationJEH.objects.filter(
+                        eleve=eleve, phase__etude=etude
+                    ).order_by("phase__numero")
                 )
                 remuneration = sum(
                     assignment.retribution_brute_totale() for assignment in assignations
@@ -3658,7 +3681,6 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
             # num avenant
             # ref avenant
 
-            
             nb_JEH = sum(assignment.nombre_JEH for assignment in assignations)
             president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
 
@@ -3822,7 +3844,6 @@ def editer_acf_client(request, iD):
             client_prenom = etude.client_representant_legale.first_name
             client_nom = etude.client_representant_legale.last_name
             client_fonction = etude.client_representant_legale.fonction
-            
 
             etude_titre = etude.titre
             date = timezone.now().date()
@@ -3845,12 +3866,12 @@ def editer_acf_client(request, iD):
             general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
             annee = date.strftime("%Y")
             general_date_creation = date.strftime("%d %B %Y")
-            
+
             template_path = os.path.join(
                 conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx"
             )
             template = DocxTemplate(template_path)
-            logo_client = InlineImage( template, client.logo, width=Mm(20))
+            logo_client = InlineImage(template, client.logo, width=Mm(20))
             client = client.nom_societe
             context = {
                 "etude": etude,
@@ -3870,7 +3891,7 @@ def editer_acf_client(request, iD):
                 "client_prenom": client_prenom,
                 "client_nom": client_nom,
                 "client_fonction": client_fonction,
-                "logo_client":logo_client
+                "logo_client": logo_client,
             }
 
             env = Environment()
@@ -4303,7 +4324,7 @@ def editer_avenant_ce(request, iD):
 
             if etude.fin():
                 semaine_fin = math.ceil(
-                    (etude.fin() - datetime.datetime.today().date()).days/ 7
+                    (etude.fin() - datetime.datetime.today().date()).days / 7
                 )
             else:
                 semaine_fin = etude.duree_semaine()
@@ -4557,12 +4578,11 @@ def modifier_bon_commande(request, id_etude, id_bon):
 
             if request.POST["objectifs_bdc"]:
                 bon.objectifs = request.POST["objectifs_bdc"]
-            
+
             if request.POST["debut"]:
                 bon.debut = request.POST["debut"]
             if request.POST["fin"]:
                 bon.fin_bdc = request.POST["fin"]
-            
 
             keys = request.POST.getlist("keys_bdc[]")
             values = request.POST.getlist("values_bdc[]")
@@ -4621,9 +4641,8 @@ def calculate_chiffre_affaire_par_departement(user_je):
         "SEGF": 3,
         "VET": 4,
         "1A": 5,
-        "GI":6,
-        "AUTRE": 7
-        
+        "GI": 6,
+        "AUTRE": 7,
     }
     studies = Etude.objects.filter(je=user_je)
 
@@ -5198,10 +5217,10 @@ def generer_BV(request, id_bv):
             feuille["G8"] = eleve.code_postal + " " + eleve.country
             feuille["I3"] = datetime.datetime.now().strftime("%d %B %Y")
             feuille["C13"] = etude.ref()
-            
-            
-                
-            feuille["C14"] = f"{etude.ref()}rdm-{eleve.last_name[0] + eleve.first_name[0]}"
+
+            feuille["C14"] = (
+                f"{etude.ref()}rdm-{eleve.last_name[0] + eleve.first_name[0]}"
+            )
 
             # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
             # feuille['C13']= assignation_jeh.reference
@@ -5219,10 +5238,12 @@ def generer_BV(request, id_bv):
             download_filename = f"BV_{bv}_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
 
             # Return the file with the new filename
-            response = FileResponse(output, as_attachment=True, filename=download_filename)
+            response = FileResponse(
+                output, as_attachment=True, filename=download_filename
+            )
 
             return response
-            
+
         except ValueError as ve:
             template = loader.get_template("polls/page_error.html")
             context = {"error_message": str(ve)}
@@ -5238,50 +5259,52 @@ def generer_BV(request, id_bv):
         context = {}
     return HttpResponse(template.render(context, request))
 
+
 def csv_import_etudiants(request):
     if request.user.is_authenticated:
-        #try:
-            
-            chemin_absolu = os.path.join("polls/static/polls/import_etudiants.csv")
+        # try:
 
-            with open(chemin_absolu, mode='r', newline='', encoding='utf-8') as file:
-                reader = csv.reader(file, delimiter=';')
-                
-                # Create an in-memory file object to write the CSV content
-                output = BytesIO()
+        chemin_absolu = os.path.join("polls/static/polls/import_etudiants.csv")
 
-                # Write the CSV content to the in-memory file object
-                writer = csv.writer(output)
-                for row in reader:
-                    writer.writerow(row)
+        with open(chemin_absolu, mode="r", newline="", encoding="utf-8") as file:
+            reader = csv.reader(file, delimiter=";")
 
-                # Reset the pointer to the beginning of the file for download
-                output.seek(0)
+            # Create an in-memory file object to write the CSV content
+            output = BytesIO()
 
-                # Specify the filename for the download
-                download_filename = "import_etudiants.csv"
+            # Write the CSV content to the in-memory file object
+            writer = csv.writer(output)
+            for row in reader:
+                writer.writerow(row)
 
-                # Return the file with the correct content type and as an attachment
-                response = HttpResponse(output, content_type='text/csv')
-                response['Content-Disposition'] = f'attachment; filename={download_filename}'
+            # Reset the pointer to the beginning of the file for download
+            output.seek(0)
 
-                return response
-            
-        #except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
+            # Specify the filename for the download
+            download_filename = "import_etudiants.csv"
 
-        #except:
-            template = loader.get_template("polls/page_error.html")
-            context = {
-                "error_message": "Un problème a été détecté dans la base de données."
-            }
+            # Return the file with the correct content type and as an attachment
+            response = HttpResponse(output, content_type="text/csv")
+            response["Content-Disposition"] = (
+                f"attachment; filename={download_filename}"
+            )
+
+            return response
+
+        # except ValueError as ve:
+        template = loader.get_template("polls/page_error.html")
+        context = {"error_message": str(ve)}
+
+        # except:
+        template = loader.get_template("polls/page_error.html")
+        context = {
+            "error_message": "Un problème a été détecté dans la base de données."
+        }
 
     else:
         template = loader.get_template("polls/login.html")
         context = {}
     return HttpResponse(template.render(context, request))
-
 
 
 def ajouter_assignation_jeh(request, id_etude, id_phase):
@@ -5854,9 +5877,12 @@ def add_intervenant(request, id_etude, id_student):
             etude = Etude.objects.get(id=id_etude)
             eleve = Student.objects.get(id=id_student)
             for phase in etude.phases.all():
-                if request.POST[("nb_jeh_phase" + str(phase.numero))] and request.POST[
-                    ("pourcentage_retribution_phase" + str(phase.numero))
-                ]:
+                if (
+                    request.POST[("nb_jeh_phase" + str(phase.numero))]
+                    and request.POST[
+                        ("pourcentage_retribution_phase" + str(phase.numero))
+                    ]
+                ):
                     nb_jeh = request.POST[("nb_jeh_phase" + str(phase.numero))]
                     pourcentage_retribution = request.POST[
                         ("pourcentage_retribution_phase" + str(phase.numero))
@@ -6081,17 +6107,19 @@ def facture_redirect(request, fac_id):
         user_je = request.user.je
         facture = Facture.objects.get(id=fac_id)
         facture.date_emission = date.today()
-        etude=facture.etude
-        ref_conv=f"{etude.type_convention} concernant l'étude {etude.ref()} en référence à la "
-        if etude.type_convention=="Convention d'étude":
-            ref_conv+= f"convention d'étude {etude.ref()}ce "
+        etude = facture.etude
+        ref_conv = f"{etude.type_convention} concernant l'étude {etude.ref()} en référence à la "
+        if etude.type_convention == "Convention d'étude":
+            ref_conv += f"convention d'étude {etude.ref()}ce "
         else:
-            bdc=facture.bdc()
+            bdc = facture.bdc()
             if bdc:
-                bdc_ref=bdc.ref()
-            ref_conv+= f"convention cadre {etude.ref()}cc et au bon de commande {bdc_ref} "
-        #plus tard avenant
-        facture.objet=ref_conv
+                bdc_ref = bdc.ref()
+            ref_conv += (
+                f"convention cadre {etude.ref()}cc et au bon de commande {bdc_ref} "
+            )
+        # plus tard avenant
+        facture.objet = ref_conv
         if not facture.numero_facture:
             current_year = date.today().year
             je_act = facture.etude.je
