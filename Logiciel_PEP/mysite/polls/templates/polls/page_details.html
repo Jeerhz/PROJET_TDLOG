@@ -567,7 +567,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Déconnection
+                                    Se déconnecter
                                 </a>
                             </div>
                         </li>
@@ -580,8 +580,9 @@
                 <!-- Formulaire intervenant général -->
                 <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                     <div class="modal-dialog" role="document">
-                    <form method="post" id="form-intervenant">
 
+                    {% if type_convention == "Convention d'étude" %}
+                    <form method="post" id="form-intervenant">
                     {% csrf_token %}
                         <div class="modal-content">
                             <div class="modal-header">
@@ -604,6 +605,42 @@
                             </div>
                         </div>
                     </form>
+
+                    {% elif type_convention == "Convention cadre" %}
+                    <form method="post" id="form-intervenant">
+
+                    {% csrf_token %}
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Nouvel intervenant <span class="badge badge-secondary" id="name-intervenant"></span></h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% if bons %}
+                            <div class="modal-body">
+                                
+                                {% for bon in bons %}
+                                <h4>Bon n° {{bon.numero}}</h4>
+
+                                {% for phase in bon.preloaded_phases %}
+                                
+                                <h6>Phase {{ phase.numero }}</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                </ul>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                            
+                            {% endif %}
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Ajouter</button>
+                            </div>
+                        </div>
+                    </form>
+                    {% endif %}
                     </div>
                 </div>
                 <!-- Fin formulaire intervenant -->
@@ -624,7 +661,7 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                 <form id="suppression-modal-form" method="GET">
-                                    <button type="button" class="btn btn-danger" id="suppression-modal-button">Supprimer</button>
+                                    <button type="button" class="btn btn-outline-danger" id="suppression-modal-button">Supprimer</button>
                                 </form>
                             </div>
                         </div>
@@ -647,7 +684,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                    <button type="submit" class="btn btn-success">Générer le BV</button>
+                                    <button type="submit" class="btn btn-outline-success">Générer le BV</button>
                                 </div>
                             </form>
                         </div>
@@ -669,7 +706,7 @@
                             <div class="btn-group d-flex mb-2" role="group">
                                 <a href="#general" class="btn btn-primary flex-grow-1 active" data-toggle="tab" id="general-tab" aria-controls="general" aria-selected="true">Général</a>
                                 <a href="#phases" class="btn btn-primary flex-grow-1" data-toggle="tab" id="phases-tab" aria-controls="phases" aria-selected="false">Phases</a>
-                                {% if etude.type_convention == "Convention cadre" %}
+                                {% if type_convention == "Convention cadre" %}
                                 <a href="#bons" class="btn btn-primary flex-grow-1" data-toggle="tab" id="bons-tab" aria-controls="bons" aria-selected="false">BDCs</a>
                                 {% endif %}
                                 <a href="#documents" class="btn btn-primary flex-grow-1" data-toggle="tab" id="documents-tab" aria-controls="documents" aria-selected="false">Documents</a>
@@ -710,16 +747,21 @@
 
                                         <div style="padding-right: 0px; text-align: center;">
                                             <h4 class="mb-2" style="font-size: 16px;">
-                                                Statut :
+                                                
                                                 {% if etude.status == 'TERMINEE' %}
-                                                    <i class="fas fa-check-circle text-success"></i> {{ etude.get_status_display }}
+                                                <span style="background-color: #d4eddabd; padding: 2px 4px; border-radius: 4px;">{{ etude.get_status_display }}</span>
+
+                                                {% elif etude.status == 'EN_COURS' %}
+                                                <span style="background-color: #fff3cda1; padding: 2px 4px; border-radius: 4px;">{{ etude.get_status_display }}</span>
+
                                                 {% else %}
-                                                    <i class="fas fa-exclamation-circle text-warning"></i> {{ etude.get_status_display }}
+                                                <span style="background-color: #ffe5d0d6; padding: 2px 4px; border-radius: 4px;">{{ etude.get_status_display }}</span>
+
                                                 {% endif %}
                                             </h4>
                                             <div class="col-auto right" >
-                                                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalEtude">Supprimer l'étude</button>
-                                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modifyModalEtude">Modifier l'étude</button>
+                                                <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModalEtude">Supprimer l'étude</button>
+                                                <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#modifyModalEtude">Modifier l'étude</button>
                                             </div>
                                         </div>
                                     </div>
@@ -783,7 +825,7 @@
                                                 <div class="card-body">
                                                     <div class="tab-content" id="etude-info">
                                                         <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
+                                                            <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} pas de début {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
                                                             <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude_fin %} {{ etude_fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
                                                             <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
                                                             <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
@@ -834,10 +876,9 @@
                                         <div class="col-lg-5">
                                             <div class="card shadow mt-4">
                                                 <div class="card-header">
-                                                    <h6 class="text font-weight-bold primary center">Répartition du budget</h6>
+                                                    <h6 class="text font-weight-bold primary center" style="text-align:center;">Répartition du budget : {{etude_total_ht|FormatNombres}} €</h6>
                                                 </div>
                                                 <div class="card-body">
-                                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{etude_total_ht|FormatNombres}} € </div>
                                                     <div class="chart-pie">
                                                         <canvas id="PieChartEtude"></canvas>
                                                     </div>
@@ -1130,7 +1171,7 @@
                                                                 </div>
                                                             </div>
                                                             {% endfor %}
-                                                            {% if etude.type_convention == "Convention cadre" %}
+                                                            {% if type_convention == "Convention cadre" %}
                                                             <div class="form-group row mb-3">
                                                                 <label for="numero_bdc" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
                                                                 <div class="col-sm-8 justify-content-center">
@@ -1149,7 +1190,7 @@
                                         
                                     </div>
                                     <br>
-                                    {% if etude.type_convention == "Convention cadre" %}
+                                    {% if type_convention == "Convention cadre" %}
 
                                     {% if bons %}
                                     
@@ -1173,10 +1214,10 @@
                                                 {% endif %}
                                                 
                                                 <div>
-                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal" data-target="#editModalPhase{{ phase.id }}">
+                                                    <button type="button" class="btn btn-outline-warning btn-sm mr-2" data-toggle="modal" data-target="#editModalPhase{{ phase.id }}">
                                                         Modifier la phase
                                                     </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase{{ phase.id }}">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModalPhase{{ phase.id }}">
                                                         Supprimer la phase
                                                     </button>
                                                 </div>
@@ -1199,7 +1240,7 @@
                                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                             <form id="deletePhaseForm" method="POST" action="{% url 'delete_phase' phase.id etude.id %}">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                             </form>
                                                         </div>
                                                     </div>
@@ -1311,7 +1352,7 @@
                                                                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                                             <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
                                                                                                 {% csrf_token %}
-                                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                                             </form>
                                                                                         </div>
                                                                                     </div>
@@ -1379,69 +1420,11 @@
                                     {% endfor %}    
                                     {% endfor %}
                                     {%else%}
-                                    Aucune phase
+                                    <div style="text-align: center;">Aucune phase</div>
                                     {% endif %}
                                     <!-- Début Planning avec graphe-->
                                     <!--tableau planing-->
-                                    <div class="col-lg-13 mb-3" style="margin-top: 40px;">
-                                        <div class="card shadow">
-                                            <div class="card-header">
-                                                <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude :</h6>
-                                            </div>
-                                            <table class="table_planning">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
-                                                        <th class="th_planning"></th>
-                                                        <th class="th_planning">
-                                                            <div class="semaines_plan">
-                                                                {% for i in 1|Range_boucle:etude_duree %}
-                                                                <span>{{ i }}</span>
-                                                                {% endfor %}
-                                                            </div>
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for phase in phases %}
-                                                    <tr>
-                                                        <td class="td_planning">Phase {{phase.numero}} </td>
-                                                        <td class="td_planning" style="text-align: center;">{{phase.nb_JEH}} JEHs</td>
-                                                        <td class="td_planning" style="width: 70%;">
-                                                            <div class="bar_container_plan" >
-                                                                <div class="bar_plan" id="bar_plan-{{ phase.numero }}">
-                                                                    <div class="label_plan"> {{phase.duree_semaine}} semaines</div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                    
-                                                </tbody>
-                                            </table>
-                                            
-                                            <script>
-                                                function setBarWidth(barId, duree_phase, debut_phase, duree_total) {
-                                                    var bar = document.getElementById(barId);
-                                                    if (bar) {
-                                                        bar.style.width = (duree_phase / duree_total) * 100 + '%';
-                                                        bar.style.left = (debut_phase / duree_total) * 100 + '%';
-                                                    } else {
-                                                        console.error('Element with ID ' + barId + ' not found.');
-                                                    }
-                                                    
-                                                }
-                                        
-                                                // Set width of bars based on database values
-                                                {% if phases %}
-                                                    {% for phase in phases %}
-                                                        setBarWidth('bar_plan-{{ phase.numero }}', {{phase.duree_semaine}}, {{phase.debut_relatif}}, {{etude_duree}}); // Set width based on database values
-                                                    {% endfor %}
-                                                {% endif %}
-                                            </script>
-        
-                                        </div>
-                                    </div>
+                                    
                                     <!--Fin planning avec graphe--> 
                                     {% else %}
 
@@ -1466,16 +1449,16 @@
                                                     {% endif %} à {{ phase.montant_HT_par_JEH|FormatNombres }} € </span>
                                                 {% endif %}
                                     
-                                                {% if etude.type_convention == "Convention cadre" %}
+                                                {% if type_convention == "Convention cadre" %}
                                                 <small>Bon de commande n°{{ phase.bon.numero }}</small>
                                                 {% endif %}
                                     
                                                 <div>
-                                                    <button type="button" class="btn btn-warning btn-sm mr-2" data-toggle="modal"
+                                                    <button type="button" class="btn btn-outline-warning btn-sm mr-2" data-toggle="modal"
                                                         data-target="#editModalPhase{{ phase.id }}">
                                                         Modifier la phase
                                                     </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal"
                                                         data-target="#deleteModalPhase{{ phase.id }}">
                                                         Supprimer la phase
                                                     </button>
@@ -1500,7 +1483,7 @@
                                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                             <form id="deletePhaseForm" method="POST" action="{% url 'delete_phase' phase.id etude.id %}">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                             </form>
                                                         </div>
                                                     </div>
@@ -1618,7 +1601,7 @@
                                                                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                                             <form id="deleteAssignationForm{{ assignation_JEH.id }}" method="POST" action="{% url 'delete_assignation' assignation_JEH.id etude.id %}">
                                                                                                 {% csrf_token %}
-                                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                                             </form>
                                                                                         </div>
                                                                                     </div>
@@ -1686,7 +1669,7 @@
                                     {% endfor %}    
                                 
                                     {%else%}
-                                    Aucune phase
+                                    <div style="text-align: center;">Aucune phase</div>
                                     {% endif %}
                                     <!-- Début Planning avec graphe-->
                                     <!--tableau planing-->
@@ -1760,7 +1743,7 @@
 
                                 <!-- Début de l'Onglet Bons -->
 
-                                {% if etude.type_convention == "Convention cadre" %}
+                                {% if type_convention == "Convention cadre" %}
                                 <div class="tab-pane fade" id="bons" role="tabpanel" aria-labelledby="bons-tab">
                                     <div class="card mb-3">
                                         <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
@@ -1772,43 +1755,56 @@
                                             <br>
                                             <br>
                                             <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Bon de commande {{bon.numero}}</h5>
-                                                        <div> Objectifs :{% if bon.objectifs %} <span style="color:#000">{{bon.objectifs}}</span>  {% else %}
-                                                            <span style="color: red;"> manquant</span>
-                                                        {% endif %}
-                                                        </div>
-                                                        
-                                                        <div>
-                                                            Cahier des charges : 
-                                                            {% if bon.cahier_des_charges %}
-                                                            <ul>
-                                                                {% for key, value in bon.cahier_des_charges.items %}
-                                                                    <li style="color:#000">{{ value }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        {% else %}
-                                                            <span style="color: red;"> manquant</span>
-                                                        {% endif %}
-                                                        </div>
-                                                        <div> Période de garantie : {% if bon.periode_de_garantie %}<span style="color:#000">{{bon.periode_de_garantie}} jours</span>   {% else %}
-                                                            <span style="color: red;"> manquant</span>
-                                                        {% endif %}
-                                                        </div>
-                                                        <div> Pourcentage de l'acompte :{% if bon.acompte_pourcentage %} <span style="color:#000">{{bon.acompte_pourcentage}}%</span>  {% else %}
-                                                            <span style="color: red;"> manquant</span>
-                                                        {% endif %}
-                                                        </div>
-                                                        <div> Remarque : <span style="color:#000">{{bon.remarque}}</span>  </div>
-                                                        <div></div>
-                                                        <div>
-                                                            <button button class="btn btn-primary bouton-modifier-bdc" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC"><i class="fas fa-pen"></i></button>
+                                                <div style="color: #000; text-align: center; margin-top: 20px;margin-bottom: 10px; font-size: 20px;">Bon de Commande {{bon.numero}}</div>
+                                                <div style="padding: 15px; color: #1f3753; font-size: 17px; text-align: center;"> {{bon.dico_info.nb_JEH}} {% if bon.dico_info.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} sur {{bon.dico_info.nb_phases}} {% if bon.dico_info.nb_phases == 1 %} phase {% else %} phases {% endif %} pour un montant de {{bon.dico_info.montant_total_bon|FormatNombres}} € </div>
 
+                                                <div class="card-body">
+
+                                                    <div class="card shadow">
+                                                        
+                                                        <div class="card-body">
+                                                            <div class="tab-content" id="bdc-info">
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item"><strong>Début : </strong> <span >{% if bon.debut %} {{ bon.debut|FormatDate  }} {% else %} pas de début {% endif %} </span></li>
+                                                                    <li class="list-group-item"> <strong>Fin :</strong> <span > {% if bon.fin %} {{ bon.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
+                                                            
+                                                                    <li class="list-group-item"><strong>Frais de dossier : </strong><span style="color:#000">{{bon.frais_dossier|FormatNombres}} €</span> </li>
+                                                                    <li class="list-group-item"><strong>Période de garantie : </strong> <span id="bon-garantie">{% if bon.periode_de_garantie %}<span style="color:#000">{{bon.periode_de_garantie}} jours</span>   {% else %}
+                                                                        <span style="color: red;"> manquant</span></span>{% endif %}
+                                                                    </li>
+                                                                    <li class="list-group-item"><strong> Pourcentage de l'acompte :</strong> <span id="bon-acom">{% if bon.acompte_pourcentage %} <span style="color:#000">{{bon.acompte_pourcentage}}%</span>  {% else %}
+                                                                        <span style="color: red;"> manquant</span>
+                                                                    {% endif %}</li>
+                                                                    <li class="list-group-item"><strong> Objectifs : </strong>{% if bon.objectifs %} <span style="color:#000">{{bon.objectifs}}</span>  {% else %}
+                                                                            <span style="color: red;"> manquant</span>
+                                                                        {% endif %}
+                                                                    </li>
+                                                                    <li class="list-group-item"> <strong>Cahier des charges :  </strong>
+                                                                        {% if bon.cahier_des_charges %}
+                                                                            <ul>
+                                                                                {% for key, value in bon.cahier_des_charges.items %}
+                                                                                    <li style="color:#000">{{ value }}</li>
+                                                                                {% endfor %}
+                                                                            </ul>
+                                                                        {% else %}
+                                                                            <span style="color: red;"> manquant</span>
+                                                                        {% endif %}
+                                                                    </li>
+                                                                    <li class="list-group-item"><strong>Remarque : </strong><span style="color:#000">{{bon.remarque}}</span> </li>
+
+        
+        
+                                                                </ul>
+                                                                <!-- Modify Button -->
+                                                                <div class="text-right">
+                                                                    <button type="button" class="btn btn-outline-secondary mt-3" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC">Modifier</button>
+                                                                </div>
+                                                                <!-- End Modify Button -->
+                                                            </div>
+                                                            
                                                         </div>
-                                                        
-                                                        
-                                                        
-                                                    <hr>
+                                                    </div>
+                                                    
                                                     
                                                 </div>
                                             </div>
@@ -1835,6 +1831,24 @@
                                                                 </div>
                                                             </div> 
                                                             <div class="form-group row mb-3">
+                                                                <label for="debut" class="col-sm-4 col-form-label">Début :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="date" name="debut" class="form-control" id="debut" value="{{bon.debut}}">
+                                                                </div>
+                                                            </div> 
+                                                            <div class="form-group row mb-3">
+                                                                <label for="fin" class="col-sm-4 col-form-label">Fin :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="date" name="fin" class="form-control" id="fin" value="{{bon.fin_bdc}}">
+                                                                </div>
+                                                            </div> 
+                                                            <div class="form-group row mb-3">
+                                                                <label for="frais_dossier" class="col-sm-4 col-form-label">Frais de dossier :</label>
+                                                                <div class="col-sm-8 justify-content-center">
+                                                                    <input type="number" name="frais_dossier" class="form-control" id="frais_dossier" value="{{bon.frais_dossier}}">
+                                                                </div>
+                                                            </div> 
+                                                            <div class="form-group row mb-3">
                                                                 <label for="remarqueBDC" class="col-sm-4 col-form-label">Remarque :</label>
                                                                 <div class="col-sm-8 justify-content-center">
                                                                     <input type="text" name="remarque_bdc" class="form-control" id="remarqueBDC">
@@ -1852,7 +1866,7 @@
                                                                 <div class="input-group mb-2" data-key="{{ key }}">
                                                                     <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
                                                                     <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                    <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                                                                 </div>
                                                                 {% endfor %}
                                                             </li>
@@ -1888,7 +1902,7 @@
                                                             newField.innerHTML = `
                                                                 <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
                                                                 <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                                <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                                                             `;
                                                             document.getElementById('livrable_bdc').appendChild(newField);
                                                         });
@@ -1947,7 +1961,7 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        {% if etude.type_convention == "Convention d'étude" %}
+                                                        {% if type_convention == "Convention d'étude" %}
                                                             
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <!-- Link to the left -->
@@ -1972,7 +1986,7 @@
                                                             
                                                         
                                                         
-                                                        {% elif etude.type_convention == "Convention cadre" %}
+                                                        {% elif type_convention == "Convention cadre" %}
                                                             
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <!-- Link to the left -->
@@ -2117,7 +2131,7 @@
                                             });
                                         </script>
                                         <div class="row">
-                                            {% if etude.type_convention == "Convention d'étude" %}
+                                            {% if type_convention == "Convention d'étude" %}
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
@@ -2190,7 +2204,7 @@
                                                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                             <form id="deleteAvenantCEForm" method="POST" action="{% url 'delete_avenant_ce' avenant.id etude.id %}">
                                                                                 {% csrf_token %}
-                                                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                             </form>
                                                                         </div>
                                                                     </div>
@@ -2229,7 +2243,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            {% elif etude.type_convention == "Convention cadre" %}
+                                            {% elif type_convention == "Convention cadre" %}
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
@@ -2242,7 +2256,7 @@
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <!-- Link to the left -->
                                                                 <a style="color: #000;" href="{% url 'editer_bon' bon.id %}">
-                                                                    <i class="fas fa-download"></i> {{ etude_ref|add:"bc"|add:bon.numero }}
+                                                                    <i class="fas fa-download"></i> {{ bon }}
 
                                                                 </a>
                                                                 <button type="button"  style="margin-left: 10px; margin-right: 10px;" data-toggle="modal"
@@ -2265,7 +2279,7 @@
                                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                                 <form id="deleteAvenantBon2Form" method="POST" action="{% url 'object_suppression' model_name='BonCommande' object_id=bon.id %}">
                                                                                     {% csrf_token %}
-                                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                                    <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                                 </form>
                                                                             </div>
                                                                         </div>
@@ -2337,7 +2351,7 @@
                                                         <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
                                                             client : <span id="verifier-client_nom" style="color:#000">{% if etude.client %} {{ etude.client.nom_societe  }} {% else %} pas de client {% endif %}</span> 
                                                         </li>
-                                                        {% if etude.type_convention == "Convention d'étude" %}
+                                                        {% if type_convention == "Convention d'étude" %}
                                                             {% if etude_facture_solde %}
                                                             <li class="list-group-item"> Facture de solde : <span style="color:#000" id="etude-frais">frais : {{ etude_facture_solde.pourcentage_frais|FormatNombres }} %, phases : {{ etude_facture_solde.pourcentage_JEH|FormatNombres }} %</span></li>
  
@@ -2346,7 +2360,7 @@
                                                                 <span style="color: red;"> préciser la facturation </span>
                                                             </li>
                                                             {% endif %}
-                                                        {% elif etude.type_convention == "Convention cadre" %}
+                                                        {% elif type_convention == "Convention cadre" %}
                                                          <div></div>
                                                         {% endif %}
                                                         <li class="list-group-item"> Frais de dossier : <span style="color:#000" id="etude-frais">{{ etude.frais_dossier }}</span> €</li>
@@ -2404,7 +2418,7 @@
                                                             Si une phase intermédiaire, ajoutez une colonne
                                                         </div>
                                                         <br>
-                                                        {% if etude.type_convention == "Convention d'étude" %}
+                                                        {% if type_convention == "Convention d'étude" %}
                                                         <br>
                                                             <div style="text-align: center; font-weight: bold; font-size: large;color: #000;">Informations Convention d'Étude</div>
                                                         <br>
@@ -2516,7 +2530,7 @@
                                                                 <input type="char" name="per_gara" class="form-control" value="{{ etude.periode_de_garantie }}">
 
                                                             </li>
-                                                            {% if etude.type_convention == "Convention d'étude" %}
+                                                            {% if type_convention == "Convention d'étude" %}
                                                             <br>
                                                             <div style="text-align: center; font-weight: bold; font-size: large;">Convention d'Étude</div>
                                                             <br>
@@ -2538,7 +2552,7 @@
                                                                 <div class="input-group mb-2" data-key="{{ key }}">
                                                                     <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
                                                                     <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                    <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                                                                 </div>
                                                                 {% endfor %}
                                                             </li>
@@ -2571,7 +2585,7 @@
                                                             newField.innerHTML = `
                                                                 <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
                                                                 <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                                                <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                                                             `;
                                                             document.getElementById('json-fields').appendChild(newField);
                                                         });
@@ -2623,7 +2637,7 @@
 
                                 <!-- Début de l'Onglet Intervenants -->
                                 <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
-                                    {% if etude.type_convention == "Convention d'étude" %}
+                                    {% if type_convention == "Convention d'étude" %}
                                     <div class="container col-md-7 mb-4 mt-4 ml-0 pl-3">
                                         <div class="d-none d-sm-inline-block form-inline navbar-search w-100">
                                             <div class="input-group w-100 m-0">
@@ -2715,7 +2729,7 @@
                                                         <div class="bg-white py-2 collapse-inner rounded">
                                                             <table class="table table-striped">
                                                                 <thead>
-                                                                    <th style="color: #000;"><strong>Selectionner</strong> </th>
+                                                                    <th style="color: #000;"><strong>Selectionner pour le BV</strong> </th>
                                                                     <th>Phase</th>
                                                                     <th>Nombre JEH</th>
                                                                     <th>Pourcentage</th>
@@ -2725,7 +2739,7 @@
                                                                     {% for assignation in eleve.assignations_for_etude %}
                                                                 <tr>
                                                                     <th><div class="form-check form-switch">
-                                                                        <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}">
+                                                                        <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{assignation.phase.id}}" name="checkInputPhase{{assignation.phase.id}}" checked>
                                                                     </div></th>
                                                                     <th scope="row">{{assignation.phase.numero}}</th>
                                                                     <td>{{assignation.nombre_JEH}}</td>
@@ -2736,8 +2750,8 @@
                                                                 </tbody>
                                                             </table>
                                                             <div>
-                                                                <button type="submit" class="btn btn-success d-flex align-items-center" style="gap: 0.5rem; padding: 0.5rem;">
-                                                                    <i class="fas fa-plus"></i>
+                                                                <button type="submit" class=" btn btn-outline-success d-flex align-items-center" style="gap: 0.5rem; padding: 0.5rem;">
+                                                                    
                                                                     <span>Générer le BV</span>
                                                                 </button>
                                                             </div>                                                                
@@ -2813,8 +2827,144 @@
                                         <hr>
                                         {% endfor %}
                                     </div>
-                                    {% elif etude.type_convention == "Convention cadre" %}
-                                    <div>ca arrive</div>
+                                    {% elif type_convention == "Convention cadre" %}
+
+                                    <div class="container col-md-7 mb-4 mt-4 ml-0 pl-3">
+                                        <div class="d-none d-sm-inline-block form-inline navbar-search w-100">
+                                            <div class="input-group w-100 m-0">
+                                                <div class="row m-0 w-100">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">Ajouter un intervenant</span>
+                                                    </div>
+                                                    <input type="text" class="form-control bg-light border-0" placeholder="Chercher un élève..."
+                                                        aria-label="Search" aria-describedby="basic-addon2" id="search-input-student" name="search-input-student">
+                                                </div>
+                                                <div class="list-group w-100" id="suggestions-results-student"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% for bon in bons %}
+                                    <div style="color: #000; text-align: center; margin-top: 20px;margin-bottom: 10px; font-size: 20px;">Bon de Commande {{bon.numero}}</div>
+                                    
+                                    
+                                    <!-- Début Infos Élèves -->
+                                    <div class="col-md-12">
+                                        {% for key, assignation in bon.dico_assignations_JEH.items %}
+                                        <div class="card shadow">
+                                            <div class="card-header" id="cardHeaderEleve{{bon.id}}{{key}}" data-toggle="collapse" data-target="#cardBodyEleve{{bon.id}}{{key}}" aria-expanded="false" aria-controls="cardBodyEleve{{eleve.id}}" style="cursor: pointer;">
+                                                <i class="fas fa-user-circle mr-2"></i>
+                                                <strong>{{assignation.prenom}} {{assignation.nom}}, </strong> {{assignation.total_nb_JEH}} {% if assignation.total_nb_JEH == 1 %} JEH {% else%} JEHs {% endif %} pour un montant de {{assignation.montant_total|FormatNombres}} € HT
+                                            </div>
+                                            <div class="collapse" id="cardBodyEleve{{bon.id}}{{key}}" aria-labelledby="cardHeaderEleve{{bon.id}}{{key}}">
+                                                <div class="card-body">
+                                                    <div class="container">
+                                                        <div class="row justify-content-between">
+                                                            
+                                                            <a  ><i class="fas fa-download mr-2"></i>Générer le RDM</a>
+
+                                                            <a href="#" class="text-decoration-none text-primary font-weight-bold d-inline-flex align-items-center" 
+                                                            data-toggle="modal" data-target="#avenantRDM_{{key}}_{{bon.id}}">
+                                                                <i class="fas fa-plus me-2"></i>  Ajouter un avenant au RdM
+                                                            </a>
+
+                                                            <!-- Modal -->      
+                                                            <div class="modal fade" id="avenantRDM_{{key}}_{{bon.id}}" tabindex="-1" role="dialog" aria-labelledby="editAvenantRDM" aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <form id="numeroBA" method="POST" action="{% url 'editer_avenant_rdm_ce' id_etude=etude.id id_eleve=key %}">
+                                                                            {% csrf_token %}
+                                                                            <div class="modal-header">
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                    <span aria-hidden="true">&times;</span>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="form-group">
+                                                                                    <label for="num_dernier_avenant">Numéro du dernier avenant (0 si aucun)</label>
+                                                                                    <input type="number" class="form-control" id="num_dernier_avenant" name="num_dernier_avenant" step="1" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="date_fin">Date de fin</label>
+                                                                                    <input type="date" class="form-control" id="date_fin" name="date_fin" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="causes_avenants">Les causes de l'avenant</label>
+                                                                                    <input type="text" class="form-control" id="causes_avenants" name="causes_avenants" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="ref_ba">Référence du Bulletin d'Adhésion</label>
+                                                                                    <input type="text" class="form-control" id="ref_ba" name="ref_ba" required>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="ref_rdm">Référence au RDM</label>
+                                                                                    <input type="text" class="form-control" id="ref_rdm" name="ref_rdm" value = "{{etude.ref}}rdm-{{eleve.first_name|slice:':1'}}{{eleve.last_name|slice:':1'}}" required>
+                                                                                </div>
+                                                                        
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                <button type="submit" class="btn btn-primary">Générer l'avenant</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                            
+
+                                                            <a href="{% url 'editer_acf' id_etude=iD id_eleve=key %}" ><i class="fas fa-download mr-2"></i>Accord confidentialité</a>
+                                                        </div>
+                                                    </div>
+                                                    <br>
+                                                    
+                                                    <form action="{% url 'nouveau_BV' id_etude=iD id_eleve=key %}" method="post">
+                                                        {% csrf_token %}
+                                                        <div class="bg-white py-2 collapse-inner rounded">
+                                                            <table class="table table-striped">
+                                                                <thead>
+                                                                    <th style="color: #000;"><strong>Selectionner pour le BV</strong> </th>
+                                                                    <th>Phase</th>
+                                                                    <th>Nombre JEH</th>
+                                                                    <th>Pourcentage</th>
+                                                                    <th>Montant</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for phase_key, phase in assignation.phases.items %}
+                                                                <tr>
+                                                                    <th><div class="form-check form-switch">
+                                                                        <input class="form-check-input" type="checkbox" role="switch" id="checkInputPhase{{phase_key}}" name="checkInputPhase{{phase_key}}" checked>
+                                                                    </div></th>
+                                                                    <th scope="row">{{phase.numero}}</th>
+                                                                    <td>{{phase.nb_jeh}}</td>
+                                                                    <td>{{phase.pourc|FormatNombres}}%</td>
+                                                                    <td>{{phase.montant|FormatNombres}}</td>
+                                                                </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            <div>
+                                                                <button type="submit" class="btn btn-outline-success d-flex align-items-center" style="gap: 0.5rem; padding: 0.5rem;">
+                                                                    
+                                                                    <span>Générer le BV</span>
+                                                                </button>
+                                                            </div>                                                                
+
+                                                        </div>
+                                                    </form>
+                                                    
+                                                    <!--fin tableau planing-->
+                                                
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        {% endfor %}
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    
+
                                     {% else %}
                                     <div>Définir le type de convention</div>
                                     {% endif %}
@@ -2859,7 +3009,7 @@
                                                                 </div>
                                                             </div>
                                                             {% endfor %}
-                                                            {% if etude.type_convention == "Convention cadre" %}
+                                                            {% if type_convention == "Convention cadre" %}
                                                             <div class="form-group row mb-3">
                                                                 <label for="numero_bdc_fac" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
                                                                 <div class="col-sm-8 justify-content-center">
@@ -3013,11 +3163,11 @@
                                         </div>
                                     </div>            
                                     <!-- facture créé dans longlet général qui n'ont pas encoré été générés-->
-                                    {% if etude.type_convention == "Convention cadre" %} 
+                                    {% if type_convention == "Convention cadre" %} 
                                     <div class="container mt-3">
                                         {% if bons %}
                                         {% for bon in bons %}
-                                        <div style="text-align: center; color: #000;">Bon de Commande {{bon.numero}}</div>
+                                        <div style="color: #000; text-align: center; margin-top: 20px;margin-bottom: 10px; font-size: 20px;">Bon de Commande {{bon.numero}}</div>
                                         {% if bon.preloaded_factures %}
                                         
                                             {% for facture in bon.preloaded_factures %}
@@ -3030,7 +3180,7 @@
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
-                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
                                                             Supprimer la facture
                                                         </button>
                                                     </div>
@@ -3053,7 +3203,7 @@
                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                 <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id etude.id %}">
                                                                     {% csrf_token %}
-                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                    <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                 </form>
                                                             </div>
                                                         </div>
@@ -3107,7 +3257,8 @@
                                         <br>
                                         {% endfor %}    
                                         {%else%}
-                                        Aucune facture
+                                        <div style="text-align: center;">Aucune facture</div>
+                                        <br>
                                         <br>
                                         {% endif %}
                                         <br>
@@ -3128,7 +3279,7 @@
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <small class="mr-3">{% if facture.facturé %} Facture émise {% else %} Facture non émise {% endif %}</small>
-                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModalFacture_{{facture.id}}">
                                                             Supprimer la facture
                                                         </button>
                                                     </div>
@@ -3151,7 +3302,7 @@
                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                                                 <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id etude.id %}">
                                                                     {% csrf_token %}
-                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                                    <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                 </form>
                                                             </div>
                                                         </div>
@@ -3211,7 +3362,7 @@
                                     
                                     
                                         {%else%}
-                                        Aucune facture
+                                        <div style="text-align: center;">Aucune facture</div>
                                         {% endif %}
                                     </div> 
                                     {% endif %}
@@ -3292,7 +3443,7 @@
                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                             <form id="deleteEtudeForm" method="POST" action="{% url 'delete_etude' etude.id %}">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                             </form>
                                         </div>
                                     </div>
@@ -3301,6 +3452,55 @@
                         <!-- Fin CardBody-->
                         </div>
                     </div>
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            // Retrieve the active tab from localStorage
+                            const activeTab = localStorage.getItem("activeTab");
+                    
+                            // Function to activate a valid tab
+                            function activateTab(tabSelector) {
+                                // Remove 'active' and 'show' classes from all tab content
+                                document.querySelectorAll('.tab-pane').forEach(pane => {
+                                    pane.classList.remove('active', 'show');
+                                });
+                    
+                                // Remove 'active' class from all tabs
+                                document.querySelectorAll('.btn-group a').forEach(tab => {
+                                    tab.classList.remove('active');
+                                    tab.setAttribute('aria-selected', 'false');
+                                });
+                    
+                                // Activate the selected tab
+                                const selectedTab = document.querySelector(`a[href="${tabSelector}"]`);
+                                const tabPane = document.querySelector(tabSelector);
+                    
+                                if (selectedTab && tabPane) {
+                                    selectedTab.classList.add('active');
+                                    selectedTab.setAttribute('aria-selected', 'true');
+                                    tabPane.classList.add('active', 'show');
+                                }
+                            }
+                    
+                            // Check if the saved tab exists, otherwise fall back to the first available tab
+                            if (activeTab && document.querySelector(`a[href="${activeTab}"]`)) {
+                                activateTab(activeTab);
+                            } else {
+                                // Default to the first tab if the saved tab is missing
+                                const firstTab = document.querySelector('.btn-group a');
+                                if (firstTab) {
+                                    activateTab(firstTab.getAttribute('href'));
+                                }
+                            }
+                    
+                            // Save the active tab to localStorage on click
+                            document.querySelectorAll('.btn-group a').forEach(tab => {
+                                tab.addEventListener('click', function () {
+                                    localStorage.setItem("activeTab", this.getAttribute('href'));
+                                });
+                            });
+                        });
+                    </script>
+                    
                     {% endif %}
                     <!-- Fin du if ModelName==Etude-->
                     <!-- Fin du CardShadow dans lequel est la page-->
@@ -3313,8 +3513,8 @@
                                  <img class="img-profile rounded-circle" style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px;" src="{{ client.logo.url }}">
                                 <h5 class="m-1 font-weight-bold text-primary">{{ client.nom_societe }}</h5>
                                 <div>
-                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModalClient">Modifier</button>
-                                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalClient">Supprimer</button>
+                                    <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#editModalClient">Modifier</button>
+                                    <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModalClient">Supprimer</button>
                                 </div>
                             </div>
                             <div class="card-body mb-3">
@@ -3363,7 +3563,7 @@
                                             
                                         </div>
                                         <div>
-                                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteRepresentantModal{{ representant.id }}">Supprimer</button>
+                                            <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteRepresentantModal{{ representant.id }}">Supprimer</button>
                                         </div>
                                     </li>
                                 </ul>
@@ -3383,7 +3583,7 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                <a href="{% url 'supprimer_representant' id_representant=representant.id %}" class="btn btn-danger">Supprimer</a>
+                                                <a href="{% url 'supprimer_representant' id_representant=representant.id %}" class="btn btn-outline-danger">Supprimer</a>
                                             </div>
                                         </div>
                                     </div>
@@ -3564,7 +3764,7 @@
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                         <form id="deleteClientForm" method="POST" action="{% url 'delete_client' client.id %}">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                         </form>
                                     </div>
                                 </div>
@@ -3578,9 +3778,19 @@
                     <div >
                         <h2 class="panel-title text-center"> {{student.first_name}} {{student.last_name}} </h2>
                         <ul class="nav nav-pills mb-3" style="background-color: #FFFFFF;" id="pills-tab" role="tablist">
+                            {% if eleve.is_member %}
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="true">Études</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link " id="pills-info_etude-tab" data-toggle="pill" href="#pills-fiche_info" role="tab" aria-controls="pills-fiche_info" aria-selected="false">Fiche info</a>
+                            </li>
+                            {% else %}
                             <li class="nav-item">
                                 <a class="nav-link active" id="pills-info_etude-tab" data-toggle="pill" href="#pills-fiche_info" role="tab" aria-controls="pills-fiche_info" aria-selected="true">Fiche info</a>
                             </li>
+                            {% endif %}
+                            
                             <li class="nav-item">
                                 <a class="nav-link" id="pills-missions_réalisées-tab" data-toggle="pill" href="#pills-missions_réalisées" role="tab" aria-controls="pills-missions_réalisées" aria-selected="false">Missions réalisées</a>
                             </li>
@@ -3590,15 +3800,156 @@
                             <li class="nav-item">
                                 <a class="nav-link" id="pills-candidatures-tab" data-toggle="pill" href="#pills-candidatures" role="tab" aria-controls="pills-candidatures" aria-selected="false">Candidatures</a>
                             </li>
-                            {% if eleve.is_member %}
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-missions_suivies-tab" data-toggle="pill" href="#pills-missions_suivies" role="tab" aria-controls="pills-missions_suivies" aria-selected="false">Études</a>
-                            </li>
-                            {% endif %}
+                            
                         </ul>
                         <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+                            {% if eleve.is_member %}
+                            <div class="tab-pane fade show active" id="pills-missions_suivies">
+                                <div class="card-body">
+                                    <div class="row mb-3 d-flex justify-content-center">
+                                        <div class="col-5">
+                                            
+                                                <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
+                                                    <div class="m-0" style="color: #000;"><strong>{{ eleve.is_member.missions_suivis.count }}</strong>{% if eleve.is_member.missions_suivis.count == 1 %} étude suivie {% else %} études suivies {% endif %}</div>
+                                                </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="container-fluid">
+                                        
+                                        <div class="card mb-4 ml-4 mr-3 shadow">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover text-center" style="padding-bottom: 0px;">
+                                                    <thead style="background-color: #ffffff;">
+                                                        <tr>
+                                                            
+                                                            
+                                                            <th scope="col" style="text-align: left; ">Étude</th>
+                                                            
+                                                            <th scope="col" style="text-align: left;">Client</th>
+                                                            
                     
-                            <!-- Onglet info_étude -->
+                                                            <th scope="col" style="text-align: left;">Montant</th>
+                                                            <th scope="col" style="text-align: left;">Statut</th>
+
+                    
+                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for etude in eleve.is_member.missions_suivis.etudes %}
+                                                        <tr>
+                                                            <td style="text-align: left; padding-right: 50px;">
+                                                                <a href="{% url 'details' modelName='Etude' iD=etude.id %}">
+                                                                    <strong>{{ etude.ref }}</strong> - {{ etude.titre|slice:":50" }}
+                                                                </a>
+                                                            </td>                                                            
+                                                            <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
+                                                            
+                                                            <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}}€</td>
+                                                            <td style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}">
+                                                                {{ etude.get_status_display }}
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                        
+                        
+                                                        {% endfor %}
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>       
+                                    
+                                </div>
+                                
+                                            
+                            </div>
+                            <div class="tab-pane fade" id="pills-fiche_info">
+                                <div class="card shadow mb-4 w-100">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <h5 class="m-1 font-weight-bold text-primary"> {% if eleve.is_member %} 
+
+                                            <!-- Trigger the modal by clicking on the photo -->
+                                                <img 
+                                                class="img-profile rounded-circle" 
+                                                style="width: 6vw; height: 6vw; max-width: 60px; max-height: 60px; min-width: 50px; min-height: 50px; cursor: pointer;" 
+                                                src="{{ eleve.is_member.photo.url }}" 
+                                                data-toggle="modal" 
+                                                data-target="#editPhotoModal">
+
+                                                <!-- Bootstrap Modal -->
+                                                <div class="modal fade" id="editPhotoModal" tabindex="-1" role="dialog" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="editpdp" method="POST" enctype="multipart/form-data" action="{% url 'edit_pdp' eleve.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                        <label for="pdp">Photo de profil</label>
+                                                        <input type="file" class="form-control" id="pdp" name="pdp">
+                                                        {% if eleve.is_member.photo.url %}
+                                                            <img src="{{ eleve.is_member.photo.url }}" alt="pdp actuelle" style="max-width: 100px; margin-top: 10px;">
+                                                        {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                    </div>
+                                                    </form>
+                                                </div>
+                                                </div>
+                                                </div>
+
+    
+
+                                             {% endif %}
+                                            {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
+                                        <div>
+                                            <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
+                                            <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body mb-3">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><span style="font-style: italic;">Remarque : </span><span style="color: #000;">{{ eleve.remarque }}</span> 
+                                            </li>
+                                            <li class="list-group-item"><span style="font-style: italic;">Département : </span><span style="color: #000;">{{ eleve.get_departement_display }}</span> 
+                                            </li>
+        
+                                            <li class="list-group-item"><span style="font-style: italic;">Promotion : </span><span style="color: #000;">{{ eleve.promotion }}</span></li>
+                                            
+                                            
+                                            <li class="list-group-item"><span style="font-style: italic;">Adresse : </span> 
+                                                <span style="color: #000;">
+                                                    <div>{{ eleve.adress }} </div>
+                                                    <div>{{ eleve.code_postal }} {{ eleve.ville }}</div>
+                                                    <div>{{ eleve.country }}</div>
+                                                </span>
+                                                
+                                            </li>
+                                            <div class="d-flex align-items-center mb-2 text-center" >
+                                                <span> <a href="mailto:{{ eleve.email }}"> {{ eleve.mail }}</a> - <a href="tel:{{ eleve.telephone }}"> {{ eleve.phone_number }}</a></span> 
+                                            </div>
+        
+                                            
+                                            
+                                            
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% else %}
                             <div class="tab-pane fade show active" id="pills-fiche_info">
                                 <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -3647,8 +3998,8 @@
                                              {% endif %}
                                             {{ eleve.last_name }} {{ eleve.first_name }} {% if eleve.is_member %} : {{ eleve.is_member.poste }} {% endif %} </h5>
                                         <div>
-                                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
-                                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
+                                            <button class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#editModal">Modifier</button>
+                                            <button class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Supprimer</button>
                                         </div>
                                     </div>
                                     
@@ -3681,6 +4032,9 @@
                                     </div>
                                 </div>
                             </div>
+                            {% endif %}
+                            <!-- Onglet info_étude -->
+                            
                             
                             <!-- Edit Modal -->
                             <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -3802,7 +4156,7 @@
                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                             <form id="deleteStudentForm" method="POST" action="{% url 'delete_student' eleve.id %}">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                             </form>
                                         </div>
                                     </div>
@@ -3861,70 +4215,7 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                            {% if eleve.is_member %}
-                            <div class="tab-pane fade" id="pills-missions_suivies">
-                                <div class="card-body">
-                                    <div class="row mb-3 d-flex justify-content-center">
-                                        <div class="col-5">
-                                            
-                                                <div class="card border-4 border-primary shadow p-2 d-flex justify-content-between align-items-center">
-                                                    <div class="m-0" style="color: #000;"><strong>{{ eleve.is_member.missions_suivis.count }}</strong>{% if eleve.is_member.missions_suivis.count == 1 %} étude suivie {% else %} études suivies {% endif %}</div>
-                                                </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="container-fluid">
-                                        
-                                        <div class="card mb-4 ml-4 mr-3 shadow">
-                                            <div class="table-responsive">
-                                                <table class="table table-hover text-center" style="padding-bottom: 0px;">
-                                                    <thead style="background-color: #ffffff;">
-                                                        <tr>
-                                                            
-                                                            
-                                                            <th scope="col" style="text-align: left; ">Étude</th>
-                                                            
-                                                            <th scope="col" style="text-align: left;">Client</th>
-                                                            
-                    
-                                                            <th scope="col" style="text-align: left;">Montant</th>
-                                                            <th scope="col" style="text-align: left;">Statut</th>
-
-                    
-                                                            
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for etude in eleve.is_member.missions_suivis.etudes %}
-                                                        <tr>
-                                                            <td style="text-align: left; padding-right: 50px;">
-                                                                <a href="{% url 'details' modelName='Etude' iD=etude.id %}">
-                                                                    <strong>{{ etude.ref }}</strong> - {{ etude.titre|slice:":50" }}
-                                                                </a>
-                                                            </td>                                                            
-                                                            <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
-                                                            
-                                                            <td style="text-align: left;">{{etude.montant_HT_total|FormatNombres}}€</td>
-                                                            <td style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}">
-                                                                {{ etude.get_status_display }}
-                                                            </td>
-                                                            
-                                                        </tr>
-                                                        
-                        
-                                                        {% endfor %}
-                                                        
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>       
-                                    
-                                </div>
-                                
-                                            
-                            </div>
-                            {% endif %}
+                            
                             <div class="tab-pane fade" id="pills-candidatures">
                                 <div class="container p-4">
                                     <div class="row mb-3 d-flex justify-content-center">
@@ -3961,13 +4252,13 @@
                             <!-- Onglet Documents -->
                             <div class="tab-pane fade" id="pills-documents">
                                 <div class="col-12 mb-4">
-                                    <a href="{% url 'ndf' %}" class="btn btn-primary"><i class="fas fa-download mr-2"></i>Note de frais</a>
+                                    <a href="{% url 'ndf' %}" ><i class="fas fa-download mr-2"></i>Note de frais</a>
                                     
 
 
-                                    <button class="btn btn-primary" data-toggle="modal" data-target="#numeroBA">
+                                    <a data-toggle="modal" data-target="#numeroBA" style="margin-left: 30px;">
                                         <i class="fas fa-download mr-2"></i> Générer le Bulletin d'adhésion
-                                    </button>
+                                    </a>
                                     
                                                
                                     <div class="modal fade" id="numeroBA" tabindex="-1" role="dialog" aria-labelledby="editBAModalLabel" aria-hidden="true">
@@ -4020,7 +4311,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>          
+                    </div> 
+                             
                     {% endif %}
                     <!-- End of Card Shadow Student -->
                 </div>
@@ -4111,7 +4403,11 @@
                 $(this).addClass('active'); // Ajouter la classe 'active' uniquement au bouton cliqué
             });
         });
-        </script>
+    </script>
+
+    
+
+
 
         
         
@@ -4194,7 +4490,7 @@
                             newField.innerHTML = `
                                 <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="${key}">
                                 <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="${cahier[key]}">
-                                <button type="button" class="btn btn-danger btn-remove">Supprimer</button>
+                                <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                             `;
                             livrableContainer.appendChild(newField);
                         }

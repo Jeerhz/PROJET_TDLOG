@@ -478,7 +478,10 @@ class StudentCSVUploadForm(forms.Form):
 
 
 class ClientCSVUploadForm(forms.Form):
-    csv_file = forms.FileField(label="Upload CSV File")
+    csv_file_client = forms.FileField(label="Upload CSV File")
+
+class EtudeCSVUploadForm(forms.Form):
+    csv_file_etudes = forms.FileField(label="Upload CSV File")
 
 
 class CustomUserManager(BaseUserManager):
@@ -687,6 +690,10 @@ class Etude(models.Model):
         M026 = "026", "026"
         M027 = "027", "027"
 
+    class RaisonDuContact(models.TextChoices):
+        DEMARCHE = "DEMARCHE", "Démarché"
+        CONTACTE = "CONTACTE", "Contacté"
+
     titre = models.CharField(max_length=500)
     numero = models.IntegerField(blank=True, null=True)
     description = models.TextField(max_length=10000, blank=True)
@@ -756,7 +763,14 @@ class Etude(models.Model):
         blank=True, null=True, verbose_name="Fin du recrutement"
     )
     remarque = models.TextField(blank=True, null=True, default="")
-    raison_contact = models.TextField(blank=True, null=True, default="")
+    raison_contact = models.CharField(
+        max_length=30,
+        choices=RaisonDuContact.choices,
+        default=RaisonDuContact.CONTACTE,
+        blank=True,
+        verbose_name="Nature du contact",
+    )
+    models.TextField(blank=True, null=True, default="")
     contexte = models.TextField(blank=True, null=True, default="")
     objectifs = models.TextField(blank=True, null=True, default="")
     periode_de_garantie = models.IntegerField(default=90)
@@ -977,6 +991,7 @@ class Etude(models.Model):
 
     def retributions_totales(self):
         phases = Phase.objects.filter(etude=self)
+        
         return (
             sum(
                 phase.retributions()
@@ -1117,6 +1132,72 @@ class Etude(models.Model):
         else:
             return 0
 
+class EtudeImportee(models.Model):
+    class Departement(models.TextChoices):
+        IMI = "IMI", "IMI"
+        SEGF = "SEGF", "SEGF"
+        GMM = "GMM", "GMM"
+        _1A = "1A", "1A"
+        GCC = "GCC", "GCC"
+        VET = "VET", "VET"
+        GI = "GI", "GI"
+        AUTRE = "AUTRE", "Autre"
+
+    class Departement(models.TextChoices):
+        IMI = "IMI", "IMI"
+        SEGF = "SEGF", "SEGF"
+        GMM = "GMM", "GMM"
+        _1A = "1A", "1A"
+        GCC = "GCC", "GCC"
+        VET = "VET", "VET"
+        GI = "GI", "GI"
+        AUTRE = "AUTRE", "Autre"
+
+    class Mandat(models.TextChoices):
+        M025 = "025", "025"
+        M026 = "026", "026"
+        M027 = "027", "027"
+
+    titre = models.CharField(max_length=500,blank=True, null=True)
+    ref = models.CharField(blank=True, null=True)
+    description = models.TextField(max_length=10000, blank=True)
+    problematique = models.TextField(max_length=500, blank=True)
+    debut = models.DateField(default=timezone.now, blank=True, null=True)
+    nb_JEH = models.IntegerField(null=True, blank=True, verbose_name="Nombres de JEHs")
+    montant_HT_phases =models.FloatField(null=True, blank=True, verbose_name="Montant HT Phases")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
+    je = models.ForeignKey(JE, on_delete=models.CASCADE)
+    frais_dossier = models.FloatField(default=0, verbose_name="frais de dossier")
+    mandat = models.CharField(
+        max_length=30,
+        choices=Mandat.choices,
+        default=Mandat.M026,
+        blank=True,
+        verbose_name="mandat",
+    )
+    departement = models.CharField(
+        choices=Departement.choices, default=Departement.AUTRE,null=True, blank=True
+    )
+    remarque = models.TextField(blank=True, null=True, default="")
+    fin_etude = models.DateField(blank=True, null=True)
+
+    
+    def __str__(self):
+        return self.titre
+
+    def createForm(**kwargs):
+        return AddEtudeImportee()
+
+    def retrieveForm(form, **kwargs):
+        if "files" in kwargs.keys():
+            return AddEtudeImportee(form, kwargs["files"])
+        else:
+            return AddEtudeImportee(form)
+
+    def modifyForm(instance):
+        return AddEtudeImportee(instance=instance)
+
+    
 
 class Facture(models.Model):
     class Status(models.TextChoices):
@@ -1143,6 +1224,8 @@ class Facture(models.Model):
     date_emission = models.DateField(null=True)
     date_echeance = models.DateField(null=True)
     facture_pdf = models.FileField(upload_to="factures/pdfs/", null=True, blank=True)
+
+    objet = models.TextField(default="")
 
     def __str__(self):
         if self.date_emission:
@@ -1247,9 +1330,14 @@ class BV(models.Model):
 
     def ref_rdm(self):
         if self.etude.type_convention == "Convention cadre":
-            asso_bdc_fac = AssociationFactureBDC.objects.filter(facture=self).first()
-
-            return asso_bdc_fac.bon_de_commande
+            ## creer une asso rdm bdc
+            rdm = RDM.objects.filter(etude=self.etude, eleve=self.eleve).first()
+            if rdm:
+                dernier_avenant = rdm.dernier_avenant()
+                if dernier_avenant:
+                    return dernier_avenant.ref()
+                else:
+                    return rdm.ref()
         else:
             rdm = RDM.objects.filter(etude=self.etude, eleve=self.eleve).first()
             if rdm:
@@ -1489,9 +1577,10 @@ class BonCommande(models.Model):
     frais_dossier = models.FloatField(default=0, verbose_name="frais de dossier")
     objectifs = models.TextField(blank=True, null=True, default="")
     cahier_des_charges = models.JSONField(default=dict)
-    debut = models.DateField(default=timezone.now, blank=True, null=True)
+    debut = models.DateField( blank=True, null=True)
     acompte_pourcentage = models.IntegerField(default=30)
     periode_de_garantie = models.IntegerField(default=90)
+    fin_bdc= models.DateField(blank=True, null=True)
 
     # methode phase, duree
     def phases(self):
@@ -1508,6 +1597,14 @@ class BonCommande(models.Model):
                 return None
         else:
             return None
+        
+    def nb_JEH(self):
+        phases = self.phases()
+        total_JEH=0
+        if phases:
+            for phase in phases:
+               total_JEH+= phase.nb_JEH
+        return total_JEH
 
     def nb_phases(self):
         return len(self.phases())
@@ -1525,8 +1622,13 @@ class BonCommande(models.Model):
             return 0
 
     def fin(self):
+        if self.fin_bdc:
+            return self.fin_bdc
         if self.debut and self.duree_semaine():
-            return self.debut + datetime.timedelta(weeks=self.duree_semaine())
+            self.fin_bdc=self.debut + datetime.timedelta(weeks=self.duree_semaine())
+            self.save()
+            return self.fin_bdc
+        
         else:
             return None
 
@@ -1720,7 +1822,7 @@ class Phase(models.Model):
             for assignation in assignations:
                 retr_totale += assignation.retribution_brute_totale()
                 nb_JEHs += assignation.nombre_JEH
-        retr_totale += (self.nb_JEH - nb_JEHs) * self.montant_HT_par_JEH * 0.6
+        retr_totale += max((self.nb_JEH - nb_JEHs),0) * self.montant_HT_par_JEH * 0.6
         return retr_totale
 
     def get_montant_HT(self, eleve):
@@ -2149,7 +2251,6 @@ class AddEtude(forms.ModelForm):
             "debut",
             "date_fin_recrutement",
             "date_debut_recrutement",
-            "raison_contact",
             "contexte",
             "objectifs",
             "methodologie",
@@ -2188,8 +2289,9 @@ class AddEtude(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True, **kwargs):
-        if "expediteur" in kwargs:
-            je = kwargs["expediteur"].je
+        if "user" in kwargs:
+            print("ya je")
+            je = kwargs["user"].je
 
             max_numero = Etude.objects.filter(je=je).aggregate(
                 max_numero=Max("numero")
@@ -2211,6 +2313,31 @@ class AddEtude(forms.ModelForm):
             etude.save()
             if "responsables" in self.cleaned_data:
                 etude.responsables.set(self.cleaned_data["responsables"])
+            etude.save()
+        return etude
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            field.widget.attrs["class"] = "form-control"
+
+class AddEtudeImportee(forms.ModelForm):
+    class Meta:
+        model = EtudeImportee
+        exclude = ["je"]
+
+    def __str__(self):
+        return "Informations de l'étude"
+
+    def name(self):
+        return "AddEtudeImportee"
+
+    def save(self, commit=True, **kwargs):
+        etude = super(AddEtudeImportee, self).save(commit=False)
+        if "expediteur" in kwargs:
+            etude.je = kwargs["expediteur"].je
+        if commit:
             etude.save()
         return etude
 
@@ -2318,6 +2445,7 @@ class AddFacture(forms.ModelForm):
             "date_emission",
             "date_echeance",
             "facture_pdf",
+            "objet"
         ]
 
     def __str__(self):

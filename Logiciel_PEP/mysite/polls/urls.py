@@ -10,6 +10,9 @@ urlpatterns = [
     
     path("login/", views.custom_login, name="custom_login"),
     path("details/<str:modelName>/<int:iD>", views.details, name="details"),
+    path("details_etudes_importees/<int:iD>", views.details_etudes_importees, name="details_etudes_importees"),
+
+    
     path("student/<int:pk>/edit/", views.edit_student, name='edit_student'),
     path("edit_pdp/<int:pk>/edit/", views.edit_pdp, name='edit_pdp'),
 
@@ -30,6 +33,7 @@ urlpatterns = [
     path("input/<str:modelName>/<int:iD>", views.input, name="input"),
     path("logout/", views.custom_logout, name="custom_logout"),
     path("annuaire/", views.annuaire, name="annuaire"),
+    
     path("facture/<int:id_facture>", views.facture, name="facture"), 
     path("generer_BV/<int:id_bv>", views.generer_BV, name="generer_BV"), 
 
@@ -85,6 +89,8 @@ urlpatterns = [
     path('verifier_etude/<int:iD>/', views.verifier_etude, name='verifier_etude'),
     path("editer_ba/<int:id_eleve>", views.editer_ba, name="editer_ba"),
     path('upload_clients/', views.upload_clients, name='upload_clients'),
+    path('upload_etudes/', views.upload_etudes, name='upload_etudes'),
+
 
     path('object_suppression/<str:model_name>/<int:object_id>', views.object_suppression, name="object_suppression"),
     path("modifier_bon_commande/<int:id_etude>/<int:id_bon>", views.modifier_bon_commande, name="modifier_bon_commande"),
@@ -105,6 +111,8 @@ urlpatterns = [
     path("editer_acf_client/<int:iD>", views.editer_acf_client, name='editer_acf_client'),
     path("numero_facture/<int:iD>/edit/", views.numero_facture, name='numero_facture'),
     path("numero_BV/<int:iD>/edit/", views.numero_BV, name='numero_BV'),
+    path("csv_import_etudiants/", views.csv_import_etudiants, name="csv_import_etudiants"),
+
 
 
 

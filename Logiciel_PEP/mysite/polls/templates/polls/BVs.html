@@ -471,7 +471,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Déconnection
+                                    Se déconnecter
                                 </a>
                             </div>
                         </li>
@@ -512,6 +512,14 @@
                                 
                                 
                                     <table style="margin-top:20px; border-collapse: collapse;" class="table_demarchage">
+                                        <thead >
+                                            <tr style="color:white">
+                                                <th class="text-left" >Modifier le numéro</th>
+                                                <th class="text-left">Récapitulatif</th>
+                                                
+                                                <th class="text-right"></th>
+                                            </tr>
+                                        </thead>
                                     {% for BV in BVs %}
                                         {% if BV.date_emission %}
             
@@ -530,7 +538,6 @@
                                                             <form id="editBVForm_{{BV.id}}" method="POST" action="{% url 'numero_BV' BV.id %}">
                                                                 {% csrf_token %}
                                                                 <div class="modal-header">
-                                                                    <h5 class="modal-title" id="editBVModalLabel_{{BV.id}}">Modifier BV</h5>
                                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                         <span aria-hidden="true">&times;</span>
                                                                     </button>

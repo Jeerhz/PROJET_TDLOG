@@ -374,15 +374,15 @@
                 <p></p>
             </div>
             <div class="numero_facture">
-                <p class="gras">Facture N° <span contenteditable="true"> {{facture}}</span></p>
+                <p class="gras">Facture N° <span> {{facture}}</span></p>
                 <br>
                 <br>
                 <br>
                 <br>
                 <p class="gris_clair">A l'attention de : </p>
                 <br>
-                <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
-                <p><span class="gras" contenteditable="true" >{{etude.client_representant_legale.titre}} {{etude.client_representant_legale.last_name}}</span></p> 
+                <p><span class="gras"  >{{client.raison_sociale}}</span></p> 
+                <p><span class="gras"  >{{etude.client_representant_legale.titre}} {{etude.client_representant_legale.last_name}}</span></p> 
                 <p><span  contenteditable="true" >{{client.rue}}</span></p> 
                 <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
                 <p><span contenteditable="true" >{{client.country}}</span></p> 
@@ -414,7 +414,7 @@
                     <tr>
                         <td contenteditable="true">{{facture.TVA_per}} %</td>
                         <td contenteditable="true" id="montant_TVA">{{facture.montant_TVA|FormatNombres}}</td>
-                        <td contenteditable="true" id="montant_HT">{{facture.fac_JEH|FormatNombres}}</td>
+                        <td contenteditable="true" id="montant_HT">{{facture.montant_HT|FormatNombres}}</td>
                         
                     </tr>
                 
@@ -434,8 +434,7 @@
             
             
             
-            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> <span  >{{facture.type_facture}} concernant l'étude</span> <span > {{etude.ref}} </span > <span >en référence à la {{etude.type_convention}} {{etude.convention}} {% if etude.type_convention ==  etude.TypeConvention.CADRE %} et au bon de commande {{bdc.ref}} {% endif %}
-                {% if avenante_ref %} et à l'avenant {{avenante_ref}} {% endif %} </span> </div>
+            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span> {{facture.objet}} </span> </div>
             <table class="table_prestation">
                 <thead class = "space-above">
                     <tr>
@@ -472,19 +471,19 @@
                 <tbody>
                     <tr>
                         <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{ facture.date_emission }} </td>
+                        <td class="align-right" contenteditable="true">{{ date_emission }} </td>
                     </tr>
                     <tr>
                         <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{ facture.date_echeance }}</td>
+                        <td class="align-right" contenteditable="true">{{ date_echeance }}</td>
                     </tr>
                     <tr  class="space-above">
                         <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
-                        <td class="align-right" contenteditable="true">{{etude.nb_JEH}}</td>
+                        <td class="align-right" contenteditable="true">{{nb_JEH}}</td>
                     </tr>
                     <tr>
                         <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
-                        <td class="align-right" contenteditable="true" >{{etude.montant_phase_HT|FormatNombres}}</td>
+                        <td class="align-right" contenteditable="true" >{{montant_HT_totale|FormatNombres}}</td>
                     </tr>
                 </tbody>
             </table>

@@ -397,7 +397,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Déconnection
+                                    Se déconnecter
                                 </a>
                             </div>
                         </li>
@@ -422,6 +422,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false" >Annuaire Études</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="pills-etudes-importees-tab" data-toggle="pill" href="#pills-etudes-importees" role="tab" aria-controls="pills-etudes-importees" aria-selected="false" >Annuaire Études Importées</a>
                             </li>
                             
                         </ul>
@@ -499,16 +502,18 @@
                                         <div class="d-flex align-items-center mb-3">
                                             <!-- File input -->
                                             <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
-                                                <label for="csv_file" style="cursor: pointer; margin-bottom: 0;">
-                                                    Choisir un csv (colonnes : nom, raison sociale, rue, ville, code postal, pay)
+                                                <label for="csv_file_client" style="cursor: pointer; margin-bottom: 0;">
+                                                    Choisir un csv (colonnes : nom, raison sociale, rue, ville, code postal, pays)
                                                 </label>
-                                                <input type="file" id="csv_file" name="csv_file" accept=".csv" style="display: none;">
+                                                <input type="file" id="csv_file_client" name="csv_file_client" accept=".csv" style="display: none;">
                                             </div>
+                                            
                                         
                                             <!-- Submit button -->
                                             <button type="submit" class="btn btn-light">Ajouter le csv</button>
                                         </div>
                                     </form>
+                                    
                                 </div>
 
 
@@ -608,6 +613,54 @@
                                 </table>
                             </div>
                         </div> 
+                        
+                        
+                        <!-- Onglet Annuaire Études Importées -->
+                        <div class="tab-pane fade shadow" id="pills-etudes-importees" style="width: 100%; margin: 0 auto;">
+                            <div class="card">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        
+                                    
+                                    <!-- Barre de recherche -->
+                                    <form method="post" action="{% url 'upload_etudes' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                                        {% csrf_token %}
+                                        <div class="d-flex align-items-center mb-3">
+                                            <!-- File input -->
+                                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                                                <label for="csv_file_etudes" style="cursor: pointer; margin-bottom: 0;">
+                                                    Choisir un csv (colonnes : titre, ref, description, problematique, debut, nb_JEH, montant_HT_phases, frais_dossier, mandat, departement, remarque, fin (JJ/MM/AAAA))
+                                                </label>
+                                                <input type="file" id="csv_file_etudes" name="csv_file_etudes" accept=".csv" style="display: none;">
+                                            </div>
+                                            
+                                        
+                                            <!-- Submit button -->
+                                            <button type="submit" class="btn btn-light">Ajouter le csv</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive" style="background-color: #FFFFFF;">
+                                <table class="table table-borderless table-hover">
+                                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
+                                        <tr style="color:white">
+                                            <th class="text-left" style="padding-left: 30px;">Étude</th>
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
+                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                                        {% for etude in etude_importe_list %}
+                                            <tr onclick="location.href=&quot;{% url 'details_etudes_importees' etude.id  %}&quot;">
+                                                <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
+                                                
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>   
                     </div> 
             
@@ -647,6 +700,7 @@
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    
 
     <!-- Core plugin JavaScript-->
     <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>

@@ -470,7 +470,7 @@
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Déconnection
+                                    Se déconnecter
                                 </a>
                             </div>
                         </li>
@@ -512,6 +512,15 @@
                                 
             
                                     <table style="margin-top:20px;" class="table_demarchage">
+                                        <thead >
+                                            <tr style="color:white">
+                                                <th class="text-left" >Modifier le numéro</th>
+                                                <th class="text-left">Client</th>
+                                                <th class="text-left">Type de facture</th>
+                                                <th class="text-left">Montant H.T.</th>
+                                                <th class="text-right"></th>
+                                            </tr>
+                                        </thead>
                                     {% for facture in factures %}
                                         {% if facture.date_emission %}
                                         <tbody>
@@ -529,15 +538,18 @@
                                                             <form id="editFactureForm_{{facture.id}}" method="POST" action="{% url 'numero_facture' facture.id %}">
                                                                 {% csrf_token %}
                                                                 <div class="modal-header">
-                                                                    <h5 class="modal-title" id="editFactureModalLabel_{{facture.id}}">Modifier le numéro de la facture</h5>
                                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                         <span aria-hidden="true">&times;</span>
                                                                     </button>
                                                                 </div>
                                                                 <div class="modal-body">
                                                                     <div class="form-group">
-                                                                        <label for="numero_fac">Numéro de facture</label>
-                                                                        <input type="text" class="form-control" id="numero_fac" name="numero_fac" value="{{ facture.numero_facture }}">
+                                                                        <label for="numero_fac">Numéro de la facture</label>
+                                                                        <input type="number" class="form-control" id="numero_fac" name="numero_fac" value="{{ facture.numero_facture }}" required>
+                                                                        <br>
+                                                                        <label for="objet_fac">Objet de la facture</label>
+                                                                        <textarea class="form-control" id="objet_fac" name="objet_fac" required rows="3">{{ facture.objet }}</textarea>
+                                                                    
                                                                     </div>
                                                             
                                                                 </div>
