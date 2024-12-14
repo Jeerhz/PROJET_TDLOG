@@ -126,6 +126,7 @@ CSP_SCRIPT_SRC = (
 CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'",
+    "https://stackpath.bootstrapcdn.com",
     "https://fonts.googleapis.com",
 )  # Permet les styles du même domaine et inline
 CSP_IMG_SRC = (
