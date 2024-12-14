@@ -2186,7 +2186,8 @@ def update_etude(request, id):
 
 
 def generate_facture_pdf(request, id_facture):
-    if request.user.is_authenticated:
+    user = request.user
+    if user.is_authenticated:
         try:
             # Fetch the required facture data
             facture = Facture.objects.get(id=id_facture)
@@ -2198,7 +2199,7 @@ def generate_facture_pdf(request, id_facture):
             facture.date_emission = timezone.now().strftime("%d/%m/%Y")
             date_30 = timezone.now() + timedelta(30)
             facture.date_echeance = date_30.strftime("%d/%m/%Y")
-            logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
+            logo_url = user.je.logo.url
             nb_JEH = 0
             bdc = facture.bdc()
 
@@ -2281,7 +2282,8 @@ def generate_facture_pdf(request, id_facture):
 
 
 def facture(request, id_facture):
-    if request.user.is_authenticated:
+    user = request.user
+    if user.is_authenticated:
         try:
             facture = Facture.objects.get(id=id_facture)
             print(f"facture.montant_TVA: {facture.montant_TVA()}")
@@ -2320,6 +2322,7 @@ def facture(request, id_facture):
                     ).order_by("numero")
                     avenante_ref = avenants_signes.last()
             context = {
+                "user": user,
                 "facture": facture,
                 "etude": etude,
                 "client": client,
