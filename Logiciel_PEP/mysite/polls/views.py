@@ -11,6 +11,9 @@ from io import StringIO
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from weasyprint.text.fonts import FontConfiguration
+from loguru import logger
+
 
 import pytz  # pour CA dynamique
 from docxtpl import DocxTemplate, InlineImage
@@ -79,8 +82,6 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 
-
-# from weasyprint import HTML
 # from wand.image import Image
 
 from .models import (
@@ -1129,49 +1130,22 @@ def edit_student(request, pk):
 
 
 def edit_pdp(request, pk):
-    if request.user.is_authenticated:
-        # Fetch messages and notifications
-        liste_messages = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).order_by("date")[:3]
-        message_count = Message.objects.filter(
-            destinataire=request.user,
-            read=False,
-            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-        ).count()
-        all_notifications = request.user.notifications.order_by("-date_effet")
-        notification_list = [notif for notif in all_notifications if notif.active()]
-
+    user = request.user
+    if user.is_authenticated:
         # Retrieve the student instance, or return a 404 if not found
         student = get_object_or_404(Student, pk=pk)
 
         if request.method == "POST":
             # Handle form submission
-
             member = student.member
             if member and "pdp" in request.FILES:
                 uploaded_file = request.FILES["pdp"]
                 member.photo = uploaded_file  # Update the photo
                 member.save()
-
-            else:
-                messages.info(request, "photo pas modifiée")
-
                 return redirect("details", modelName="Student", iD=student.id)
 
-        context = {
-            "eleve": student,
-            "liste_messages": liste_messages,
-            "message_count": message_count,
-            "notification_list": notification_list,
-            "notification_count": len(notification_list),
-            "modelName": "Student",
-            "iD": student.id,
-        }
-
-        return render(request, "polls/page_details.html", context)
+            else:
+                return redirect("details", modelName="Student", iD=student.id)
 
     else:
         template = loader.get_template("polls/login.html")
@@ -2213,81 +2187,115 @@ def update_etude(request, id):
 
 def generate_facture_pdf(request, id_facture):
     if request.user.is_authenticated:
-        # try:
-        # Fetch the required facture data
-        facture = Facture.objects.get(id=id_facture)
-        etude = facture.etude
-        client = etude.client
-        phases = Phase.objects.filter(etude=etude).order_by("numero")
+        try:
+            # Fetch the required facture data
+            facture = Facture.objects.get(id=id_facture)
+            etude = facture.etude
+            client = etude.client
+            phases = Phase.objects.filter(etude=etude).order_by("numero")
 
-        res = facture.montant_TTC()
-        facture.date_emission = timezone.now().strftime("%d/%m/%Y")
-        date_30 = timezone.now() + timedelta(30)
-        facture.date_echeance = date_30.strftime("%d/%m/%Y")
-        logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
-        nb_JEH = 0
-        bdc = facture.bdc()
-
-        if bdc:
-            nb_JEH = bdc.nb_JEH()
-            montant_HT_totale = bdc.montant_HT_total
-        else:
-            nb_JEH = etude.nb_JEH()
-            montant_HT_totale = etude.montant_HT_total()
-
-        avenante_ref = None
-
-        avenants_signes = AvenantConventionEtude.objects.filter(
-            date_signature__isnull=False
-        )
-
-        if etude.type_convention == "Convention cadre":
+            res = facture.montant_TTC()
+            facture.date_emission = timezone.now().strftime("%d/%m/%Y")
+            date_30 = timezone.now() + timedelta(30)
+            facture.date_echeance = date_30.strftime("%d/%m/%Y")
+            logo_url = request.build_absolute_uri(static("polls/img/bdc.png"))
+            nb_JEH = 0
             bdc = facture.bdc()
-        else:
-            ce = etude.convention()
-            if ce:
-                avenants_signes = AvenantConventionEtude.objects.filter(
-                    ce=ce, date_signature__isnull=False
-                ).order_by("numero")
-                avenante_ref = avenants_signes.last()
+
+            if bdc:
+                nb_JEH = bdc.nb_JEH()
+                montant_HT_totale = bdc.montant_HT_total
             else:
-                ce = f"{etude.ref()}ce"
+                nb_JEH = etude.nb_JEH()
+                montant_HT_totale = etude.montant_HT_total()
 
-        # Context for the invoice
-        context = {
-            "facture": facture,
-            "ref": facture.ref(),
-            "etude": etude,
-            "client": client,
-            "phases": phases,
-            "res": res,
-            "date_emission": facture.date_emission,
-            "date_echeance": facture.date_echeance,
-            "logo_url": logo_url,
-            "bdc": bdc,
-            "avenante_ref": avenante_ref,
-            "nb_JEH": nb_JEH,
-            "montant_HT_totale": montant_HT_totale,
-        }
+            avenante_ref = None
 
-        # Render the full HTML of the invoice page (with full HTML structure and CSS link)
-        html_string = render_to_string("polls/facpdfhtml.html", context)
+            avenants_signes = AvenantConventionEtude.objects.filter(
+                date_signature__isnull=False
+            )
 
-        # Optionally replace static URLs with absolute URLs (if required)
+            if etude.type_convention == "Convention cadre":
+                bdc = facture.bdc()
+            else:
+                ce = etude.convention()
+                if ce:
+                    avenants_signes = AvenantConventionEtude.objects.filter(
+                        ce=ce, date_signature__isnull=False
+                    ).order_by("numero")
+                    avenante_ref = avenants_signes.last()
+                else:
+                    ce = f"{etude.ref()}ce"
 
-        # Generate PDF from the full HTML
-        pdf_file = HTML(string=html_string).write_pdf()
-        date_emission = datetime.datetime.strptime(
-            facture.date_emission, "%d/%m/%Y"
-        ).year
-        refFA = f"FA{date_emission % 100}{facture.numero_facture:03d}"
-        # Serve the PDF as a download
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
-        return response
+            # Context for the invoice
+            context = {
+                "facture": facture,
+                "ref": facture.ref(),
+                "etude": etude,
+                "client": client,
+                "phases": phases,
+                "res": res,
+                "date_emission": facture.date_emission,
+                "date_echeance": facture.date_echeance,
+                "logo_url": logo_url,
+                "bdc": bdc,
+                "avenante_ref": avenante_ref,
+                "nb_JEH": nb_JEH,
+                "montant_HT_totale": montant_HT_totale,
+            }
+            import sys
 
-        # except Exception as e:
-        return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
+            # Log system font directories and configuration
+            logger.debug(f"System paths: {sys.path}")
+            logger.debug(f"Font paths: {os.environ.get('PATH', '')}")
+            # Create a font configuration
+            font_config = FontConfiguration()
+
+            font_paths = [
+                "/usr/share/fonts/truetype/dejavu",  # Common Linux font directory
+                "/usr/share/fonts/truetype/liberation",
+                "/Library/Fonts",  # macOS font directory
+                "/Windows/Fonts",  # Windows font directory
+            ]
+
+            # Add system font directories
+            for path in font_paths:
+                if os.path.exists(path):
+                    font_config.add_font_face(
+                        family="Arial", src=os.path.join(path, "Arial.ttf")
+                    )
+
+            # Log context before rendering
+            logger.debug("Rendering HTML template")
+            html_string = render_to_string("polls/facpdfhtml.html", context)
+
+            # Log HTML generation
+            logger.info("HTML template rendered successfully")
+            logger.debug(f"HTML content length: {len(html_string)} characters")
+
+            # Generate PDF
+            logger.info("Generating PDF")
+            pdf_file = HTML(string=html_string).write_pdf(
+                font_config=font_config, presentational_hints=True
+            )
+
+            # Prepare filename
+            date_emission = datetime.datetime.strptime(
+                facture.date_emission, "%d/%m/%Y"
+            ).year
+            refFA = f"FA{date_emission % 100}{facture.numero_facture:03d}"
+
+            logger.info(f"PDF generated. Filename: {refFA}.pdf")
+
+            # Serve the PDF
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{refFA}.pdf"'
+
+            logger.success("PDF generation and download successful")
+            return response
+
+        except Exception as e:
+            return HttpResponse(f"Le PDF n'a pas pu être généré : {str(e)}", status=500)
 
     else:
         template = loader.get_template("polls/login.html")
