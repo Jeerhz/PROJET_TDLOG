@@ -17,28 +17,38 @@
       .container {
         margin: 0;
         padding: 0;
-        width: 210mm; /* A4 width */
-        height: 297mm; /* A4 height */
+        width: 210mm;
+        /* A4 width */
+        height: 297mm;
+        /* A4 height */
         box-sizing: border-box;
-        overflow: hidden; /* Prevent any overflow */
+        overflow: hidden;
+        /* Prevent any overflow */
         font-size: 12px;
         font-family: Arial, Helvetica, sans-serif;
       }
+
       @page {
-        size: A4; /* Define the page size */
-        margin: 0; /* Remove default margins for PDF */
+        size: A4;
+        /* Define the page size */
+        margin: 0;
+        /* Remove default margins for PDF */
       }
 
       /* Container styles */
       .container {
         font-family: Arial, Helvetica, sans-serif;
-        width: 100%; /* Ensure it spans the entire width of the body */
-        height: 100%; /* Ensure full height of the page */
+        width: 100%;
+        /* Ensure it spans the entire width of the body */
+        height: 100%;
+        /* Ensure full height of the page */
         background-color: #fff;
-        position: relative; /* Ensure correct positioning for absolute children */
+        position: relative;
+        /* Ensure correct positioning for absolute children */
         padding: 0;
         margin: 0;
-        border: none; /* No border */
+        border: none;
+        /* No border */
       }
 
       /* Content
@@ -50,6 +60,7 @@
         top: 5%;
         left: 10%;
       }
+
       .info_PEP {
         position: absolute;
         top: 15%;
@@ -57,6 +68,7 @@
         font-size: 14px;
         line-height: 2px;
       }
+
       .numero_facture {
         position: absolute;
         top: 5%;
@@ -64,25 +76,30 @@
         font-size: 15px;
         line-height: 6px;
       }
+
       .objet_designations {
         display: inline-block;
         position: absolute;
         top: 35%;
-        left: 7%; /* Distance from the left side */
+        left: 7%;
+        /* Distance from the left side */
         right: 7%;
         border: 0px;
         padding-top: 0px;
         height: 40%;
-        width: 100%; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
+        width: 100%;
+        /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
         display: inline;
       }
+
       .objet_facture {
         display: inline-block;
         position: absolute;
         top: 32%;
         left: 7%;
         right: 7%;
-        background-color: #7771716b; /* Grey background color */
+        background-color: #7771716b;
+        /* Grey background color */
         border: 0px;
         padding: 10px;
         height: auto;
@@ -113,6 +130,7 @@
         font-size: 11.5px;
         font-weight: bold;
       }
+
       .table_prestation td {
         padding-top: 4px;
         padding-left: 4px;
@@ -135,6 +153,7 @@
         color: #62616195;
         text-align: right;
       }
+
       .montant_chiffres {
         position: absolute;
         top: 65%;
@@ -165,6 +184,7 @@
         border: 0px solid #ddd;
         margin: 0px;
       }
+
       .table_montant {
         position: absolute;
         top: 55%;
@@ -176,6 +196,7 @@
         text-align: left;
         font-size: 12px;
       }
+
       .space-above td {
         padding-top: 20px;
       }
@@ -187,6 +208,7 @@
         text-align: center;
         font-size: 10px;
       }
+
       .table_montant th {
         color: #ffffff;
         font-weight: bold;
@@ -207,10 +229,12 @@
         padding: 4px;
         font-size: 11.5px;
       }
+
       .table_date th {
         color: #000000;
         background-color: #ffffff;
       }
+
       .table_date td {
         color: #000000;
         font-weight: normal;
@@ -233,11 +257,13 @@
         width: 55%;
         border-collapse: collapse;
       }
+
       .table_paiement th {
         font-size: 10px;
         font-weight: bold;
         background-color: #ffffff;
       }
+
       .table_paiement td {
         font-size: 10px;
         font-weight: normal;
@@ -248,21 +274,26 @@
         display: inline-block;
 
         bottom: 0%;
-        left: 0%; /* Distance from the left side */
+        left: 0%;
+        /* Distance from the left side */
         right: 0%;
-        background-color: rgb(255, 255, 255); /* Grey background color */
+        background-color: rgb(255, 255, 255);
+        /* Grey background color */
         border: 0px;
         padding-bottom: 2%;
         height: auto;
-        width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
+        width: auto;
+        /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
         display: inline;
         text-align: center;
         line-height: 15px;
       }
+
       .dotted-line {
         /*position: absolute;
         top: 96%;*/
-        height: 1px; /* Adjust the height as needed */
+        height: 1px;
+        /* Adjust the height as needed */
         background-image: repeating-linear-gradient(
           to right,
           #000,
@@ -275,6 +306,7 @@
       .align-right {
         text-align: right;
       }
+
       .align-left {
         text-align: left;
       }
@@ -282,12 +314,15 @@
       .italique {
         font-style: italic;
       }
+
       .font_light {
         font-weight: lighter;
       }
+
       .gras {
         font-weight: bold;
       }
+
       .txt_margin_left_right {
         margin-left: 8px;
         margin-right: 8px;
@@ -296,21 +331,27 @@
       .gris_clair {
         color: #62616195;
       }
+
       .gris_foncé {
         color: #454444;
       }
+
       .font16 {
         font-size: 16px;
       }
+
       .font12 {
         font-size: 12px;
       }
+
       .font11 {
         font-size: 11px;
       }
+
       .blanc {
         color: rgb(255, 255, 255);
       }
+
       .bouton_pdf {
         background-color: #5b5b5b;
         border: 2px solid #fff;
@@ -324,7 +365,8 @@
       .bouton_pdf:hover {
         /* Add additional hover effects here if needed */
         /* Add the hover class for the shining effect */
-        background-color: #000000; /* Darker green color */
+        background-color: #000000;
+        /* Darker green color */
       }
 
       .page-wrapper {
@@ -334,20 +376,24 @@
         align-items: center;
         justify-content: center;
       }
+
       .table-striped .even {
-        background-color: #f2f2f2; /* Light gray background for even rows */
+        background-color: #f2f2f2;
+        /* Light gray background for even rows */
       }
 
       .table-striped .odd {
-        background-color: #ffffff; /* White background for odd rows */
+        background-color: #ffffff;
+        /* White background for odd rows */
       }
     </style>
   </head>
 
   <body>
     <div class="container">
-      {% load static %} {% comment %} TODO: DO NOT HARDCODE THE IMAGE URL {%
-      endcomment %} {% comment %}
+      {% load static %} {% comment %} TODO: DO NOT HARDCODE THE IMAGE URL 
+      {% endcomment %} 
+      {% comment %}
       <img src="{{ logo_url }}" alt="Logo Junior" class="image_logo" />
       {% endcomment %}
 
@@ -470,14 +516,16 @@
               {{facture.fac_frais|FormatNombres}}
             </td>
           </tr>
-          {% endif %} {% if facture.phases_fac %} {% for phase in
-          facture.phases_fac %}
+          {% endif %} 
+          {% if facture.phases_fac %}
+
+          {% for phase in facture.phases_fac %}
           <tr class="{% cycle 'even' 'odd' %}">
             <td contenteditable="True" class="align-left">
               <span>
                 Phase {{phase.numero}} : {{phase.titre}}
-                ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH
-                }} {% if phase.nb_JEH|SupA:1 %}JEHs{% else %}JEH{% endif %} à
+                ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH }} 
+                {% if phase.nb_JEH|SupA:1 %}JEHs{% else %}JEH{% endif %} à
                 {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)
               </span>
             </td>
