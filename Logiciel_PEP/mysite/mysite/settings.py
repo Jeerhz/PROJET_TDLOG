@@ -132,6 +132,9 @@ CSP_STYLE_SRC = (
 CSP_IMG_SRC = (
     "'self'",
     "data:",
+    "'unsafe-inline'",
+    "https://stackpath.bootstrapcdn.com",
+    "https://fonts.googleapis.com",
     "https://sylogbucket.s3.amazonaws.com",
 )  # Ajoute le S3 bucket aux sources d'images autorisées
 CSP_CONNECT_SRC = ("'self'",)  # Permet les connexions AJAX au même domaine
