@@ -346,9 +346,16 @@
 
   <body>
     <div class="container">
-      {% load static %}
-      <img src="{{ logo_url }}" alt="Logo Junior" class="image_logo" />
-      Logo url: {{ logo_url }}
+      {% load static %} {% comment %} TODO: DO NOT HARDCODE THE IMAGE URL {%
+      endcomment %} {% comment %}
+      <img src="{{ logo_url }}" alt="Logo Junior" class="image_logo" /> {%
+      endcomment %}
+
+      <img
+        src="{% static 'polls/img/bdc.png' %}"
+        alt="Logo Junior"
+        class="image_logo"
+      />
 
       <div class="section2">
         <p></p>
@@ -454,8 +461,8 @@
           {% if etude.frais_dossier %}
           <tr>
             <td class="align-left" contenteditable="true">
-              <span
-                >Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} %
+              <span>
+                Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} %
                 de {{etude.frais_dossier|FormatNombres}} EUR.)
               </span>
             </td>
@@ -467,12 +474,12 @@
           facture.phases_fac %}
           <tr class="{% cycle 'even' 'odd' %}">
             <td contenteditable="True" class="align-left">
-              <span
-                >Phase {{phase.numero}} : {{phase.titre}}
+              <span>
+                Phase {{phase.numero}} : {{phase.titre}}
                 ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH
-                }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à
-                {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span
-              >
+                }} {% if phase.nb_JEH|SupA:1 %}JEHs{% else %}JEH{% endif %} à
+                {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)
+              </span>
             </td>
             <td class="align-right" contenteditable="true">
               {{facture|montantFacturePhase:phase|FormatNombres}}
