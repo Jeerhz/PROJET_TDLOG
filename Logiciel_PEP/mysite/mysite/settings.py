@@ -118,6 +118,10 @@ CSP_SCRIPT_SRC = (
     "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js",
     "https://cdn.jsdelivr.net",
     "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js",
+    "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js",
 )  # Permet les scripts du même domaine et inline
 CSP_STYLE_SRC = (
     "'self'",
