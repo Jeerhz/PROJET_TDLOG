@@ -2322,7 +2322,7 @@ def facture(request, id_facture):
                     ).order_by("numero")
                     avenante_ref = avenants_signes.last()
             context = {
-                "user": user,
+                "logo_url": user.je.logo.url,
                 "facture": facture,
                 "etude": etude,
                 "client": client,
