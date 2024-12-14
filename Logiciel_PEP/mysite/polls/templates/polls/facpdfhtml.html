@@ -1,37 +1,36 @@
 <html>
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <link href="https://fonts.cdnfonts.com/css/lucida-sans" rel="stylesheet">
-                
-    {% load static %}
-    {% load format_duration %}
+    <link href="https://fonts.cdnfonts.com/css/lucida-sans" rel="stylesheet" />
+
+    {% load static %} {% load format_duration %}
     <title>{{ref}}</title>
     <style>
-        @media print {
-                .no-print {
-                    display: none;
-                }
-            }
+      @media print {
+        .no-print {
+          display: none;
+        }
+      }
 
-        body, .container {
+      body,
+      .container {
         margin: 0;
         padding: 0;
-        width: 210mm;  /* A4 width */
+        width: 210mm; /* A4 width */
         height: 297mm; /* A4 height */
         box-sizing: border-box;
         overflow: hidden; /* Prevent any overflow */
         font-size: 12px;
         font-family: Arial, Helvetica, sans-serif;
-        }
-        @page {
+      }
+      @page {
         size: A4; /* Define the page size */
         margin: 0; /* Remove default margins for PDF */
-        }
+      }
 
-        /* Container styles */
-        .container {
+      /* Container styles */
+      .container {
         font-family: Arial, Helvetica, sans-serif;
         width: 100%; /* Ensure it spans the entire width of the body */
         height: 100%; /* Ensure full height of the page */
@@ -40,74 +39,70 @@
         padding: 0;
         margin: 0;
         border: none; /* No border */
-        }
+      }
 
-        /* Content
+      /* Content
         /* Adjust image logo */
-        .image_logo {
+      .image_logo {
         position: absolute;
         width: 120px;
         height: auto;
-        top: 5%; 
-        left: 10%;            
-        }
-        .info_PEP {
+        top: 5%;
+        left: 10%;
+      }
+      .info_PEP {
         position: absolute;
-        top: 15%; 
+        top: 15%;
         left: 7%;
         font-size: 14px;
         line-height: 2px;
-        }
-        .numero_facture {
+      }
+      .numero_facture {
         position: absolute;
-        top: 5%; 
-        left: 55%;  
+        top: 5%;
+        left: 55%;
         font-size: 15px;
         line-height: 6px;
-        }
-        .objet_designations {
+      }
+      .objet_designations {
         display: inline-block;
         position: absolute;
         top: 35%;
         left: 7%; /* Distance from the left side */
-        right: 7%; 
+        right: 7%;
         border: 0px;
         padding-top: 0px;
         height: 40%;
         width: 100%; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
-        display: inline; 
-        
-        }
-        .objet_facture {
+        display: inline;
+      }
+      .objet_facture {
         display: inline-block;
         position: absolute;
         top: 32%;
-        left: 7%; 
-        right: 7%; 
+        left: 7%;
+        right: 7%;
         background-color: #7771716b; /* Grey background color */
         border: 0px;
         padding: 10px;
         height: auto;
         /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
         text-align: center;
-        
-        }
+      }
 
-        .table_prestation {
+      .table_prestation {
         position: absolute;
         top: 37%;
         right: 7%;
         width: 86%;
-        
+
         border-collapse: collapse;
-        
+
         /*margin: 20px 10px 20px 10px;*/
         /*line-height: 8px;*/
+      }
 
-        }
-
-
-        .table_prestation th {
+      .table_prestation th {
         color: #ffffff;
         font-weight: bold;
         background-color: #000000;
@@ -117,18 +112,17 @@
         padding-right: 4px;
         font-size: 11.5px;
         font-weight: bold;
-        }
-        .table_prestation td {
+      }
+      .table_prestation td {
         padding-top: 4px;
         padding-left: 4px;
         padding-right: 4px;
 
         color: #000000;
         font-size: 11.5px;
-        
-        }
+      }
 
-        .TVA_sur{
+      .TVA_sur {
         position: absolute;
         top: 59%;
         right: 7%;
@@ -138,24 +132,21 @@
         margin: 0px;
         font-size: 11px;
         font-style: italic;
-        color: #62616195; 
+        color: #62616195;
         text-align: right;
-
-        }
-        .montant_chiffres{
+      }
+      .montant_chiffres {
         position: absolute;
         top: 65%;
         right: 7%;
         width: 35%;
         font-size: 11px;
-        
+
         margin: 0px;
         line-height: 13px;
-        }
+      }
 
-        
-
-        .tab_TTC{
+      .tab_TTC {
         position: absolute;
         top: 62%;
         right: 7%;
@@ -163,9 +154,9 @@
         border-collapse: collapse;
         border: 0px solid #ddd;
         margin: 0px;
-        }
+      }
 
-        .montant{
+      .montant {
         position: absolute;
         top: 55%;
         right: 7%;
@@ -173,8 +164,8 @@
         border-collapse: collapse;
         border: 0px solid #ddd;
         margin: 0px;
-        }
-        .table_montant {
+      }
+      .table_montant {
         position: absolute;
         top: 55%;
         right: 7%;
@@ -184,31 +175,30 @@
         margin: 0px;
         text-align: left;
         font-size: 12px;
-        }
-        .space-above td {
-        padding-top: 20px; 
-        }
+      }
+      .space-above td {
+        padding-top: 20px;
+      }
 
-        .table_montant th,.table_montant td {
+      .table_montant th,
+      .table_montant td {
         border: 0px solid #ddd;
         padding: 4px;
         text-align: center;
         font-size: 10px;
-        
-        }
-        .table_montant th {
+      }
+      .table_montant th {
         color: #ffffff;
         font-weight: bold;
         background-color: #000000;
-        }
+      }
 
-
-        .table_montant td {
+      .table_montant td {
         color: #000000;
         font-weight: normal;
-        }
+      }
 
-        .table_date {
+      .table_date {
         position: absolute;
         top: 52%;
         left: 7%;
@@ -216,318 +206,390 @@
         border-collapse: collapse;
         padding: 4px;
         font-size: 11.5px;
-
-        }
-        .table_date th {
+      }
+      .table_date th {
         color: #000000;
         background-color: #ffffff;
-        }
-        .table_date td {
+      }
+      .table_date td {
         color: #000000;
         font-weight: normal;
-        }
+      }
 
-        .info_retard {
+      .info_retard {
         position: absolute;
-        top: 60%; 
+        top: 60%;
         left: 7%;
         width: 49%;
         font-size: 11px;
         line-height: 13px;
         margin: 0px;
-        }
+      }
 
-        .table_paiement {
+      .table_paiement {
         position: absolute;
         top: 70%;
         left: 7%;
         width: 55%;
         border-collapse: collapse;
-
-        }
-        .table_paiement th {
+      }
+      .table_paiement th {
         font-size: 10px;
         font-weight: bold;
         background-color: #ffffff;
-        }
-        .table_paiement td {
+      }
+      .table_paiement td {
         font-size: 10px;
         font-weight: normal;
-        }
+      }
 
-
-        .footer {
+      .footer {
         position: absolute;
         display: inline-block;
-        
+
         bottom: 0%;
         left: 0%; /* Distance from the left side */
-        right: 0%; 
-        background-color: rgb(255,255,255); /* Grey background color */
+        right: 0%;
+        background-color: rgb(255, 255, 255); /* Grey background color */
         border: 0px;
         padding-bottom: 2%;
         height: auto;
         width: auto; /* Adjust the width dynamically based on content and maintain a 20px margin on both sides */
-        display: inline; 
+        display: inline;
         text-align: center;
         line-height: 15px;
-        }
-        .dotted-line {
+      }
+      .dotted-line {
         /*position: absolute;
         top: 96%;*/
         height: 1px; /* Adjust the height as needed */
-        background-image: repeating-linear-gradient(to right, #000, #000 4px, transparent 4px, transparent 10px);
-        }
+        background-image: repeating-linear-gradient(
+          to right,
+          #000,
+          #000 4px,
+          transparent 4px,
+          transparent 10px
+        );
+      }
 
-
-        .align-right {
-        text-align: right; 
-        }
-        .align-left {
+      .align-right {
+        text-align: right;
+      }
+      .align-left {
         text-align: left;
-        }
+      }
 
-        .italique {
-        font-style: italic; 
-        }   
-        .font_light{
+      .italique {
+        font-style: italic;
+      }
+      .font_light {
         font-weight: lighter;
-        }    
-        .gras {
+      }
+      .gras {
         font-weight: bold;
-        }
-        .txt_margin_left_right{
+      }
+      .txt_margin_left_right {
         margin-left: 8px;
         margin-right: 8px;
-        }
+      }
 
-        .gris_clair {
-        color: #62616195; 
-        }
-        .gris_foncé {
-        color:#454444;
-        }
-        .font16 {
+      .gris_clair {
+        color: #62616195;
+      }
+      .gris_foncé {
+        color: #454444;
+      }
+      .font16 {
         font-size: 16px;
-        }
-        .font12 {
+      }
+      .font12 {
         font-size: 12px;
-        }
-        .font11{
+      }
+      .font11 {
         font-size: 11px;
-        }
-        .blanc{
-        color :rgb(255,255,255);
-        }
-        .bouton_pdf {
+      }
+      .blanc {
+        color: rgb(255, 255, 255);
+      }
+      .bouton_pdf {
         background-color: #5b5b5b;
         border: 2px solid #fff;
         border-radius: 5px;
-        color : #fff;
+        color: #fff;
         font-family: Arial, Helvetica, sans-serif;
-        padding : 5px 10px;
-        cursor:pointer;
-        }
+        padding: 5px 10px;
+        cursor: pointer;
+      }
 
-        .bouton_pdf:hover {
+      .bouton_pdf:hover {
         /* Add additional hover effects here if needed */
         /* Add the hover class for the shining effect */
         background-color: #000000; /* Darker green color */
-        }
+      }
 
-        .page-wrapper{
-        width:100%;
+      .page-wrapper {
+        width: 100%;
         height: 60px;
-        display : grid;
+        display: grid;
         align-items: center;
         justify-content: center;
-        }
-        .table-striped .even {
+      }
+      .table-striped .even {
         background-color: #f2f2f2; /* Light gray background for even rows */
-        }
+      }
 
-        .table-striped .odd {
+      .table-striped .odd {
         background-color: #ffffff; /* White background for odd rows */
-        }
-
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container">
+      {% load static %}
+      <img src="{{ logo_url }}" alt="Logo Junior" class="image_logo" />
+      Logo url: {{ logo_url }}
 
-             
-            {% load static %}
-            <img src="{{ logo_url }}" alt="Logo Junior" class="image_logo"> 
-            
-            <div class="section2">
-                <p></p>
-            </div>
-            <div class="numero_facture">
-                <p class="gras">Facture N° <span contenteditable="true"> {{facture.numero_facture|RefFacture}}</span></p>
-                <br>
-                <br>
-                <p class="gris_clair" style="margin-bottom: 19px;">A l'attention de : </p>
-                <p><span class="gras" contenteditable="true" >{{client.raison_sociale}}</span></p> 
-                <p><span class="gras" contenteditable="true" >{{etude.client_representant_legale.titre}} {{etude.client_representant_legale.last_name}}</span></p> 
-                <p><span  contenteditable="true" >{{client.rue}}</span></p> 
-                <p><span  contenteditable="true" >{{client.code_postal}} {{client.ville}}</span></p> 
-                <p><span contenteditable="true" >{{client.country}}</span></p> 
-            </div>
-    
-            <div class="info_PEP">
-                <p id = "raison_sociale_JE" class="gras font16"></p>
-                <p style="margin-bottom: 18px;" class="gris_clair font12">Association loi 1901, affiliée à la CNJE</p>
-                <p>6 et 8, avenue Blaise Pascal - Cité Descartes,</p>
-                <p>Champs-sur-Marne</p>
-                <p style="margin-bottom: 18px;">77455 Marne-la-Vallée Cedex 2</p>
-              
-                <p><span class="gris_foncé font12 gras">SIRET : </span> <span id = "siret_JE" class="gris_foncé font12">332 126 861 00027</span></p>
-                <p> <span class="gris_foncé font12 gras">Code APE : </span> <span id="APE_JE" class="gris_foncé font12" >7112B</span></p>
-                <p> <span class="gris_foncé font12 gras">N° TVA intra : </span> <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span></p>
-                <p></p>
-            
-            </div>
-            <table class="table_montant">
-                <thead>
-                    <tr>
-                        <th>Taux TVA</th>
-                        <th>Montant TVA</th>
-                        <th>Montant HT</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td contenteditable="true">{{facture.TVA_per}} %</td>
-                        <td contenteditable="true" id="montant_TVA">{{facture.montant_TVA|FormatNombres}}</td>
-                        <td contenteditable="true" id="montant_HT">{{facture.montant_HT|FormatNombres}}</td>
-                        
-                    </tr>
-                
-                </tbody>
-            </table>
-            <div class="TVA_sur ">TVA sur les encaissements. </div>
-            <table class="tab_TTC">
-                <tr>
-                    <td class="align-left gras">Total TTC net à payer</td>
-                    <td contenteditable="True" class="align-right gras">{{facture.montant_TTC|FormatNombres}} EUR </td>
-                </tr>
-            </table>
-            <div class ="montant_chiffres align-left font_light font12 ">
-                <div>{{facture.montant_TTC|ChiffreLettre}}</div>
-            </div>
-            
-            
-            
-            
-            <div contenteditable="True" class = "objet_facture txt_margin_left_right"><span class ="gras">Objet :</span><span> {{facture.objet}}</span> </div>
-            <table class="table_prestation">
-                <thead class = "space-above">
-                    <tr>
-                        <th class="align-left" >Désignation</th>
-                        <th class="align-right" >Montant HT</th>
-                    </tr>
-                </thead>
-                
-                <tbody>
-                    {% if etude.frais_dossier %}
-                        <tr>
-                            <td class="align-left" contenteditable="true"><span>Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} % de {{etude.frais_dossier|FormatNombres}} EUR.) </span></td>
-                            <td class="align-right" contenteditable="true">{{facture.fac_frais|FormatNombres}}</td>
-                        </tr>
-                    {% endif %}
-                    {% if facture.phases_fac %}
-                        {% for phase in facture.phases_fac %}
-                        <tr class="{% cycle 'even' 'odd' %}">
-                            <td contenteditable="True" class="align-left"><span >Phase {{phase.numero}} : {{phase.titre}} ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span></td>
-                            <td  class="align-right" contenteditable="true">{{facture|montantFacturePhase:phase|FormatNombres}}</td>
-                        </tr>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    
-                </tbody>
-                    
-            </table>
-            
-            
-            
-            
-            <table class="table_date">
-                <tbody>
-                    <tr>
-                        <td class="align-left"><span class="gras">Date d'émission de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{ facture.date_emission }} </td>
-                    </tr>
-                    <tr>
-                        <td class="align-left gras"><span class="gras">Date d'échéance de la facture :</span></td>
-                        <td class="align-right" contenteditable="true">{{ facture.date_echeance }}</td>
-                    </tr>
-                    <tr  class="space-above">
-                        <td class="align-left "><span class="gras">Nombre total de JEHs :</span></td>
-                        <td class="align-right" contenteditable="true">{{nb_JEH}}</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left "><span class="gras">Montant total HT (EUR) de l'étude :</span></td>
-                        <td class="align-right" contenteditable="true" >{{montant_HT_totale|FormatNombres}}</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            
-            <div class="info_retard gris_foncé">
-                <div>Aucun escompte n'est accordé pour paiement anticipé.</div>
-                <div>En cas de retard de paiement, conformément à la loi 2008-776 du 4 août 2008, il
-                    sera appliqué des pénalités au taux de 3 fois le taux d'intérêt légal en vigueur. Il sera
-                    également appliqué une indemnité de recouvrement de 40 euros. </div> 
-                <div>
-                    Cette pénalité court à compter de la date d'échéance jusqu'au jour du paiement
-                    complet des sommes dues.
-                </div>
-                <div>
-                    Règlement à la réception par chèque bancaire, postal ou virement uniquement.
-                </div>
-                
-            </div>
-            <table class="table_paiement">
-                <thead>
-                    <tr>
-                        <th class="align-left">Modalités de paiement :</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="align-left">Pour les versements</td>
-                        <td class="align-left">RIB : 30003 04123 00050851687 30</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left gris_clair">merci d'indiquer votre nom</td>
-                        <td class="align-left">Domiciliation : SG CHAMPS MC DESCARTES (04123)</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left gris_clair italique">et numéro de facture</td>
-                        <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
-                    </tr>
-                    <tr>
-                        <td class="align-left"></td>
-                        <td class="align-left">BIC : SOGEFRPP</td>
-                    </tr>
-                    <br>
-                    <br>
-                    <tr>
-                        <td class="align-left"> Pour les chèques</td>
-                        <td class="align-left">A l'ordre de Ponts Etudes Projets</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="footer gris_clair">
-                <div class ="gras ">Pour un règlement par chèque, nous vous remercions d'envoyer votre règlement accompagné du papillon à l'adresse :</div>
-                <div >Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes, Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2</div>   
-                <div class="dotted-line gris_clair"></div>
-                <p><span class ="gras">Client :</span> <span contenteditable="true">{{client.raison_sociale}} {{etude.representant_client.titre}} {{etude.representant_client.first_name}} {{etude.representant_client.last_name}} - {{etude.ref}}</span> <span class ="gras">Net à payer : </span> <span contenteditable="true" >{{facture.montant_TTC|FormatNombres}} EUR</span> </p>
-            </div>
+      <div class="section2">
+        <p></p>
+      </div>
+      <div class="numero_facture">
+        <p class="gras">
+          Facture N°
+          <span contenteditable="true">
+            {{facture.numero_facture|RefFacture}}</span
+          >
+        </p>
+        <br />
+        <br />
+        <p class="gris_clair" style="margin-bottom: 19px">A l'attention de :</p>
+        <p>
+          <span class="gras" contenteditable="true"
+            >{{client.raison_sociale}}</span
+          >
+        </p>
+        <p>
+          <span class="gras" contenteditable="true"
+            >{{etude.client_representant_legale.titre}}
+            {{etude.client_representant_legale.last_name}}</span
+          >
+        </p>
+        <p><span contenteditable="true">{{client.rue}}</span></p>
+        <p>
+          <span contenteditable="true"
+            >{{client.code_postal}} {{client.ville}}</span
+          >
+        </p>
+        <p><span contenteditable="true">{{client.country}}</span></p>
+      </div>
+
+      <div class="info_PEP">
+        <p id="raison_sociale_JE" class="gras font16"></p>
+        <p style="margin-bottom: 18px" class="gris_clair font12">
+          Association loi 1901, affiliée à la CNJE
+        </p>
+        <p>6 et 8, avenue Blaise Pascal - Cité Descartes,</p>
+        <p>Champs-sur-Marne</p>
+        <p style="margin-bottom: 18px">77455 Marne-la-Vallée Cedex 2</p>
+
+        <p>
+          <span class="gris_foncé font12 gras">SIRET : </span>
+          <span id="siret_JE" class="gris_foncé font12">332 126 861 00027</span>
+        </p>
+        <p>
+          <span class="gris_foncé font12 gras">Code APE : </span>
+          <span id="APE_JE" class="gris_foncé font12">7112B</span>
+        </p>
+        <p>
+          <span class="gris_foncé font12 gras">N° TVA intra : </span>
+          <span id="TVA_JE" class="gris_foncé font12">FR87332126861</span>
+        </p>
+        <p></p>
+      </div>
+      <table class="table_montant">
+        <thead>
+          <tr>
+            <th>Taux TVA</th>
+            <th>Montant TVA</th>
+            <th>Montant HT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true">{{facture.TVA_per}} %</td>
+            <td contenteditable="true" id="montant_TVA">
+              {{facture.montant_TVA|FormatNombres}}
+            </td>
+            <td contenteditable="true" id="montant_HT">
+              {{facture.montant_HT|FormatNombres}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="TVA_sur">TVA sur les encaissements.</div>
+      <table class="tab_TTC">
+        <tr>
+          <td class="align-left gras">Total TTC net à payer</td>
+          <td contenteditable="True" class="align-right gras">
+            {{facture.montant_TTC|FormatNombres}} EUR
+          </td>
+        </tr>
+      </table>
+      <div class="montant_chiffres align-left font_light font12">
+        <div>{{facture.montant_TTC|ChiffreLettre}}</div>
+      </div>
+
+      <div contenteditable="True" class="objet_facture txt_margin_left_right">
+        <span class="gras">Objet :</span><span> {{facture.objet}}</span>
+      </div>
+      <table class="table_prestation">
+        <thead class="space-above">
+          <tr>
+            <th class="align-left">Désignation</th>
+            <th class="align-right">Montant HT</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% if etude.frais_dossier %}
+          <tr>
+            <td class="align-left" contenteditable="true">
+              <span
+                >Frais de dossier ({{facture.pourcentage_frais|FormatNombres}} %
+                de {{etude.frais_dossier|FormatNombres}} EUR.)
+              </span>
+            </td>
+            <td class="align-right" contenteditable="true">
+              {{facture.fac_frais|FormatNombres}}
+            </td>
+          </tr>
+          {% endif %} {% if facture.phases_fac %} {% for phase in
+          facture.phases_fac %}
+          <tr class="{% cycle 'even' 'odd' %}">
+            <td contenteditable="True" class="align-left">
+              <span
+                >Phase {{phase.numero}} : {{phase.titre}}
+                ({{facture.pourcentage_JEH|FormatNombres}} % de {{ phase.nb_JEH
+                }} {% if phase.nb_JEH|SupA:1 %}JEHs {% else %} JEH {% endif %} à
+                {{phase.montant_HT_par_JEH|FormatNombres}} EUR.)</span
+              >
+            </td>
+            <td class="align-right" contenteditable="true">
+              {{facture|montantFacturePhase:phase|FormatNombres}}
+            </td>
+          </tr>
+          {% endfor %} {% endif %}
+        </tbody>
+      </table>
+
+      <table class="table_date">
+        <tbody>
+          <tr>
+            <td class="align-left">
+              <span class="gras">Date d'émission de la facture :</span>
+            </td>
+            <td class="align-right" contenteditable="true">
+              {{ facture.date_emission }}
+            </td>
+          </tr>
+          <tr>
+            <td class="align-left gras">
+              <span class="gras">Date d'échéance de la facture :</span>
+            </td>
+            <td class="align-right" contenteditable="true">
+              {{ facture.date_echeance }}
+            </td>
+          </tr>
+          <tr class="space-above">
+            <td class="align-left">
+              <span class="gras">Nombre total de JEHs :</span>
+            </td>
+            <td class="align-right" contenteditable="true">{{nb_JEH}}</td>
+          </tr>
+          <tr>
+            <td class="align-left">
+              <span class="gras">Montant total HT (EUR) de l'étude :</span>
+            </td>
+            <td class="align-right" contenteditable="true">
+              {{montant_HT_totale|FormatNombres}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info_retard gris_foncé">
+        <div>Aucun escompte n'est accordé pour paiement anticipé.</div>
+        <div>
+          En cas de retard de paiement, conformément à la loi 2008-776 du 4 août
+          2008, il sera appliqué des pénalités au taux de 3 fois le taux
+          d'intérêt légal en vigueur. Il sera également appliqué une indemnité
+          de recouvrement de 40 euros.
         </div>
-        
-</body>
-
+        <div>
+          Cette pénalité court à compter de la date d'échéance jusqu'au jour du
+          paiement complet des sommes dues.
+        </div>
+        <div>
+          Règlement à la réception par chèque bancaire, postal ou virement
+          uniquement.
+        </div>
+      </div>
+      <table class="table_paiement">
+        <thead>
+          <tr>
+            <th class="align-left">Modalités de paiement :</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="align-left">Pour les versements</td>
+            <td class="align-left">RIB : 30003 04123 00050851687 30</td>
+          </tr>
+          <tr>
+            <td class="align-left gris_clair">merci d'indiquer votre nom</td>
+            <td class="align-left">
+              Domiciliation : SG CHAMPS MC DESCARTES (04123)
+            </td>
+          </tr>
+          <tr>
+            <td class="align-left gris_clair italique">et numéro de facture</td>
+            <td class="align-left">IBAN : FR76 3000 3041 2300 0508 5168 730</td>
+          </tr>
+          <tr>
+            <td class="align-left"></td>
+            <td class="align-left">BIC : SOGEFRPP</td>
+          </tr>
+          <br />
+          <br />
+          <tr>
+            <td class="align-left">Pour les chèques</td>
+            <td class="align-left">A l'ordre de Ponts Etudes Projets</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="footer gris_clair">
+        <div class="gras">
+          Pour un règlement par chèque, nous vous remercions d'envoyer votre
+          règlement accompagné du papillon à l'adresse :
+        </div>
+        <div>
+          Ponts Etudes Projets, 6 et 8, avenue Blaise Pascal - Cité Descartes,
+          Champs-sur-Marne 77455 Marne-la-Vallée Cedex 2
+        </div>
+        <div class="dotted-line gris_clair"></div>
+        <p>
+          <span class="gras">Client :</span>
+          <span contenteditable="true"
+            >{{client.raison_sociale}} {{etude.representant_client.titre}}
+            {{etude.representant_client.first_name}}
+            {{etude.representant_client.last_name}} - {{etude.ref}}</span
+          >
+          <span class="gras">Net à payer : </span>
+          <span contenteditable="true"
+            >{{facture.montant_TTC|FormatNombres}} EUR</span
+          >
+        </p>
+      </div>
+    </div>
+  </body>
 </html>
