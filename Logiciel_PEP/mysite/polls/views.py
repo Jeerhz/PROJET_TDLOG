@@ -264,8 +264,9 @@ def index(request):
         # Calculate progress_bar
         if total_duree_semaine > 0:
             days_passed = (timezone.now().date() - etude.debut).days
-            progress = (days_passed / (etude.fin_etude - etude.debut).days) * 100
-            etude.progress_bar = int(max(min(100, progress), 0))
+            if etude.fin_etude and etude.debut:
+                progress = (days_passed / (etude.fin_etude - etude.debut).days) * 100
+                etude.progress_bar = int(max(min(100, progress), 0))
         else:
             etude.progress_bar = 0
 
