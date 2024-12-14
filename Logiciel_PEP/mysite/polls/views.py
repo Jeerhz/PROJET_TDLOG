@@ -11,7 +11,6 @@ from io import StringIO
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from weasyprint.text.fonts import FontConfiguration
 from loguru import logger
 
 
@@ -2244,27 +2243,6 @@ def generate_facture_pdf(request, id_facture):
                 "nb_JEH": nb_JEH,
                 "montant_HT_totale": montant_HT_totale,
             }
-            import sys
-
-            # Log system font directories and configuration
-            logger.debug(f"System paths: {sys.path}")
-            logger.debug(f"Font paths: {os.environ.get('PATH', '')}")
-            # Create a font configuration
-            font_config = FontConfiguration()
-
-            font_paths = [
-                "/usr/share/fonts/truetype/dejavu",  # Common Linux font directory
-                "/usr/share/fonts/truetype/liberation",
-                "/Library/Fonts",  # macOS font directory
-                "/Windows/Fonts",  # Windows font directory
-            ]
-
-            # Add system font directories
-            for path in font_paths:
-                if os.path.exists(path):
-                    font_config.add_font_face(
-                        family="Arial", src=os.path.join(path, "Arial.ttf")
-                    )
 
             # Log context before rendering
             logger.debug("Rendering HTML template")
@@ -2276,9 +2254,7 @@ def generate_facture_pdf(request, id_facture):
 
             # Generate PDF
             logger.info("Generating PDF")
-            pdf_file = HTML(string=html_string).write_pdf(
-                font_config=font_config, presentational_hints=True
-            )
+            pdf_file = HTML(string=html_string).write_pdf()
 
             # Prepare filename
             date_emission = datetime.datetime.strptime(
