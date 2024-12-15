@@ -1795,11 +1795,45 @@
         
         
                                                                 </ul>
-                                                                <!-- Modify Button -->
+                                                                
                                                                 <div class="text-right">
+                                                                    <!-- Modify Button -->
                                                                     <button type="button" class="btn btn-outline-secondary mt-3" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC">Modifier</button>
+                                                                    <!-- Delete Button-->
+                                                                    <button type="button" 
+                                                                            class="btn btn-outline-danger mt-3" 
+                                                                            data-href="{% url 'delete_bdc' id_etude=iD id_bon=bon.id %}" 
+                                                                            data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" 
+                                                                            data-new="false" 
+                                                                            data-toggle="modal" 
+                                                                            data-target="#deleteModalBDC">
+                                                                        Supprimer
+                                                                    </button>
                                                                 </div>
-                                                                <!-- End Modify Button -->
+                                                                
+                                                                <!-- Delete Modal -->
+                                                                <div class="modal fade" id="deleteModalBDC" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabelBDC" aria-hidden="true">
+                                                                    <div class="modal-dialog" role="document">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title" id="deleteModalLabelBDC">Supprimer le bon de commande</h5>
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                    <span aria-hidden="true">&times;</span>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                Êtes-vous sûr de vouloir supprimer ce bon de commande ?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                                <form id="deleteBDCForm" method="POST" action="{% url 'delete_bdc' id_etude=etude.id id_bon=bon.id %}">
+                                                                                    {% csrf_token %}
+                                                                                    <button type="submit" class="btn btn-outline-danger">Supprimer</button>
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             
                                                         </div>

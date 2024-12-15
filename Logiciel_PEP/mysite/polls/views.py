@@ -1384,6 +1384,37 @@ def delete_etude(request, pk):
     return HttpResponse(template.render(context, request))
 
 
+def delete_bdc(request, id_etude, id_bon):
+    if request.user.is_authenticated:
+        bons = BonCommande.objects.filter(etude_id=id_etude)
+        bon = bons.get(id=id_bon)
+        if not bon:
+            return render(
+                request,
+                "polls/page_error.html",
+                {
+                    "error_message": "Le bon de commande quje vous souhaitez supprimer n'existe pas.",
+                },
+            )
+        else:
+            if request.method == "POST":
+                bon.delete()
+                return redirect("details", modelName="Etude", iD=id_etude)
+            else:
+                return render(
+                    request,
+                    "polls/page_error.html",
+                    {
+                        "error_message": "La requête pour supprimer le Bon de Commande est invalide.",
+                    },
+                )
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def edit_phase(request, pk, iD):
     if request.user.is_authenticated:
         # Fetch messages and notifications
@@ -4528,69 +4559,69 @@ def get_object_info(request, model_name, object_id):
 
 def modifier_bon_commande(request, id_etude, id_bon):
     if request.user.is_authenticated:
-        # try:
-        etude = Etude.objects.get(id=id_etude)
-        if id_bon == 0:
-            bon = BonCommande(
-                etude=etude,
-                frais_dossier=request.POST["frais_dossier"],
-                remarque=request.POST["remarque_bdc"],
-                numero=request.POST["numero_bdc"],
-                objectifs=request.POST["objectifs_bdc"],
-                periode_de_garantie=request.POST["periode_de_garantie_bdc"],
-                acompte_pourcentage=request.POST["acompte_pourcentage_bdc"],
-            )
-            if request.POST["debut"]:
-                bon.debut = request.POST["debut"]
-            if request.POST["fin"]:
-                bon.fin_bdc = request.POST["fin"]
+        try:
+            etude = Etude.objects.get(id=id_etude)
+            if id_bon == 0:
+                bon = BonCommande(
+                    etude=etude,
+                    frais_dossier=request.POST["frais_dossier"],
+                    remarque=request.POST["remarque_bdc"],
+                    numero=request.POST["numero_bdc"],
+                    objectifs=request.POST["objectifs_bdc"],
+                    periode_de_garantie=request.POST["periode_de_garantie_bdc"],
+                    acompte_pourcentage=request.POST["acompte_pourcentage_bdc"],
+                )
+                if request.POST["debut"]:
+                    bon.debut = request.POST["debut"]
+                if request.POST["fin"]:
+                    bon.fin_bdc = request.POST["fin"]
 
-            bon.save()
+                bon.save()
 
-            keys = request.POST.getlist("keys_bdc[]")
+                keys = request.POST.getlist("keys_bdc[]")
 
-            values = request.POST.getlist("values_bdc[]")
-            if keys:
-                cahier_des_charges = {
-                    key: value for key, value in zip(keys, values) if key
-                }
-                bon.cahier_des_charges = cahier_des_charges
-            bon.save()
-        else:
-            bon = BonCommande.objects.get(id=id_bon)
-            bon.remarque = request.POST["remarque_bdc"]
-            bon.numero = request.POST["numero_bdc"]
-            if request.POST["acompte_pourcentage_bdc"]:
-                bon.acompte_pourcentage = request.POST["acompte_pourcentage_bdc"]
-            if request.POST["periode_de_garantie_bdc"]:
-                bon.periode_de_garantie = request.POST["periode_de_garantie_bdc"]
-            if request.POST["frais_dossier"]:
-                bon.frais_dossier = request.POST["frais_dossier"]
+                values = request.POST.getlist("values_bdc[]")
+                if keys:
+                    cahier_des_charges = {
+                        key: value for key, value in zip(keys, values) if key
+                    }
+                    bon.cahier_des_charges = cahier_des_charges
+                bon.save()
+            else:
+                bon = BonCommande.objects.get(id=id_bon)
+                bon.remarque = request.POST["remarque_bdc"]
+                bon.numero = request.POST["numero_bdc"]
+                if request.POST["acompte_pourcentage_bdc"]:
+                    bon.acompte_pourcentage = request.POST["acompte_pourcentage_bdc"]
+                if request.POST["periode_de_garantie_bdc"]:
+                    bon.periode_de_garantie = request.POST["periode_de_garantie_bdc"]
+                if request.POST["frais_dossier"]:
+                    bon.frais_dossier = request.POST["frais_dossier"]
 
-            if request.POST["objectifs_bdc"]:
-                bon.objectifs = request.POST["objectifs_bdc"]
+                if request.POST["objectifs_bdc"]:
+                    bon.objectifs = request.POST["objectifs_bdc"]
 
-            if request.POST["debut"]:
-                bon.debut = request.POST["debut"]
-            if request.POST["fin"]:
-                bon.fin_bdc = request.POST["fin"]
+                if request.POST["debut"]:
+                    bon.debut = request.POST["debut"]
+                if request.POST["fin"]:
+                    bon.fin_bdc = request.POST["fin"]
 
-            keys = request.POST.getlist("keys_bdc[]")
-            values = request.POST.getlist("values_bdc[]")
-            if keys:
-                cahier_des_charges = {
-                    key: value for key, value in zip(keys, values) if key
-                }
-                bon.cahier_des_charges = cahier_des_charges
+                keys = request.POST.getlist("keys_bdc[]")
+                values = request.POST.getlist("values_bdc[]")
+                if keys:
+                    cahier_des_charges = {
+                        key: value for key, value in zip(keys, values) if key
+                    }
+                    bon.cahier_des_charges = cahier_des_charges
 
-            bon.etude = etude
-            bon.save()
+                bon.etude = etude
+                bon.save()
 
-        return redirect("details", modelName="Etude", iD=id_etude)
-        # except:
-        context = general_context(request)
-        template = loader.get_template("polls/page_error.html")
-        context["error_message"] = "Un problème a été détecté dans la base de données."
+            return redirect("details", modelName="Etude", iD=id_etude)
+        except:
+            context = {general_context(request)}
+            template = loader.get_template("polls/page_error.html")
+            context["error_message"] = "Un problème a été détecté dans la base de données."
 
     else:
         template = loader.get_template("polls/login.html")
