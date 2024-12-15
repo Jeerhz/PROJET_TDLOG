@@ -2257,7 +2257,7 @@ def generate_facture_pdf(request, id_facture):
             logger.info("Generating PDF")
 
             pdf_file = HTML(
-                string=html_string, base_url=request.build_absolute_uri()
+                string=html_string
             ).write_pdf()
 
             # Prepare filename
