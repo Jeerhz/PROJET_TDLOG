@@ -2255,7 +2255,10 @@ def generate_facture_pdf(request, id_facture):
 
             # Generate PDF
             logger.info("Generating PDF")
-            pdf_file = HTML(string=html_string).write_pdf()
+
+            pdf_file = HTML(
+                string=html_string, base_url=request.build_absolute_uri()
+            ).write_pdf()
 
             # Prepare filename
             date_emission = datetime.datetime.strptime(
