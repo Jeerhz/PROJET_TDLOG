@@ -1,725 +1,265 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'polls/base.html' %}
+{% block title %}Sylog - Annuaire{% endblock %}
+{% load format_duration %}
+{% block content %}
 
-<head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+<!-- Begin Page Content -->
+<div class="card-header" style="padding-top: 20; padding-bottom: 0;">
 
- 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
 
-    <title>Sylog - Annuaire</title> 
 
-    {% load static %}
-    {% load format_duration %}
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
-
-    <style>
-        
-        /* Style for JE logo */
-        .my-custom-logo {
-            max-width: 80%;
-            aspect-ratio: 10/8;
-            justify-content: center;
-            align-self: center;
-            padding: 1rem;
-        }
-
-        /* Style for the suggestion results */
-        #suggestions-results {
-            position: absolute;
-            top: 50px; /* Adjust as needed */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: none;
-        }
-        #suggestions-results.show {
-            display: block;
-        }
-       
-
-        
-    </style>
-
-</head>
-
-<body id="page-top">
-
-    <!-- Page Wrapper -->
-    <div id="wrapper">
-
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
-            
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-md-0">
-
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link text-center" href="{% url 'index' %}">
-                    
-                    <span>ACCUEIL</span></a>
+        <!-- Boutons pour basculer entre les annuaires -->
+        <ul class="nav nav-pills mb-3" style="background-color: #f8f9fc; display: flex; justify-content: center;" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiants</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Clients</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false" >Annuaire Études</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-etudes-importees-tab" data-toggle="pill" href="#pills-etudes-importees" role="tab" aria-controls="pills-etudes-importees" aria-selected="false" >Annuaire Études Importées</a>
             </li>
             
-            <hr class="sidebar-divider">
-            
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Informations
-            </div>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'annuaire' %}">
-                    
-                    <span>Annuaire</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    
-                    <span>Stat/KPI</span></a>
-            </li>
-
-            
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                    aria-expanded="true" aria-controls="pagetresorerie">
-                    
-                    <span>Trésorerie</span>
-                </a>
-                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                        <a class="collapse-item" href="#">DAS2</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    
-                    <span>Ma Junior Entreprise</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'demarchage' %}">
-                    
-                    <span>Démarchage</span></a>
-            </li>
-            
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
-                   
-                    <span>Connexion</span>
-                </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                    aria-expanded="true" aria-controls="pageautres">
-                    
-                    <span>Autres</span>
-                </a>
-                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                        
-                        <a class="collapse-item" >Notifications</a>    
-                    </div>
-
-                </div>
-                
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" >
-                    
-                    <span>Signaler un problème</span></a>
-            </li>
-            <!-- Heading -->
-            
-
-                        
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
         </ul>
-        <!-- End of Sidebar -->
+        
+        <!-- Contenu des onglets -->
+    <div class="tab-content mt-2">
+        <!-- Onglet Annuaire Étudiant -->
+        <div class="tab-pane fade show active shadow" id="pills-etudiant">
+            <div class="card">
+            <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
+                
+                <a style="color: black;" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
+                <form method="post" action="{% url 'upload_students' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-center mb-3">
+                        <!-- File input -->
+                        <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                            <label for="csv_file" style="cursor: pointer; margin-bottom: 0;">
+                                Choisir un csv (colonnes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss)
+                            </label>
+                            <input type="file" id="csv_file" name="csv_file" accept=".csv" style="display: none;">
+                        </div>
+                    
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-light">Ajouter le csv</button>
+                    </div>
+                </form>
 
-            <!-- Main Content -->
-            <div id="content">
+                <!-- Column order instructions -->
+                
+            </div>
+            
+            </div>
+            
+            
+            
+            <div class="table-responsive" style="background-color: #FFFFFF;">
+                <table class="table table-borderless table-hover">
+                        <thead style="background-color: rgba(26, 61, 2, 0.479);">
+                            <tr style="color: white;">
+                                <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Étudiant</th>
+                                <th class="text-center">Promotion</th>
+                                <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Département</th>
+                            </tr>
+                        </thead>
+                        <tbody id="etudiantTableBody" style="color: rgba(8, 20, 1, 0.828);">
+                            <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                            {% for student in student_list %}
+                            <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
+                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left">{{ student.titre }} {{ student.first_name }} {{ student.last_name }} </td>
+                                <td style="padding-left: 15px; padding-right: 15px;" class="text-center"> {{ student.promotion }} </td>
+                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ student.departement }} </td>
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+            </div>
+            <!-- Improved form with basic styling -->
+                                        <!-- Improved form with input and button side by side -->
+            
 
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
+        </div>
 
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
+        <!-- Onglet Annuaire Client -->
+        <div class="tab-pane fade shadow" id="pills-client">
+            <div class="card">
+                <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
+                    
+                    <!-- Barre de recherche -->
+                    <a style="color: black;" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
+                    <form method="post" action="{% url 'upload_clients' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex align-items-center mb-3">
+                            <!-- File input -->
+                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                                <label for="csv_file_client" style="cursor: pointer; margin-bottom: 0;">
+                                    Choisir un csv (colonnes : nom, raison sociale, rue, ville, code postal, pays)
+                                </label>
+                                <input type="file" id="csv_file_client" name="csv_file_client" accept=".csv" style="display: none;">
                             </div>
-                            <div class="list-group" id="suggestions-results"></div>
+                            
+                        
+                            <!-- Submit button -->
+                            <button type="submit" class="btn btn-light">Ajouter le csv</button>
                         </div>
                     </form>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Rechercher..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                {% if notification_list.0 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.0}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.1 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.1}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.2 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.2}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Messagerie
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user_student }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{ user.photo.url }}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil
-                                </a>
-                                <a class="dropdown-item" href="{% url 'settings' %}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Réglages
-                                </a>
-                                
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Se déconnecter
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                <div class="card-header" style="padding-top: 20; padding-bottom: 0;">
+                    
+                </div>
 
 
 
-                        <!-- Boutons pour basculer entre les annuaires -->
-                        <ul class="nav nav-pills mb-3" style="background-color: #f8f9fc; display: flex; justify-content: center;" id="pills-tab" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="pills-etudiant-tab" data-toggle="pill" href="#pills-etudiant" role="tab" aria-controls="pills-etudiant" aria-selected="true">Annuaire Étudiants</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-client-tab" data-toggle="pill" href="#pills-client" role="tab" aria-controls="pills-client" aria-selected="false">Annuaire Clients</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-etudes-tab" data-toggle="pill" href="#pills-etudes" role="tab" aria-controls="pills-etudes" aria-selected="false" >Annuaire Études</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-etudes-importees-tab" data-toggle="pill" href="#pills-etudes-importees" role="tab" aria-controls="pills-etudes-importees" aria-selected="false" >Annuaire Études Importées</a>
-                            </li>
-                            
-                        </ul>
-                        
-                        <!-- Contenu des onglets -->
-                    <div class="tab-content mt-2">
-                        <!-- Onglet Annuaire Étudiant -->
-                        <div class="tab-pane fade show active shadow" id="pills-etudiant">
-                            <div class="card">
-                            <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
-                                
-                                <a style="color: black;" href="{% url 'input' modelName='Student' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
 
-                                <form method="post" action="{% url 'upload_students' %}" enctype="multipart/form-data" class="form-upload mt-4">
-                                    {% csrf_token %}
-                                    <div class="d-flex align-items-center mb-3">
-                                        <!-- File input -->
-                                        <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
-                                            <label for="csv_file" style="cursor: pointer; margin-bottom: 0;">
-                                                Choisir un csv (colonnes : titre, prénom, nom, mail, portable, rue, ville, CP, pays, département, promo, numero_ss)
-                                            </label>
-                                            <input type="file" id="csv_file" name="csv_file" accept=".csv" style="display: none;">
-                                        </div>
-                                    
-                                        <!-- Submit button -->
-                                        <button type="submit" class="btn btn-light">Ajouter le csv</button>
-                                    </div>
-                                </form>
-    
-                                <!-- Column order instructions -->
-                                
-                            </div>
-                            
-                            </div>
-                            
-                            
-                            
-                            <div class="table-responsive" style="background-color: #FFFFFF;">
-                                <table class="table table-borderless table-hover">
-                                        <thead style="background-color: rgba(26, 61, 2, 0.479);">
-                                            <tr style="color: white;">
-                                                <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Étudiant</th>
-                                                <th class="text-center">Promotion</th>
-                                                <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Département</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="etudiantTableBody" style="color: rgba(8, 20, 1, 0.828);">
-                                            <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                            {% for student in student_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
-                                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left">{{ student.titre }} {{ student.first_name }} {{ student.last_name }} </td>
-                                                <td style="padding-left: 15px; padding-right: 15px;" class="text-center"> {{ student.promotion }} </td>
-                                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ student.departement }} </td>
+            </div>
+                <div class="table-responsive" style="background-color: #FFFFFF;">
+                    <table class="table table-borderless table-hover">
+                        <thead style="background-color: rgba(106, 65, 23, 0.607);">
+                            <tr style="color: white;">
+                                <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Client </th>
+                                <th class="text-center">Secteur</th>
+                                <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Type d'entreprise</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientTableBody" style="color: rgba(44, 31, 6, 0.863);">
+                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
+                            {% for client in client_list %}
 
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                </table>
-                            </div>
-                            <!-- Improved form with basic styling -->
-                                                        <!-- Improved form with input and button side by side -->
-                            
-
-                        </div>
+                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
+                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left"> {{ client.nom_societe }} </td>
+                                <td class="text-center"> {{ client.get_secteur_display }} </td>
+                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ client.get_type_display }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 
-                        <!-- Onglet Annuaire Client -->
-                        <div class="tab-pane fade shadow" id="pills-client">
-                            <div class="card">
-                                <div class="card-header py-0 d-flex flex-row align-items-center justify-content-between">
-                                    
-                                    <!-- Barre de recherche -->
-                                    <a style="color: black;" href="{% url 'input' modelName='Client' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
-                                    <form method="post" action="{% url 'upload_clients' %}" enctype="multipart/form-data" class="form-upload mt-4">
-                                        {% csrf_token %}
-                                        <div class="d-flex align-items-center mb-3">
-                                            <!-- File input -->
-                                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
-                                                <label for="csv_file_client" style="cursor: pointer; margin-bottom: 0;">
-                                                    Choisir un csv (colonnes : nom, raison sociale, rue, ville, code postal, pays)
-                                                </label>
-                                                <input type="file" id="csv_file_client" name="csv_file_client" accept=".csv" style="display: none;">
-                                            </div>
-                                            
-                                        
-                                            <!-- Submit button -->
-                                            <button type="submit" class="btn btn-light">Ajouter le csv</button>
-                                        </div>
-                                    </form>
-                                    
-                                </div>
+        </div>
 
-
-
-
-                            </div>
-                                <div class="table-responsive" style="background-color: #FFFFFF;">
-                                    <table class="table table-borderless table-hover">
-                                        <thead style="background-color: rgba(106, 65, 23, 0.607);">
-                                            <tr style="color: white;">
-                                                <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Client </th>
-                                                <th class="text-center">Secteur</th>
-                                                <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Type d'entreprise</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="clientTableBody" style="color: rgba(44, 31, 6, 0.863);">
-                                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
-                                            {% for client in client_list %}
-
-                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
-                                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left"> {{ client.nom_societe }} </td>
-                                                <td class="text-center"> {{ client.get_secteur_display }} </td>
-                                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ client.get_type_display }} </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
-                        </div>
-
-                        <!-- Onglet Annuaire Représentants -->
-                        <div class="tab-pane fade shadow" id="pills-representant">
-                            <div class="card">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <i class="fas fa-user-tag"></i>
-                                    <h2 class="m-0 font-weight-bold text-primary">Représentants</h2>
-                                    <!-- Barre de recherche -->
-                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Representant' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
-                                </div>
-                            </div>
-                                <div class="table-responsive" style="background-color: #FFFFFF;">
-                                    <table class="table table-borderless table-hover">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th class="text-center">Nom de société </th>
-                                                <th class="text-center"> Représentant </th>
-                                                <th class="text-center">Pays</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="clientTableBody">
-                                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
-                                            {% for client in client_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
-                                                <td class="text-center"> {{ client.nom_societe }} </td>
-                                                <td class="text-center"> {{ client.secteur }}</td>
-                                                <td class="text-center"> {{ client.country }} </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                        </div>
-
-                        <!-- Onglet Annuaire Études -->
-                        <div class="tab-pane fade shadow" id="pills-etudes" style="width: 100%; margin: 0 auto;">
-                            <div class="card">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        
-                                    
-                                    <!-- Barre de recherche -->
-                                    <a style="color: black;" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
-                                </div>
-                            </div>
-
-                            <div class="table-responsive" style="background-color: #FFFFFF;">
-                                <table class="table table-borderless table-hover">
-                                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
-                                        <tr style="color:white">
-                                            <th class="text-left" style="padding-left: 30px;">Étude</th>
-                                            <th class="text-left">Client</th>
-                                            <th class="text-left">Montant</th>
-                                            <th class="text-right" style="padding-right: 30px;">Suiveur</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
-                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                        {% for etude in etude_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
-                                                <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
-                                                <td class="text-left">{% if etude.client %} {{ etude.client|slice:":30" }} {% else %} aucun client {% endif %} </td>
-                                                <td class="text-left"> {{ etude.montant_HT_total|FormatNombres }} </td>
-                                                <td class="text-right" style="padding-right: 30px;"> {{ etude.responsable }} </td>
-                                            </tr>
-                                            {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div> 
-                        
-                        
-                        <!-- Onglet Annuaire Études Importées -->
-                        <div class="tab-pane fade shadow" id="pills-etudes-importees" style="width: 100%; margin: 0 auto;">
-                            <div class="card">
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        
-                                    
-                                    <!-- Barre de recherche -->
-                                    <form method="post" action="{% url 'upload_etudes' %}" enctype="multipart/form-data" class="form-upload mt-4">
-                                        {% csrf_token %}
-                                        <div class="d-flex align-items-center mb-3">
-                                            <!-- File input -->
-                                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
-                                                <label for="csv_file_etudes" style="cursor: pointer; margin-bottom: 0;">
-                                                    Choisir un csv (colonnes : titre, ref, description, problematique, debut, nb_JEH, montant_HT_phases, frais_dossier, mandat, departement, remarque, fin (JJ/MM/AAAA))
-                                                </label>
-                                                <input type="file" id="csv_file_etudes" name="csv_file_etudes" accept=".csv" style="display: none;">
-                                            </div>
-                                            
-                                        
-                                            <!-- Submit button -->
-                                            <button type="submit" class="btn btn-light">Ajouter le csv</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="table-responsive" style="background-color: #FFFFFF;">
-                                <table class="table table-borderless table-hover">
-                                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
-                                        <tr style="color:white">
-                                            <th class="text-left" style="padding-left: 30px;">Étude</th>
-                                            
-                                        </tr>
-                                    </thead>
-                                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
-                                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
-                                        {% for etude in etude_importe_list %}
-                                            <tr onclick="location.href=&quot;{% url 'details_etudes_importees' etude.id  %}&quot;">
-                                                <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
-                                                
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>   
-                    </div> 
-            
-            
-        </div>      
-
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etude Projets 2024</span>
+        <!-- Onglet Annuaire Représentants -->
+        <div class="tab-pane fade shadow" id="pills-representant">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <i class="fas fa-user-tag"></i>
+                    <h2 class="m-0 font-weight-bold text-primary">Représentants</h2>
+                    <!-- Barre de recherche -->
+                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Representant' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                 </div>
             </div>
-        </footer>
-        <!-- End of Footer -->     
-    </div>
+                <div class="table-responsive" style="background-color: #FFFFFF;">
+                    <table class="table table-borderless table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Nom de société </th>
+                                <th class="text-center"> Représentant </th>
+                                <th class="text-center">Pays</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientTableBody">
+                            <!-- Entrées pour l'annuaire client avec des liens vers les profils -->
+                            {% for client in client_list %}
+                            <tr onclick="location.href=&quot;{% url 'details' modelName='Client' iD=client.id %}&quot;">
+                                <td class="text-center"> {{ client.nom_societe }} </td>
+                                <td class="text-center"> {{ client.secteur }}</td>
+                                <td class="text-center"> {{ client.country }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+        </div>
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
+        <!-- Onglet Annuaire Études -->
+        <div class="tab-pane fade shadow" id="pills-etudes" style="width: 100%; margin: 0 auto;">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        
+                    
+                    <!-- Barre de recherche -->
+                    <a style="color: black;" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>  Ajouter</a>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
+            </div>
+
+            <div class="table-responsive" style="background-color: #FFFFFF;">
+                <table class="table table-borderless table-hover">
+                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
+                        <tr style="color:white">
+                            <th class="text-left" style="padding-left: 30px;">Étude</th>
+                            <th class="text-left">Client</th>
+                            <th class="text-left">Montant</th>
+                            <th class="text-right" style="padding-right: 30px;">Suiveur</th>
+                        </tr>
+                    </thead>
+                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
+                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                        {% for etude in etude_list %}
+                            <tr onclick="location.href=&quot;{% url 'details' 'Etude' etude.id  %}&quot;">
+                                <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
+                                <td class="text-left">{% if etude.client %} {{ etude.client|slice:":30" }} {% else %} aucun client {% endif %} </td>
+                                <td class="text-left"> {{ etude.montant_HT_total|FormatNombres }} </td>
+                                <td class="text-right" style="padding-right: 30px;"> {{ etude.responsable }} </td>
+                            </tr>
+                            {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div> 
+        
+        
+        <!-- Onglet Annuaire Études Importées -->
+        <div class="tab-pane fade shadow" id="pills-etudes-importees" style="width: 100%; margin: 0 auto;">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        
+                    
+                    <!-- Barre de recherche -->
+                    <form method="post" action="{% url 'upload_etudes' %}" enctype="multipart/form-data" class="form-upload mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex align-items-center mb-3">
+                            <!-- File input -->
+                            <div class="d-flex align-items-center" style="border: black; margin-right: 10px;">
+                                <label for="csv_file_etudes" style="cursor: pointer; margin-bottom: 0;">
+                                    Choisir un csv (colonnes : titre, ref, description, problematique, debut, nb_JEH, montant_HT_phases, frais_dossier, mandat, departement, remarque, fin (JJ/MM/AAAA))
+                                </label>
+                                <input type="file" id="csv_file_etudes" name="csv_file_etudes" accept=".csv" style="display: none;">
+                            </div>
+                            
+                        
+                            <!-- Submit button -->
+                            <button type="submit" class="btn btn-light">Ajouter le csv</button>
+                        </div>
+                    </form>
                 </div>
+            </div>
+
+            <div class="table-responsive" style="background-color: #FFFFFF;">
+                <table class="table table-borderless table-hover">
+                    <thead style="background-color: rgba(41, 48, 92, 0.814);">
+                        <tr style="color:white">
+                            <th class="text-left" style="padding-left: 30px;">Étude</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="etudesTableBody" style="color: rgba(5, 15, 65, 0.774);">
+                        <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
+                        {% for etude in etude_importe_list %}
+                            <tr onclick="location.href=&quot;{% url 'details_etudes_importees' etude.id  %}&quot;">
+                                <td class="text-left" style="padding-left: 30px;"> {{ etude.ref }} - {{ etude.titre|slice:":50" }}</td>
+                                
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </div>   
+            
+            
+</div>      
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    
-
-    <!-- Core plugin JavaScript-->
-    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-    <!-- 2 scripts spécifiques aux suggestions de recherche -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-    </script>
-    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
-
-</body>
-
-</html>
+{% endblock %}

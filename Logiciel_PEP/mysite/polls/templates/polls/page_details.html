@@ -463,7 +463,7 @@
                                     </div>
                                 </a>
                                 {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Show All Alerts</a>
                             </div>
                         </li>
 
@@ -1028,8 +1028,8 @@
                                                 <form action="{% url 'modifier_recrutement_etude' iD=etude.id %}" method="post" id="rec-f-form">
                                                     {% csrf_token %}
                                                     <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.date_debut_recrutement|date:'Y-m-d' }}"></li>
-                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.date_fin_recrutement|date:'Y-m-d' }}"></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-alt"></i><strong> Début :</strong> <input type="date" required name="debut" class="form-control" value="{{ etude.date_debut_recrutement|date:'Y-m-d' }}"></li>
+                                                        <li class="list-group-item"><i class="fas fa-calendar-check"></i> <strong>Fin :</strong> <input type="date" required name="fin" class="form-control" value="{{ etude.date_fin_recrutement|date:'Y-m-d' }}"></li>
                                                     </ul>
                                                     <!-- Bouton Modifier -->
                                                     <div class="row justify-content-between">
@@ -1112,7 +1112,6 @@
                                                 // Handle JSON response
                                                 if (data.success) {
                                                     // Show success message or perform any action
-                                                    showAlert('Modification successful!');
                                                     document.getElementById('date-debut').textContent = data.debut;
                                                     document.getElementById('date-fin').textContent = data.fin;
                                                     general_info.classList.toggle('d-none');

@@ -2,10 +2,6 @@
 <html lang="en">
 
 <head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,19 +9,12 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Sylog - Factures</title>
-
-    {% load static %}
-    {% load format_duration %}
-    
-    <!-- Script pour l'affichage dynamique du C-A -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-    <script src="{% static 'polls/js/chart-area.js' %}"></script>
+    <title>{% block title %}Sylog{% endblock %}</title>
 
     <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    {% load static %}
+    {% load format_duration %}
+    <link href= "{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
@@ -54,76 +43,18 @@
         #suggestions-results.show {
             display: block;
         }
-        
-        .table tbody tr td, .table thead tr th {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .table tbody tr td {
-            cursor: pointer;
-        }
-        .bg-info-agenda {
-            max-width: 100px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            background-color:#bad7db!important
-        }
-        .table tbody tr td:hover .bg-info-agenda {
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            max-width: none;
-        }
-        .table_demarchage {
-			border-top: 1px solid #1f3753;
-            border-bottom: 0px solid #1f3753;
-            border-left: none; 
-            border-right: none; 
-            margin:20px;
-            margin-top:0px;
-			border-collapse:collapse;
-			padding:5px;
-            
-		}
-		.table_demarchage th {
-            border-top: 1px solid #1f3753;
-            border-bottom: 0px solid #1f3753;
-            border-left: none; 
-            border-right: none; 
-			padding:5px;
-			background: #1f3753;
-			color: #f0f0f0;
-        }
-		.table_demarchage td {
-			border-top: 1px solid #1f3753;
-            border-bottom: 0px solid #1f3753;
-            border-left: none; 
-            border-right: none; 
-			
-			padding:5px;
-			background: #ffffff;
-			color: #313030;
-            
-		}
-        .attente{
-            font-style: italic;
-            text-align: center; 
-            width: 15%;
-        }
-        
     </style>
 
 </head>
+
 
 <body id="page-top">
 
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-         <!-- Sidebar -->
-         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
             <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
@@ -481,144 +412,16 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                <div class="card-header" style="padding-top: 20; padding-bottom: 0;">
-
-                    <!-- Page Heading
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-                    </div> -->
-
-                    <!-- Content Row -->
-                    <div class="row mt-4 mb-4">
-
-                        
-
-                        
-                    </div>
-
-                    <!-- Content Row -->
-
-                    <div style="margin:10px;" class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-lg-13 mb-3" style="width: 100%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Factures </h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-            
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <thead >
-                                            <tr style="color:white">
-                                                <th class="text-left" >Modifier le numéro</th>
-                                                <th class="text-left">Client</th>
-                                                <th class="text-left">Type de facture</th>
-                                                <th class="text-left">Montant H.T.</th>
-                                                <th class="text-right"></th>
-                                            </tr>
-                                        </thead>
-                                    {% for facture in factures %}
-                                        {% if facture.date_emission %}
-                                        <tbody>
-                                            
-                                            <tr >
-                                                <td>
-                                                    <span style="cursor:pointer; font-weight: 650;"  data-toggle="modal" data-target="#numeroFacture_{{facture.id}}"> {{facture}} </span>
-                                                    <a style="color: #6d7379; font-weight: 400;" href="{% url 'details' modelName='Etude' iD=facture.etude.id %}">
-                                                        {{facture.etude.ref}} - {{facture.etude}}
-                                                    </a>                                                
-                                                </td>
-                                                <div class="modal fade" id="numeroFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="editFactureModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <form id="editFactureForm_{{facture.id}}" method="POST" action="{% url 'numero_facture' facture.id %}">
-                                                                {% csrf_token %}
-                                                                <div class="modal-header">
-                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="form-group">
-                                                                        <label for="numero_fac">Numéro de la facture</label>
-                                                                        <input type="number" class="form-control" id="numero_fac" name="numero_fac" value="{{ facture.numero_facture }}" required>
-                                                                        <br>
-                                                                        <label for="objet_fac">Objet de la facture</label>
-                                                                        <textarea class="form-control" id="objet_fac" name="objet_fac" required rows="3">{{ facture.objet }}</textarea>
-                                                                    
-                                                                    </div>
-                                                            
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                 </div>
-                                                <td style="text-align: left;" > {% if facture.etude.client %} <span href="{% url 'details' modelName='Client' iD=facture.etude.client.id %}"> {{facture.etude.client}} </span>{% endif %}</td>
-                                                <td style="text-align: left; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
-                                                <td style="text-align: left;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
-                                                
-                                                <td style="text-align: right;">
-                                                    <a class="fas fa-download mr-2" target="_blank" href="{% url 'facture' facture.id %}"></a>
-                                                    <button type="button" class="fas fa-times" data-toggle="modal" data-target="#deleteModalFacture">
-                                                        
-                                                    </button>
-                                                
-                                                </td>
-                                                
-                                                <div class="modal fade" id="deleteModalFacture" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="deleteModalLabel">Supprimer la facture</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                Êtes-vous sûr de vouloir supprimer cette facture ?
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                <form id="deleteFactureForm" method="POST" action="{% url 'delete_facture' facture.id facture.etude.id %}">
-                                                                    {% csrf_token %}
-                                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </tr>
-                                            
-                                        </tbody>
-                                    
-                                    
-                                        {% endif %}
-                                    {% endfor %}  
-                                    </table>
-                                     
-                                
-                                    
-                            </div>
-                        </div>  
-                                                                
-                    </div>
-                    <!--End Row-->
-
-                    
-                    
+                <div class="container-fluid">
+                    {% block content %}
+                        <p>Welcome to Sylog base page. There's nothing much to see here.</p>
+                    {% endblock %}
                 </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
+                <!-- End page content -->
+                
+                    
+                        
+        </div>   
         <!-- Footer -->
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
@@ -627,18 +430,8 @@
                 </div>
             </div>
         </footer>
-        <!-- End of Footer -->
-
-        </div>
-        <!-- End of Content Wrapper -->
-
+        <!-- End of Footer -->  
     </div>
-    <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
 
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -646,19 +439,20 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Bootstrap core JavaScript-->
     <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -668,12 +462,6 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
-
-    <!-- Page level custom scripts -->
-    
     <!-- 2 scripts spécifiques aux suggestions de recherche -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
@@ -686,6 +474,9 @@
         var href_student = str.substring(0, str.length - 1);
     </script>
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+    <script>
+        const bootstrap = "{% static 'polls/css/sb-admin-2.min.css' %}";
+    </script>
 
 </body>
 

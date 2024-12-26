@@ -51,10 +51,16 @@
     <!-- Main Content -->
     <div class="container mt-4">
         <div class="row">
-            <p class="text-success">Votre candidature a été envoyée avec succès</p>
-            <p>{{ detail_message }}</p>
+            <div class="col-md-12">
+                <p class="text-success">Votre candidature a été envoyée avec succès. Nous reviendrons vers vous si vous avez été retenus.</p>
+                <p>{{ detail_message }}</p>
+            </div>
 
         </div>
+        <display-edit-form>
+            <li class="list-group-item"><strong>Bonjour : </strong>moi</li>
+            <li class="list-group-item"><strong>Bonjour : </strong>moi</li>
+        </display-edit-form>
     </div>
 
 
@@ -67,4 +73,8 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
+    <script>
+        const bootstrap = "{% static 'polls/css/sb-admin-2.min.css' %}";
+    </script>
+    <script src="{% static 'polls/js/display-and-modify.js' %}"></script>
 </body>
