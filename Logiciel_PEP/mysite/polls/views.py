@@ -2611,7 +2611,12 @@ def stat_KPI(request):
 
         for etude in liste_etudes_ec_term:
             if etude.type_convention == "Convention d'étude":
-                mois = etude.debut.strftime("%m-%Y")
+                if etude.debut:
+                    mois = etude.debut.strftime("%m-%Y")
+                else:
+                    date_now= datetime.datetime.now()
+                    mois= date_now.strftime("%m-%Y")
+                
 
                 if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(
                     derniere_date_CA[0:2]
@@ -2626,7 +2631,11 @@ def stat_KPI(request):
             else:
                 bdcs = etude.get_bon_commandes()
                 for bdc in bdcs:
-                    mois = bdc.debut.strftime("%m-%Y")
+                    if bdc.debut:
+                        mois = bdc.debut.strftime("%m-%Y")
+                    else:
+                        date_now= datetime.datetime.now()
+                        mois= date_now.strftime("%m-%Y")
 
                     if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(
                         mois[0:2]
@@ -2673,32 +2682,34 @@ def stat_KPI(request):
 
         bar_chart_CA = {}
         for etude in liste_etudes_ec_term:
-            etude_month = etude.debut.month
-            etude_year = etude.debut.year
-            if etude_year in bar_chart_CA:
-                if etude_month in bar_chart_CA[etude_year]:
-                    bar_chart_CA[etude_year][etude_month] += etude.montant_HT_total()
+            if etude.debut:
+                etude_month = etude.debut.month
+                etude_year = etude.debut.year
+                if etude_year in bar_chart_CA:
+                    if etude_month in bar_chart_CA[etude_year]:
+                        bar_chart_CA[etude_year][etude_month] += etude.montant_HT_total()
+                    else:
+                        bar_chart_CA[etude_year][etude_month] = etude.montant_HT_total()
                 else:
-                    bar_chart_CA[etude_year][etude_month] = etude.montant_HT_total()
-            else:
-                bar_chart_CA[etude_year] = {etude_month: etude.montant_HT_total()}
+                    bar_chart_CA[etude_year] = {etude_month: etude.montant_HT_total()}
 
         for etude in liste_etudes_ec_term:
-            etude_month = etude.debut.month
-            etude_year = etude.debut.year
+            if etude.debut:
+                etude_month = etude.debut.month
+                etude_year = etude.debut.year
 
-            if etude_month == current_month and etude_year == current_year:
-                current_sum += etude.montant_HT_total()
-            else:
-                # Ajouter les données pour le mois précédent
-                date_labels.append(f"{current_year}-{current_month:02d}")
-                total_sum += current_sum
-                cumulated_CA.append(total_sum)
+                if etude_month == current_month and etude_year == current_year:
+                    current_sum += etude.montant_HT_total()
+                else:
+                    # Ajouter les données pour le mois précédent
+                    date_labels.append(f"{current_year}-{current_month:02d}")
+                    total_sum += current_sum
+                    cumulated_CA.append(total_sum)
 
-                # Réinitialiser pour le nouveau mois
-                current_month = etude_month
-                current_year = etude_year
-                current_sum = etude.montant_HT_total()
+                    # Réinitialiser pour le nouveau mois
+                    current_month = etude_month
+                    current_year = etude_year
+                    current_sum = etude.montant_HT_total()
 
         nb_intervenants_diff_026 = len(dico_nb_intervenants_diff_026)
         if retributions_etudes026 > 0:
@@ -2915,20 +2926,21 @@ def fetch_data(request):
 
         for etude in etudes:
             if etude.status == "EN_COURS" or etude.status == "TERMINEE":
-                etude_month = etude.debut.month
-                etude_year = etude.debut.year
-                date_label = f"{etude_year}-{etude_month:02d}"
+                if etude.debut:
+                    etude_month = etude.debut.month
+                    etude_year = etude.debut.year
+                    date_label = f"{etude_year}-{etude_month:02d}"
 
-                if date_labels and date_labels[-1] == date_label:
-                    # Same month, add to current sum
-                    current_sum += etude.montant_HT_total()
-                else:
-                    # New month, append previous month data and start new sum
-                    if date_labels:
-                        cumulated_CA[-1] = current_sum  # Update previous month sum
-                    date_labels.append(date_label)
-                    current_sum += etude.montant_HT_total()
-                    cumulated_CA.append(current_sum)  # Initialize new month sum
+                    if date_labels and date_labels[-1] == date_label:
+                        # Same month, add to current sum
+                        current_sum += etude.montant_HT_total()
+                    else:
+                        # New month, append previous month data and start new sum
+                        if date_labels:
+                            cumulated_CA[-1] = current_sum  # Update previous month sum
+                        date_labels.append(date_label)
+                        current_sum += etude.montant_HT_total()
+                        cumulated_CA.append(current_sum)  # Initialize new month sum
 
         # Debug prints
         print(f"date_labels: {date_labels}")
