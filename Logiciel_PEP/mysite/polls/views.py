@@ -6182,13 +6182,14 @@ def facture_redirect(request, fac_id):
 
 def factures(request):
     if request.user.is_authenticated:
+        context = general_context(request)
         user_je = request.user.je
 
         factures = Facture.objects.all().order_by("-numero_facture")
         # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
-        context = {"factures": filtered_factures}
+        context["factures"] = filtered_factures
     else:
         template = loader.get_template("polls/login.html")
         context = {}
