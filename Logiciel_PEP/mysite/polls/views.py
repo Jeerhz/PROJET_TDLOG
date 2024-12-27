@@ -5514,7 +5514,7 @@ def modifier_recrutement_etude(request, iD):
 
 
 def modifier_etude(request, iD):
-    try:
+    #try:
         if request.user.is_authenticated:
             etude = Etude.objects.get(id=iD)
             numero_ori = etude.numero
@@ -5533,6 +5533,7 @@ def modifier_etude(request, iD):
                 frais_dossier = request.POST.get("frais_dossier")
                 remarque = request.POST.get("remarque")
                 numero = int(request.POST.get("numero"))
+            
 
                 if debut:
                     etude.debut = debut
@@ -5562,12 +5563,15 @@ def modifier_etude(request, iD):
 
                 etude.save()
 
-                return JsonResponse(
-                    {
-                        "success": True,
-                        "message": "Étude modifiée avec succès.",
-                        "redirect": reverse("details", args=["Etude", iD]),
-                    }
+                return JsonResponse([
+                    {"label": "Début", "name": "debut", "type": "date", "value": etude.debut.strftime('%Y-%m-%d')},
+                    {"label": "Fin", "name": "fin_etude", "type": "date", "value": etude.fin_etude.strftime('%Y-%m-%d')},
+                    {"label": "Nombre de JEH", "name": "nb_JEH", "type": "number", "value": etude.nb_JEH(), "duress": "readonly"},
+                    {"label": "Montant Total JEHs", "name": "montant_phase_HT", "type": "number", "value": etude.montant_phase_HT(), "duress": "readonly"},
+                    {"label": "Frais de dossier", "name": "frais_dossier", "type": "number", "value": etude.frais_dossier},
+                    {"label": "Remarque", "name": "remarque", "type": "text", "value": etude.remarque},
+                    {"label": "Numéro", "name": "numero", "type": "number", "value": etude.numero}
+                ], safe=False
                 )
 
         else:
@@ -5582,12 +5586,11 @@ def modifier_etude(request, iD):
         return JsonResponse(
             {"success": False, "message": "Invalid request method"}, status=400
         )
-    except Exception as e:
+    #except Exception as e:
         # Log the error and return a JSON response
         return JsonResponse(
             {"success": False, "message": f"Erreur interne: {e}"}, status=500
         )
-
 
 def verifier_etude(request, iD):
     if request.user.is_authenticated:

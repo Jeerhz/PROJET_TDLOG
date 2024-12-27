@@ -821,53 +821,19 @@
 
                                         <!--Card avec les informations générales (à gauche du PieChart) -->
                                         <div class="col-lg-7 pt-4">
-                                            <div class="card shadow">
-                                                <div class="card-body">
-                                                    <div class="tab-content" id="etude-info">
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} pas de début {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
-                                                            <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude_fin %} {{ etude_fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
-                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
-                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
-                                                            <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
-                                                            <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
-                                                            <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
-
-
-                                                        </ul>
-                                                        <!-- Modify Button -->
-                                                        <div class="text-right">
-                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
-                                                        </div>
-                                                        <!-- End Modify Button -->
-                                                    </div>
-                                                    <div class="tab-content d-none" id="etude-form">
-                                                        <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
-                                                            {% csrf_token %}
-                                                            <ul class="list-group list-group-flush">
-                                                                <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin_etude" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
-                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
-                                                                <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
-                                                                <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
-
-                                                            </ul>
-                                                            <!-- Save and Cancel Buttons -->
-                                                            <div class="row justify-content-between">
-                                                                <div class="col-auto">
-                                                                    <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-etude">Annuler</button>
-                                                                </div>
-                                                                <div class="col-auto">
-                                                                    <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
-                                                                </div>
-                                                            </div>
-                                                            <!-- End Save and Cancel Buttons -->
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <display-edit-form
+                                                    save-url="{% url 'modifier_etude' iD=etude.id %}"
+                                                    data-items="[ 
+                                                        {&quot;label&quot;: &quot;Début&quot;, &quot;name&quot;: &quot;debut&quot;, &quot;type&quot;: &quot;date&quot;, &quot;value&quot;: &quot;{{ etude.debut|date:'Y-m-d' }}&quot;}, 
+                                                        {&quot;label&quot;: &quot;Fin&quot;, &quot;name&quot;: &quot;fin_etude&quot;, &quot;type&quot;: &quot;date&quot;, &quot;value&quot;: &quot;{{ etude.fin|date:'Y-m-d' }}&quot;}, 
+                                                        {&quot;label&quot;: &quot;Nombre de JEH&quot;, &quot;name&quot;: &quot;nb_JEH&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude_nbJEH }}&quot;, &quot;duress&quot;: &quot;readonly&quot;}, 
+                                                        {&quot;label&quot;: &quot;Montant Total JEHs&quot;, &quot;name&quot;: &quot;montant_phase_HT&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude_total_montant_phases }}&quot;, &quot;duress&quot;: &quot;readonly&quot;}, 
+                                                        {&quot;label&quot;: &quot;Frais de dossier&quot;, &quot;name&quot;: &quot;frais_dossier&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude.frais_dossier }}&quot;}, 
+                                                        {&quot;label&quot;: &quot;Remarque&quot;, &quot;name&quot;: &quot;remarque&quot;, &quot;type&quot;: &quot;text&quot;, &quot;value&quot;: &quot;{{ etude.remarque }}&quot;}, 
+                                                        {&quot;label&quot;: &quot;Numéro&quot;, &quot;name&quot;: &quot;numero&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude.numero }}&quot;} 
+                                                    ]">
+                                                    {% csrf_token %}
+                                            </display-edit-form>
                                             <br>
                                             
                                         </div>
@@ -895,77 +861,6 @@
                                     
                                     
                                     </div>
-                                    <!-- Script pour gérer les boutons de modification et de suppression pour l'étude -->
-                                    <script>
-                                        document.addEventListener("DOMContentLoaded", function () {
-                                            var modifier_etude = document.getElementById('modifier-etude');
-                                            var etude_info = document.getElementById('etude-info');
-                                            var etude_form = document.getElementById('etude-form');
-                                    
-                                            // Toggle between info view and form view when the Modify button is clicked
-                                            modifier_etude.addEventListener('click', function () {
-                                                etude_info.classList.toggle('d-none');
-                                                etude_form.classList.toggle('d-none');
-                                            });
-                                    
-                                            var annuler_etude = document.getElementById('annuler-etude');
-                                            annuler_etude.addEventListener('click', function () {
-                                                etude_info.classList.toggle('d-none');
-                                                etude_form.classList.toggle('d-none');
-                                            });
-                                    
-                                            // Handle form submission and display server responses as pop-up messages
-                                            document.getElementById('etude-f-form').addEventListener('submit', function (event) {
-                                                event.preventDefault(); // Prevent the default form submission
-                                    
-                                                var form = this;
-                                                var formData = new FormData(form);
-                                                var url = form.action; // The form's action URL
-                                    
-                                                // Basic client-side validation
-                                                var debut = form.querySelector('input[name="debut"]').value;
-                                                var numero = form.querySelector('input[name="numero"]').value;
-                                    
-                                                if (!debut) {
-                                                    alert('Veuillez renseigner les dates de début et de fin.');
-                                                    return false;
-                                                }
-                                                if (!numero) {
-                                                    alert('Veuillez renseigner un numéro.');
-                                                    return false;
-                                                }
-                                    
-                                                // AJAX request to handle server response
-                                                fetch(url, {
-                                                    method: "POST",
-                                                    body: formData,
-                                                    headers: {
-                                                        "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
-                                                    },
-                                                })
-                                                    .then(response => {
-                                                        if (!response.ok) {
-                                                            // Attempt to extract error message from JSON response
-                                                            return response.json().then(data => {
-                                                                throw new Error(data.message || `HTTP error! status: ${response.status}`);
-                                                            });
-                                                        }
-                                                        return response.json();
-                                                    })
-                                                    .then(data => {
-                                                        if (!data.success) {
-                                                            alert(data.message);
-                                                        } else {
-                                                            window.location.href = data.redirect;
-                                                        }
-                                                    })
-                                                    .catch(error => {
-                                                        console.error("Error:", error);
-                                                        alert(`Une erreur s'est produite: ${error.message}`);
-                                                    });
-                                            });
-                                        });
-                                    </script>
                                     
                                     
                                     <br>
@@ -4421,6 +4316,7 @@
 
     <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
     <script src="{% static 'polls/js/search-suggestions-student.js' %}"></script>
+    <script src="{% static 'polls/js/display-and-modify.js' %}"></script>
 
     <script src="{% static 'polls/js/modal-BV.js' %}"></script>
     <script src="{% static 'polls/js/suppression.js' %}"></script>

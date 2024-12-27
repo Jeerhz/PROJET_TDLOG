@@ -3,14 +3,15 @@
 <display-edit-form
         save-url="{% url 'save_changes'%}"
         data-items='[
-        {"label": "Name", name="student-name", "value": "John Doe"},
-        {"label": "Email", name="student-email", "value": "john@example.com"},
-        {"label": "Phone", name="student-phone", "value": "+1234567890"}
+        {"label": "Name", "name": "student-name", "type": "char", "value": "John Doe", "duress": "readonly"},
+        {"label": "Email", "name": "student-email", "type": "char", "value": "john@example.com", "duress": "required"},
+        {"label": "Phone", "name": "student-phone", "type": "int", "value": "+1234567890"}
         ]'>
         {% csrf_token %}
 </display-edit-form>
 */
 ////////////////////////////////////
+
 
 class DisplayEditForm extends HTMLElement {
     constructor() {
@@ -55,24 +56,20 @@ class DisplayEditForm extends HTMLElement {
     async saveChanges() {
         const form = this.querySelector('form');
         const formData = new FormData(form);
-        const updatedItems = this.items.map((item, index) => ({
-            name: item.name,
-            value: formData.get(item.name)
-        }));
-
         try {
             const response = await fetch(this.getAttribute('save-url'), {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    //'Content-Type': 'multipart/form-data',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
-                body: JSON.stringify(updatedItems)
+                body: formData
             });
 
             if (!response.ok) throw new Error('Save failed');
 
             const data = await response.json();
+            console.log(data);
             this.setAttribute('data-items', JSON.stringify(data));
             this.isEditMode = false;
             this.render();
@@ -103,12 +100,14 @@ class DisplayEditForm extends HTMLElement {
 
     renderDisplayMode(items) {
         return `
-            <dl class="row mb-0">
+            <div class="list-group list-group-flush">
                 ${items.map(item => `
-                    <dt class="col-sm-3">${item.label}</dt>
-                    <dd class="col-sm-9">${item.value}</dd>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>${item.label}</strong>
+                        <span>${item.value}</span>
+                    </li>
                 `).join('')}
-            </dl>
+            </div>
             <div class="text-end mt-3">
                 <button type="button" class="btn btn-outline-secondary mt-3 edit-button">
                     <i class="bi bi-pencil"></i> Modify
@@ -120,17 +119,22 @@ class DisplayEditForm extends HTMLElement {
     renderEditMode(items) {
         return `
             <form>
-                ${items.map((item, index) => `
-                    <div class="mb-3 row">
-                        <label class="col-sm-3 col-form-label">${item.label}</label>
-                        <div class="col-sm-9">
-                            <input type="text" 
-                                   class="form-control" 
-                                   name="${item.name}" 
-                                   value="${item.value}">
-                        </div>
-                    </div>
-                `).join('')}
+                <div class="list-group list-group-flush">
+                    ${items.map((item, index) => `
+                        <li class="list-group-item d-flex">
+                            <div class="col-4">
+                            <strong>${item.label}</strong>
+                            </div>
+                            <div class="col-8">
+                            <input type="${item.type}" 
+                                class="form-control" 
+                                name="${item.name}" 
+                                value="${item.value}" 
+                                ${item.duress}>
+                            </div>
+                        </li>
+                    `).join('')}
+                </div>
                 <div class="row justify-content-between mt-3">
                     <div class="col-auto">
                         <button type="button" class="btn btn-outline-secondary mt-3 cancel-button">Cancel</button>
