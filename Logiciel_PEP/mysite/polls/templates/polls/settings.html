@@ -1,41 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'polls/base.html' %}
+{% block title %}Sylog - Paramètres{% endblock %}
+{% load format_duration %}
 
-<head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Sylog - Périmètre</title>
-
-    {% load static %}
-    {% load format_duration %}
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
+{% block content %}
 
     <style>
-        
-        /* Style for JE logo */
-        .my-custom-logo {
-            max-width: 80%;
-            aspect-ratio: 10/8;
-            justify-content: center;
-            align-self: center;
-            padding: 1rem;
-        }
 
         .tableau_mission{
             width: 1100px;
@@ -43,18 +12,7 @@
             align-self: center;
 
         }
-        /* Style for the suggestion results */
-        #suggestions-results {
-            position: absolute;
-            top: 50px; /* Adjust as needed */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: none;
-        }
-        #suggestions-results.show {
-            display: block;
-        }
+
         .black-text {
             color: black;
         }
@@ -150,625 +108,191 @@
         
     </style>
 
-</head>
-
-<body id="page-top">
-
-    <!-- Page Wrapper -->
-    <div id="wrapper">
-
-         <!-- Sidebar -->
-         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
-            
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-md-0">
-
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link text-center" href="{% url 'index' %}">
+<!-- Begin Page Content -->
                     
-                    <span>ACCUEIL</span></a>
-            </li>
-            
-            <hr class="sidebar-divider">
-            
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Informations
-            </div>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'annuaire' %}">
-                    
-                    <span>Annuaire</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    
-                    <span>Stat/KPI</span></a>
-            </li>
-
-            
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                    aria-expanded="true" aria-controls="pagetresorerie">
-                    
-                    <span>Trésorerie</span>
-                </a>
-                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                        <a class="collapse-item" href="#">DAS2</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    
-                    <span>Ma Junior Entreprise</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'demarchage' %}">
-                    
-                    <span>Démarchage</span></a>
-            </li>
-            
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
-                   
-                    <span>Connexion</span>
-                </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                    aria-expanded="true" aria-controls="pageautres">
-                    
-                    <span>Autres</span>
-                </a>
-                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                        
-                        <a class="collapse-item" >Notifications</a>    
-                    </div>
-
-                </div>
                 
+
+<div class="container-fluid">
+    <div class="alert alert-info alert-dismissible fade show" {% if alert_message %} {% else %}style="display: none;"{% endif %} role="alert" id="alert">
+        <span>{{ alert_message }}</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+    
+    <div class="row">
+        <div class="col-12 ml-4">
+            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Paramètres</h2>
+        </div>
+        <ul class="nav nav-pills mb-3 ml-4" style="background-color: #f8f9fc;" id="pills-tab" role="tablist">
+            
+            <li class="nav-item">
+                <a class="nav-link active" id="pills-affichage-tab" data-toggle="pill" href="#pills-affichage" role="tab" aria-controls="pills-affichage" aria-selected="true">Affichage</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" >
-                    
-                    <span>Signaler un problème</span></a>
+                <a class="nav-link" id="pills-notifications-tab" data-toggle="pill" href="#pills-notifications" role="tab" aria-controls="pills-notifications" aria-selected="false">Notifications</a>
             </li>
-            <!-- Heading -->
             
-
-                        
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
+            <li class="nav-item">
+                <a class="nav-link" id="pills-affichage-tab" data-toggle="pill" href="#pills-demarchage" role="tab" aria-controls="pills-demarchage" aria-selected="false">Démarchage</a>
+            </li>
         </ul>
-        <!-- End of Sidebar -->
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                            <div class="list-group" id="suggestions-results"></div>
+    </div>
+    <form action="{% url 'settings' %}" id="modif-affichage" method="post">
+        {% csrf_token %}
+    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
+        <div class="tab-pane fade show active" id="pills-affichage">
+            <div class="card shadow mb-4 w-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-1 font-weight-bold text-primary">Affichage</h5>
+                </div>
+                <div class="card-body w-100">
+                    <!-- Détails spécifiques à l'élève -->
+                    <div class="container mb-5">
+                        <h5><i class="fas fa-exclamation-circle mr-2"></i><strong>Statut des études:</strong></h5>
+                        <div class="card border-left-primary pt-3 pb-3">
+                            <ul class="list-group list-group-flush">
+                                {% for field in form_param %}
+                                {% if field.name in form_param.statut_etude %}
+                                <li class="list-group-item">
+                                    <div class="custom-control custom-checkbox">
+                                        {{ field }}
+                                        <label class="custom-control-label" for="{{field.id_for_label}}"><strong>{{field.label}}</strong></label>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
                         </div>
-                    </form>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter une étude</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un client</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un étudiant</span>
-                    </a>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Rechercher..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                {% if notification_list.0 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.0}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.1 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.1}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.2 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.2}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Messagerie
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil
-                                </a>
-                                <a class="dropdown-item" href="{% url 'settings' %}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Réglages
-                                </a>
-                                
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Se déconnecter
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                    
-
-                
-
-                <div class="container-fluid">
-                    <div class="alert alert-info alert-dismissible fade show" {% if alert_message %} {% else %}style="display: none;"{% endif %} role="alert" id="alert">
-                        <span>{{ alert_message }}</span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                      </div>
-                    
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Paramètres</h2>
-                        </div>
-                        <ul class="nav nav-pills mb-3 ml-4" style="background-color: #f8f9fc;" id="pills-tab" role="tablist">
-                            
-                            <li class="nav-item">
-                                <a class="nav-link active" id="pills-affichage-tab" data-toggle="pill" href="#pills-affichage" role="tab" aria-controls="pills-affichage" aria-selected="true">Affichage</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-notifications-tab" data-toggle="pill" href="#pills-notifications" role="tab" aria-controls="pills-notifications" aria-selected="false">Notifications</a>
-                            </li>
-                            
-                            <li class="nav-item">
-                                <a class="nav-link" id="pills-affichage-tab" data-toggle="pill" href="#pills-demarchage" role="tab" aria-controls="pills-demarchage" aria-selected="false">Démarchage</a>
-                            </li>
-                        </ul>
                     </div>
-                    <form action="{% url 'settings' %}" id="modif-affichage" method="post">
-                        {% csrf_token %}
-                    <div class="tab-content mt-2" style="background-color: #FFFFFF;">
-                        <div class="tab-pane fade show active" id="pills-affichage">
-                            <div class="card shadow mb-4 w-100">
-                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h5 class="m-1 font-weight-bold text-primary">Affichage</h5>
-                                </div>
-                                <div class="card-body w-100">
-                                    <!-- Détails spécifiques à l'élève -->
-                                    <div class="container mb-5">
-                                        <h5><i class="fas fa-exclamation-circle mr-2"></i><strong>Statut des études:</strong></h5>
-                                        <div class="card border-left-primary pt-3 pb-3">
-                                            <ul class="list-group list-group-flush">
-                                                {% for field in form_param %}
-                                                {% if field.name in form_param.statut_etude %}
-                                                <li class="list-group-item">
-                                                    <div class="custom-control custom-checkbox">
-                                                        {{ field }}
-                                                        <label class="custom-control-label" for="{{field.id_for_label}}"><strong>{{field.label}}</strong></label>
-                                                    </div>
-                                                </li>
-                                                {% endif %}
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
+                    <hr>
+                    <br> 
+                    <div class="container mb-5">
+                        <h5><i class="fas fa-table mr-2"></i><strong>Colonnes études :</strong></h5>
+                        <div class="card border-left-secondary">
+                            <ul class="list-group list-group-flush">
+                                {% for field in form_param %}
+                                
+                                <li class="list-group-item">
+                                    <div class="custom-control custom-checkbox">
+                                        {{ field }}
+                                        <label class="custom-control-label" for="{{field.id_for_label}}"><strong>{{field.label}}</strong></label>
                                     </div>
-                                    <hr>
-                                    <br> 
-                                    <div class="container mb-5">
-                                        <h5><i class="fas fa-table mr-2"></i><strong>Colonnes études :</strong></h5>
-                                        <div class="card border-left-secondary">
-                                            <ul class="list-group list-group-flush">
-                                                {% for field in form_param %}
-                                                
-                                                <li class="list-group-item">
-                                                    <div class="custom-control custom-checkbox">
-                                                        {{ field }}
-                                                        <label class="custom-control-label" for="{{field.id_for_label}}"><strong>{{field.label}}</strong></label>
-                                                    </div>
-                                                </li>
-                                                
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                        
-                                        
-                                    </div>
-                                    <div class="container align-items-center justify-content-center">
-                                        <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="pills-notifications">
-                            <div class="card shadow mb-4 w-100">
-                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h5 class="m-1 font-weight-bold text-primary">Notifications</h5>
-                                </div>
-                                <div class="card-body w-100">
-                                    <!-- Détails spécifiques à l'élève -->
-                                    <div class="container">
-                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Envoi/Réception de mails:</strong></h5>
-                                        <div class="card border-left-primary pt-3 pb-3">
-                                            <div class="text-center">
-                                                <span {% if not google_email %}class="text-danger"{% endif %}><strong>Email:</strong>{% if google_email %} {{ google_email }}{% else %} Vous n'avez pas connecté votre compte Gmail{% endif %}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="container">
-                                        <h5><i class="fas fa-envelope mr-2"></i><strong>Connexion à votre boîte Gmail:</strong></h5>
-                                        <div class="col-5">
-                                            <a href="{% url 'social:begin' 'google-oauth2' %}" type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                                                <i class="fab fa-google"></i>
-                                            </a>
-                                        </div>
-                                        <div class="col-5">
-                                            <p class="text-gray-400">La connexion par google vous permet d'envoyer et de recevoir des mails depuis votre boîte mail personnelle.</p>
-                                        </div>
-                                    </div>
-                                    <hr>
-                                    <br>
-                                    <div class="container">
-                                        <h5><i class="fas fa-file mr-2"></i><strong>Alertes:</strong></h5>
-                                        
-                                        <div class="card border-left-secondary">
-                                            <ul class="list-group list-group-flush">
-                                                <li class="list-group-item">
-                                                    <div>
-                                                        Prochainement
-                                                    </div>
-                                                </li>
-                                                <!--
-                                                <li class="list-group-item">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input" id="customCheck1">
-                                                        <label class="custom-control-label" for="customCheck1"><strong>BV</strong></label>
-                                                        </div>
-                                                </li>
-                                                <li class="list-group-item">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input" id="customCheck2">
-                                                        <label class="custom-control-label" for="customCheck2"><strong>CE</strong></label>
-                                                        </div>
-                                                </li>
-                                                <li class="list-group-item">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input" id="customCheck3">
-                                                        <label class="custom-control-label" for="customCheck3"><strong>Facture</strong></label>
-                                                        </div>
-                                                </li>
-                                                -->
-                                            </ul>
-                                        </div>
-                                        
-                                        
-                                    </div>
-                                </div>
-                            </div>
+                                </li>
+                                
+                                {% endfor %}
+                            </ul>
                         </div>
                         
-                        <div class="tab-pane fade" id="pills-demarchage">
-                            <div class="card shadow mb-4 w-100">
-                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h5 class="m-1 font-weight-bold text-primary">Démarchage</h5>
-                                </div>
-                                <div class="card-body w-100">
-                                    {% for field in form_param %}
-                                        {% if field.name in form_param.demarchage %}
-                                            <div class="form-group row mb-3">
-                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                    <div class="col-sm-8 justify-content-center">
-                                                        {{ field }}
-                                                    {% if field.errors %}
-                                                        <div class="text-danger">
-                                                            {% for error in field.errors %}
-                                                                {{ error }}
-                                                            {% endfor %}
-                                                        </div>
-                                                    {% endif %}
-                                                    </div>
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <div class="container align-items-center justify-content-center">
-                                        <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
-                                    </div>
-                                </div>
+                        
+                    </div>
+                    <div class="container align-items-center justify-content-center">
+                        <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pills-notifications">
+            <div class="card shadow mb-4 w-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-1 font-weight-bold text-primary">Notifications</h5>
+                </div>
+                <div class="card-body w-100">
+                    <!-- Détails spécifiques à l'élève -->
+                    <div class="container">
+                        <h5><i class="fas fa-envelope mr-2"></i><strong>Envoi/Réception de mails:</strong></h5>
+                        <div class="card border-left-primary pt-3 pb-3">
+                            <div class="text-center">
+                                <span {% if not google_email %}class="text-danger"{% endif %}><strong>Email:</strong>{% if google_email %} {{ google_email }}{% else %} Vous n'avez pas connecté votre compte Gmail{% endif %}</span>
                             </div>
                         </div>
                     </div>
-                </form>
-                </div>                
-            <!-- /.container-fluid -->
-            </div>
-            <!-- End of Main Content -->
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etudes Projets 2024</span>
+                    <br>
+                    <div class="container">
+                        <h5><i class="fas fa-envelope mr-2"></i><strong>Connexion à votre boîte Gmail:</strong></h5>
+                        <div class="col-5">
+                            <a href="{% url 'social:begin' 'google-oauth2' %}" type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+                                <i class="fab fa-google"></i>
+                            </a>
+                        </div>
+                        <div class="col-5">
+                            <p class="text-gray-400">La connexion par google vous permet d'envoyer et de recevoir des mails depuis votre boîte mail personnelle.</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <br>
+                    <div class="container">
+                        <h5><i class="fas fa-file mr-2"></i><strong>Alertes:</strong></h5>
+                        
+                        <div class="card border-left-secondary">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <div>
+                                        Prochainement
+                                    </div>
+                                </li>
+                                <!--
+                                <li class="list-group-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck1">
+                                        <label class="custom-control-label" for="customCheck1"><strong>BV</strong></label>
+                                        </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck2">
+                                        <label class="custom-control-label" for="customCheck2"><strong>CE</strong></label>
+                                        </div>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck3">
+                                        <label class="custom-control-label" for="customCheck3"><strong>Facture</strong></label>
+                                        </div>
+                                </li>
+                                -->
+                            </ul>
+                        </div>
+                        
+                        
+                    </div>
                 </div>
             </div>
-        </footer>
-        <!-- End of Footer -->
-
         </div>
-        <!-- End of Content Wrapper -->
-
-    </div>
-    <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
+        
+        <div class="tab-pane fade" id="pills-demarchage">
+            <div class="card shadow mb-4 w-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-1 font-weight-bold text-primary">Démarchage</h5>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
+                <div class="card-body w-100">
+                    {% for field in form_param %}
+                        {% if field.name in form_param.demarchage %}
+                            <div class="form-group row mb-3">
+                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                    <div class="col-sm-8 justify-content-center">
+                                        {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger">
+                                            {% for error in field.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="container align-items-center justify-content-center">
+                        <button type="submit" class="btn btn-primary">Envoyer les modifications</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</form>
+</div>                
+<!-- /.container-fluid -->
 
-    <!-- Core plugin JavaScript-->
-    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    
-    <!-- 2 scripts spécifiques aux suggestions de recherche -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-    </script>
-    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
-</body>
-
-</html>
+{% endblock %}
