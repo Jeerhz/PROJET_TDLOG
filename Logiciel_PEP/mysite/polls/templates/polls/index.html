@@ -1,41 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'polls/base.html' %}
+{% block title %}Sylog - Index{% endblock %}
+{% load format_duration %}
 
-<head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Sylog - Index</title>
-
-    {% load static %}
-    {% load format_duration %}
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
-
+{% block content %}
     <style>
-        
-        /* Style for JE logo */
-        .my-custom-logo {
-            max-width: 80%;
-            aspect-ratio: 10/8;
-            justify-content: center;
-            align-self: center;
-            padding: 1rem;
-        }
 
         .tableau_mission{
             width: 1100px;
@@ -43,18 +11,7 @@
             align-self: center;
 
         }
-        /* Style for the suggestion results */
-        #suggestions-results {
-            position: absolute;
-            top: 50px; /* Adjust as needed */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: none;
-        }
-        #suggestions-results.show {
-            display: block;
-        }
+
         .black-text {
             color: black;
         }
@@ -248,1267 +205,845 @@
         
     </style>
 
-</head>
-
-<body id="page-top">
-
-    <!-- Page Wrapper -->
-    <div id="wrapper">
-
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
+        <!-- Begin Page Content -->
+        
+        <div class="card-header mt-3">
             
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-md-0">
-
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link text-center" href="{% url 'index' %}">
-                    
-                    <span>ACCUEIL</span></a>
-            </li>
             
-            <hr class="sidebar-divider">
-            
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Informations
-            </div>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'annuaire' %}">
-                    
-                    <span>Annuaire</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    
-                    <span>Stat/KPI</span></a>
-            </li>
-
-            
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                    aria-expanded="true" aria-controls="pagetresorerie">
-                    
-                    <span>Trésorerie</span>
-                </a>
-                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                        <a class="collapse-item" href="#">DAS2</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    
-                    <span>Ma Junior Entreprise</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'demarchage' %}">
-                    
-                    <span>Démarchage</span></a>
-            </li>
-            
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
-                   
-                    <span>Connexion</span>
-                </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                    aria-expanded="true" aria-controls="pageautres">
-                    
-                    <span>Autres</span>
-                </a>
-                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                        
-                        <a class="collapse-item" >Notifications</a>    
-                    </div>
-
-                </div>
-                
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" >
-                    
-                    <span>Signaler un problème</span></a>
-            </li>
-            <!-- Heading -->
-            
-
-                        
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-        </ul>
-        <!-- End of Sidebar -->
-
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                            <div class="list-group" id="suggestions-results"></div>
-                        </div>
-                    </form>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter une étude</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un client</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un étudiant</span>
-                    </a>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Rechercher..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
+            <div class="card-body p-3">
+                <div class="row justify-content-between">
+                    <!-- Card Mission terminée (Annuel) -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow h-100" style="border-left: 4px solid #f7c8a1;"> <!-- Custom border color -->
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #f7c8a1; font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                            En négociations
                                         </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_nego}} missions : {{ca_etudes_nego|FormatNombres}} €</div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Missions en cours -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow h-100" style="border-left: 4px solid #fcdd78;"> <!-- Custom border color -->
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #fcd143; font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                            En cours</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_ec}} missions : {{ca_etudes_ec|FormatNombres}} €</div>
+
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Pending Requests -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow h-100" style="border-left: 4px solid #b6f7bc;"> <!-- Custom border color -->
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+
+                                        
+
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #b6f7bc;font-size: 18px; text-align: center;"> <!-- Custom text color -->
+                                            Terminées
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_term}} missions : {{ca_etudes_term|FormatNombres}} €</div>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card shadow h-100 d-flex flex-column" style="border-left: 4px solid black;"> <!-- Add flex-column for Flexbox -->
+                            <div class="card-body d-flex flex-column"> <!-- Make the card-body a flex container -->
+                                <form action="{% url 'index' %}" method="post" class="h-100 d-flex flex-column">
+                                    {% csrf_token %}
+                                    <div class="form-group flex-grow-1"> <!-- Use flex-grow-1 to make the form expand -->
+                                        <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                            {% for choice in mandat_choices %}
+                                            <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>
+                                                Mandat {{ choice.1 }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mt-auto"> <!-- Push the button to the bottom -->
+                                        <button type="submit" class="btn btn-primary btn-block">Choisir</button> <!-- Full-width button -->
                                     </div>
                                 </form>
                             </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                {% if notification_list.0 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.0}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.1 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.1}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.2 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.2}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Messagerie
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{user}}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{user.photo.url}}"/>
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil
-                                </a>
-                                <a class="dropdown-item" href="{% url 'settings' %}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Réglages
-                                </a>
-                                
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Se déconnecter
-                                </a>
-                            </div>
-                            
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                
-                <div class="card-header mt-3">
-                    
-                    
-                    <div class="card-body p-3">
-                        <div class="row justify-content-between">
-                            <!-- Card Mission terminée (Annuel) -->
-                            <div class="col-xl-3 col-md-6 mb-3">
-                                <div class="card shadow h-100" style="border-left: 4px solid #f7c8a1;"> <!-- Custom border color -->
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #f7c8a1; font-size: 18px; text-align: center;"> <!-- Custom text color -->
-                                                    En négociations
-                                                </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_nego}} missions : {{ca_etudes_nego|FormatNombres}} €</div>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                    
-                            <!-- Missions en cours -->
-                            <div class="col-xl-3 col-md-6 mb-3">
-                                <div class="card shadow h-100" style="border-left: 4px solid #fcdd78;"> <!-- Custom border color -->
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                
-                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #fcd143; font-size: 18px; text-align: center;"> <!-- Custom text color -->
-                                                    En cours</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_ec}} missions : {{ca_etudes_ec|FormatNombres}} €</div>
-
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                    
-                            <!-- Pending Requests -->
-                            <div class="col-xl-3 col-md-6 mb-3">
-                                <div class="card shadow h-100" style="border-left: 4px solid #b6f7bc;"> <!-- Custom border color -->
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-
-                                               
-
-                                                <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #b6f7bc;font-size: 18px; text-align: center;"> <!-- Custom text color -->
-                                                    Terminées
-                                                </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray" style="text-align: center;font-size: 14x;"> {{nb_etudes_term}} missions : {{ca_etudes_term|FormatNombres}} €</div>
-                                                </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xl-3 col-md-6 mb-3">
-                                <div class="card shadow h-100 d-flex flex-column" style="border-left: 4px solid black;"> <!-- Add flex-column for Flexbox -->
-                                    <div class="card-body d-flex flex-column"> <!-- Make the card-body a flex container -->
-                                        <form action="{% url 'index' %}" method="post" class="h-100 d-flex flex-column">
-                                            {% csrf_token %}
-                                            <div class="form-group flex-grow-1"> <!-- Use flex-grow-1 to make the form expand -->
-                                                <select multiple class="form-control" id="mandat-select" name="mandat-select">
-                                                    {% for choice in mandat_choices %}
-                                                    <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>
-                                                        Mandat {{ choice.1 }}
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                            <div class="mt-auto"> <!-- Push the button to the bottom -->
-                                                <button type="submit" class="btn btn-primary btn-block">Choisir</button> <!-- Full-width button -->
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-
-                            
                         </div>
                     </div>
+                    
+
                     
                 </div>
-                    
-                
+            </div>
+            
+        </div>
+            
+        
 
 
-                {% if user_parametres.param_statut_etude_ed %}
-                <!-- Beginning of container-fluid -->
-                <div class="container-fluid" >
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
-                        </div>
-                    </div>
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        <th scope="col" style="width: 5%;"></th>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col" style="text-align: left;">Client</th>
-                                        {% endif %}
-                                        <th scope="col" style="text-align: left;">Montant</th>
+        {% if user_parametres.param_statut_etude_ed %}
+        <!-- Beginning of container-fluid -->
+        <div class="container-fluid" >
+            <div class="row">
+                <div class="col-12 ml-4">
+                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
+                </div>
+            </div>
+            <div class="card mb-4 ml-4 mr-3 shadow">
+                <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead style="background-color: #ffffff;">
+                            <tr>
+                                <th scope="col" style="width: 5%;"></th>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <th scope="col" style="text-align: left;">Client</th>
+                                {% endif %}
+                                <th scope="col" style="text-align: left;">Montant</th>
 
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col" style="text-align: left;">Suiveur</th>
-                                        {% endif %}
-                                        
-                                       
-                                        
-                                        <th scope="col" style="width: 5%;">Global</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etude in etudes_en_negociation %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
-                                        {% endif %}
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <td style="text-align: left;" style=" padding: 6px;">
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <th scope="col" style="text-align: left;">Suiveur</th>
+                                {% endif %}
+                                
+                                
+                                
+                                <th scope="col" style="width: 5%;">Global</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etude in etudes_en_negociation %}
+                            <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
+                                {% endif %}
+                                <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <td style="text-align: left;" style=" padding: 6px;">
 
-                                        {% if etude.responsables.all %}
-                                        {% for respo_mult in etude.responsables.all %}
-                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
-                                        {% endfor %}
-                                        {% else %}
+                                {% if etude.responsables.all %}
+                                {% for respo_mult in etude.responsables.all %}
+                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
+                                {% endfor %}
+                                {% else %}
 
+                                
+                                    
                                         
-                                            
-                                                
-                                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
+                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
 
-                                        {% endif %}
-                                        </td> 
-                                        {% endif %}
-                                        
-                                        
-                                        
-                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
-                                    </tr>
-                                    <tr class="collapse" id="sec_table_ed_{{etude.id}}">
-                                            
-                                            <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
-                                                <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+                                {% endif %}
+                                </td> 
+                                {% endif %}
+                                
+                                
+                                
+                                <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
+                            </tr>
+                            <tr class="collapse" id="sec_table_ed_{{etude.id}}">
+                                    
+                                    <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                        <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
 
-                                                    <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
-                                                        Remarque de l'étude :
-                                                    </div>
-                                                
-                                                    <!-- Second Container -->
-                                                    <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
-                                                        <div contenteditable="True" 
-                                                             data-url="{% url 'remarque_etude' iD=etude.id %}" 
-                                                             class="editableDiv" 
-                                                             style="background-color: #ffe5d0d6; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
-                                                            {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
-                                                        </div>
-                                                    </div>
-                                                    
+                                            <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                                Remarque de l'étude :
+                                            </div>
+                                        
+                                            <!-- Second Container -->
+                                            <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                                <div contenteditable="True" 
+                                                        data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                        class="editableDiv" 
+                                                        style="background-color: #ffe5d0d6; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                    {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
                                                 </div>
-                                                
-                                                
-                                                
-                                                
-                                                <table class="table table-bordered">
-                                                    <colgroup>
-                                                        <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
-                                                        <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
-                                                        <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                        <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                    </colgroup>
-                                                    <tbody>
-                                                        <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                            {% csrf_token %}
-                                                        {% for key, value in etude.suivi_document|order_dict_by_keys %}
-                                                        <tr>
-                                                            <td>
-                                                                <div>{{key}}</div>
-                                                            </td> 
-                                                            <td>
-                                                                <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
-                                                            </td>                                                            
-                                                            <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                            {% elif value.status == 'Trop tôt' %}status-troptot
-                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                            {% elif value.status == 'Signé' %}status-signe
-                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                            {% elif value.status == 'Payée' %}status-payee
-                                                            {% elif value.status == 'Emise' %}status-emise
-                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                            {% elif value.status == 'A vérifier' %}status-averifier
-                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                            {% elif value.status == 'Fait' %}status-fait
-                                                            {% else %}status-default
-                                                            {% endif %}">
-                                                                <select name="suivi_document_{{ key }}_status" 
-                                                                class="form-control status-cell {% if value.status == 'En cours' %}status-encours
-                                                                {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                                {% elif value.status == 'Trop tôt' %}status-troptot
-                                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                                {% elif value.status == 'Signé' %}status-signe
-                                                                {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                                {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                                {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                                {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                                {% elif value.status == 'Payée' %}status-payee
-                                                                {% elif value.status == 'Emise' %}status-emise
-                                                                {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                                {% elif value.status == 'A vérifier' %}status-averifier
-                                                                {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                                {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                                {% elif value.status == 'Fait' %}status-fait
-                                                                {% else %}status-default
-                                                                {% endif %}"
-                                                                style="padding: 2px;  border: none;  text-align: center; font-weight: 600;">
-                                                                    <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
-                                                                    <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
-                                                                    <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
-                                                                    <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
-                                                                    <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
-                                                                    <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
-                                                                    <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
-                                                                    <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
-                                                                    <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
-                                                                    <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
-                                                                    <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
-                                                                    <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
-                                                                    <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
-                                                                    <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
-                                                                    <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
-                                                                    <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
-                                                                </select>
-                                                            </td>
-                                                            <td>
-                                                                <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
-                                                            </td> 
-                                                            <td>
-                                                                <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
-                                                                    <i class="fas fa-times"></i>
-                                                                </button>
-                                                            </td>
-                                                            
-
-                                                        </tr>
-                                                        {% endfor %}
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">
-                                                                <button type="submit" class="btn btn-primary">Modifier</button>
-                                                            </td>
-                                                        </tr>
-                                                    </form>
-                                                            
+                                            </div>
                                             
-                                                    </tbody>
-                                                    
-                                                </table>
+                                        </div>
+                                        
+                                        
+                                        
+                                        
+                                        <table class="table table-bordered">
+                                            <colgroup>
+                                                <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                                <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                                <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                                <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                            </colgroup>
+                                            <tbody>
                                                 <form method="POST" action="{% url 'update_etude' etude.id %}">
                                                     {% csrf_token %}
-                                                    
-                                                    <!-- New document name (key) -->
-                                                    <div class="form-group">
-                                                        <label for="new_document_name"></label>
-                                                        <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
-                                                    </div>
-
-                                                    <!-- Status (from Etat_Doc) -->
-                                                    <div class="form-group">
-                                                        <select name="new_document_status" id="new_document_status" class="form-control" required>
-                                                            <option value="En cours">En cours</option>
-                                                            <option value="Pas fait">Pas fait</option>
-                                                            <option value="Terminé">Terminé</option>
-                                                            <option value="Confidentiel">Confidentiel</option>
-                                                            <option value="Payée">Payée</option>
-                                                            <option value="Trop tôt">Trop tôt</option>
-                                                            <!-- Add other values from Etat_Doc if necessary -->
+                                                {% for key, value in etude.suivi_document|order_dict_by_keys %}
+                                                <tr>
+                                                    <td>
+                                                        <div>{{key}}</div>
+                                                    </td> 
+                                                    <td>
+                                                        <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
+                                                    </td>                                                            
+                                                    <td class="status-cell {% if value.status == 'En cours' %}status-encours
+                                                    {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                    {% elif value.status == 'Trop tôt' %}status-troptot
+                                                    {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                    {% elif value.status == 'Signé' %}status-signe
+                                                    {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                    {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                    {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                    {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                    {% elif value.status == 'Payée' %}status-payee
+                                                    {% elif value.status == 'Emise' %}status-emise
+                                                    {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                    {% elif value.status == 'A vérifier' %}status-averifier
+                                                    {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                    {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                    {% elif value.status == 'Fait' %}status-fait
+                                                    {% else %}status-default
+                                                    {% endif %}">
+                                                        <select name="suivi_document_{{ key }}_status" 
+                                                        class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                        {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                        {% elif value.status == 'Trop tôt' %}status-troptot
+                                                        {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                        {% elif value.status == 'Signé' %}status-signe
+                                                        {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                        {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                        {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                        {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                        {% elif value.status == 'Payée' %}status-payee
+                                                        {% elif value.status == 'Emise' %}status-emise
+                                                        {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                        {% elif value.status == 'A vérifier' %}status-averifier
+                                                        {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                        {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                        {% elif value.status == 'Fait' %}status-fait
+                                                        {% else %}status-default
+                                                        {% endif %}"
+                                                        style="padding: 2px;  border: none;  text-align: center; font-weight: 600;">
+                                                            <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
+                                                            <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                            <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                            <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                            <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
+                                                            <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                            <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                            <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                            <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                            <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
+                                                            <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
+                                                            <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                            <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                            <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                            <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                            <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
                                                         </select>
-                                                    </div>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
+                                                    </td> 
+                                                    <td>
+                                                        <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                    
 
-                                                    <!-- Date -->
-                                                    <div class="form-group">
-                                                        <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="new_remarque_name"></label>
-                                                        <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
-                                                    </div>
-
-                                                    <!-- Submit Button -->
-                                                    <button type="submit" class="btn btn-primary">Ajouter un document</button>
-                                                </form>
-                                            </td>
-                                        
-                                    </tr>
-
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>     
-                <!-- End of container-fluid -->
-                {% endif %}
-
-
-                {% if user_parametres.param_statut_etude_ec %}
-                <!-- Beginning of container-fluid -->
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en cours</h2>
-                        </div>
-                    </div>
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        
-                                        <th scope="col" style="width: 5%;"></th>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col" style="text-align: left;">Client</th>
-                                        {% endif %}
-
-                                        <th scope="col" style="text-align: left;">Montant</th>
-
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col" style="text-align: left;">Suiveur</th>
-                                        {% endif %}
-                                        
-                                        
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <th scope="col">Avancement</th>
-                                        {% endif%}
-                                        
-                                        <th scope="col" style="width: 5%;">Global</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etude in etudes_en_cours %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
-                                        {% endif %}
-                                        
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}}€</td>
-                                        
-                                        
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <td style="text-align: left;" style=" padding: 6px;">
-
-                                        {% if etude.responsables.all %}
-                                        {% for respo_mult in etude.responsables.all %}
-                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
-                                        {% endfor %}
-                                        {% else %}
-
-                                        
+                                                </tr>
+                                                {% endfor %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center">
+                                                        <button type="submit" class="btn btn-primary">Modifier</button>
+                                                    </td>
+                                                </tr>
+                                            </form>
+                                                    
+                                    
+                                            </tbody>
                                             
-                                                
-                                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
-
-                                        {% endif %}
-                                        </td> 
-                                        {% endif %}
-                                        
-                                        
-                                        {% if user_parametres.param_col_etude_avancement %}
-                                        <td style="text-align: left;" style="padding:0px;">
-                                            <div class="progress custom-progress" style="position: relative; height: 30px;">
-                                                <!-- Centered text on top of the progress bar -->
-                                                <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
-                                                    {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
-                                                </span>
-                                        
-                                                <!-- Progress bar itself -->
-                                                <div class="progress-bar bg-success" 
-                                                     role="progressbar" 
-                                                     style="width: {{ etude.progress_bar }}%;" 
-                                                     aria-valuenow="{{ etude.progress_bar }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                </div>
-                                            </div>
-                                        </td>
-                                        {% endif %}
-                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
-                                    </tr>
-                                    <tr class="collapse" id="sec_table_ec_{{etude.id}}">
-                                        
-
-                                        <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
-                                            <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
-
-                                                <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
-                                                    Remarque de l'étude :
-                                                </div>
+                                        </table>
+                                        <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                            {% csrf_token %}
                                             
-                                                <!-- Second Container -->
-                                                <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
-                                                    <div contenteditable="True" 
-                                                            data-url="{% url 'remarque_etude' iD=etude.id %}" 
-                                                            class="editableDiv" 
-                                                            style="background-color: #fff3cda1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
-                                                        {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
-                                                    </div>
-                                                </div>
-                                                
+                                            <!-- New document name (key) -->
+                                            <div class="form-group">
+                                                <label for="new_document_name"></label>
+                                                <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
                                             </div>
 
-                                            <table class="table table-bordered">
-                                                <colgroup>
-                                                    <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
-                                                    <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
-                                                    <col style="width: 20%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                    <col style="width: 40%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                    <col style="width: 5%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                </colgroup>
-                                                <tbody>
-                                                    <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                        {% csrf_token %}
-                                                    {% for key, value in etude.suivi_document|order_dict_by_keys %}
-                                                    <tr>
-                                                        <td>
-                                                            <div>{{key}}</div>
-                                                        </td> 
-                                                        <td>
-                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
-                                                        </td>                                                            
-                                                        <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                        {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                        {% elif value.status == 'Trop tôt' %}status-troptot
-                                                        {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                        {% elif value.status == 'Signé' %}status-signe
-                                                        {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                        {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                        {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                        {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                        {% elif value.status == 'Payée' %}status-payee
-                                                        {% elif value.status == 'Emise' %}status-emise
-                                                        {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                        {% elif value.status == 'A vérifier' %}status-averifier
-                                                        {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                        {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                        {% elif value.status == 'Fait' %}status-fait
-                                                        {% else %}status-default
-                                                        {% endif %}">
-                                                            <select name="suivi_document_{{ key }}_status" class="form-control status-cell {% if value.status == 'En cours' %}status-encours
-                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                            {% elif value.status == 'Trop tôt' %}status-troptot
-                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                            {% elif value.status == 'Signé' %}status-signe
-                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                            {% elif value.status == 'Payée' %}status-payee
-                                                            {% elif value.status == 'Emise' %}status-emise
-                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                            {% elif value.status == 'A vérifier' %}status-averifier
-                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                            {% elif value.status == 'Fait' %}status-fait
-                                                            {% else %}status-default
-                                                            {% endif %}"
-                                                            style="padding: 2px; border: none;  text-align: center; font-weight: 600;">
-                                                                <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
-                                                                <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
-                                                                <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
-                                                                <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
-                                                                <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
-                                                                <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
-                                                                <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
-                                                                <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
-                                                                <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
-                                                                <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
-                                                                <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
-                                                                <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
-                                                                <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
-                                                                <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
-                                                                <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
-                                                                <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
-                                                        </td> 
-                                                        
-                                                        <td>
-                                                            <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
-                                                                <i class="fas fa-times"></i>
-                                                            </button>
-                                                        </td>
-                                        
-                                                        
+                                            <!-- Status (from Etat_Doc) -->
+                                            <div class="form-group">
+                                                <select name="new_document_status" id="new_document_status" class="form-control" required>
+                                                    <option value="En cours">En cours</option>
+                                                    <option value="Pas fait">Pas fait</option>
+                                                    <option value="Terminé">Terminé</option>
+                                                    <option value="Confidentiel">Confidentiel</option>
+                                                    <option value="Payée">Payée</option>
+                                                    <option value="Trop tôt">Trop tôt</option>
+                                                    <!-- Add other values from Etat_Doc if necessary -->
+                                                </select>
+                                            </div>
 
-                                                    </tr>
-                                                    {% endfor %}
-                                                    <tr>
-                                                        <td colspan="5" class="text-center">
-                                                            <button type="submit" class="btn btn-primary">Modifier</button>
-                                                        </td>
-                                                    </tr>
-                                                    </form>
-                                                        
+                                            <!-- Date -->
+                                            <div class="form-group">
+                                                <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new_remarque_name"></label>
+                                                <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
+                                            </div>
+
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn btn-primary">Ajouter un document</button>
+                                        </form>
+                                    </td>
+                                
+                            </tr>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>     
+        <!-- End of container-fluid -->
+        {% endif %}
+
+
+        {% if user_parametres.param_statut_etude_ec %}
+        <!-- Beginning of container-fluid -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 ml-4">
+                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en cours</h2>
+                </div>
+            </div>
+            <div class="card mb-4 ml-4 mr-3 shadow">
+                <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead style="background-color: #ffffff;">
+                            <tr>
+                                
+                                <th scope="col" style="width: 5%;"></th>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <th scope="col" style="text-align: left;">Client</th>
+                                {% endif %}
+
+                                <th scope="col" style="text-align: left;">Montant</th>
+
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <th scope="col" style="text-align: left;">Suiveur</th>
+                                {% endif %}
+                                
+                                
+                                {% if user_parametres.param_col_etude_avancement %}
+                                <th scope="col">Avancement</th>
+                                {% endif%}
+                                
+                                <th scope="col" style="width: 5%;">Global</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etude in etudes_en_cours %}
+                            <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
+                                {% endif %}
+                                
+                                <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}}€</td>
+                                
+                                
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <td style="text-align: left;" style=" padding: 6px;">
+
+                                {% if etude.responsables.all %}
+                                {% for respo_mult in etude.responsables.all %}
+                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
+                                {% endfor %}
+                                {% else %}
+
+                                
+                                    
                                         
-                                                </tbody>
-                                                
-                                            </table>
-                                            
+                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
+
+                                {% endif %}
+                                </td> 
+                                {% endif %}
+                                
+                                
+                                {% if user_parametres.param_col_etude_avancement %}
+                                <td style="text-align: left;" style="padding:0px;">
+                                    <div class="progress custom-progress" style="position: relative; height: 30px;">
+                                        <!-- Centered text on top of the progress bar -->
+                                        <span style="position: absolute; width: 100%; text-align: center; line-height: 30px; color: black; font-weight: bold;">
+                                            {% if etude.fin %}{{etude.debut|dateJJMM}} - {{etude.fin|dateJJMM}} {% endif %}
+                                        </span>
+                                
+                                        <!-- Progress bar itself -->
+                                        <div class="progress-bar bg-success" 
+                                                role="progressbar" 
+                                                style="width: {{ etude.progress_bar }}%;" 
+                                                aria-valuenow="{{ etude.progress_bar }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </td>
+                                {% endif %}
+                                <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
+                            </tr>
+                            <tr class="collapse" id="sec_table_ec_{{etude.id}}">
+                                
+
+                                <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                    <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+
+                                        <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                            Remarque de l'étude :
+                                        </div>
+                                    
+                                        <!-- Second Container -->
+                                        <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                            <div contenteditable="True" 
+                                                    data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                    class="editableDiv" 
+                                                    style="background-color: #fff3cda1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+
+                                    <table class="table table-bordered">
+                                        <colgroup>
+                                            <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                            <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                            <col style="width: 20%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                            <col style="width: 40%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                            <col style="width: 5%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                        </colgroup>
+                                        <tbody>
                                             <form method="POST" action="{% url 'update_etude' etude.id %}">
                                                 {% csrf_token %}
-                                                
-                                                <!-- New document name (key) -->
-                                                <div class="form-group">
-                                                    <label for="new_document_name"></label>
-                                                    <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
-                                                </div>
-
-                                                <!-- Status (from Etat_Doc) -->
-                                                <div class="form-group">
-                                                    <select name="new_document_status" id="new_document_status" class="form-control" required>
-                                                        <option value="En cours">En cours</option>
-                                                        <option value="Pas nécessaire">Pas nécessaire</option>
-                                                        <option value="Trop tôt">Trop tôt</option>
-                                                        <option value="Confidentiel">Confidentiel</option>
-                                                        <option value="Signé">Signé</option>
-                                                        <option value="Sur Drive">Sur Drive</option>
-                                                        <option value="Pas sur Drive">Pas sur Drive</option>
-                                                        <option value="Pas Fait">Pas Fait</option>
-                                                        <option value="Sans suite">Sans suite</option>
-                                                        <option value="Payée">Payée</option>
-                                                        <option value="Emise">Emise</option>
-                                                        <option value="Plus nécessaire">Plus nécessaire</option>
-                                                        <option value="A vérifier">A vérifier</option>
-                                                        <option value="Pas à jour">Pas à jour</option>
-                                                        <option value="Documents légaux ?">Documents légaux ?</option>
-                                                        <option value="Fait">Fait</option>
-
-                                                        <!-- Add other values from Etat_Doc if necessary -->
+                                            {% for key, value in etude.suivi_document|order_dict_by_keys %}
+                                            <tr>
+                                                <td>
+                                                    <div>{{key}}</div>
+                                                </td> 
+                                                <td>
+                                                    <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
+                                                </td>                                                            
+                                                <td class="status-cell {% if value.status == 'En cours' %}status-encours
+                                                {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                {% elif value.status == 'Trop tôt' %}status-troptot
+                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                {% elif value.status == 'Signé' %}status-signe
+                                                {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                {% elif value.status == 'Payée' %}status-payee
+                                                {% elif value.status == 'Emise' %}status-emise
+                                                {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                {% elif value.status == 'A vérifier' %}status-averifier
+                                                {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                {% elif value.status == 'Fait' %}status-fait
+                                                {% else %}status-default
+                                                {% endif %}">
+                                                    <select name="suivi_document_{{ key }}_status" class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                    {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                    {% elif value.status == 'Trop tôt' %}status-troptot
+                                                    {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                    {% elif value.status == 'Signé' %}status-signe
+                                                    {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                    {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                    {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                    {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                    {% elif value.status == 'Payée' %}status-payee
+                                                    {% elif value.status == 'Emise' %}status-emise
+                                                    {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                    {% elif value.status == 'A vérifier' %}status-averifier
+                                                    {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                    {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                    {% elif value.status == 'Fait' %}status-fait
+                                                    {% else %}status-default
+                                                    {% endif %}"
+                                                    style="padding: 2px; border: none;  text-align: center; font-weight: 600;">
+                                                        <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
+                                                        <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                        <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                        <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                        <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
+                                                        <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                        <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                        <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                        <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                        <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
+                                                        <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
+                                                        <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                        <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                        <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                        <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                        <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
                                                     </select>
-                                                </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
+                                                </td> 
+                                                
+                                                <td>
+                                                    <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                
+                                                
 
-                                                <!-- Date -->
-                                                <div class="form-group">
-                                                    <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="new_remarque_name"></label>
-                                                    <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
-                                                </div>
-
-                                                <!-- Submit Button -->
-                                                <button type="submit" class="btn btn-primary">Ajouter un document</button>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    <button type="submit" class="btn btn-primary">Modifier</button>
+                                                </td>
+                                            </tr>
                                             </form>
-                                        </td>
-                                    
-                                    </tr>
-    
-                                    {% endfor %}
-                                    
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>               
-                <!-- /.container-fluid -->
-                {% endif %}
-
-                
-
-                
-                {% if user_parametres.param_statut_etude_t %}
-                <!-- Beginning of container-fluid -->
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12 ml-4">
-                            <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études terminées</h2>
-                        </div>
-                    </div>
-                    <div class="card mb-4 ml-4 mr-3 shadow">
-                        <div class="table-responsive">
-                            <table class="table table-hover text-center">
-                                <thead style="background-color: #ffffff;">
-                                    <tr>
-                                        <th scope="col" style="width: 5%;"></th>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <th scope="col" style="text-align: left;">Client</th>
-                                        {% endif %}
-                                        <th scope="col" style="text-align: left;">Montant</th>
-
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <th scope="col" style="text-align: left;">Suiveur</th>
-                                        {% endif %}
-                                        
-                                       
-                                        
-                                        
-                                        <th scope="col" style="width: 5%;">Global</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for etude in etudes_terminees %}
-                                    <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
-                                        <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
-                                        {% if user_parametres.param_col_etude_numero %}
-                                        <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
-                                        {% endif %}
-                                        
-                                        {% if user_parametres.param_col_etude_client %}
-                                        <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
-                                        {% endif %}
-                                        
-                                        <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
-                                        
-                                        {% if user_parametres.param_col_etude_responsable %}
-                                        <td style="text-align: left;" style=" padding: 6px;">
-
-                                        {% if etude.responsables.all %}
-                                        {% for respo_mult in etude.responsables.all %}
-                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
-                                        {% endfor %}
-                                        {% else %}
-
-                                        
-                                            
                                                 
-                                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
+                                
+                                        </tbody>
+                                        
+                                    </table>
+                                    
+                                    <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                        {% csrf_token %}
+                                        
+                                        <!-- New document name (key) -->
+                                        <div class="form-group">
+                                            <label for="new_document_name"></label>
+                                            <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
+                                        </div>
 
-                                        {% endif %}
-                                        </td> 
-                                        {% endif %}
-                                        
-                                        
-                                        
-                                        <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
-                                    </tr>
-                                    <tr class="collapse" id="sec_table_t_{{etude.id}}">
-                                        
-                                        <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
-                                            <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+                                        <!-- Status (from Etat_Doc) -->
+                                        <div class="form-group">
+                                            <select name="new_document_status" id="new_document_status" class="form-control" required>
+                                                <option value="En cours">En cours</option>
+                                                <option value="Pas nécessaire">Pas nécessaire</option>
+                                                <option value="Trop tôt">Trop tôt</option>
+                                                <option value="Confidentiel">Confidentiel</option>
+                                                <option value="Signé">Signé</option>
+                                                <option value="Sur Drive">Sur Drive</option>
+                                                <option value="Pas sur Drive">Pas sur Drive</option>
+                                                <option value="Pas Fait">Pas Fait</option>
+                                                <option value="Sans suite">Sans suite</option>
+                                                <option value="Payée">Payée</option>
+                                                <option value="Emise">Emise</option>
+                                                <option value="Plus nécessaire">Plus nécessaire</option>
+                                                <option value="A vérifier">A vérifier</option>
+                                                <option value="Pas à jour">Pas à jour</option>
+                                                <option value="Documents légaux ?">Documents légaux ?</option>
+                                                <option value="Fait">Fait</option>
 
-                                                <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
-                                                    Remarque de l'étude :
-                                                </div>
-                                            
-                                                <!-- Second Container -->
-                                                <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
-                                                    <div contenteditable="True" 
-                                                            data-url="{% url 'remarque_etude' iD=etude.id %}" 
-                                                            class="editableDiv" 
-                                                            style="background-color: #d4eddabd; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
-                                                        {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
-                                                    </div>
-                                                </div>
-                                                
+                                                <!-- Add other values from Etat_Doc if necessary -->
+                                            </select>
+                                        </div>
+
+                                        <!-- Date -->
+                                        <div class="form-group">
+                                            <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="new_remarque_name"></label>
+                                            <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <button type="submit" class="btn btn-primary">Ajouter un document</button>
+                                    </form>
+                                </td>
+                            
+                            </tr>
+
+                            {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>               
+        <!-- /.container-fluid -->
+        {% endif %}
+
+        
+
+        
+        {% if user_parametres.param_statut_etude_t %}
+        <!-- Beginning of container-fluid -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 ml-4">
+                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études terminées</h2>
+                </div>
+            </div>
+            <div class="card mb-4 ml-4 mr-3 shadow">
+                <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead style="background-color: #ffffff;">
+                            <tr>
+                                <th scope="col" style="width: 5%;"></th>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <th scope="col" style="text-align: left;">Client</th>
+                                {% endif %}
+                                <th scope="col" style="text-align: left;">Montant</th>
+
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <th scope="col" style="text-align: left;">Suiveur</th>
+                                {% endif %}
+                                
+                                
+                                
+                                
+                                <th scope="col" style="width: 5%;">Global</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etude in etudes_terminees %}
+                            <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
+                                <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
+                                {% if user_parametres.param_col_etude_numero %}
+                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                {% endif %}
+                                
+                                {% if user_parametres.param_col_etude_client %}
+                                <td style="text-align: left;">{% if etude.client %} {{etude.client}} {% else %} aucun client {% endif %}</td>
+                                {% endif %}
+                                
+                                <td style="text-align: left;">{{etude.montant_ht_total|FormatNombres}} €</td>
+                                
+                                {% if user_parametres.param_col_etude_responsable %}
+                                <td style="text-align: left;" style=" padding: 6px;">
+
+                                {% if etude.responsables.all %}
+                                {% for respo_mult in etude.responsables.all %}
+                                    <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ respo_mult.photo.url }}" /> 
+                                {% endfor %}
+                                {% else %}
+
+                                
+                                    
+                                        
+                                            <img style="width: 35px; height: 35px;" class="img-profile rounded-circle" src="{{ etude.responsable.photo.url }}" /> 
+
+                                {% endif %}
+                                </td> 
+                                {% endif %}
+                                
+                                
+                                
+                                <td class="align-middle etude_row" style="cursor:pointer;" data-href="{% url 'details' modelName='Etude' iD=etude.id %}"><i class="fas fa-lg fa-eye" style="color:#333;"></i></td>
+                            </tr>
+                            <tr class="collapse" id="sec_table_t_{{etude.id}}">
+                                
+                                <td colspan="{{user_parametres.nombre_colonnes}}" style="text-align: center; vertical-align: middle;">
+                                    <div style="display: flex; align-items: center; padding: 1rem; justify-content: center;">
+
+                                        <div style="flex: 0 0 20%; text-align: left; padding-right: 1rem; color: black;">
+                                            Remarque de l'étude :
+                                        </div>
+                                    
+                                        <!-- Second Container -->
+                                        <div style="flex: 0 0 80%; text-align: left; max-width: 100%;">
+                                            <div contenteditable="True" 
+                                                    data-url="{% url 'remarque_etude' iD=etude.id %}" 
+                                                    class="editableDiv" 
+                                                    style="background-color: #d4eddabd; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; overflow-y: auto; max-height: 200px; min-height: 50px; white-space: normal;">
+                                                {% if etude.remarque %} {{ etude.remarque }} {% else %} ajouter une remarque {% endif %}
                                             </div>
-                                            <table class="table table-bordered">
-                                                <colgroup>
-                                                    <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
-                                                    <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
-                                                    <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                    <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
-                                                </colgroup>
-                                                <tbody>
-                                                    <form method="POST" action="{% url 'update_etude' etude.id %}">
-                                                        {% csrf_token %}
-                                                    {% for key, value in etude.suivi_document|order_dict_by_keys %}
-                                                    <tr>
-                                                        <td>
-                                                            <div>{{key}}</div>
-                                                        </td> 
-                                                        <td>
-                                                            <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
-                                                        </td>                                                            
-                                                        <td class="status-cell {% if value.status == 'En cours' %}status-encours
-                                                        {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                        {% elif value.status == 'Trop tôt' %}status-troptot
-                                                        {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                        {% elif value.status == 'Signé' %}status-signe
-                                                        {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                        {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                        {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                        {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                        {% elif value.status == 'Payée' %}status-payee
-                                                        {% elif value.status == 'Emise' %}status-emise
-                                                        {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                        {% elif value.status == 'A vérifier' %}status-averifier
-                                                        {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                        {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                        {% elif value.status == 'Fait' %}status-fait
-                                                        {% else %}status-default
-                                                        {% endif %}">
-                                                            <select name="suivi_document_{{ key }}_status" 
-                                                            class="form-control status-cell {% if value.status == 'En cours' %}status-encours
-                                                            {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
-                                                            {% elif value.status == 'Trop tôt' %}status-troptot
-                                                            {% elif value.status == 'Confidentiel' %}status-confidentiel
-                                                            {% elif value.status == 'Signé' %}status-signe
-                                                            {% elif value.status == 'Sur Drive' %}status-surdrive
-                                                            {% elif value.status == 'Pas sur Drive' %}status-pasdrive
-                                                            {% elif value.status == 'Pas Fait' %}status-pasfait
-                                                            {% elif value.status == 'Sans suite' %}status-sanssuite
-                                                            {% elif value.status == 'Payée' %}status-payee
-                                                            {% elif value.status == 'Emise' %}status-emise
-                                                            {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
-                                                            {% elif value.status == 'A vérifier' %}status-averifier
-                                                            {% elif value.status == 'Pas à jour' %}status-pasajour
-                                                            {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
-                                                            {% elif value.status == 'Fait' %}status-fait
-                                                            {% else %}status-default
-                                                            {% endif %}"
-                                                            style="padding: 2px; border: none; text-align: center; font-weight: 600;">
-                                                                <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
-                                                                <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
-                                                                <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
-                                                                <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
-                                                                <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
-                                                                <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
-                                                                <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
-                                                                <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
-                                                                <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
-                                                                <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
-                                                                <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
-                                                                <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
-                                                                <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
-                                                                <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
-                                                                <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
-                                                                <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
-                                                        </td> 
-                                                        <td>
-                                                            <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
-                                                                <i class="fas fa-times"></i>
-                                                            </button>
-                                                        </td>
-                                                        
-
-                                                    </tr>
-                                                    {% endfor %}
-                                                    <tr>
-                                                        <td colspan="5" class="text-center">
-                                                            <button type="submit" class="btn btn-primary">Modifier</button>
-                                                        </td>
-                                                    </tr>
-                                                </form>
-                                                        
+                                        </div>
                                         
-                                                </tbody>
-                                                
-                                            </table>
+                                    </div>
+                                    <table class="table table-bordered">
+                                        <colgroup>
+                                            <col style="width: 20%;"> <!-- Column 1 takes up 30% of the table's width -->
+                                            <col style="width: 15%;"> <!-- Column 2 takes up 40% of the table's width -->
+                                            <col style="width: 35%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                            <col style="width: 5300%;"> <!-- Column 3 takes up 30% of the table's width -->
+                                        </colgroup>
+                                        <tbody>
                                             <form method="POST" action="{% url 'update_etude' etude.id %}">
                                                 {% csrf_token %}
-                                                
-                                                <!-- New document name (key) -->
-                                                <div class="form-group">
-                                                    <label for="new_document_name"></label>
-                                                    <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
-                                                </div>
-
-                                                <!-- Status (from Etat_Doc) -->
-                                                <div class="form-group">
-                                                    <select name="new_document_status" id="new_document_status" class="form-control" required>
-                                                        <option value="En cours">En cours</option>
-                                                        <option value="Pas fait">Pas fait</option>
-                                                        <option value="Terminé">Terminé</option>
-                                                        <option value="Confidentiel">Confidentiel</option>
-                                                        <option value="Payée">Payée</option>
-                                                        <option value="Trop tôt">Trop tôt</option>
-                                                        <!-- Add other values from Etat_Doc if necessary -->
+                                            {% for key, value in etude.suivi_document|order_dict_by_keys %}
+                                            <tr>
+                                                <td>
+                                                    <div>{{key}}</div>
+                                                </td> 
+                                                <td>
+                                                    <input type="date" name="suivi_document_{{ key }}_date" class="form-control" {% if value.date %} value="{{ value.date }}" {% else %} value="" {% endif %}>
+                                                </td>                                                            
+                                                <td class="status-cell {% if value.status == 'En cours' %}status-encours
+                                                {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                {% elif value.status == 'Trop tôt' %}status-troptot
+                                                {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                {% elif value.status == 'Signé' %}status-signe
+                                                {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                {% elif value.status == 'Payée' %}status-payee
+                                                {% elif value.status == 'Emise' %}status-emise
+                                                {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                {% elif value.status == 'A vérifier' %}status-averifier
+                                                {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                {% elif value.status == 'Fait' %}status-fait
+                                                {% else %}status-default
+                                                {% endif %}">
+                                                    <select name="suivi_document_{{ key }}_status" 
+                                                    class="form-control status-cell {% if value.status == 'En cours' %}status-encours
+                                                    {% elif value.status == 'Pas nécessaire' %}status-pasnecessaire
+                                                    {% elif value.status == 'Trop tôt' %}status-troptot
+                                                    {% elif value.status == 'Confidentiel' %}status-confidentiel
+                                                    {% elif value.status == 'Signé' %}status-signe
+                                                    {% elif value.status == 'Sur Drive' %}status-surdrive
+                                                    {% elif value.status == 'Pas sur Drive' %}status-pasdrive
+                                                    {% elif value.status == 'Pas Fait' %}status-pasfait
+                                                    {% elif value.status == 'Sans suite' %}status-sanssuite
+                                                    {% elif value.status == 'Payée' %}status-payee
+                                                    {% elif value.status == 'Emise' %}status-emise
+                                                    {% elif value.status == 'Plus nécessaire' %}status-plusnecessaire
+                                                    {% elif value.status == 'A vérifier' %}status-averifier
+                                                    {% elif value.status == 'Pas à jour' %}status-pasajour
+                                                    {% elif value.status == 'Documents légaux ?' %}status-documentslegaux
+                                                    {% elif value.status == 'Fait' %}status-fait
+                                                    {% else %}status-default
+                                                    {% endif %}"
+                                                    style="padding: 2px; border: none; text-align: center; font-weight: 600;">
+                                                        <option value="En cours" {% if value.status == "En cours" %}selected{% endif %}>En cours</option>
+                                                        <option value="Pas nécessaire" {% if value.status == "Pas nécessaire" %}selected{% endif %}>Pas nécessaire</option>
+                                                        <option value="Trop tôt" {% if value.status == "Trop tôt" %}selected{% endif %}>Trop tôt</option>
+                                                        <option value="Confidentiel" {% if value.status == "Confidentiel" %}selected{% endif %}>Confidentiel</option>
+                                                        <option value="Signé" {% if value.status == "Signé" %}selected{% endif %}>Signé</option>
+                                                        <option value="Sur Drive" {% if value.status == "Sur Drive" %}selected{% endif %}>Sur Drive</option>
+                                                        <option value="Pas sur Drive" {% if value.status == "Pas sur Drive" %}selected{% endif %}>Pas sur Drive</option>
+                                                        <option value="Pas Fait" {% if value.status == "Pas Fait" %}selected{% endif %}>Pas Fait</option>
+                                                        <option value="Sans suite" {% if value.status == "Sans suite" %}selected{% endif %}>Sans suite</option>
+                                                        <option value="Payée" {% if value.status == "Payée" %}selected{% endif %}>Payée</option>
+                                                        <option value="Emise" {% if value.status == "Emise" %}selected{% endif %}>Emise</option>
+                                                        <option value="Plus nécessaire" {% if value.status == "Plus nécessaire" %}selected{% endif %}>Plus nécessaire</option>
+                                                        <option value="A vérifier" {% if value.status == "A vérifier" %}selected{% endif %}>A vérifier</option>
+                                                        <option value="Pas à jour" {% if value.status == "Pas à jour" %}selected{% endif %}>Pas à jour</option>
+                                                        <option value="Documents légaux ?" {% if value.status == "Documents légaux ?" %}selected{% endif %}>Documents légaux ?</option>
+                                                        <option value="Fait" {% if value.status == "Fait" %}selected{% endif %}>Fait</option>
                                                     </select>
-                                                </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="suivi_document_{{ key }}_remarque" class="form-control" value="{{ value.remarque }}">
+                                                </td> 
+                                                <td>
+                                                    <button type="submit" name="delete_document_name" value="{{ key }}" class="btn btn-danger bouton-suppression">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                                
 
-                                                <!-- Date -->
-                                                <div class="form-group">
-                                                    <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="new_remarque_name"></label>
-                                                    <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
-                                                </div>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    <button type="submit" class="btn btn-primary">Modifier</button>
+                                                </td>
+                                            </tr>
+                                        </form>
+                                                
+                                
+                                        </tbody>
+                                        
+                                    </table>
+                                    <form method="POST" action="{% url 'update_etude' etude.id %}">
+                                        {% csrf_token %}
+                                        
+                                        <!-- New document name (key) -->
+                                        <div class="form-group">
+                                            <label for="new_document_name"></label>
+                                            <input type="text" name="new_document_name" id="new_document_name" class="form-control" value="Document" required>
+                                        </div>
 
-                                                <!-- Submit Button -->
-                                                <button type="submit" class="btn btn-primary">Ajouter un document</button>
-                                            </form>
-                                        </td>
-                                    
-                                </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>     
-                <!-- End of container-fluid -->
-                {% endif %}
-            </div>
-            <!-- End of Main Content -->
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etudes Projets 2024</span>
+                                        <!-- Status (from Etat_Doc) -->
+                                        <div class="form-group">
+                                            <select name="new_document_status" id="new_document_status" class="form-control" required>
+                                                <option value="En cours">En cours</option>
+                                                <option value="Pas fait">Pas fait</option>
+                                                <option value="Terminé">Terminé</option>
+                                                <option value="Confidentiel">Confidentiel</option>
+                                                <option value="Payée">Payée</option>
+                                                <option value="Trop tôt">Trop tôt</option>
+                                                <!-- Add other values from Etat_Doc if necessary -->
+                                            </select>
+                                        </div>
+
+                                        <!-- Date -->
+                                        <div class="form-group">
+                                            <input type="date" name="new_document_date" id="new_document_date" class="form-control" >
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="new_remarque_name"></label>
+                                            <input type="text" name="new_remarque_name" id="new_remarque_name" class="form-control" value="remarque" >
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <button type="submit" class="btn btn-primary">Ajouter un document</button>
+                                    </form>
+                                </td>
+                            
+                        </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </footer>
-        <!-- End of Footer -->
+        </div>     
+        <!-- End of container-fluid -->
+        {% endif %}
 
-        </div>
-        <!-- End of Content Wrapper -->
-
-    </div>
-    <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- End of Main Content -->
     {% csrf_token %}
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    
-    <!-- 2 scripts spécifiques aux suggestions de recherche -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var rows = document.querySelectorAll(".etude_row");
@@ -1575,17 +1110,4 @@
             });
         });
     </script>
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-    </script>
-    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
-
-</body>
-
-</html>
+{% endblock %}
