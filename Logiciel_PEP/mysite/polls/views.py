@@ -2741,7 +2741,10 @@ def stat_KPI(request):
         notification_count = len(notification_list)
         user_je = request.user.je
         chiffres_affaires = request.user.chiffres_affaires()
-        chiffre_affaire_total = cumulated_CA[-1]
+        if cumulated_CA:
+            chiffre_affaire_total = cumulated_CA[-1]
+        else :
+            chiffre_affaire_total = 0
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(
             user_je
         )

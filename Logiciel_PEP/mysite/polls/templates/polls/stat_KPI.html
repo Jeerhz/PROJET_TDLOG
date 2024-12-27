@@ -1,60 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'polls/base.html' %}
+{% block title %}Sylog - KPI{% endblock %}
+{% load format_duration %}
+{% load static %}
 
-<head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Sylog - Stats KPI</title>
-
-    {% load static %}
-    {% load format_duration %}
-    
-    <!-- Script pour l'affichage dynamique du C-A -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
+{% block content %}
 
     <style>
-        /* Style for JE logo */
-        .my-custom-logo {
-            max-width: 80%;
-            aspect-ratio: 10/8;
-            justify-content: center;
-            align-self: center;
-            padding: 1rem;
-        }
-        /* Style for the suggestion results */
-        #suggestions-results {
-            position: absolute;
-            top: 50px; /* Adjust as needed */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: none;
-        }
-        #suggestions-results.show {
-            display: block;
-        }
         
         .table tbody tr td, .table thead tr th {
             white-space: nowrap;
@@ -80,970 +31,554 @@
         
     </style>
 
-</head>
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
 
-<body id="page-top">
+        <!-- Page Heading
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                    class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+        </div> -->
 
-    <!-- Page Wrapper -->
-    <div id="wrapper">
+        <!-- Content Row -->
+        <div class="row mt-4 mb-4">
 
-       <!-- Sidebar -->
-       <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-        <!-- Sidebar - Brand -->
-        <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
-        
-
-        <!-- Divider -->
-        <hr class="sidebar-divider my-md-0">
-
-        <!-- Nav Item - Dashboard -->
-        <li class="nav-item active">
-            <a class="nav-link text-center" href="{% url 'index' %}">
-                
-                <span>ACCUEIL</span></a>
-        </li>
-        
-        <hr class="sidebar-divider">
-        
-
-        <!-- Heading -->
-        <div class="sidebar-heading">
-            Informations
-        </div>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'annuaire' %}">
-                
-                <span>Annuaire</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'stat_KPI' %}">
-                
-                <span>Stat/KPI</span></a>
-        </li>
-
-        
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                aria-expanded="true" aria-controls="pagetresorerie">
-                
-                <span>Trésorerie</span>
-            </a>
-            <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                    <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                    <a class="collapse-item" href="#">DAS2</a>
-                    
-                    
+            <!-- Earnings  Card  -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs text-success text-uppercase mb-1">
+                                    Chiffre d'Affaire 026 signé <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026|FormatNombres}} €</span></div>
+                                <div class="text-xs text-success text-uppercase mb-1">
+                                    Chiffre d'Affaire 026 avec cut-off <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026_cutoff|FormatNombres}} €</span></div>
+                                <div class="text-xs text-success text-uppercase mb-1">
+                                    Chiffre d'Affaire 026 potentiel <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_potentiel|FormatNombres}} €</span></div>
+                            </div>
+                            
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'je_detail' %}">
-                
-                <span>Ma Junior Entreprise</span></a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'demarchage' %}">
-                
-                <span>Démarchage</span></a>
-        </li>
-        
-
-        <hr class="sidebar-divider">
-
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                aria-expanded="true" aria-controls="pageconnexion">
-               
-                <span>Connexion</span>
-            </a>
-            <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                    <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                    <a class="collapse-item" href="#">Mot de passe oublié</a>
-                    
-                    
-                </div>
-            </div>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                aria-expanded="true" aria-controls="pageautres">
-                
-                <span>Autres</span>
-            </a>
-            <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                    
-                    <a class="collapse-item" >Notifications</a>    
-                </div>
-
             </div>
             
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" >
+
+            <!-- Card Nombre Eleve -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs text-primary text-uppercase mb-1">
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.0 }} </span>études signées en cours 
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.1 }} € </span></div>
+                                <div class="text-xs  text-primary text-uppercase mb-1">
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.0 }} </span>études en discussion 
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.1 }} € </span></div>
+                                <div class="text-xs  text-primary text-uppercase mb-1">
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.0 }} </span>études terminées 026
+                                    <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.1 }} € </span></div>
+                                        
+                                
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Card Client Count -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body" style ="padding: 10px;padding-top: 4px;">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div style = "text-align: center;font-size: 12px;"> signées 026</div>
+                                <div class="text-xs  text-info text-uppercase mb-1">
+                                    Taux d'ouverture : <span style="font-weight: 1000; color: black;">{{taux_ouverture|FormatNombres}} % </span>
+                                    </div>
+                                    
+                                <div class="text-xs text-info text-uppercase mb-1">
+                                    Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_etudes026|FormatNombres}} €</span>
+                                </div>
+                                <div class="text-xs text-info text-uppercase mb-1">
+                                    Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retrib_moye_etude|FormatNombres}} €</span>
+                                </div>
+                                <div class="text-xs text-info text-uppercase mb-1">
+                                    Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retrib_moye_etudiant|FormatNombres}} €</span>
+                                </div>
+                                    
+                                
+                                    
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                
+                                <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants_026}} </span>intervenants 026 </div>
+                                <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
+                                <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
+                                    <span style="font-weight: 1000; color: black;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
+
+                                    
+                                
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Row -->
+
+        
+        <div class="row">
+
+            <!-- Area Chart -->
+            
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Le chiffre d'affaires par mois</h6>
+                    </div>
+                    <div class="chart-area">
+                        <canvas  id="BarChartCAmois"></canvas >
+                    </div>
                 
-                <span>Signaler un problème</span></a>
-        </li>
-        <!-- Heading -->
+                </div>     
+            
+            </div>                                                
+            
+        </div>
         
 
+        <script>
+            var dico_CA_mois = {{ dico_CA_mois|safe }};
+        </script>
+
+        <div class="row">
+            
+
+            <!-- Area Chart -->
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Devis envoyés / missions signées</h6>
+                    </div>
                     
-
-        <!-- Divider -->
-        <hr class="sidebar-divider d-none d-md-block">
-
-        <!-- Sidebar Toggler (Sidebar) -->
-        <div class="text-center d-none d-md-inline">
-            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                    <!-- Card Body -->
+                    
+                    
+                    <div class="chart-area">
+                        <canvas id="myBarChart"></canvas>
+                    </div>
+                </div>
+            </div>                                                
+            
         </div>
 
-    </ul>
-    <!-- End of Sidebar -->
 
+        <script>
+            var dico_suivi_devis = {{ dico_suivi_devis|safe }};
+        </script>
+        <div class="row">
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
+            <!-- Area Chart -->
+            
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Avenants à la CE par mois</h6>
+                    </div>
+                    <div class="chart-area">
+                        <canvas  id="BarChartCE"></canvas >
+                    </div>
+                
+                </div>     
+            
+            </div>                                                
+            
+        </div>
+        
 
-            <!-- Main Content -->
-            <div id="content">
+        <script>
+            var dico_avenants_mois_ce = {{ dico_avenants_mois_ce|safe }};
+        </script>
+        <!--End Row-->
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                            <div class="list-group" id="suggestions-results"></div>
-                        </div>
-                    </form>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter une étude</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un client</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un étudiant</span>
-                    </a>
-
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+        <!--New row-->
+        <div class="row">
+            
+            <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Répartition CA des études en cours et terminées</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                             </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Rechercher..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                {% if notification_list.0 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.0}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.1 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.1}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.2 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.2}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Messagerie
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.3.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profil
-                                </a>
-                                <a class="dropdown-item" href="{% url 'settings' %}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Réglages
-                                </a>
-                                
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Se déconnecter
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-
-                    <!-- Page Heading
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-                    </div> -->
-
-                    <!-- Content Row -->
-                    <div class="row mt-4 mb-4">
-
-                        <!-- Earnings  Card  -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs text-success text-uppercase mb-1">
-                                                Chiffre d'Affaire 026 signé <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026|FormatNombres}} €</span></div>
-                                            <div class="text-xs text-success text-uppercase mb-1">
-                                                Chiffre d'Affaire 026 avec cut-off <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_026_cutoff|FormatNombres}} €</span></div>
-                                            <div class="text-xs text-success text-uppercase mb-1">
-                                                Chiffre d'Affaire 026 potentiel <span class=" text-gray-800"  style="font-weight: 1000;">{{ca_potentiel|FormatNombres}} €</span></div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-
-                        <!-- Card Nombre Eleve -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs text-primary text-uppercase mb-1">
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.0 }} </span>études signées en cours 
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_ec.1 }} € </span></div>
-                                            <div class="text-xs  text-primary text-uppercase mb-1">
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.0 }} </span>études en discussion 
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etude_ed.1 }} € </span></div>
-                                            <div class="text-xs  text-primary text-uppercase mb-1">
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.0 }} </span>études terminées 026
-                                                <span style="font-weight: 1000; color: black;">{{ nb_etudes_term_026.1 }} € </span></div>
-                                                   
-                                            
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- Card Client Count -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body" style ="padding: 10px;padding-top: 4px;">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div style = "text-align: center;font-size: 12px;"> signées 026</div>
-                                            <div class="text-xs  text-info text-uppercase mb-1">
-                                                Taux d'ouverture : <span style="font-weight: 1000; color: black;">{{taux_ouverture|FormatNombres}} % </span>
-                                             </div>
-                                                
-                                            <div class="text-xs text-info text-uppercase mb-1">
-                                                Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_etudes026|FormatNombres}} €</span>
-                                            </div>
-                                            <div class="text-xs text-info text-uppercase mb-1">
-                                                Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retrib_moye_etude|FormatNombres}} €</span>
-                                            </div>
-                                            <div class="text-xs text-info text-uppercase mb-1">
-                                                Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retrib_moye_etudiant|FormatNombres}} €</span>
-                                            </div>
-                                                
-                                           
-                                                
-                                        </div>
-                                      
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            
-                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_026}} </span>intervenants 026 </div>
-                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000; color: black;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
-                                            <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                                <span style="font-weight: 1000; color: black;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
-
-                                                
-                                           
-                                        </div>
-                                       
-                                    </div>
-                                </div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Content Row -->
-
-                    
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Le chiffre d'affaires par mois</h6>
-                                </div>
-                                <div class="chart-area">
-                                    <canvas  id="BarChartCAmois"></canvas >
-                                </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €</div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartEtudeSatus"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
                             
-                            </div>     
-                        
-                        </div>                                                
+                        </div>
                         
                     </div>
-                    
-
-                    <script>
-                        var dico_CA_mois = {{ dico_CA_mois|safe }};
-                    </script>
-
-                    <div class="row">
-                        
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Devis envoyés / missions signées</h6>
-                                </div>
-                                
-                                <!-- Card Body -->
-                                
-                                
-                                <div class="chart-area">
-                                    <canvas id="myBarChart"></canvas>
-                                </div>
-                            </div>
-                        </div>                                                
-                        
-                    </div>
-
-
-                    <script>
-                        var dico_suivi_devis = {{ dico_suivi_devis|safe }};
-                    </script>
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Avenants à la CE par mois</h6>
-                                </div>
-                                <div class="chart-area">
-                                    <canvas  id="BarChartCE"></canvas >
-                                </div>
-                            
-                            </div>     
-                        
-                        </div>                                                
-                        
-                    </div>
-                    
-
-                    <script>
-                        var dico_avenants_mois_ce = {{ dico_avenants_mois_ce|safe }};
-                    </script>
-                    <!--End Row-->
-
-                    <!--New row-->
-                    <div class="row">
-                        
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition CA des études en cours et terminées</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartEtudeSatus"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var repartitionData = {{ repartition_CA_etudes|safe }};
-                        </script>
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Nombres d'études en cours et terminées</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> {{totale_nb_ecterm}} études</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartEtudeSatusnb"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var repartitionData_nb = {{ repartition_nb_etudes|safe }};
-                        </script>
-
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">départements des intervenants 026</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{chiffre_affaire_total}} €</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartDepartEleve"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var repartdepeleve = {{ dictionaire_dep_eleve|safe }};
-                        </script>
-
-
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">genre des intervenants</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> {{nb_intervenants_026}} intervenants</div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartGenreIntervenants"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var genre_inter = {{ dico_genre_inter|safe }};
-                        </script>
-
-                         <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par type d'entreprise</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCAtypeentreprise"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var CA_typeentreprise = {{ dico_ca_typeentreprise|safe }};
-                        </script>
-
-                         <!-- Pie Chart -->
-                         <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par département</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCAdepartement"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var dico_ca_departement = {{ dico_ca_departement|safe }};
-                        </script>
-                        
-
-                         <!-- Pie Chart -->
-                         <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par secteur d'activité
-                                    </h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Actions:</div>
-                                            <a class="dropdown-item" href="#">Période</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Télécharger</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body" style="padding-bottom: 10px;">
-                                    <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €  </div>
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="PieChartCAdSecteur"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                        // Converting the repartition_CA_etudes dictionary to a JavaScript object
-                        var dico_ca_secteur = {{ dico_ca_secteur|safe }};
-                        </script>
-
-                        
-
-                        
-                        
-
-                        
-
-                    </div>
-
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                             aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Action:</div>
-                                            <a class="dropdown-item" href="#" onclick="downloadChart()">Télécharger</a>
-                                            <div class="dropdown-divider"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="row mb-3">
-                                        <div class="col-md-3">
-                                            <label for="start_date">Date de début:</label>
-                                            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="end_date">Date de fin:</label>
-                                            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
-                                        </div>
-                                        <div class="col-md-3 d-flex align-items-end">
-                                            <button class="btn btn-primary" onclick="updateChart()">Mettre à jour</button>
-                                        </div>
-                                    </div>
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart1"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                                                
-                        <script>
-                            var chiffre_affaire_par_departement = [{% for value in chiffre_affaire_par_departement %}{{ value }},{% endfor %}];
-                            var chiffre_affaire_par_type = [{% for value in chiffre_affaire_par_type %}{{ value }},{% endfor %}];
-                            var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}];
-                            var repartition_CA_etudes = {{ repartition_CA_etudes|safe }};
-
-
-                        </script>
-                    </div>
-
-                    
-                    
-                      
-                    
-
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etude Projets 2024</span>
                 </div>
             </div>
-        </footer>
-        <!-- End of Footer -->
+            
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var repartitionData = {{ repartition_CA_etudes|safe }};
+            </script>
+            <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Nombres d'études en cours et terminées</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> {{totale_nb_ecterm}} études</div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartEtudeSatusnb"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var repartitionData_nb = {{ repartition_nb_etudes|safe }};
+            </script>
+
+            <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">départements des intervenants 026</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{chiffre_affaire_total}} €</div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartDepartEleve"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var repartdepeleve = {{ dictionaire_dep_eleve|safe }};
+            </script>
+
+
+            <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">genre des intervenants</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> {{nb_intervenants_026}} intervenants</div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartGenreIntervenants"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var genre_inter = {{ dico_genre_inter|safe }};
+            </script>
+
+                <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par type d'entreprise</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartCAtypeentreprise"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var CA_typeentreprise = {{ dico_ca_typeentreprise|safe }};
+            </script>
+
+                <!-- Pie Chart -->
+                <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par département</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} € </div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartCAdepartement"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var dico_ca_departement = {{ dico_ca_departement|safe }};
+            </script>
+            
+
+                <!-- Pie Chart -->
+                <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Répartition du C.A par secteur d'activité
+                        </h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Actions:</div>
+                                <a class="dropdown-item" href="#">Période</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Télécharger</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body" style="padding-bottom: 10px;">
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{totale_CA_ecterm}} €  </div>
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas id="PieChartCAdSecteur"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Converting the repartition_CA_etudes dictionary to a JavaScript object
+            var dico_ca_secteur = {{ dico_ca_secteur|safe }};
+            </script>
+
+            
+
+            
+            
+
+            
 
         </div>
-        <!-- End of Content Wrapper -->
 
-    </div>
-    <!-- End of Page Wrapper -->
+        <div class="row">
 
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Se déconnecter ?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
+            <!-- Area Chart -->
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                    aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-header">Action:</div>
+                                <a class="dropdown-item" href="#" onclick="downloadChart()">Télécharger</a>
+                                <div class="dropdown-divider"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="start_date">Date de début:</label>
+                                <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="end_date">Date de fin:</label>
+                                <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary" onclick="updateChart()">Mettre à jour</button>
+                            </div>
+                        </div>
+                        <div class="chart-area">
+                            <canvas id="myAreaChart1"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Se déconnecter</a>
-                </div>
-            </div>
+            </div>                                                
+            <script>
+                var chiffre_affaire_par_departement = [{% for value in chiffre_affaire_par_departement %}{{ value }},{% endfor %}];
+                var chiffre_affaire_par_type = [{% for value in chiffre_affaire_par_type %}{{ value }},{% endfor %}];
+                var chiffre_affaire_par_secteur = [{% for value in chiffre_affaire_par_secteur %}{{ value }},{% endfor %}];
+                var repartition_CA_etudes = {{ repartition_CA_etudes|safe }};
+
+
+            </script>
         </div>
+
+        
+        
+            
+        
+
     </div>
+    <!-- /.container-fluid -->
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
-    <!-- Core plugin JavaScript-->
-    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
 
     <!-- Page level plugins -->
     <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
@@ -1062,24 +597,10 @@
     <script src="{% static 'polls/js/demo/bar-chart-CA-mois.js' %}"></script>
 
 
+    <!-- Script pour l'affichage dynamique du C-A -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    
-    
-
-
-    <!-- 2 scripts spécifiques aux suggestions de recherche -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-    </script>
-    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
-
-</body>
-
-</html>
+    {% endblock %}
