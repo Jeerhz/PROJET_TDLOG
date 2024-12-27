@@ -1,59 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'polls/base.html' %}
+{% block title %}Sylog - Demarchage{% endblock %}
+{% load format_duration %}
 
-<head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Sylog - Demarchage</title>
-
-    {% load static %}
-    {% load format_duration %}
-    
-    <!-- Script pour l'affichage dynamique du C-A -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-    <script src="{% static 'polls/js/chart-area.js' %}"></script>
-
-    <!-- Custom fonts for this template-->
-    <link href="{% static 'polls/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{% static 'polls/css/sb-admin-2.min.css' %}" rel="stylesheet">
-
+{% block content %}
     <style>
-        /* Style for JE logo */
-        .my-custom-logo {
-            max-width: 80%;
-            aspect-ratio: 10/8;
-            justify-content: center;
-            align-self: center;
-            padding: 1rem;
-        }
-        /* Style for the suggestion results */
-        #suggestions-results {
-            position: absolute;
-            top: 50px; /* Adjust as needed */
-            left: 0;
-            right: 0;
-            z-index: 999;
-            display: none;
-        }
-        #suggestions-results.show {
-            display: block;
-        }
         
         .table tbody tr td, .table thead tr th {
             white-space: nowrap;
@@ -115,874 +65,391 @@
         
     </style>
 
-</head>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
 
-<body id="page-top">
-
-    <!-- Page Wrapper -->
-    <div id="wrapper">
-
-         <!-- Sidebar -->
-         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <!-- Sidebar - Brand -->
-            <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
-            
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-md-0">
-
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link text-center" href="{% url 'index' %}">
-                    
-                    <span>ACCUEIL</span></a>
-            </li>
-            
-            <hr class="sidebar-divider">
-            
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Informations
+            <!-- Alert message -->
+            {% if alert_message %}
+            <div class="alert alert-info alert-dismissible fade show mt-2" role="alert" id="alert">
+                <span>{{ alert_message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            {% endif %}
 
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'annuaire' %}">
-                    
-                    <span>Annuaire</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'stat_KPI' %}">
-                    
-                    <span>Stat/KPI</span></a>
-            </li>
-
-            
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagetresorerie"
-                    aria-expanded="true" aria-controls="pagetresorerie">
-                    
-                    <span>Trésorerie</span>
-                </a>
-                <div id="pagetresorerie" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'factures' %}">Factures</a>
-                        <a class="collapse-item" href="{% url 'BVs' %}">BVs</a>
-                        <a class="collapse-item" href="#">DAS2</a>
-                        
-                        
+            <!-- Content Row -->
+            <div class="row mt-4 mb-4 justify-content-center">
+                <div class="col-9">
+                    <div class="card shadow">
+                        <div class="card-header"> 
+                            <h6 class="card-title">Liste templates</h6>
+                            <button class="btn btn-primary float-right" data-toggle="modal" data-target="#mailTemplateModal"><i class="fas fa-plus mr-2"></i>Créer nouveau template</button>
+                        </div>
+                        <div class="card-body">
+                            {% for template in request.user.je.mail_templates.all %}
+                                <button class="btn btn-outline-secondary" id="template{{template.id}}" data-toggle="modal" data-target="#mailTVisualizeModal"><i class="fas fa-eye mr-2"></i>{{template}}</button>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-            </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'je_detail' %}">
-                    
-                    <span>Ma Junior Entreprise</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'demarchage' %}">
-                    
-                    <span>Démarchage</span></a>
-            </li>
-            
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageconnexion"
-                    aria-expanded="true" aria-controls="pageconnexion">
-                   
-                    <span>Connexion</span>
-                </a>
-                <div id="pageconnexion" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'custom_login' %}">Se connecter</a>
-                        <a class="collapse-item" href="{% url 'register' %}">Inscriptions</a>
-                        <a class="collapse-item" href="#">Mot de passe oublié</a>
-                        
-                        
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pageautres"
-                    aria-expanded="true" aria-controls="pageautres">
-                    
-                    <span>Autres</span>
-                </a>
-                <div id="pageautres" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{% url 'messages' %}" >Messagerie</a>
-                        
-                        <a class="collapse-item" >Notifications</a>    
-                    </div>
-
-                </div>
                 
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" >
-                    
-                    <span>Signaler un problème</span></a>
-            </li>
-            <!-- Heading -->
-            
-
-                        
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-        </ul>
-        <!-- End of Sidebar -->
+            <!-- Content Row -->
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
+            <div style="margin:10px;" class="row">
 
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <!-- Topbar Search -->
-                    <form action="{% url 'search' %}"
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                                aria-label="Search" aria-describedby="basic-addon2" id="search-input" name="search-input">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                            <div class="list-group" id="suggestions-results"></div>
+                <!-- Area Chart -->
+                <div class="col-lg-13 mb-3" style="width: 90%;">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 style="text-align: center; color: #1f3753; font-size: large;">Retours :</h6>
                         </div>
-                    </form>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter une étude</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un client</span>
-                    </a>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un étudiant</span>
-                    </a>
-
-                    <!-- Topbar Navbar --> 
-                    <ul class="navbar-nav ml-auto">
-
-                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-search fa-fw"></i>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Rechercher..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">{{notification_count}}</span>
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alertes
-                                </h6>
-                                {% if notification_list.0 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.0.href_redirect %}href="{{notification_list.0.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.0.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.0}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.1 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.1.href_redirect %}href="{{notification_list.1.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.1.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.1}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                {% if notification_list.2 %}
-                                <a class="dropdown-item d-flex align-items-center" {% if notification_list.2.href_redirect %}href="{{notification_list.2.href_redirect}}"{% else %}href="#"{% endif %}>
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">{{notification_list.2.date_effet}}</div>
-                                        <span class="font-weight-bold">{{notification_list.2}}</span>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Show All Alerts</a>
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-envelope fa-fw"></i>
-                                <!-- Counter - Messages -->
-                                <span class="badge badge-danger badge-counter">{{message_count}}</span>
-                            </a>
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">
-                                    Messagerie
-                                </h6>
-                                {% if liste_messages.0 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.0.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.0.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">{{liste_messages.0}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.0.expediteur}} · {{liste_messages.0.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% else %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">No message</a>
-                                {% endif %}
-
-                                {% if liste_messages.1 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.1.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.1.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.1}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.1.expediteur}} · {{liste_messages.1.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.2 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.2.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="{{ liste_messages.2.expediteur.photo.url }}"
-                                            alt="...">
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.2}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.2.expediteur}} · {{liste_messages.2.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-
-                                {% if liste_messages.3 %}
-                                <a class="dropdown-item d-flex align-items-center" href="{% url 'details' modelName='Message' iD=liste_messages.3.id %}">
-                                    <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="...">
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">{{liste_messages.3}}</div>
-                                        <div class="small text-gray-500">{{liste_messages.3.expediteur}} · {{liste_messages.3.since|format_duration}}</div>
-                                    </div>
-                                </a>
-                                {% endif %}
-                                <a class="dropdown-item text-center small text-gray-500" href="{% url 'messages' %}">Read More Messages</a>
-                            </div>
-                        </li>
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{ request.user.photo.url }}">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{% url 'details' modelName='Student' iD=request.user.student.id %}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="{% url 'settings' %}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'custom_logout' %}" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-
-                    </ul>
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-
-                    <!-- Alert message -->
-                    {% if alert_message %}
-                    <div class="alert alert-info alert-dismissible fade show mt-2" role="alert" id="alert">
-                        <span>{{ alert_message }}</span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    {% endif %}
-
-                    <!-- Content Row -->
-                    <div class="row mt-4 mb-4 justify-content-center">
-                        <div class="col-9">
-                            <div class="card shadow">
-                                <div class="card-header"> 
-                                    <h6 class="card-title">Liste templates</h6>
-                                    <button class="btn btn-primary float-right" data-toggle="modal" data-target="#mailTemplateModal"><i class="fas fa-plus mr-2"></i>Créer nouveau template</button>
-                                </div>
-                                <div class="card-body">
-                                    {% for template in request.user.je.mail_templates.all %}
-                                        <button class="btn btn-outline-secondary" id="template{{template.id}}" data-toggle="modal" data-target="#mailTVisualizeModal"><i class="fas fa-eye mr-2"></i>{{template}}</button>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-
+                        <!-- Card Body -->
                         
-                    </div>
+                        
+    
+                            <table style="margin-top:20px;" class="table_demarchage">
+                                <tbody>
+                                    {% for client in clients %}
+                                    {% for repr in client.representants.all %}
+                                    {% if repr.demarchage == 'RETOUR_RECU' %}
+                                    <tr >
+                                        <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                        <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                        <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
 
-                    <!-- Content Row -->
+                                    </tr>
+                                    <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
+                                        <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                            <table >
+                                                <tbody>
+                                                <tr>
+                                                    <td style= "border: 0px;"><span style="font-weight: bold;">envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style= "border: 0px;"><span style="font-weight: bold;">réponse le {{repr.date_reponse}} :</span> Bonjour, Merci pour votre mail, nous travaillons actuellelent sur un projet d'optimisation, seriez vous disponibles pour un rdv...</td>
+                                                </tr>
+                                                </tbody>
+                                                
+                                            </table>
+                                            <div> </div>
+                                            <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>Créer une étude</a>
+                                            <br>
+                                            <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                {% csrf_token %}
+                                                <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                <button type="submit" class="btn btn-primary">supprimer</button>
+                                            </form>
+                                            
 
-                    <div style="margin:10px;" class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Retours :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-            
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <tbody>
-                                            {% for client in clients %}
-                                            {% for repr in client.representants.all %}
-                                            {% if repr.demarchage == 'RETOUR_RECU' %}
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_repond{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);"  data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_repond{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">réponse le {{repr.date_reponse}} :</span> Bonjour, Merci pour votre mail, nous travaillons actuellelent sur un projet d'optimisation, seriez vous disponibles pour un rdv...</td>
-                                                        </tr>
-                                                        </tbody>
-                                                        
-                                                    </table>
-                                                    <div> </div>
-                                                    <a class="btn btn-primary float-right" href="{% url 'input' modelName='Etude' iD=0 %}"><i class="fas fa-plus"></i>Créer une étude</a>
-                                                    <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
-                                                    
-
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                    {% endfor %}
-                                        </tbody>
-                                        
-                                    </table>
-                                    
-                                    
-                                
-                                    
-                            </div>
-                        </div>  
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Deux mois sans réponses :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-                                
-
-                                    
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <tbody>
-                                        {% for client in clients %}
-                                        {% for repr in client.representants.all %}
-                                        {% if repr.demarchage == 'A_RELANCER' %}
-                                        
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_relance{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span>{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>relancer</a>
-                                                    <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                        {% endfor %} 
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                
-                                
-                                    
-                                
-                                    
-                            </div>
-                        </div>    
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés récemment :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-            
-                                    <table style="margin-top:20px;" class="table_demarchage">
-                                        <tbody>
-                                            {% for client in clients %}
-                                            {% for repr in client.representants.all %}
-                                            {% if repr.demarchage == 'ATTENTE_REPONSE' %}
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style = "padding-top: 0px;" class="collapse" id="representant_att{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table >
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
-                                                        </tr>
-                                                        </tbody>
-                                                        
-                                                    </table>
-                                                    <br>
-                                                    <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
-                                                        {% csrf_token %}
-                                                        <input type="text" name="remarque" value="{{ repr.remarque }}">
-                                                        <button type="submit" class="btn btn-primary">supprimer</button>
-                                                    </form>
-
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endfor %}
-                                        </tbody>
-                                        
-                                    </table>
-                                    
-                                    
-                                
-                                    
-                            </div>
-                        </div>  
-                        <div class="col-lg-13 mb-3" style="width: 90%;">
-                            <div class="card shadow">
-                                <div class="card-header">
-                                    <h6 style="text-align: center; color: #1f3753; font-size: large;">Pas encore démarché :</h6>
-                                </div>
-                                <!-- Card Body -->
-                                
-                                
-                                
-
-                                {% for secteur in secteurs %}
-                                <h6 style="padding-left: 30px; padding-bottom: 0px;padding-top: 30px; color: #7a99bb; font-size: large; ">{{ secteur }}</h6>
-                                    <table class="table_demarchage">
-                                        <tbody>
-                                        {% for client in clients %}
-                                        {% if client.secteur == secteur %}
-                                        
-                                        {% for repr in client.representants.all %}
-                                        {% if repr.demarchage == 'A_CONTACTER' %}
-                                        
-                                            <tr >
-                                                <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
-                                                <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
-                                                <td style="font-style:italic; text-align:  center; width: 15%;">{{repr.date_mail}}</td>
-
-                                            </tr>
-                                            <tr style= "padding-top: 0px; " class="collapse" id="representant_pas_dem{{repr.id}}">
-                                                <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
-                                                    <table>
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>Envoyer</a>
-                                                    <br>
-                                                    <div style="font-weight: 300;">{{ repr.remarque }}</div>
-                                                </td>
-                                            </tr>
-                                            <!-- Visualisation mail -->
-            <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
-                            <div class="modal-body p-4">
-                                <div class="row">
-                                    {% if request.user.je.mail_templates.exists %}
-                                        {% for template in request.user.je.mail_templates.all %}
-                                            <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
-                                        {% endfor %}
-                                    {% else %}
-                                    <p>Aucun template</p>
+                                        </td>
+                                    </tr>
                                     {% endif %}
-                                </div>
-                                <hr>
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Destinataire</span>
-                                        </div>
-                                        <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
-                                    </div>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Objet</span>
-                                        </div>
-                                        <input type="text" class="form-control" name="subject" value="Mission">
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <strong>Signature</strong>
-                                        <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
-                                        <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                <button type="submit" class="btn btn-primary" {% if not connecté %} disabled {% endif %}>Envoyer</button>
-                            </div>
-                        </form>
+                                    {% endfor %}
+                            {% endfor %}
+                                </tbody>
+                                
+                            </table>
+                            
+                            
+                        
+                            
                     </div>
-                </div>
-            </div>
-            <!-- Fin formulaire envoi mail -->
-                                        {% endif %}
-                                        {% endfor %} 
-                                        {% endif %}
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                </div>  
+                <div class="col-lg-13 mb-3" style="width: 90%;">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 style="text-align: center; color: #1f3753; font-size: large;">Deux mois sans réponses :</h6>
+                        </div>
+                        <!-- Card Body -->
+                        
+                        
+                        
+
+                            
+                            <table style="margin-top:20px;" class="table_demarchage">
+                                <tbody>
+                                {% for client in clients %}
+                                {% for repr in client.representants.all %}
+                                {% if repr.demarchage == 'A_RELANCER' %}
+                                
+                                    <tr >
+                                        <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_relance{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                        <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                        <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+
+                                    </tr>
+                                    <tr style= "padding-top: 0px; " class="collapse" id="representant_relance{{repr.id}}">
+                                        <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                            <table >
+                                                <tbody>
+                                                <tr>
+                                                    <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span>{{ repr.contenu_mail}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>relancer</a>
+                                            <br>
+                                            <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                {% csrf_token %}
+                                                <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                <button type="submit" class="btn btn-primary">supprimer</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% endfor %} 
                                 {% endfor %}
+                                </tbody>
+                            </table>
+                        
+                        
+                            
+                        
+                            
+                    </div>
+                </div>    
+                <div class="col-lg-13 mb-3" style="width: 90%;">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 style="text-align: center; color: #1f3753; font-size: large;">Mails envoyés récemment :</h6>
+                        </div>
+                        <!-- Card Body -->
+                        
+                        
+    
+                            <table style="margin-top:20px;" class="table_demarchage">
+                                <tbody>
+                                    {% for client in clients %}
+                                    {% for repr in client.representants.all %}
+                                    {% if repr.demarchage == 'ATTENTE_REPONSE' %}
+                                    <tr >
+                                        <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_att{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                        <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                        <td class= "attente" attente_duree="{{ repr.attente_duree }}" >{{repr.date_mail}}</td>
+
+                                    </tr>
+                                    <tr style = "padding-top: 0px;" class="collapse" id="representant_att{{repr.id}}">
+                                        <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                            <table >
+                                                <tbody>
+                                                <tr>
+                                                    <td style= "border: 0px;"><span style="font-weight: bold;">Mail envoyé le {{repr.date_mail}} :</span> Bonjour {{repr.titre}} {{repr.last_name}}, Je me permets de vous contacter au nom de la Junior Entrprise des Ponts. J'ai remarqué que nous avon seffectué une mission pour vous il y a deux ans...</td>
+                                                </tr>
+                                                </tbody>
+                                                
+                                            </table>
+                                            <br>
+                                            <form method="post" action="{% url 'supprimer_demarchage' id_representant=repr.id %}">
+                                                {% csrf_token %}
+                                                <input type="text" name="remarque" value="{{ repr.remarque }}">
+                                                <button type="submit" class="btn btn-primary">supprimer</button>
+                                            </form>
+
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                                </tbody>
                                 
-                                    
+                            </table>
+                            
+                            
+                        
+                            
+                    </div>
+                </div>  
+                <div class="col-lg-13 mb-3" style="width: 90%;">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 style="text-align: center; color: #1f3753; font-size: large;">Pas encore démarché :</h6>
+                        </div>
+                        <!-- Card Body -->
+                        
+                        
+                        
+
+                        {% for secteur in secteurs %}
+                        <h6 style="padding-left: 30px; padding-bottom: 0px;padding-top: 30px; color: #7a99bb; font-size: large; ">{{ secteur }}</h6>
+                            <table class="table_demarchage">
+                                <tbody>
+                                {% for client in clients %}
+                                {% if client.secteur == secteur %}
                                 
-                                    
-                            </div>
-                        </div>                                                
-                    </div>
-                    <!--End Row-->
+                                {% for repr in client.representants.all %}
+                                {% if repr.demarchage == 'A_CONTACTER' %}
+                                
+                                    <tr >
+                                        <td style="cursor:pointer; font-weight: 650;" data-toggle="collapse" data-target="#representant_pas_dem{{repr.id}}" >{{repr}}, <span style="color: #6d7379; font-weight: 400;">{{repr.fonction}}</span></td>
+                                        <td style="text-align: right; font-weight: bold; color:rgb(72, 92, 139);" data-href="{% url 'details' modelName='Client' iD=client.id %}">{{client}}</td>
+                                        <td style="font-style:italic; text-align:  center; width: 15%;">{{repr.date_mail}}</td>
 
-                    
-                    
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-            
-
-            <!-- Ajout template mail -->
-            <div class="modal fade" id="mailTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTMail" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabelTMail">Envoi mail</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <form action="{% url 'create_mail_template' %}" method="post">
-                            <div class="modal-body p-4">
-                                <dl class="dl-horizontal">
-                                    {% csrf_token %}
-            
-                                    {% for field in mail_template_form %}
-                                    <div class="form-group row mb-3">
-                                    <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                        <div class="col-sm-8 justify-content-center">
-                                            {{ field }}
-                                        {% if field.errors %}
-                                            <div class="text-danger">
-                                                {% for error in field.errors %}
-                                                    {{ error }}
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endfor %}                             
-                                </dl>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                                <button type="submit" class="btn btn-primary">Créer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <!-- Fin ajout template mail -->
-            <!-- Visualisation mail -->
-            <div class="modal fade" id="mailTVisualizeModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTVMail" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabelTVMail">Template mail</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body p-4" id="mailTVisualizeModalText"></div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                            <button type="button" id="delete-tpl-btn" data-toggle="modal" data-target="#deleteTplModal" class="btn btn-danger">Supprimer</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Fin visualisation mail -->
-        <!-- Footer -->
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Ponts Etude Projets 2024</span>
-                </div>
-            </div>
-        </footer>
-        <!-- End of Footer -->
-
-        </div>
-        <!-- End of Content Wrapper -->
-
-    </div>
-    <!-- End of Page Wrapper -->
-
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
+                                    </tr>
+                                    <tr style= "padding-top: 0px; " class="collapse" id="representant_pas_dem{{repr.id}}">
+                                        <td style= "border: 0px; padding-left: 20px; padding-right: 20px;" colspan="{{user.parametres.nombre_colonnes}}">
+                                            <table>
+                                                <tbody>
+                                                <tr>
+                                                    <td style= "border: 0px;" contenteditable="True">{{ repr.contenu_mail}}</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <a style="padding: 5px;" class="btn btn-primary float-right mail-button" data-destinataire="{{repr.mail}}" data-toggle="modal" data-target="#mailModal"><i class="fas fa-envelope mr-2"></i>Envoyer</a>
+                                            <br>
+                                            <div style="font-weight: 300;">{{ repr.remarque }}</div>
+                                        </td>
+                                    </tr>
+                                    <!-- Visualisation mail -->
+    <div class="modal fade" id="mailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelMail" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="{% url 'custom_logout' %}">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Supprimer template modal -->
-    <div class="modal fade" id="deleteTplModal" tabindex="-1" role="dialog" aria-labelledby="deleteTplLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteTplLabel">Supprimer l'étude</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <h5 class="modal-title" id="modalLabelMail">Envoi mail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    Êtes-vous sûr de vouloir supprimer ce template ?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <form id="deleteEtudeForm" method="POST" action="{% url 'delete_mail_template' %}">
+                <form action="{% url 'send_mail_demarchage' iD=repr.id %}" method="post">
+                    <div class="modal-body p-4">
+                        <div class="row">
+                            {% if request.user.je.mail_templates.exists %}
+                                {% for template in request.user.je.mail_templates.all %}
+                                    <button type="button" class="btn btn-outline-primary choosetpl" data-id="{{template.id}}">{{ template }}</button>
+                                {% endfor %}
+                            {% else %}
+                            <p>Aucun template</p>
+                            {% endif %}
+                        </div>
+                        <hr>
                         {% csrf_token %}
-                        <input type="number" id="delete-id" hidden name="id_template">
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </form>
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Destinataire</span>
+                                </div>
+                                <input type="text" id="destinataire" class="form-control" readonly name="destinataire" value="titoduc1905@gmail.com">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Objet</span>
+                                </div>
+                                <input type="text" class="form-control" name="subject" value="Mission">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <textarea type="text" class="form-control" id="msgmail" name="message" rows="7"></textarea>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Signature</strong>
+                                <input type="text" class="form-control" name="name" style="font-style: bold;" value="{{ request.user }}">
+                                <textarea type="text" class="form-control" name="signature" style="font-style: italic;">{{ request.user.signature_mail }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary" {% if not connecté %} disabled {% endif %}>Envoyer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Fin formulaire envoi mail -->
+                                {% endif %}
+                                {% endfor %} 
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endfor %}
+                        
+                            
+                        
+                            
+                    </div>
+                </div>                                                
+            </div>
+            <!--End Row-->
+
+            
+            
+        </div>
+        <!-- /.container-fluid -->
+
+
+    
+
+    <!-- Ajout template mail -->
+    <div class="modal fade" id="mailTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTMail" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelTMail">Envoi mail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{% url 'create_mail_template' %}" method="post">
+                    <div class="modal-body p-4">
+                        <dl class="dl-horizontal">
+                            {% csrf_token %}
+    
+                            {% for field in mail_template_form %}
+                            <div class="form-group row mb-3">
+                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                <div class="col-sm-8 justify-content-center">
+                                    {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}                             
+                        </dl>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Fin ajout template mail -->
+    <!-- Visualisation mail -->
+    <div class="modal fade" id="mailTVisualizeModal" tabindex="-1" role="dialog" aria-labelledby="modalLabelTVMail" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelTVMail">Template mail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4" id="mailTVisualizeModalText"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                    <button type="button" id="delete-tpl-btn" data-toggle="modal" data-target="#deleteTplModal" class="btn btn-danger">Supprimer</button>
                 </div>
             </div>
         </div>
     </div>
-    <script>
-        function calculateColor(daysDiff) {
-            // Ensure daysDiff is within the range 0 to 60
-            daysDiff = Math.max(0, Math.min(60, daysDiff));
-            // Calculate the percentage (0-100)
-            var percentage = (daysDiff / 60) * 100;
-            // Convert the percentage to a color (green to red)
-            var green = Math.round((100 - percentage) * 2.55);
-            var red = Math.round(percentage * 2.55);
-            return `rgb(${red}, ${green}, 0)`;
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            // Find all elements with class 'date'
-            var dateElements = document.querySelectorAll(".attente");
-            
-            // Loop through each element and set its color based on data-days-diff attribute
-            dateElements.forEach(function(element) {
-                var daysDiff = parseInt(element.getAttribute("attente_duree")) || 0;
-                element.style.color = calculateColor(daysDiff);
-            });
-        });
-    </script>
-    <!-- Bootstrap core JavaScript-->
-    <script src="{% static 'polls/vendor/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="{% static 'polls/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="{% static 'polls/js/sb-admin-2.min.js' %}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{% static 'polls/vendor/chart.js/Chart.min.js' %}"></script>
-
-    <!-- Page level custom scripts -->
-    
-    <!-- 2 scripts spécifiques aux suggestions de recherche -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-        var url_suggestions = '{% url "search_suggestions" %}';
-        let str = "{% url 'details' modelName='Etude' iD=0 %}";
-        var href_etude = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Client' iD=0 %}";
-        var href_client = str.substring(0, str.length - 1);
-        str = "{% url 'details' modelName='Student' iD=0 %}";
-        var href_student = str.substring(0, str.length - 1);
-    </script>
-    <script src="{% static 'polls/js/search-suggestions.js' %}"></script>
+    <!-- Fin visualisation mail -->
+        
 
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
@@ -1032,6 +499,4 @@
 
     </script>
 
-</body>
-
-</html>
+{% endblock %}
