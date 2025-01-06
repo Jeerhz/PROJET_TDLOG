@@ -89,6 +89,10 @@ class DisplayEditForm extends HTMLElement {
         
         this.innerHTML = `
             <div class="card shadow">
+                ${this.hasAttribute("title") ? 
+                `<div class="card-header">
+                    <strong>${this.getAttribute("title")}</strong>
+                </div>` : ''}
                 <div class="card-body">
                     ${this.isEditMode ? this.renderEditMode(items) : this.renderDisplayMode(items)}
                 </div>
