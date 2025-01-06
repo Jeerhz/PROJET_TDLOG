@@ -1682,12 +1682,7 @@ def input(request, modelName, iD):
         return HttpResponse(template.render(context, request))
 
     # Fetch unread messages for the user
-    liste_messages = Message.objects.filter(
-        destinataire=request.user,
-        read=False,
-        date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
-    ).order_by("date")[:3]
-    message_count = liste_messages.count()
+    context = general_context(request)
 
     model = apps.get_model(app_label="polls", model_name=modelName)
     template_name = "polls/page_input.html"
@@ -1701,16 +1696,12 @@ def input(request, modelName, iD):
                 form.fields["Member"].queryset = Member.objects.filter(
                     is_superuser=False
                 )
-            context = {
-                "form": form,
-                "title": str(form),
-                "message": "",
-                "modelName": modelName,
-                "iD": iD,
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "is_message": (modelName == "Message"),
-            }
+            context["form"] = form
+            context["title"] = str(form)
+            context["message"] = ""
+            context["modelName"] = modelName
+            context["iD"] = iD
+            context["is_message"] = (modelName == "Message")
         else:
             # Modify existing instance
             try:
