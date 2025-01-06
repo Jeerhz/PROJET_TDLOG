@@ -2,6 +2,7 @@
 /*
 <display-edit-form
         save-url="{% url 'save_changes'%}"
+        title="Infos étudiant"
         data-items='[
         {"label": "Name", "name": "student-name", "type": "char", "value": "John Doe", "duress": "readonly"},
         {"label": "Email", "name": "student-email", "type": "char", "value": "john@example.com", "duress": "required"},
@@ -17,9 +18,12 @@ class DisplayEditForm extends HTMLElement {
     constructor() {
         super();
         this.isEditMode = false;
+        // Bind the methods to preserve 'this' context
+        this.toggleEditMode = this.toggleEditMode.bind(this);
+        this.saveChanges = this.saveChanges.bind(this);
+        this.cancelEdit = this.cancelEdit.bind(this);
     }
 
-    // Observe these attributes for changes
     static get observedAttributes() {
         return ['data-items'];
     }
@@ -29,7 +33,6 @@ class DisplayEditForm extends HTMLElement {
         this.attachEventListeners();
     }
 
-    // Convert the data-items string to an array of objects
     get items() {
         try {
             return JSON.parse(this.getAttribute('data-items'));
@@ -39,13 +42,42 @@ class DisplayEditForm extends HTMLElement {
     }
 
     attachEventListeners() {
-        const editButton = this.querySelector('.edit-button');
-        const saveButton = this.querySelector('.save-button');
-        const cancelButton = this.querySelector('.cancel-button');
+        // Remove any existing event listeners first
+        this.removeEventListeners();
+        
+        // Store references to buttons
+        this.editButton = this.querySelector('.edit-button');
+        this.saveButton = this.querySelector('.save-button');
+        this.cancelButton = this.querySelector('.cancel-button');
 
-        editButton?.addEventListener('click', () => this.toggleEditMode());
-        saveButton?.addEventListener('click', () => this.saveChanges());
-        cancelButton?.addEventListener('click', () => this.cancelEdit());
+        // Add new event listeners
+        if (this.editButton) {
+            this.editButton.addEventListener('click', this.toggleEditMode);
+        }
+        if (this.saveButton) {
+            this.saveButton.addEventListener('click', this.saveChanges);
+        }
+        if (this.cancelButton) {
+            this.cancelButton.addEventListener('click', this.cancelEdit);
+        }
+    }
+
+    removeEventListeners() {
+        // Remove existing event listeners if buttons exist
+        if (this.editButton) {
+            this.editButton.removeEventListener('click', this.toggleEditMode);
+        }
+        if (this.saveButton) {
+            this.saveButton.removeEventListener('click', this.saveChanges);
+        }
+        if (this.cancelButton) {
+            this.cancelButton.removeEventListener('click', this.cancelEdit);
+        }
+    }
+
+    disconnectedCallback() {
+        // Clean up event listeners when component is removed
+        this.removeEventListeners();
     }
 
     toggleEditMode() {
@@ -60,7 +92,6 @@ class DisplayEditForm extends HTMLElement {
             const response = await fetch(this.getAttribute('save-url'), {
                 method: 'POST',
                 headers: {
-                    //'Content-Type': 'multipart/form-data',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
                 body: formData
@@ -69,7 +100,6 @@ class DisplayEditForm extends HTMLElement {
             if (!response.ok) throw new Error('Save failed');
 
             const data = await response.json();
-            console.log(data);
             this.setAttribute('data-items', JSON.stringify(data));
             this.isEditMode = false;
             this.render();
@@ -152,5 +182,4 @@ class DisplayEditForm extends HTMLElement {
     }
 }
 
-// Register the custom element
 customElements.define('display-edit-form', DisplayEditForm);
