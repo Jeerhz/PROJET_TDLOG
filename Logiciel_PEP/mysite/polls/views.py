@@ -849,6 +849,9 @@ def details(request, modelName, iD):
             representants_legaux = []
 
         # Compute study end date
+        duree = etude.duree_semaine()
+        """
+        
         duree = max(
             (
                 phase.duree_semaine + phase.debut_relatif
@@ -857,6 +860,8 @@ def details(request, modelName, iD):
             ),
             default=0,
         )
+        """
+        
 
         def etude_fin(etude):
             if etude.fin:
@@ -1030,8 +1035,8 @@ def details(request, modelName, iD):
                 "repartition_budget": repartition_budget,
                 "associations_phase": associations_bdc_phase,
                 "type_convention": etude.type_convention,
-                "client_interlocuteur":representants_interlocuteurs[0],
-                "client_representant_legale":representants_legaux[0],
+                "client_interlocuteur": etude.client_interlocuteur,
+                "client_representant_legale":etude.client_representant_legale,
             }
         )
         if etude.client:
@@ -1198,6 +1203,7 @@ def numero_BV(request, iD):
 
 def modify_etude(request, pk):
     if request.user.is_authenticated:
+        print(2)
         # Retrieve the etude instance, or return a 404 if not found
         etude = get_object_or_404(Etude, pk=pk)
 
@@ -1206,6 +1212,7 @@ def modify_etude(request, pk):
             if form.is_valid():
                 form.save()  # Save changes to the database
             else:
+                print(1)
                 # Debugging: print out form errors if it is not valid
                 print(form.errors)
 
@@ -5515,83 +5522,55 @@ def modifier_recrutement_etude(request, iD):
 
 
 def modifier_etude(request, iD):
-    #try:
-        if request.user.is_authenticated:
-            etude = Etude.objects.get(id=iD)
-            numero_ori = etude.numero
-
-            numero_list = list(
-                Etude.objects.filter(je=request.user.je).values_list(
-                    "numero", flat=True
-                )
-            )
-
-            numero_list.remove(numero_ori)
-
-            if request.method == "POST":
-                debut = request.POST.get("debut")
-                fin_etude = request.POST.get("fin_etude")
-                frais_dossier = request.POST.get("frais_dossier")
-                remarque = request.POST.get("remarque")
-                numero = int(request.POST.get("numero"))
+    if request.user.is_authenticated:
+        etude = get_object_or_404(Etude, id=iD)
+        numero_ori = etude.numero
+        numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
+        numero_list.remove(numero_ori)
+        if request.method == "POST":
+           
+            debut = request.POST.get("debut")
+            fin_etude= request.POST.get("fin")
+            frais_dossier = request.POST.get("frais_dossier")
+            remarque = request.POST.get("remarque")
+            numero = int(request.POST.get("numero"))
             
 
-                if debut:
-                    etude.debut = debut
+            # Allow 'debut' to be null, and only update if it's provided
+            if debut:
+                etude.debut = debut
+            if fin_etude:
+                etude.fin_etude=fin_etude
+            
+            if not numero:
+                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
 
-                if fin_etude:
-                    etude.fin_etude = fin_etude
 
-                if frais_dossier:
-                    etude.frais_dossier = frais_dossier
+            if numero:
+                
+                if numero not in numero_list:
+                    etude.numero = numero
 
-                if remarque:
-                    etude.remarque = remarque
+                else:
+                    etude_deja_exist = Etude.objects.filter(numero=numero).first()
+                    return JsonResponse(
+                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
+                        status=400
+                    )
 
-                if numero:
-                    if numero not in numero_list:
-                        etude.numero = numero
+            etude.frais_dossier = frais_dossier
+            etude.remarque = remarque
+            etude.save()
 
-                    else:
-                        etude_deja_exist = Etude.objects.filter(numero=numero).first()
-                        return JsonResponse(
-                            {
-                                "success": False,
-                                "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
-                            },
-                            status=400,
-                        )
+            # Redirect to the details page with the correct modelName
+            return JsonResponse({"success": True, "message": "Étude modifiée avec succès.", "redirect": reverse("details", args=["Etude", iD])})
 
-                etude.save()
+    else:
+        return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
 
-                return JsonResponse([
-                    {"label": "Début", "name": "debut", "type": "date", "value": etude.debut.strftime('%Y-%m-%d')},
-                    {"label": "Fin", "name": "fin_etude", "type": "date", "value": etude.fin_etude.strftime('%Y-%m-%d')},
-                    {"label": "Nombre de JEH", "name": "nb_JEH", "type": "number", "value": etude.nb_JEH(), "duress": "readonly"},
-                    {"label": "Montant Total JEHs", "name": "montant_phase_HT", "type": "number", "value": etude.montant_phase_HT(), "duress": "readonly"},
-                    {"label": "Frais de dossier", "name": "frais_dossier", "type": "number", "value": etude.frais_dossier},
-                    {"label": "Remarque", "name": "remarque", "type": "text", "value": etude.remarque},
-                    {"label": "Numéro", "name": "numero", "type": "number", "value": etude.numero}
-                ], safe=False
-                )
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
 
-        else:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Vous devez être connecté pour modifier l'étude.",
-                },
-                status=401,
-            )
 
-        return JsonResponse(
-            {"success": False, "message": "Invalid request method"}, status=400
-        )
-    #except Exception as e:
-        # Log the error and return a JSON response
-        return JsonResponse(
-            {"success": False, "message": f"Erreur interne: {e}"}, status=500
-        )
 
 def verifier_etude(request, iD):
     if request.user.is_authenticated:

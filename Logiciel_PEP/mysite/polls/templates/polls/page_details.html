@@ -63,7 +63,77 @@
             left: 0;
             top: 0;
         }
+        #general-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
 
+        /* Inactive tab style */
+        #general-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #phases-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #phases-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #bons-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #bons-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #documents-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #documents-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #intervenants-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #intervenants-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #facturation-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #facturation-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        #recrutement-tab.active {
+            background-color: #5697e2; /* Active tab color */
+            color: white;
+        }
+
+        /* Inactive tab style */
+        #recrutement-tab {
+            background-color: #1f3753; /* Inactive tab color */
+            color: white;
+        }
+        
         .bar_plan .label_plan {
             position: absolute;
             left: 50%;
@@ -367,7 +437,7 @@
                                     
                                     <!-- Modify Modal -->
                                     <div class="modal fade" id="modifyModalEtude" tabindex="-1" role="dialog" aria-labelledby="modifyModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-dialog modal-xl" role="document">
                                             <div class="modal-content">
                                                 <form id="modifyEtudeForm" method="POST" action="{% url 'modify_etude' etude.id %}">
                                                     {% csrf_token %}
@@ -384,8 +454,8 @@
                                                             {% for field in etude_form %}
                                                             {% if field.name == 'client' %}<div id='cond_client' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_interlocuteur' %}<div id='dep_interlocuteur' data-id="{{field.id_for_label}}" hidden></div>{% elif field.name == 'client_representant_legale' %}<div id='dep_rep_leg' data-id="{{field.id_for_label}}" hidden></div>{% endif %}
                                                             <div class="form-group row mb-3">
-                                                            <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                                <div class="col-sm-8 justify-content-center">
+                                                            <label for="{{ field.id_for_label }}" class="col-sm-3 col-form-label">{{ field.label }}</label>
+                                                                <div class="col-sm-9 justify-content-center">
                                                                     {{ field }}
                                                                 {% if field.errors %}
                                                                     <div class="text-danger">
@@ -397,8 +467,7 @@
                                                                 </div>
                                                             </div>
                                                             {% endfor %}                             
-                                                        </dl>
-                                                        
+                                                        </dl>   
                                     
                                                     </div>
                                                     <div class="modal-footer">
@@ -419,22 +488,56 @@
 
                                         <!--Card avec les informations générales (à gauche du PieChart) -->
                                         <div class="col-lg-7 pt-4">
-                                            <display-edit-form
-                                                    save-url="{% url 'modifier_etude' iD=etude.id %}"
-                                                    data-items="[ 
-                                                        {&quot;label&quot;: &quot;Début&quot;, &quot;name&quot;: &quot;debut&quot;, &quot;type&quot;: &quot;date&quot;, &quot;value&quot;: &quot;{{ etude.debut|date:'Y-m-d' }}&quot;}, 
-                                                        {&quot;label&quot;: &quot;Fin&quot;, &quot;name&quot;: &quot;fin_etude&quot;, &quot;type&quot;: &quot;date&quot;, &quot;value&quot;: &quot;{{ etude.fin|date:'Y-m-d' }}&quot;}, 
-                                                        {&quot;label&quot;: &quot;Nombre de JEH&quot;, &quot;name&quot;: &quot;nb_JEH&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude_nbJEH }}&quot;, &quot;duress&quot;: &quot;readonly&quot;}, 
-                                                        {&quot;label&quot;: &quot;Montant Total JEHs&quot;, &quot;name&quot;: &quot;montant_phase_HT&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude_total_montant_phases }}&quot;, &quot;duress&quot;: &quot;readonly&quot;}, 
-                                                        {&quot;label&quot;: &quot;Frais de dossier&quot;, &quot;name&quot;: &quot;frais_dossier&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude.frais_dossier }}&quot;}, 
-                                                        {&quot;label&quot;: &quot;Remarque&quot;, &quot;name&quot;: &quot;remarque&quot;, &quot;type&quot;: &quot;text&quot;, &quot;value&quot;: &quot;{{ etude.remarque }}&quot;}, 
-                                                        {&quot;label&quot;: &quot;Numéro&quot;, &quot;name&quot;: &quot;numero&quot;, &quot;type&quot;: &quot;number&quot;, &quot;value&quot;: &quot;{{ etude.numero }}&quot;} 
-                                                    ]">
-                                                    {% csrf_token %}
-                                            </display-edit-form>
+                                            <div class="card shadow">
+                                                <div class="card-body">
+                                                    <div class="tab-content" id="etude-info">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item"><strong>{% if etude.debut %} Début : {% else %} ras {% endif %}</strong> <span id="etude-debut">{{ etude.debut|FormatDate }}</span></li>
+                                                            <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
+                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
+                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
+                                                            <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
+                                                            <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
+
+
+                                                        </ul>
+                                                        <!-- Modify Button -->
+                                                        <div class="text-right">
+                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
+                                                        </div>
+                                                        <!-- End Modify Button -->
+                                                    </div>
+                                                    <div class="tab-content d-none" id="etude-form">
+                                                        <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
+                                                            {% csrf_token %}
+                                                            <ul class="list-group list-group-flush">
+                                                                <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
+                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
+                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
+                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
+                                                                <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                                <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
+
+                                                            </ul>
+                                                            <!-- Save and Cancel Buttons -->
+                                                            <div class="row justify-content-between">
+                                                                <div class="col-auto">
+                                                                    <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-etude">Annuler</button>
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <br>
                                             
                                         </div>
+                                       
                                         <!-- Fin de la Card avec les infos -->
                                         <!-- Pie Chart -->
                                         <div class="col-lg-5">
@@ -460,7 +563,69 @@
                                     
                                     </div>
                                     
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", function () {
+                                            var modifier_etude = document.getElementById('modifier-etude');
+                                            var etude_info = document.getElementById('etude-info');
+                                            var etude_form = document.getElementById('etude-form');
                                     
+                                            // Toggle between info view and form view when the Modify button is clicked
+                                            modifier_etude.addEventListener('click', function () {
+                                                etude_info.classList.toggle('d-none');
+                                                etude_form.classList.toggle('d-none');
+                                            });
+                                    
+                                            var annuler_etude = document.getElementById('annuler-etude');
+                                            annuler_etude.addEventListener('click', function () {
+                                                etude_info.classList.toggle('d-none');
+                                                etude_form.classList.toggle('d-none');
+                                            });
+                                    
+                                            // Handle form submission and display server responses as pop-up messages
+                                            document.getElementById('etude-f-form').addEventListener('submit', function (event) {
+                                                event.preventDefault(); // Prevent the default form submission
+                                                
+                                                var form = this;
+                                                var formData = new FormData(form);
+                                                var url = form.action; // The form's action URL
+                                    
+                                                // Basic client-side validation
+                                                var debut = form.querySelector('input[name="debut"]').value;
+                                                var numero = form.querySelector('input[name="numero"]').value;
+                                    
+                                                if (!debut) {
+                                                    alert('Veuillez renseigner les dates de début et de fin.');
+                                                    return false;
+                                                }
+                                                if (!numero) {
+                                                    alert('Veuillez renseigner un numéro.');
+                                                    return false;
+                                                }
+                                                // AJAX request to handle server response
+                                                fetch(url, {
+                                                    method: "POST",
+                                                    body: formData,
+                                                    headers: {
+                                                        "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+                                                    },
+                                                })
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    if (!data.success) {
+                                                        // Display error message as a pop-up
+                                                        alert(data.message); // Replace with a toast or modal if desired
+                                                    } else {
+                                                        // Display success message or handle success logic
+                                                        window.location.href = data.redirect;
+                                                    }
+                                                })
+                                                .catch(error => {
+                                                    console.error("Error:", error);
+                                                    alert(`Une erreur s'est produite: ${error.message}`);
+                                                });
+                                            });
+                                        });
+                                    </script>
                                     <br>
                                     <!-- Fin de la ligne avec Graphe et Card Infos -->
                                     <!--Fin Responsable et statut-->
@@ -1339,7 +1504,7 @@
                                         </div>
                                         <!-- Début formulaire ajout bon de commande -->
                                         <div class="modal fade" id="ajoutBDC" tabindex="-1" role="dialog" aria-labelledby="titreBDC" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
+                                            <div class="modal-dialog modal-xl" role="document">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title" id="titreBDC">Nouveau bon de commande</h5>
@@ -1491,12 +1656,12 @@
                                                     <div class="card-body">
                                                         <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Devis</div>
                                                         <br>
-                                                        <table style="width: 100%; margin: 0 auto;">
+                                                        <table style="width: 100%; margin: 0 auto; ">
                                                             
                                                             <tbody>
                                                                 <tr >
                                                                     <td style="text-align: left;"><a >
-                                                                        <span style="cursor:pointer; font-weight: 650; color: rgb(78, 115, 223);"  data-toggle="modal" data-target="#verifierDevis_avant_generer"> Vérifier les informations</span>
+                                                                        <span style="cursor:pointer; font-weight: 650; color: rgb(68, 87, 153);"  data-toggle="modal" data-target="#verifierDevis_avant_generer"> Vérifier les informations</span>
                                                                     </a></td>
                                                                     <td style="text-align: right;"></td>
                                                                 </tr>
@@ -1533,55 +1698,69 @@
                                                 <div class="card">
                                                     <div class="card-body">
                                                         {% if type_convention == "Convention d'étude" %}
+                                                        <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Convention d'Étude</div>
+                                                        <br>
+                                                        <table style="width: 100%; margin: 0 auto;">
                                                             
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <!-- Link to the left -->
-                                                                <a href="{% url 'editer_convention' iD %}">
-                                                                    <i class="fas fa-download mr-2"></i>Générer la Convention d'Étude
-                                                                </a>
-                                                            
+                                                            <tbody>
+                                                                <tr >
+                                                                    <td style="text-align: left;"><a >
+                                                                        <span style="cursor:pointer; font-weight: 650; color: rgb(68, 87, 153);"  data-toggle="modal" data-target="#verifierCE_avant_generer"> Vérifier les informations</span>
+                                                                    </a></td>
+                                                                    <td style="text-align: right;"></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="text-align: left;">
+                                                                        <a href="{% url 'editer_convention' iD %}">
+                                                                            <i class="fas fa-download mr-2"></i>Générer 
+                                                                        </a>
+                                                                    </td>
+                                                                    <td style="text-align: right;">
+                                                                        <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
+                                                                            {% csrf_token %}
+                                                                            <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 30px;">
+                                                                            <button type="submit" class="btn btn-light">Modifier la date </button>
+            
+                                                                        </form>
+                                                                    </td>
+                                                                </tr>
                                                                 
-                                                                <form method="POST" action="{% url 'signature_document' model='CE' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
-                                                                    {% csrf_token %}
-                                                                    <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 30px;">
-                                                                    <button type="submit" class="btn btn-light">Modifier la date </button>
-    
-                                                                </form>
-                                                            
-                                                                
-                                                            </div>
-                                                            
-                                                            
-                                                            <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La Convention d'Étude a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La Convention d'Étude n'a pas été signé {% endif %}  {% else %} La Convention d'Étude n'a pas été édité {% endif %}</p>
-
-                                                            
-                                                        
-                                                        
+                                                            </tbody>
+                                                        </table>                                                    
+                                                        <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La Convention d'Étude a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La Convention d'Étude n'a pas été signé {% endif %}  {% else %} La Convention d'Étude n'a pas été édité {% endif %}</p>
+                                                    
                                                         {% elif type_convention == "Convention cadre" %}
-                                                            
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <!-- Link to the left -->
-                                                                <a href="{% url 'editer_convention_cadre' iD %}">
-                                                                    <i class="fas fa-download mr-2"></i>Générer la Convention Cadre
-                                                                </a>
-                                                            
+                                                        <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Convention Cadre</div>
+                                                        <br>
+                                                            <table style="width: 100%; margin: 0 auto;">
                                                                 
-                                                                <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
-                                                                    {% csrf_token %}
-                                                                    <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
-                                                                    <button type="submit" class="btn btn-light">Modifier la date </button>
-
-                                                                </form>
-                                                            
-                                                                
-                                                            </div>
-                                                            
+                                                                <tbody>
+                                                                    <tr >
+                                                                        <td style="text-align: left;"><a >
+                                                                            <span style="cursor:pointer; font-weight: 650; color:rgb(68, 87, 153);"  data-toggle="modal" data-target="#"> Vérifier les informations</span>
+                                                                        </a></td>
+                                                                        <td style="text-align: right;"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td style="text-align: left;">
+                                                                            <a href="{% url 'editer_convention_cadre' iD %}">
+                                                                                <i class="fas fa-download mr-2"></i>Générer
+                                                                            </a>
+                                                                        </td>
+                                                                        <td style="text-align: right;">
+                                                                            <form method="POST" action="{% url 'signature_document' model='CC' iD=etude_convention.id %}" class="d-flex align-items-center gap-2">
+                                                                                {% csrf_token %}
+                                                                                <input type="date" name="new_date" value="{{ etude_convention.date_signature|date:'Y-m-d' }}" class="form-control" style="max-width: 150px; margin-right: 10px; margin-left: 50px;">
+                                                                                <button type="submit" class="btn btn-light">Modifier la date </button>
+            
+                                                                            </form>
+                                                                        </td>
+                                                                    </tr>
+                                                                    
+                                                                </tbody>
+                                                            </table>      
                                                             
                                                             <p style="margin-top: 20px;margin-bottom: 20px;">{% if etude_convention %} {% if etude_convention.date_signature %} La Convention Cadre a été signé le {{ etude_convention.date_signature|FormatDate }} {% else %} La Convention Cadre n'a pas été signé {% endif %}  {% else %} La Convention Cadre n'a pas été édité {% endif %}</p>
-
-                                                                
-                                                            
-                                                            
 
                                                         {% else %}
                                                             <p class="card-text text-danger">Veuillez définir un type de convention</p>
@@ -1706,7 +1885,8 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <a data-toggle="modal" data-target="#avenantCEModal" style="padding-bottom: 10px;"><i class="fas fa-plus"></i> Ajouter un avenant à la Convention d'Étude</a>
+                                                        <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Avenant à la Convention d'Étude</div>
+
                                                         <br>
                                                         
 
@@ -1749,7 +1929,7 @@
                                                         </div>
                                                         {% if etude_convention.avenants %}
                                                         {% for avenant in etude_convention.avenants_modification.all %}
-                                                        <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
+                                                        
                                                         <div class="d-flex align-items-center gap-3">
                                                             <!-- Link to the left -->
                                                             <a style="color: #000;" href="{% url 'editer_avenant_ce' avenant.id %}">
@@ -1803,10 +1983,13 @@
                                                                 Non signé
                                                             {% endif %}
                                                         </p>
-
+                                                        <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
                                                         {% endfor %}
                                                         {% endif %}
-
+                                                        <a data-toggle="modal" data-target="#avenantCEModal" style="padding-bottom: 10px; float: right;">
+                                                            <i class="fas fa-plus"></i> Ajouter un avenant
+                                                        </a>
+                                                        
                                                         
                                                         
                                                         
@@ -1818,12 +2001,11 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
-                                                        <h5>Bons de Commandes</h5>
-                                                        
+                                                        <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Bons de Commandes</div>
+                                                        <br>
                                                         
                                                         {% if bons %}
                                                         {% for bon in bons %}
-                                                        <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
                                                             <div class="d-flex align-items-center gap-3">
                                                                 <!-- Link to the left -->
                                                                 <a style="color: #000;" href="{% url 'editer_bon' bon.id %}">
@@ -1874,7 +2056,7 @@
                                                             <p style="margin-top: 10px;">
                                                                 {% if bon.debut %}BDC signé le {{bon.debut|FormatDate}}{% else %}Non signé{% endif %}
                                                             </p>
-    
+                                                            <hr style="border: 0.5px solid black; width: 100%; margin: 20px 0;">
                                                         {% endfor %}
                                                         {% endif %}
                                                         
@@ -1888,6 +2070,8 @@
                                             <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-body">
+                                                        <div style="text-align: center; font-size: 18px; color: #000; font-weight: bold;">Documents supplémentaires</div>
+                                                            <br>
                                                             <a href="{% url 'editer_acf_client' iD %}"  ><i class="fas fa-download mr-2"></i>Générer l'Accord de confidentialité client</a>
                                                             <br>
                                                             <br>
@@ -1910,357 +2094,213 @@
                                         
                                     </div>
                                         
-                                    <br>
-                                    <div >
-                                        <div class="card shadow">
-                                            <div class="card-body">
-                                                <a >
-                                                    <span style="cursor:pointer; font-weight: 650;"  data-toggle="modal" data-target="#verifierDevis_avant_generer"> Vérifier le Devis <i class="fas fa-download mr-2"></i></span>
-                                                </a>
-                                                <div class="modal fade" id="verifierDevis_avant_generer" tabindex="-1" role="dialog" aria-labelledby="verifierDevis_avant_generer" aria-hidden="true">
-                                                    <div class="modal-dialog modal-xl" role="document">
-                                                        <div class="modal-content">
-                                                            <form id="verifierDevis_avant_generer" method="POST" action="{% url 'verifier_etude' iD=etude.id %}">
-                                                                {% csrf_token %}
-                                                                <div class="modal-header">
-                                                                    <div>Vérifier les informations du Devis</div>
-                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="form-group">
-                                                                        <ul class="list-group list-group-flush">
-                                                                            <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
-                                                                                client : <span id="verifier-client_nom" style="color:#000">{% if client %} {{ client.nom_societe  }} {% else %}<span style="color: red;">pas de client</span>  {% endif %}</span> 
-                                                                            </li>
-                                                                            {% if not etude_facture_solde %}
-                                                
-                                                                            <li class="list-group-item">
-                                                                                <span style="color: red;"> préciser la facturation dans l'onglet "Facturation" </span>
-                                                                            </li>
-                                                                            {% endif %}
-                                                                            
-                                                                            <li class="list-group-item">
-                                                                                {% for phase in phases %}
-                                                                                
-                                                                                <div> 
-                                                                                    Phase  <span id="verifier-phase-{{id}}-numero" style="color:#000">{{phase.numero}}</span> : <span id="verifier-phase-{{id}}-nb_JEH" style="color:#000">{{ phase.nb_JEH }} </span>{% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €, qui débute {{ phase.debut_relatif }} semaines après la signature et dure {{phase.duree_semaine}} semaines.  
-                                                                                </div>
-                                                                                <div>
-                                                                                    Description : {% if phase.description  %} <span id="verifier-phase-{{id}}-description" style="color:#000">{{ phase.description  }}</span> {% else %}<span style="color: red;"> manquant</span> {% endif %}
-                                                                                </div>
-                                                                            <br>
+                                    <div class="modal fade" id="verifierDevis_avant_generer" tabindex="-1" role="dialog" aria-labelledby="verifierDevis_avant_generer" aria-hidden="true">
+                                        <div class="modal-dialog modal-xl" role="document">
+                                            <div class="modal-content">
+                                                <form id="verifierDevis_avant_generer" method="POST" action="{% url 'verifier_etude' iD=etude.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        <div style="text-align: center;">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> intitulée <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
+                                                             <span id="verifier-client_nom" style="color:#000">{% if client %} auprès du client {{ client.nom_societe  }} {% else %}<span style="color: red;">pas de client</span>  {% endif %}</div>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                            <ul class="list-group list-group-flush">
+                                                                <li class="list-group-item">Étude n° <span id="verifier-etude_ref" style="color:#000">{{ etude.ref }}</span> titre : <span id="verifier-etude_ref" style="color:#000">{{ etude.titre }}</span>, 
+                                                                    client : <span id="verifier-client_nom" style="color:#000">{% if client %} {{ client.nom_societe  }} {% else %}<span style="color: red;">pas de client</span>  {% endif %}</span> 
+                                                                </li>
+                                                                {% if not etude_facture_solde %}
+                                    
+                                                                <li class="list-group-item">
+                                                                    <span style="color: red;"> préciser la facturation dans l'onglet "Facturation" </span>
+                                                                </li>
+                                                                {% endif %}
+                                                                
+                                                                <li class="list-group-item">
+                                                                    {% for phase in phases %}
+                                                                    
+                                                                    <div> 
+                                                                        Phase  <span id="verifier-phase-{{id}}-numero" style="color:#000">{{phase.numero}}</span> : <span id="verifier-phase-{{id}}-nb_JEH" style="color:#000">{{ phase.nb_JEH }} </span>{% if phase.nb_JEH == 1 %} JEH {% else %} JEHs {% endif %} à {{phase.montant_HT_par_JEH|FormatNombres}} €, qui débute {{ phase.debut_relatif }} semaines après la signature et dure {{phase.duree_semaine}} semaines.  
+                                                                    </div>
+                                                                    <div>
+                                                                        Description : {% if phase.description  %} <span id="verifier-phase-{{id}}-description" style="color:#000">{{ phase.description  }}</span> {% else %}<span style="color: red;"> manquant</span> {% endif %}
+                                                                    </div>
+                                                                <br>
+                                                                {% endfor %}
+                                                                </li>
+
+                                                                <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                                <li class="list-group-item">
+                                                                    {% if client.description %} Votre structure : {% else %}<span style="color: red;"> Votre structure :  </span>  {% endif %}
+
+                                                                    <input type="char" name="client_description" class="form-control" value="{% if client %} {{ client.description }} {% else %} pas de client {% endif %}">
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    {% if etude.contexte %} Contexte de l'étude : {% else %}<span style="color: red;"> Contexte de l'étude : </span>  {% endif %}
+                                                                    <input type="char" name="etude_contexte" class="form-control" value="{{ etude.contexte}}">
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    Problématique :
+                                                                    <input type="char" name="problematique" class="form-control" value="{{ etude.problematique }}">
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    Suiveur :
+                                                                    <select name="chefdep" class="form-control">
+                                                                        <option value="">Sélectionnez un suiveur</option>
+                                                                            {% for member in members %}
+                                                                                <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
+                                                                                    {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
+                                                                                </option>
                                                                             {% endfor %}
-                                                                            </li>
-
-                                                                            <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                            <li class="list-group-item">
-                                                                                {% if client.description %} Votre structure : {% else %}<span style="color: red;"> Votre structure :  </span>  {% endif %}
-
-                                                                                <input type="char" name="client_description" class="form-control" value="{% if client %} {{ client.description }} {% else %} pas de client {% endif %}">
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                {% if etude.contexte %} Contexte de l'étude : {% else %}<span style="color: red;"> Contexte de l'étude : </span>  {% endif %}
-                                                                                <input type="char" name="etude_contexte" class="form-control" value="{{ etude.contexte}}">
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                Problématique :
-                                                                                <input type="char" name="problematique" class="form-control" value="{{ etude.problematique }}">
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                Suiveur :
-                                                                                <select name="chefdep" class="form-control">
-                                                                                    <option value="">Sélectionnez un suiveur</option>
-                                                                                        {% for member in members %}
-                                                                                            <option value="{{ member.email }}" {% if etude.responsable and etude.responsable.email == member.email %}selected{% endif %}>
-                                                                                                {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
-                                                                                            </option>
-                                                                                        {% endfor %}
-                                                                                </select>
-                                                                            </li>
-                                                                            
-                                                                            <li class="list-group-item">
-                                                                                Qualité :
-                                                                                <select name="qualite" class="form-control">
-                                                                                    <option value="">Sélectionnez un suiveur</option>
-                                                                                        {% for member in members %}
-                                                                                            <option value="{{ member.email }}" {% if etude.resp_qualite and etude.resp_qualite.email == member.email %}selected{% endif %}>
-                                                                                                {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
-                                                                                            </option>
-                                                                                        {% endfor %}
-                                                                                </select>
-                                                                            </li>
-                                                                        
-                                                                            <li class="list-group-item">
-                                                                                Nos intervenants :
-                                                                                <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}" rows="3">
-                
-                                                                            </li>
-                                                                            
-                                                                            <li class="list-group-item">
-                                                                                Période de garantie :
-                                                                                <input type="number" name="per_gara" class="form-control" value="{{ etude.periode_de_garantie }}" required>
-                
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                L’étude prendra fin <span style="color:#000">{{etude_duree}}</span> semaines après la date de signature de la Convention d’Étude sous réserve de fourniture des documents nécessaires à la réalisation de l’étude tels que précisés dans le cahier des charges. L’ensemble des documents devront être remis au Client et/ou signés avant la fin.
-                        Si l’étude se termine dans un délai plus court, la signature du document d’acceptation du livrable la clôture. Si l’étude dure plus longtemps, elle pourra faire l’objet d’avenants de délai.
-                        Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</span> jours à partir de la livraison, délai durant lequel le Client pourra demander à PEP des modifications.
-                    
-                                                                            </li>
-                                                                            <br>
-                                                                            
-                                                                        
-                                                                            <div style="border: 20px; margin: 20px;">
-                                                                                <strong>Rappel : </strong> 
-                                                                            <div> Attention aux nombres de pages sur la dernière page</div>
-                                                                            <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
-                                                                            <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
-                                                                                Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
-                                                                                </div>
-                                                                            <div> - Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</div>
-                                                                            </div>
-                                                                            <div>
-                                                                                Si une phase intermédiaire, ajoutez une colonne
-                                                                            </div>
-                                                                    </div>
+                                                                    </select>
+                                                                </li>
+                                                                
+                                                                <li class="list-group-item">
+                                                                    Qualité :
+                                                                    <select name="qualite" class="form-control">
+                                                                        <option value="">Sélectionnez un suiveur</option>
+                                                                            {% for member in members %}
+                                                                                <option value="{{ member.email }}" {% if etude.resp_qualite and etude.resp_qualite.email == member.email %}selected{% endif %}>
+                                                                                    {{ member.titre }} {{ member.student.first_name }} {{ member.student.last_name }}
+                                                                                </option>
+                                                                            {% endfor %}
+                                                                    </select>
+                                                                </li>
                                                             
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <a >
-                                                    <span style="cursor:pointer; font-weight: 650;"  data-toggle="modal" data-target="#verifierCE_avant_generer"> Vérifier la CE <i class="fas fa-download mr-2"></i></span>
-                                                </a>
-                                                <div class="modal fade" id="verifierCE_avant_generer" tabindex="-1" role="dialog" aria-labelledby="verifierCE_avant_generer" aria-hidden="true">
-                                                    <div class="modal-dialog modal-xl" role="document">
-                                                        <div class="modal-content">
-                                                            <form id="verifierCE_avant_generer" method="POST" action="{% url 'verifier_etude' iD=etude.id %}">
-                                                                {% csrf_token %}
-                                                                <div class="modal-header">
-                                                                    <div>Vérifier les informations CE</div>
-                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="form-group">
-                                                                       
-                                                                        <ul class="list-group list-group-flush">
-                                                                            {% if type_convention == "Convention d'étude" %}
-                                                                            <li class="list-group-item">
-                                                                                <div>
-                                                                                    Interlocuteur client : <span id="verifier-client_interlocuteur" style="color:#000">{% if client and client_interlocuteur  %} {{ client_interlocuteur  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                                                </div>
-                                                                                <div>
-                                                                                    Responsable légal client : <span id="verifier-client_representant_legale" style="color:#000">
-                                                                                       {% if client and client_representant_legale  %} {{ client_representant_legale  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                                                </div>
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                Nos intervenants :
-                                                                                <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}" >
-                    
-                                                                            </li>
-                    
-                                                                            <div style="border: 20px; margin: 20px;">
-                                                                                <strong>Rappel : </strong> 
-                                                                            <div> Attention aux nombres de pages sur la dernière page</div>
-                                                                            <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
-                                                                            <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
-                                                                                Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
-                                                                                </div>
-                                                                            <div> - Le paragraphe 2 de <strong>l'article 14 (CE) ou 16 (CC)</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention. pour CC 
-                                                                                [Ce paragraphe peut être supprimé si aucune base de données nominative n'est collectée au cours de la prestation. En cas de doute, nous vous conseillons de le laisser dans la Convention-Cadre.]</div>
-                                                                            </div>
-                                                                            <div>[Dans le cas où il y a un rendu intermédiaire et donc un PVRI ajouter une colonne «  A la remise du livrable XXXX » dénomination « Intermédiaire » et préciser les montants HT et TTC</div>
-                                                                            <div>délai péiement automatiquement mis à 30 jours</div>
-                                                                            <br>
-                                                                            <li class="list-group-item">
-                                                                                ...sous réserve de fourniture des éléments suivants, indispensables à la réalisation de l’étude, au plus tard le jour de la signature de la Convention d’Étude :  
-                                                                                <span id="verifier-element_a_fournir" style="color:#000">{% if etude.element_a_fournir  %} {{ etude.element_a_fournir  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                                            </li>
-                                                                            <div style="text-align: center; font-weight: bold; font-size: large;">Convention d'Étude</div>
-                                                                            <br>
-                                                                            <li class="list-group-item">
-                                                                               {% if etude.objectifs %} Objectifs : {% else %} <span style="color: red;">Objectifs :</span> {% endif %}
-                                                                                <input type="char" name="objectifs" class="form-control" value="{{ etude.objectifs }}">
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                Méthodologie :
-                                                                                <input type="char" name="methodologie" class="form-control" value="{{ etude.methodologie }}">
-                                                                            </li>
-                                                                            <li class="list-group-item">
-                                                                                Éléments que le client doit fournir :
-                                                                                <input type="char" name="element_a_fournir" class="form-control" value="{{ etude.element_a_fournir }}">
-                                                                            </li>
-                                                                            
-                                                                            <li id="json-fields">
-                                                                                {% for key, value in etude.cahier_des_charges.items %}
-                                                                                <div class="input-group mb-2" data-key="{{ key }}">
-                                                                                    <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
-                                                                                    <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                                    <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
-                                                                                </div>
-                                                                                {% endfor %}
-                                                                            </li>
-                                                                        
-                                                                            <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
-                                                                            {% endif %}
-                                                                            
-                                                                    </div>
-                                                            
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="tab-content" id="verifier_info">
-                                                    <ul class="list-group list-group-flush">
-                                                        
-                                                        {% if type_convention == "Convention d'étude" %}
-                                                        <br>
-                                                            <div style="text-align: center; font-weight: bold; font-size: large;color: #000;">Informations Convention d'Étude</div>
-                                                        <br>
-                                                        
-                                                        
-
-                                                        <li class="list-group-item">
-                                                            Objectifs de l'étude : <span id="verifier-objectifs" style="color:#000">{% if etude.objectifs  %} {{ etude.objectifs  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            Méthodologie : <span id="verifier-methodologie" style="color:#000">{% if etude.methodologie  %} {{ etude.methodologie  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            ...sous réserve de fourniture des éléments suivants, indispensables à la réalisation de l’étude, au plus tard le jour de la signature de la Convention d’Étude :  
-                                                            <span id="verifier-element_a_fournir" style="color:#000">{% if etude.element_a_fournir  %} {{ etude.element_a_fournir  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            Cahier des charges : 
-                                                            {% if etude.cahier_des_charges %}
-                                                            <ul>
-                                                                {% for key, value in etude.cahier_des_charges.items %}
-                                                                    <li style="color:#000">{{ value }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        {% else %}
-                                                            <span style="color: red;"> manquant</span>
-                                                        {% endif %}
-                                                        </li>
-                                                        <li class="list-group-item">
-                                                            Nos intervenants :
-                                                            <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}" >
-
-                                                        </li>
-
-                                                        <div style="border: 20px; margin: 20px;">
-                                                            <strong>Rappel : </strong> 
-                                                        <div> Attention aux nombres de pages sur la dernière page</div>
-                                                        <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
-                                                        <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
-                                                            Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
-                                                            </div>
-                                                        <div> - Le paragraphe 2 de <strong>l'article 14 (CE) ou 16 (CC)</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention. pour CC 
-                                                            [Ce paragraphe peut être supprimé si aucune base de données nominative n'est collectée au cours de la prestation. En cas de doute, nous vous conseillons de le laisser dans la Convention-Cadre.]</div>
-                                                        </div>
-                                                        <div>[Dans le cas où il y a un rendu intermédiaire et donc un PVRI ajouter une colonne «  A la remise du livrable XXXX » dénomination « Intermédiaire » et préciser les montants HT et TTC</div>
-                                                        <div>délai péiement automatiquement mis à 30 jours</div>
-                                                        {% endif %}
-                                                    </ul>
-                                                    <!-- Modify Button -->
-                                                    <div class="text-right">
-                                                        <button type="button" class="btn btn-outline-secondary mt-3" id="modifier_verif-etude">Modifier</button>
-                                                    </div>
-                                                    <!-- End Modify Button -->
-                                                </div>
-                                                <div class="tab-content d-none" id="verifier_info-form">
-                                                    <form action="{% url 'verifier_etude' iD=etude.id %}" method="post" id="verifier_info-f-form">
-                                                        {% csrf_token %}
-                                                        
-                                                            {% if type_convention == "Convention d'étude" %}
-                                                            <br>
-                                                            <div style="text-align: center; font-weight: bold; font-size: large;">Convention d'Étude</div>
-                                                            <br>
-                                                            <li class="list-group-item">
-                                                                Objectifs :
-                                                                <input type="char" name="objectifs" class="form-control" value="{{ etude.objectifs }}">
-                                                            </li>
-                                                            <li class="list-group-item">
-                                                                Méthodologie :
-                                                                <input type="char" name="methodologie" class="form-control" value="{{ etude.methodologie }}">
-                                                            </li>
-                                                            <li class="list-group-item">
-                                                                Éléments que le client doit fournir :
-                                                                <input type="char" name="element_a_fournir" class="form-control" value="{{ etude.element_a_fournir }}">
-                                                            </li>
-                                                            
-                                                            <li id="json-fields">
-                                                                {% for key, value in etude.cahier_des_charges.items %}
-                                                                <div class="input-group mb-2" data-key="{{ key }}">
-                                                                    <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
-                                                                    <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                    <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
-                                                                </div>
-                                                                {% endfor %}
-                                                            </li>
-                                                        
-                                                            <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
-                                                            {% endif %}
+                                                                <li class="list-group-item">
+                                                                    Nos intervenants :
+                                                                    <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}" rows="3">
+    
+                                                                </li>
+                                                                
+                                                                <li class="list-group-item">
+                                                                    Période de garantie :
+                                                                    <input type="number" name="per_gara" class="form-control" value="{{ etude.periode_de_garantie }}" required>
+    
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    L’étude prendra fin <span style="color:#000">{{etude_duree}}</span> semaines après la date de signature de la Convention d’Étude sous réserve de fourniture des documents nécessaires à la réalisation de l’étude tels que précisés dans le cahier des charges. L’ensemble des documents devront être remis au Client et/ou signés avant la fin.
+            Si l’étude se termine dans un délai plus court, la signature du document d’acceptation du livrable la clôture. Si l’étude dure plus longtemps, elle pourra faire l’objet d’avenants de délai.
+            Le livrable est garanti <span style="color:#000">{{etude.periode_de_garantie}}</span> jours à partir de la livraison, délai durant lequel le Client pourra demander à PEP des modifications.
+        
+                                                                </li>
+                                                                <br>
                                                                 
                                                             
-                    
-                                                                
-                                                
-                                                        
-                                                        </ul>
-                                                        <!-- Save and Cancel Buttons -->
-                                                        <div class="row justify-content-between">
-                                                            <div class="col-auto">
-                                                                <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-modif_etude">Annuler</button>
-                                                            </div>
-                                                            <div class="col-auto">
-                                                                <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
-                                                            </div>
+                                                                <div style="border: 20px; margin: 20px;">
+                                                                    <strong>Rappel : </strong> 
+                                                                <div> Attention aux nombres de pages sur la dernière page</div>
+                                                                <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
+                                                                <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
+                                                                    Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
+                                                                    </div>
+                                                                <div> - Le paragraphe 2 de <strong>l'article 14</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention.</div>
+                                                                </div>
+                                                                <div>
+                                                                    Si une phase intermédiaire, ajoutez une colonne
+                                                                </div>
                                                         </div>
-                                                        <!-- End Save and Cancel Buttons -->
-                                                    </form>
-                                                    <script>
-                                                        document.getElementById('add-field-btn').addEventListener('click', function () {
-                                                            // Create a new input group for key-value pairs
-                                                            const newField = document.createElement('div');
-                                                            newField.className = 'input-group mb-2';
-                                                            newField.innerHTML = `
-                                                                <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
-                                                                <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
-                                                                <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
-                                                            `;
-                                                            document.getElementById('json-fields').appendChild(newField);
-                                                        });
-                                                    
-                                                        // Event delegation to handle removal of dynamically added fields
-                                                        document.getElementById('json-fields').addEventListener('click', function (event) {
-                                                            if (event.target.classList.contains('btn-remove')) {
-                                                                event.target.parentElement.remove();
-                                                            }
-                                                        });
-                                                    </script>
-                                                </div>
+                                                
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
-                                        <br>
-                                        
                                     </div>
+                                    <div class="modal fade" id="verifierCE_avant_generer" tabindex="-1" role="dialog" aria-labelledby="verifierCE_avant_generer" aria-hidden="true">
+                                        <div class="modal-dialog modal-xl" role="document">
+                                            <div class="modal-content">
+                                                <form id="verifierCE_avant_generer" method="POST" action="{% url 'verifier_etude' iD=etude.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        <div>Vérifier les informations CE</div>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                           
+                                                            <ul class="list-group list-group-flush">
+                                                                {% if type_convention == "Convention d'étude" %}
+                                                                <li class="list-group-item">
+                                                                    <div>
+                                                                        Interlocuteur client : <span id="verifier-client_interlocuteur" style="color:#000">{% if client and client_interlocuteur  %} {{ client_interlocuteur  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        Responsable légal client : <span id="verifier-client_representant_legale" style="color:#000">
+                                                                           {% if client and client_representant_legale  %} {{ client_representant_legale  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                                    </div>
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    Nos intervenants :
+                                                                    <input type="char" name="paragraphe_intervenant_devis" class="form-control" value="{{ etude.paragraphe_intervenant_devis }}" >
+        
+                                                                </li>
+        
+                                                                <div style="border: 20px; margin: 20px;">
+                                                                    <strong>Rappel : </strong> 
+                                                                <div> Attention aux nombres de pages sur la dernière page</div>
+                                                                <div> - ATTENTION : si la signature est manuscrite préciser la date, le lieu et le nombre d’exemplaires sur la dernière page</div>
+                                                                <div> - Attention, dans le cadre d’une sous-traitance avec une Junior, le tribunal compétent à faire figurer dans <strong>l'article 13</strong> est le Conseil d’Administration de la Confédération Nationale des Junior-Entreprises
+                                                                    Dans le cadre d’une administration publique, le tribunal compétent est le tribunal administratif.
+                                                                    </div>
+                                                                <div> - Le paragraphe 2 de <strong>l'article 14 (CE) ou 16 (CC)</strong> peut être supprimé si aucune base de données nominative n'est collectée au cours de l'étude. En cas de doute, nous vous conseillons de le laisser dans la Convention. pour CC 
+                                                                    [Ce paragraphe peut être supprimé si aucune base de données nominative n'est collectée au cours de la prestation. En cas de doute, nous vous conseillons de le laisser dans la Convention-Cadre.]</div>
+                                                                </div>
+                                                                <div>[Dans le cas où il y a un rendu intermédiaire et donc un PVRI ajouter une colonne «  A la remise du livrable XXXX » dénomination « Intermédiaire » et préciser les montants HT et TTC</div>
+                                                                <div>délai péiement automatiquement mis à 30 jours</div>
+                                                                <br>
+                                                                <li class="list-group-item">
+                                                                    ...sous réserve de fourniture des éléments suivants, indispensables à la réalisation de l’étude, au plus tard le jour de la signature de la Convention d’Étude :  
+                                                                    <span id="verifier-element_a_fournir" style="color:#000">{% if etude.element_a_fournir  %} {{ etude.element_a_fournir  }} {% else %}<span style="color: red;"> manquant</span> {% endif %}</span>
+                                                                </li>
+                                                                <div style="text-align: center; font-weight: bold; font-size: large;">Convention d'Étude</div>
+                                                                <br>
+                                                                <li class="list-group-item">
+                                                                   {% if etude.objectifs %} Objectifs : {% else %} <span style="color: red;">Objectifs :</span> {% endif %}
+                                                                    <input type="char" name="objectifs" class="form-control" value="{{ etude.objectifs }}">
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    Méthodologie :
+                                                                    <input type="char" name="methodologie" class="form-control" value="{{ etude.methodologie }}">
+                                                                </li>
+                                                                <li class="list-group-item">
+                                                                    Éléments que le client doit fournir :
+                                                                    <input type="char" name="element_a_fournir" class="form-control" value="{{ etude.element_a_fournir }}">
+                                                                </li>
+                                                                
+                                                                <li id="json-fields">
+                                                                    {% for key, value in etude.cahier_des_charges.items %}
+                                                                    <div class="input-group mb-2" data-key="{{ key }}">
+                                                                        <input type="text" name="keys[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                                        <input type="text" name="values[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                                        <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
+                                                                    </div>
+                                                                    {% endfor %}
+                                                                </li>
+                                                            
+                                                                <button type="button" class="btn btn-secondary" id="add-field-btn">Ajouter un livrable</button>
+                                                                {% endif %}
+                                                                
+                                                        </div>
+                                                
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     
                                     <br>
                                         
