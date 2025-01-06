@@ -842,7 +842,8 @@ def details(request, modelName, iD):
 
         if etude.client:
             representants_interlocuteurs = [etude.client_interlocuteur]
-            representants_legaux = [etude.client_representant_legale]
+            representants_legaux = [etude.client_representant_legale] 
+
         else:
             representants_interlocuteurs = []
             representants_legaux = []
@@ -1029,8 +1030,14 @@ def details(request, modelName, iD):
                 "repartition_budget": repartition_budget,
                 "associations_phase": associations_bdc_phase,
                 "type_convention": etude.type_convention,
+                "client_interlocuteur":representants_interlocuteurs[0],
+                "client_representant_legale":representants_legaux[0],
             }
         )
+        if etude.client:
+            context.update(
+            {"client":etude.client}
+            )
 
     if client is not None:
         context.update(
@@ -5590,57 +5597,72 @@ def verifier_etude(request, iD):
     if request.user.is_authenticated:
         # Fetch the Etude instance using the provided iD
         etude = get_object_or_404(Etude, id=iD)
-        if etude.client:
-            client = etude.client
+        
         if request.method == "POST":
             # Get the form data from the request
             debut = request.POST.get("debut")
+            if debut:
+                etude.debut = debut
+
             frais_dossier = request.POST.get("frais_dossier")
+            if frais_dossier:
+                etude.frais_dossier = frais_dossier
+
             remarque = request.POST.get("remarque")
+            if remarque:
+                etude.remarque = remarque
+
             client_description = request.POST.get("client_description")
+            if etude.client and client_description:
+                client=etude.client
+                client.description = client_description
+                client.save()
+
             etude_contexte = request.POST.get("etude_contexte")
+            if etude_contexte:
+                etude.contexte = etude_contexte
+
             paragraphe_intervenant_devis = request.POST.get(
                 "paragraphe_intervenant_devis"
             )
+            if paragraphe_intervenant_devis:
+                etude.paragraphe_intervenant_devis = paragraphe_intervenant_devis
+
             cdp_mail = request.POST.get("chefdep")
             cdp = Member.objects.filter(email=cdp_mail).first()
+            if cdp:
+                etude.responsable = cdp
+
             quali_mail = request.POST.get("qualite")
             quali = Member.objects.filter(email=quali_mail).first()
+            if quali:
+                etude.resp_qualite = quali
+            
+
             garantie = request.POST.get("per_gara")
+            if garantie:
+                etude.periode_de_garantie = garantie
             objectifs = request.POST.get("objectifs")
+            if objectifs:
+                etude.objectifs = objectifs
             methodologie = request.POST.get("methodologie")
+            if methodologie:
+                etude.methodologie = methodologie
+
             element_a_fournir = request.POST.get("element_a_fournir")
+            if element_a_fournir:
+                etude.element_a_fournir = element_a_fournir
 
             keys = request.POST.getlist("keys[]")
             values = request.POST.getlist("values[]")
 
-            # Create a new dictionary from the submitted keys and values
-            cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
-
-            # Update the JSONField with the new dictionary
-            etude.cahier_des_charges = cahier_des_charges
-            # Allow 'debut' to be null, and only update if it's provided
-            if debut:
-                etude.debut = debut
-
-            # 'fin' should not be updated, as it's set to readonly in the form
-
-            # Update the other fields
-            etude.frais_dossier = frais_dossier
-            etude.remarque = remarque
-            etude.contexte = etude_contexte
-            etude.paragraphe_intervenant_devis = paragraphe_intervenant_devis
-            etude.responsable = cdp
-            etude.resp_qualite = quali
-            etude.periode_de_garantie = garantie
-            etude.objectifs = objectifs
-            etude.methodologie = methodologie
-            etude.element_a_fournir = element_a_fournir
-
+            if keys and values:
+                cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+                etude.cahier_des_charges = cahier_des_charges
+           
+    
             etude.save()
-            if etude.client:
-                client.description = client_description
-                client.save()
+            
 
             # Redirect to the details page with the correct modelName
             modelName = "Etude"

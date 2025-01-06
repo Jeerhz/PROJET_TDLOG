@@ -120,7 +120,7 @@
                                         </a>                                                
                                     </td>
                                     <div class="modal fade" id="numeroFacture_{{facture.id}}" tabindex="-1" role="dialog" aria-labelledby="editFactureModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-dialog modal-xl" role="document">
                                             <div class="modal-content">
                                                 <form id="editFactureForm_{{facture.id}}" method="POST" action="{% url 'numero_facture' facture.id %}">
                                                     {% csrf_token %}
@@ -147,7 +147,7 @@
                                                 </form>
                                             </div>
                                         </div>
-                                        </div>
+                                    </div>
                                     <td style="text-align: left;" > {% if facture.etude.client %} <span href="{% url 'details' modelName='Client' iD=facture.etude.client.id %}"> {{facture.etude.client}} </span>{% endif %}</td>
                                     <td style="text-align: left; font-weight: bold; color:rgb(72, 92, 139);"  >{{facture.type_facture}}</td>
                                     <td style="text-align: left;" >{{facture.montant_HT|FormatNombres}} EUR.</td>
