@@ -1290,7 +1290,7 @@ def get_representants(request):
         client_id = request.GET.get("client_id")
         if client_id:
             client = get_object_or_404(Client, id=client_id)
-            representants = client.representants()
+            representants = client.representants.distinct()
 
             results = [
                 {"id": r.id, "name": f"{r.first_name} {r.last_name}"}
