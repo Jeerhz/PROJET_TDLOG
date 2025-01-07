@@ -645,7 +645,7 @@
                                                 <tbody>
                                                     {% for phase in phases %}
                                                     <tr>
-                                                        <td >Phase {{phase.numero}} - {{phase.titre|slice:":80"}} </td>
+                                                        <td >Phase {{phase.numero}} - {{phase.titre|slice:":50"}} </td>
                                                         <td  style="text-align:center;">{{phase.nb_JEH}}</td>
                                                         <td  style="text-align:center;">{{phase.montant_HT_par_JEH|FormatNombres}} €</td>
                                                         <td  style="text-align:center;">{{phase.calcul_mt_HT|FormatNombres}} €&nbsp;</td>
