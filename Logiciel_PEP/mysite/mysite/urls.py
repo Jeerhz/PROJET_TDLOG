@@ -32,13 +32,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("polls/", include("polls.urls")),
     path("auth/", include("social_django.urls", namespace="social")),
-]   #+ debug_toolbar_urls()
+]  # + debug_toolbar_urls()
 
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_URL)
-    urlpatterns += [
-        path('__debug__/', include(debug_toolbar.urls)),
-        # Other URL patterns
-    ]
+# if settings.DEBUG:
+#     import debug_toolbar
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_URL)
+#     urlpatterns += [
+#         path('__debug__/', include(debug_toolbar.urls)),
+#         # Other URL patterns
+#     ]

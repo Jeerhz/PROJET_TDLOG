@@ -34,7 +34,7 @@ sentry_sdk.init(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings fetched from environment variables
-DEBUG = False
+DEBUG = True
 SECRET_KEY = "+mlztai==j1=dnvmpmtvqg5cvhjbiu64R576879O8Puvjgezdvedcd:!&ée,ezf^$$v!=4u13ha%&rra+f76j=!^^"
 
 # Email settings
@@ -136,7 +136,6 @@ CSP_IMG_SRC = (
     "https://fonts.googleapis.com",
     "https://sylogbucket.s3.amazonaws.com",
     "https://www.sylex-software.com/",
-
 )  # Ajoute le S3 bucket aux sources d'images autorisées
 CSP_CONNECT_SRC = ("'self'",)  # Permet les connexions AJAX au même domaine
 CSP_FONT_SRC = (
