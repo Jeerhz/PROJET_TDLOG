@@ -388,7 +388,7 @@ def annuaire(request):
         return list(
             Etude.objects.filter(je=user_je_id)
             .select_related("responsable__student", "client", "resp_qualite")
-            .annotate(annee_creation=ExtractYear("date_creation"))  
+            .annotate(annee_creation=ExtractYear("date_creation"))
             .order_by("-annee_creation", "-numero")
         )
 
@@ -847,7 +847,7 @@ def details(request, modelName, iD):
 
         if etude.client:
             representants_interlocuteurs = [etude.client_interlocuteur]
-            representants_legaux = [etude.client_representant_legale] 
+            representants_legaux = [etude.client_representant_legale]
 
         else:
             representants_interlocuteurs = []
@@ -866,7 +866,6 @@ def details(request, modelName, iD):
             default=0,
         )
         """
-        
 
         def etude_fin(etude):
             if etude.fin:
@@ -1041,13 +1040,11 @@ def details(request, modelName, iD):
                 "associations_phase": associations_bdc_phase,
                 "type_convention": etude.type_convention,
                 "client_interlocuteur": etude.client_interlocuteur,
-                "client_representant_legale":etude.client_representant_legale,
+                "client_representant_legale": etude.client_representant_legale,
             }
         )
         if etude.client:
-            context.update(
-            {"client":etude.client}
-            )
+            context.update({"client": etude.client})
 
     if client is not None:
         context.update(
@@ -1720,7 +1717,7 @@ def input(request, modelName, iD):
             context["message"] = ""
             context["modelName"] = modelName
             context["iD"] = iD
-            context["is_message"] = (modelName == "Message")
+            context["is_message"] = modelName == "Message"
         else:
             # Modify existing instance
             try:
@@ -2297,9 +2294,7 @@ def generate_facture_pdf(request, id_facture):
             # Generate PDF
             logger.info("Generating PDF")
 
-            pdf_file = HTML(
-                string=html_string
-            ).write_pdf()
+            pdf_file = HTML(string=html_string).write_pdf()
 
             # Prepare filename
             date_emission = datetime.datetime.strptime(
@@ -2507,9 +2502,11 @@ def stat_KPI(request):
                 dico_suivi_devis[mois]["signées"] = dico_devis_envoye[devis]["mission"]
         if derniere_date:
             if derniere_date[0:2] == "12":
-                derniere_date = f"01-{int(derniere_date[3:])+1}"
+                derniere_date = f"01-{int(derniere_date[3:]) + 1}"
             else:
-                derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+                derniere_date = (
+                    f"{(int(derniere_date[0:2]) + 1):02}-{derniere_date[3:]}"
+                )
             dico_suivi_devis[derniere_date] = {"envoyés": 0, "signées": 0}
 
         date_ajd = datetime.datetime.now()
@@ -2539,9 +2536,11 @@ def stat_KPI(request):
 
         if derniere_date:
             if derniere_date[0:2] == "12":
-                derniere_date = f"01-{int(derniere_date[3:])+1}"
+                derniere_date = f"01-{int(derniere_date[3:]) + 1}"
             else:
-                derniere_date = f"{(int(derniere_date[0:2])+1):02}-{derniere_date[3:]}"
+                derniere_date = (
+                    f"{(int(derniere_date[0:2]) + 1):02}-{derniere_date[3:]}"
+                )
             dico_avenants_mois_ce[derniere_date] = {
                 "avenants": 0,
                 "délais": 0,
@@ -2624,9 +2623,8 @@ def stat_KPI(request):
                 if etude.debut:
                     mois = etude.debut.strftime("%m-%Y")
                 else:
-                    date_now= datetime.datetime.now()
-                    mois= date_now.strftime("%m-%Y")
-                
+                    date_now = datetime.datetime.now()
+                    mois = date_now.strftime("%m-%Y")
 
                 if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(mois[0:2]) >= int(
                     derniere_date_CA[0:2]
@@ -2644,8 +2642,8 @@ def stat_KPI(request):
                     if bdc.debut:
                         mois = bdc.debut.strftime("%m-%Y")
                     else:
-                        date_now= datetime.datetime.now()
-                        mois= date_now.strftime("%m-%Y")
+                        date_now = datetime.datetime.now()
+                        mois = date_now.strftime("%m-%Y")
 
                     if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(
                         mois[0:2]
@@ -2660,10 +2658,10 @@ def stat_KPI(request):
 
         if derniere_date_CA:
             if derniere_date_CA[0:2] == "12":
-                derniere_date_CA = f"01-{int(derniere_date_CA[3:])+1}"
+                derniere_date_CA = f"01-{int(derniere_date_CA[3:]) + 1}"
             else:
                 derniere_date_CA = (
-                    f"{(int(derniere_date_CA[0:2])+1):02}-{derniere_date_CA[3:]}"
+                    f"{(int(derniere_date_CA[0:2]) + 1):02}-{derniere_date_CA[3:]}"
                 )
             dico_CA_mois[derniere_date_CA] = {"CA": 0}
 
@@ -2697,7 +2695,9 @@ def stat_KPI(request):
                 etude_year = etude.debut.year
                 if etude_year in bar_chart_CA:
                     if etude_month in bar_chart_CA[etude_year]:
-                        bar_chart_CA[etude_year][etude_month] += etude.montant_HT_total()
+                        bar_chart_CA[etude_year][etude_month] += (
+                            etude.montant_HT_total()
+                        )
                     else:
                         bar_chart_CA[etude_year][etude_month] = etude.montant_HT_total()
                 else:
@@ -2753,7 +2753,7 @@ def stat_KPI(request):
         chiffres_affaires = request.user.chiffres_affaires()
         if cumulated_CA:
             chiffre_affaire_total = cumulated_CA[-1]
-        else :
+        else:
             chiffre_affaire_total = 0
         chiffre_affaire_par_departement = calculate_chiffre_affaire_par_departement(
             user_je
@@ -3169,7 +3169,7 @@ def editer_convention(request, iD):
                     semaine_s=semaine_s,
                 )
 
-                """output_dir = "polls/static/polls/img"
+                output_dir = "polls/static/polls/img"
                 os.makedirs(output_dir, exist_ok=True)
                 os.chdir(output_dir)
                 filename = "tab_planning.png"
@@ -3187,39 +3187,7 @@ def editer_convention(request, iD):
 
                 image_stream = BytesIO(image_data)
                 image = InlineImage(template, image_stream, width=Mm(173))
-                time1.sleep(1)"""
-
-                output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
-    
-                os.makedirs(output_dir, exist_ok=True)
-
-                filename = f"tab_planning{instance.id}.png"
-        
-                hti = Html2Image()
-                hti.size = (1720, 60 + 64 * instance.nb_phases())  # Adjust the size as needed
-                hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
-
-                # Read the generated image
-                image_path = os.path.join(conf_settings.BASE_DIR, filename)
-                with open(image_path, "rb") as img_file:
-                    image_data = img_file.read()
-
-                # Create an in-memory file from the image data
-                image_stream = BytesIO(image_data)
-                image = InMemoryUploadedFile(image_stream, None, filename, 'image/png', len(image_data), None)
-
-                # Replace the planning_image field with the new image
-                instance.planning_image.save(filename, image, save=True)
-
-                # Save the instance to persist the change
-                instance.save()
-
-                image = InlineImage(template, instance.planning_image, width=Mm(173))
-
-
-
-
-
+                time1.sleep(1)
 
             elif instance.type_convention == "Convention cadre":
                 template_path = os.path.join(
@@ -4277,7 +4245,7 @@ def editer_devis(request, iD):
                 duree_semaine=duree_semaine,
                 semaine_s=semaine_s,
             )
-            
+
             """output_dir = "polls/static/polls/img"
             os.makedirs(output_dir, exist_ok=True)
             os.chdir(output_dir)
@@ -4299,13 +4267,16 @@ def editer_devis(request, iD):
             /Users/antonyfeord/SYLOG_29_09/PROJET_TDLOG/Logiciel_PEP/mysite/tab_planning1.png
             """
             output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
-    
+
             os.makedirs(output_dir, exist_ok=True)
 
             filename = f"tab_planning{instance.id}.png"
-    
+
             hti = Html2Image()
-            hti.size = (1720, 60 + 64 * instance.nb_phases())  # Adjust the size as needed
+            hti.size = (
+                1720,
+                60 + 64 * instance.nb_phases(),
+            )  # Adjust the size as needed
             hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
 
             # Read the generated image
@@ -4315,7 +4286,9 @@ def editer_devis(request, iD):
 
             # Create an in-memory file from the image data
             image_stream = BytesIO(image_data)
-            image = InMemoryUploadedFile(image_stream, None, filename, 'image/png', len(image_data), None)
+            image = InMemoryUploadedFile(
+                image_stream, None, filename, "image/png", len(image_data), None
+            )
 
             # Replace the planning_image field with the new image
             instance.planning_image.save(filename, image, save=True)
@@ -4324,8 +4297,6 @@ def editer_devis(request, iD):
             instance.save()
 
             image = InlineImage(template, instance.planning_image, width=Mm(173))
-
-
 
             logo_client = InlineImage(
                 template, client.logo, width=Mm(20)
@@ -4709,7 +4680,9 @@ def modifier_bon_commande(request, id_etude, id_bon):
         except:
             context = {general_context(request)}
             template = loader.get_template("polls/page_error.html")
-            context["error_message"] = "Un problème a été détecté dans la base de données."
+            context["error_message"] = (
+                "Un problème a été détecté dans la base de données."
+            )
 
     else:
         template = loader.get_template("polls/login.html")
@@ -5594,37 +5567,43 @@ def modifier_etude(request, iD):
         etude = get_object_or_404(Etude, id=iD)
         numero_ori = etude.numero
         annee_encours = datetime.datetime.now().year
-        numero_list = list(Etude.objects.filter(je=request.user.je,date_creation__year=annee_encours).values_list("numero", flat=True))
+        numero_list = list(
+            Etude.objects.filter(
+                je=request.user.je, date_creation__year=annee_encours
+            ).values_list("numero", flat=True)
+        )
         numero_list.remove(numero_ori)
         if request.method == "POST":
-           
             debut = request.POST.get("debut")
-            fin_etude= request.POST.get("fin")
+            fin_etude = request.POST.get("fin")
             frais_dossier = request.POST.get("frais_dossier")
             remarque = request.POST.get("remarque")
             numero = int(request.POST.get("numero"))
-            
 
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
             if fin_etude:
-                etude.fin_etude=fin_etude
-            
-            if not numero:
-                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+                etude.fin_etude = fin_etude
 
+            if not numero:
+                return JsonResponse(
+                    {"success": False, "message": "Le numéro est obligatoire."},
+                    status=400,
+                )
 
             if numero:
-                
                 if numero not in numero_list:
                     etude.numero = numero
 
                 else:
                     etude_deja_exist = Etude.objects.filter(numero=numero).first()
                     return JsonResponse(
-                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
-                        status=400
+                        {
+                            "success": False,
+                            "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
+                        },
+                        status=400,
                     )
 
             etude.frais_dossier = frais_dossier
@@ -5632,51 +5611,72 @@ def modifier_etude(request, iD):
             etude.save()
 
             # Redirect to the details page with the correct modelName
-            return JsonResponse({"success": True, "message": "Étude modifiée avec succès.", "redirect": reverse("details", args=["Etude", iD])})
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Étude modifiée avec succès.",
+                    "redirect": reverse("details", args=["Etude", iD]),
+                }
+            )
 
     else:
-        return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Vous devez être connecté pour modifier l'étude.",
+            },
+            status=401,
+        )
 
-    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
+    return JsonResponse(
+        {"success": False, "message": "Invalid request method"}, status=400
+    )
+
 
 def modifier_etude_form(request, iD):
     if request.user.is_authenticated:
         etude = get_object_or_404(Etude, id=iD)
-        annee_etude=etude.date_creation.year
+        annee_etude = etude.date_creation.year
         print(annee_etude)
         numero_ori = etude.numero
-        numero_list = list(Etude.objects.filter(je=request.user.je,date_creation__year=annee_etude).values_list("numero", flat=True))
-        print(numero_list,numero_ori)
+        numero_list = list(
+            Etude.objects.filter(
+                je=request.user.je, date_creation__year=annee_etude
+            ).values_list("numero", flat=True)
+        )
+        print(numero_list, numero_ori)
         numero_list.remove(numero_ori)
         if request.method == "POST":
-           
             debut = request.POST.get("debut")
-            fin_etude= request.POST.get("fin")
+            fin_etude = request.POST.get("fin")
             frais_dossier = request.POST.get("frais_dossier")
             remarque = request.POST.get("remarque")
             numero = int(request.POST.get("numero"))
-            
 
             # Allow 'debut' to be null, and only update if it's provided
             if debut:
                 etude.debut = debut
             if fin_etude:
-                etude.fin_etude=fin_etude
-            
-            if not numero:
-                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+                etude.fin_etude = fin_etude
 
+            if not numero:
+                return JsonResponse(
+                    {"success": False, "message": "Le numéro est obligatoire."},
+                    status=400,
+                )
 
             if numero:
-                
                 if numero not in numero_list:
                     etude.numero = numero
 
                 else:
                     etude_deja_exist = Etude.objects.filter(numero=numero).first()
                     return JsonResponse(
-                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
-                        status=400
+                        {
+                            "success": False,
+                            "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro",
+                        },
+                        status=400,
                     )
 
             etude.frais_dossier = frais_dossier
@@ -5694,12 +5694,11 @@ def modifier_etude_form(request, iD):
         return HttpResponse(template.render(context, request))
 
 
-
 def verifier_etude(request, iD):
     if request.user.is_authenticated:
         # Fetch the Etude instance using the provided iD
         etude = get_object_or_404(Etude, id=iD)
-        
+
         if request.method == "POST":
             # Get the form data from the request
             debut = request.POST.get("debut")
@@ -5716,7 +5715,7 @@ def verifier_etude(request, iD):
 
             client_description = request.POST.get("client_description")
             if etude.client and client_description:
-                client=etude.client
+                client = etude.client
                 client.description = client_description
                 client.save()
 
@@ -5739,7 +5738,6 @@ def verifier_etude(request, iD):
             quali = Member.objects.filter(email=quali_mail).first()
             if quali:
                 etude.resp_qualite = quali
-            
 
             garantie = request.POST.get("per_gara")
             if garantie:
@@ -5759,12 +5757,12 @@ def verifier_etude(request, iD):
             values = request.POST.getlist("values[]")
 
             if keys and values:
-                cahier_des_charges = {key: value for key, value in zip(keys, values) if key}
+                cahier_des_charges = {
+                    key: value for key, value in zip(keys, values) if key
+                }
                 etude.cahier_des_charges = cahier_des_charges
-           
-    
+
             etude.save()
-            
 
             # Redirect to the details page with the correct modelName
             modelName = "Etude"
@@ -6286,11 +6284,15 @@ def facture_redirect(request, fac_id):
             if max_numero:
                 facture.numero_facture = max_numero + 1
             else:
-                facture.numero_facture=1
+                facture.numero_facture = 1
 
         facture.save(id_etude=facture.etude.id)
 
-        factures = Facture.objects.all().annotate(annee_creation=ExtractYear("date_emission")).order_by("-annee_creation","-numero_facture")
+        factures = (
+            Facture.objects.all()
+            .annotate(annee_creation=ExtractYear("date_emission"))
+            .order_by("-annee_creation", "-numero_facture")
+        )
         # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
@@ -6320,7 +6322,11 @@ def factures(request):
 def BVs(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        BVs = BV.objects.all().annotate(annee_creation=ExtractYear("date_emission")).order_by("-annee_creation","-numero_bv")
+        BVs = (
+            BV.objects.all()
+            .annotate(annee_creation=ExtractYear("date_emission"))
+            .order_by("-annee_creation", "-numero_bv")
+        )
         # pas optimale mais faudrait potentiellement crééer un champs je
         BVs = [bv for bv in BVs if bv.je() == user_je and bv.date_emission]
         template = loader.get_template("polls/BVs.html")
