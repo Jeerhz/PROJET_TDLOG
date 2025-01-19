@@ -29,6 +29,8 @@ from email.mime.text import MIMEText
 from asgiref.sync import sync_to_async
 from django.db.models import Sum, Max
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
 
 from io import BytesIO
 from uuid import UUID
@@ -3167,7 +3169,7 @@ def editer_convention(request, iD):
                     semaine_s=semaine_s,
                 )
 
-                output_dir = "polls/static/polls/img"
+                """output_dir = "polls/static/polls/img"
                 os.makedirs(output_dir, exist_ok=True)
                 os.chdir(output_dir)
                 filename = "tab_planning.png"
@@ -3185,7 +3187,39 @@ def editer_convention(request, iD):
 
                 image_stream = BytesIO(image_data)
                 image = InlineImage(template, image_stream, width=Mm(173))
-                time1.sleep(1)
+                time1.sleep(1)"""
+
+                output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
+    
+                os.makedirs(output_dir, exist_ok=True)
+
+                filename = f"tab_planning{instance.id}.png"
+        
+                hti = Html2Image()
+                hti.size = (1720, 60 + 64 * instance.nb_phases())  # Adjust the size as needed
+                hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
+
+                # Read the generated image
+                image_path = os.path.join(conf_settings.BASE_DIR, filename)
+                with open(image_path, "rb") as img_file:
+                    image_data = img_file.read()
+
+                # Create an in-memory file from the image data
+                image_stream = BytesIO(image_data)
+                image = InMemoryUploadedFile(image_stream, None, filename, 'image/png', len(image_data), None)
+
+                # Replace the planning_image field with the new image
+                instance.planning_image.save(filename, image, save=True)
+
+                # Save the instance to persist the change
+                instance.save()
+
+                image = InlineImage(template, instance.planning_image, width=Mm(173))
+
+
+
+
+
 
             elif instance.type_convention == "Convention cadre":
                 template_path = os.path.join(
@@ -4243,8 +4277,8 @@ def editer_devis(request, iD):
                 duree_semaine=duree_semaine,
                 semaine_s=semaine_s,
             )
-
-            output_dir = "polls/static/polls/img"
+            
+            """output_dir = "polls/static/polls/img"
             os.makedirs(output_dir, exist_ok=True)
             os.chdir(output_dir)
             filename = "tab_planning.png"
@@ -4261,6 +4295,37 @@ def editer_devis(request, iD):
             image_stream = BytesIO(image_data)
             image = InlineImage(template, image_stream, width=Mm(173))
             time1.sleep(1)
+
+            /Users/antonyfeord/SYLOG_29_09/PROJET_TDLOG/Logiciel_PEP/mysite/tab_planning1.png
+            """
+            output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
+    
+            os.makedirs(output_dir, exist_ok=True)
+
+            filename = f"tab_planning{instance.id}.png"
+    
+            hti = Html2Image()
+            hti.size = (1720, 60 + 64 * instance.nb_phases())  # Adjust the size as needed
+            hti.screenshot(html_str=final_html, css_str=css_planning, save_as=filename)
+
+            # Read the generated image
+            image_path = os.path.join(conf_settings.BASE_DIR, filename)
+            with open(image_path, "rb") as img_file:
+                image_data = img_file.read()
+
+            # Create an in-memory file from the image data
+            image_stream = BytesIO(image_data)
+            image = InMemoryUploadedFile(image_stream, None, filename, 'image/png', len(image_data), None)
+
+            # Replace the planning_image field with the new image
+            instance.planning_image.save(filename, image, save=True)
+
+            # Save the instance to persist the change
+            instance.save()
+
+            image = InlineImage(template, instance.planning_image, width=Mm(173))
+
+
 
             logo_client = InlineImage(
                 template, client.logo, width=Mm(20)

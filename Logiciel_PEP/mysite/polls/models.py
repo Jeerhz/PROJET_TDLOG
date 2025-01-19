@@ -786,6 +786,10 @@ class Etude(models.Model):
     cahier_des_charges = models.JSONField(default=dict)
     date_creation = models.DateTimeField(auto_now_add=True)
     fin_etude = models.DateField(blank=True, null=True)
+    planning_image = models.ImageField(
+        upload_to="static/polls/img/",
+        default="media/polls/Logo_Ecole_des_Ponts_ParisTech.svg.png",
+    )
 
     class Etat_Doc:
         EN_COURS = "En cours"
@@ -2262,6 +2266,7 @@ class AddEtude(forms.ModelForm):
             "cahier_des_charges",
             "suivi_document",
             "fin_etude",
+            "planning_image"
         ]
         widgets = {
             "client": SelectSearch(
@@ -2290,25 +2295,23 @@ class AddEtude(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True, **kwargs):
-        if "user" in kwargs:
-            print("ya je")
-            je = kwargs["user"].je
+        etude = super(AddEtude, self).save(commit=False)
+        if "expediteur" in kwargs:
+            etude.je = kwargs["expediteur"].je
+            je= kwargs["expediteur"].je
             annee_encours = datetime.datetime.now().year
 
             max_numero = Etude.objects.filter(date_creation__year=annee_encours).filter(je=je).aggregate(
                 max_numero=Max("numero")
             )["max_numero"]
         else:
-            print("pas je")
             annee_encours = datetime.datetime.now().year
             max_numero = Etude.objects.filter(date_creation__year=annee_encours).aggregate(max_numero=Max("numero"))["max_numero"]
         if max_numero is None:
             max_numero = 0
 
-        etude = super(AddEtude, self).save(commit=False)
-        if "expediteur" in kwargs:
-            etude.je = kwargs["expediteur"].je
-
+        
+        
         if etude.numero is None:
             etude.numero = max_numero + 1
 
