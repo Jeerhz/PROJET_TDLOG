@@ -59,6 +59,8 @@ urlpatterns = [
     path('etude/modify/<int:pk>/', views.modify_etude, name='modify_etude'),
     path('get_client_representants/', views.get_client_representants, name='get_client_representants'),
     path('modifier_etude/<int:iD>/', views.modifier_etude, name='modifier_etude'),
+    path('modifier_etude_form/<int:iD>/', views.modifier_etude_form, name='modifier_etude_form'),
+
     path("modifier_recrutement_etude/<int:iD>", views.modifier_recrutement_etude, name="modifier_recrutement_etude"),
     path("ajouter_facture/<int:id_etude>", views.ajouter_facture, name='ajouter_facture'),
     path("remarque_etude/<int:iD>", views.remarque_etude, name="remarque_etude"),

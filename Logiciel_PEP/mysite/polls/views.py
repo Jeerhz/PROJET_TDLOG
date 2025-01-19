@@ -50,6 +50,8 @@ from datetime import timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 import locale
 
+from django.db.models.functions import ExtractYear
+
 # ADLE: For code optimisation
 from asgiref.sync import sync_to_async
 from django.http import HttpResponse
@@ -384,7 +386,8 @@ def annuaire(request):
         return list(
             Etude.objects.filter(je=user_je_id)
             .select_related("responsable__student", "client", "resp_qualite")
-            .order_by("numero")
+            .annotate(annee_creation=ExtractYear("date_creation"))  
+            .order_by("-annee_creation", "-numero")
         )
 
     # Use ThreadPoolExecutor to run tasks concurrently
@@ -5525,7 +5528,8 @@ def modifier_etude(request, iD):
     if request.user.is_authenticated:
         etude = get_object_or_404(Etude, id=iD)
         numero_ori = etude.numero
-        numero_list = list(Etude.objects.filter(je=request.user.je).values_list("numero", flat=True))
+        annee_encours = datetime.datetime.now().year
+        numero_list = list(Etude.objects.filter(je=request.user.je,date_creation__year=annee_encours).values_list("numero", flat=True))
         numero_list.remove(numero_ori)
         if request.method == "POST":
            
@@ -5569,6 +5573,60 @@ def modifier_etude(request, iD):
         return JsonResponse({"success": False, "message": "Vous devez être connecté pour modifier l'étude."}, status=401)
 
     return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
+
+def modifier_etude_form(request, iD):
+    if request.user.is_authenticated:
+        etude = get_object_or_404(Etude, id=iD)
+        annee_etude=etude.date_creation.year
+        print(annee_etude)
+        numero_ori = etude.numero
+        numero_list = list(Etude.objects.filter(je=request.user.je,date_creation__year=annee_etude).values_list("numero", flat=True))
+        print(numero_list,numero_ori)
+        numero_list.remove(numero_ori)
+        if request.method == "POST":
+           
+            debut = request.POST.get("debut")
+            fin_etude= request.POST.get("fin")
+            frais_dossier = request.POST.get("frais_dossier")
+            remarque = request.POST.get("remarque")
+            numero = int(request.POST.get("numero"))
+            
+
+            # Allow 'debut' to be null, and only update if it's provided
+            if debut:
+                etude.debut = debut
+            if fin_etude:
+                etude.fin_etude=fin_etude
+            
+            if not numero:
+                return JsonResponse({"success": False, "message": "Le numéro est obligatoire."}, status=400)
+
+
+            if numero:
+                
+                if numero not in numero_list:
+                    etude.numero = numero
+
+                else:
+                    etude_deja_exist = Etude.objects.filter(numero=numero).first()
+                    return JsonResponse(
+                        {"success": False, "message": f"l'étude '{etude_deja_exist.ref()} - {etude_deja_exist.titre}' à déjà ce numéro"}, 
+                        status=400
+                    )
+
+            etude.frais_dossier = frais_dossier
+            etude.remarque = remarque
+            etude.save()
+            modelName = "Etude"
+            return HttpResponseRedirect(reverse("details", args=[modelName, iD]))
+
+        return JsonResponse(
+            {"success": False, "message": "Invalid request method"}, status=400
+        )
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
 
 
 
@@ -6160,11 +6218,14 @@ def facture_redirect(request, fac_id):
                 etude__je=je_act,
                 date_emission__isnull=False,
             ).aggregate(Max("numero_facture"))["numero_facture__max"]
-            facture.numero_facture = max_numero + 1
+            if max_numero:
+                facture.numero_facture = max_numero + 1
+            else:
+                facture.numero_facture=1
 
         facture.save(id_etude=facture.etude.id)
 
-        factures = Facture.objects.all().order_by("-numero_facture")
+        factures = Facture.objects.all().annotate(annee_creation=ExtractYear("date_emission")).order_by("-annee_creation","-numero_facture")
         # pas optimale mais faudrait potentiellement crééer un champs je
         filtered_factures = [facture for facture in factures if facture.je() == user_je]
         template = loader.get_template("polls/factures.html")
@@ -6194,7 +6255,7 @@ def factures(request):
 def BVs(request):
     if request.user.is_authenticated:
         user_je = request.user.je
-        BVs = BV.objects.all().order_by("-numero_bv")
+        BVs = BV.objects.all().annotate(annee_creation=ExtractYear("date_emission")).order_by("-annee_creation","-numero_bv")
         # pas optimale mais faudrait potentiellement crééer un champs je
         BVs = [bv for bv in BVs if bv.je() == user_je and bv.date_emission]
         template = loader.get_template("polls/BVs.html")

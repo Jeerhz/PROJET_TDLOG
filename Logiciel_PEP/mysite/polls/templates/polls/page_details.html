@@ -36,7 +36,7 @@
         }
         /* DEBUT PLANNING */
         .table_planning {
-            
+            table-layout: auto;
             border-collapse: collapse;
             margin: 20px;
             
@@ -138,7 +138,7 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            font-size: 12px;
+            font-size: 10px;
             transform: translate(-50%, -50%);
             color: white;
         }
@@ -504,39 +504,76 @@
                                                         </ul>
                                                         <!-- Modify Button -->
                                                         <div class="text-right">
-                                                            <button type="button" class="btn btn-outline-secondary mt-3" id="modifier-etude">Modifier</button>
+                                                            <button type="button" class="btn btn-outline-secondary mt-3" data-toggle="modal" data-target="#modifier-etude_form">Modifier</button>
                                                         </div>
+                                                        
                                                         <!-- End Modify Button -->
                                                     </div>
-                                                    <div class="tab-content d-none" id="etude-form">
-                                                        <form action="{% url 'modifier_etude' iD=etude.id %}" method="post" id="etude-f-form">
-                                                            {% csrf_token %}
-                                                            <ul class="list-group list-group-flush">
-                                                                <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
-                                                                <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
-                                                                <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
-                                                                <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
-                                                                <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
-                                                                <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
-                                                                <li class="list-group-item"><strong>Numéro :</strong> <input type="int" name="numero" class="form-control" value="{{ etude.numero }}"> </li>
+                                                    <div class="modal fade" id="modifier-etude_form" tabindex="-1" role="dialog" aria-labelledby="modifier-etude_form" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form id="modifier-etude_form" method="POST" action="{% url 'modifier_etude_form' iD=etude.id %}">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <!-- Form fields for editing the phase -->
+                                                                        <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><strong> Début :</strong> <input type="date" name="debut" class="form-control" value="{{ etude.debut|date:'Y-m-d' }}"></li>
+                                                                            <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
+                                                                            <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
+                                                                            <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
+                                                                            <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                                            <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
+                                                                            <li class="list-group-item"><strong>Numéro :</strong> <input type="number" name="numero" class="form-control" value="{{ etude.numero }}" required step="1"> </li>
 
-                                                            </ul>
-                                                            <!-- Save and Cancel Buttons -->
-                                                            <div class="row justify-content-between">
-                                                                <div class="col-auto">
-                                                                    <button type="button" class="btn btn-outline-secondary mt-3" id="annuler-etude">Annuler</button>
-                                                                </div>
-                                                                <div class="col-auto">
-                                                                    <button type="submit" class="btn btn-outline-secondary mt-3">Sauvegarder</button>
-                                                                </div>
+                                                                        </ul>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                                                                    </div>
+                                                                </form>
                                                             </div>
-                                                        </form>
+                                                        </div>
                                                     </div>
+                                                    
                                                 </div>
                                             </div>
                                             <br>
                                             
                                         </div>
+                                        <script>
+                                            $(document).ready(function() {
+                                                $("#modifier-etude_form").submit(function(event) {
+                                                    event.preventDefault();  // Prevent the default form submission
+                                        
+                                                    // Send the form data via AJAX
+                                                    $.ajax({
+                                                        type: "POST",
+                                                        url: $(this).attr('action'),  // Use the form's action attribute (URL)
+                                                        data: $(this).serialize(),  // Serialize the form data
+                                                        success: function(response) {
+                                                            // If the response is success, you can handle it here (e.g., close modal or show a success message)
+                                                            alert("Modifications enregistrées avec succès !");
+                                                            // Optionally, close the modal
+                                                            $('#modifier-etude_form').modal('hide');
+                                                        },
+                                                        error: function(xhr) {
+                                                            // Handle the error response (from JsonResponse with status 400)
+                                                            var data = JSON.parse(xhr.responseText);
+                                                            if (!data.success) {
+                                                                alert(data.message);  // Show the error message in a pop-up
+                                                            }
+                                                        }
+                                                    });
+                                                });
+                                            });
+                                        </script>
+                                        
                                        
                                         <!-- Fin de la Card avec les infos -->
                                         <!-- Pie Chart -->
@@ -563,69 +600,7 @@
                                     
                                     </div>
                                     
-                                    <script>
-                                        document.addEventListener("DOMContentLoaded", function () {
-                                            var modifier_etude = document.getElementById('modifier-etude');
-                                            var etude_info = document.getElementById('etude-info');
-                                            var etude_form = document.getElementById('etude-form');
                                     
-                                            // Toggle between info view and form view when the Modify button is clicked
-                                            modifier_etude.addEventListener('click', function () {
-                                                etude_info.classList.toggle('d-none');
-                                                etude_form.classList.toggle('d-none');
-                                            });
-                                    
-                                            var annuler_etude = document.getElementById('annuler-etude');
-                                            annuler_etude.addEventListener('click', function () {
-                                                etude_info.classList.toggle('d-none');
-                                                etude_form.classList.toggle('d-none');
-                                            });
-                                    
-                                            // Handle form submission and display server responses as pop-up messages
-                                            document.getElementById('etude-f-form').addEventListener('submit', function (event) {
-                                                event.preventDefault(); // Prevent the default form submission
-                                                
-                                                var form = this;
-                                                var formData = new FormData(form);
-                                                var url = form.action; // The form's action URL
-                                    
-                                                // Basic client-side validation
-                                                var debut = form.querySelector('input[name="debut"]').value;
-                                                var numero = form.querySelector('input[name="numero"]').value;
-                                    
-                                                if (!debut) {
-                                                    alert('Veuillez renseigner les dates de début et de fin.');
-                                                    return false;
-                                                }
-                                                if (!numero) {
-                                                    alert('Veuillez renseigner un numéro.');
-                                                    return false;
-                                                }
-                                                // AJAX request to handle server response
-                                                fetch(url, {
-                                                    method: "POST",
-                                                    body: formData,
-                                                    headers: {
-                                                        "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
-                                                    },
-                                                })
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (!data.success) {
-                                                        // Display error message as a pop-up
-                                                        alert(data.message); // Replace with a toast or modal if desired
-                                                    } else {
-                                                        // Display success message or handle success logic
-                                                        window.location.href = data.redirect;
-                                                    }
-                                                })
-                                                .catch(error => {
-                                                    console.error("Error:", error);
-                                                    alert(`Une erreur s'est produite: ${error.message}`);
-                                                });
-                                            });
-                                        });
-                                    </script>
                                     <br>
                                     <!-- Fin de la ligne avec Graphe et Card Infos -->
                                     <!--Fin Responsable et statut-->
@@ -1338,8 +1313,14 @@
                                             <table class="table_planning">
                                                 <thead>
                                                     <tr>
-                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
-                                                        <th class="th_planning"></th>
+                                                        <th class="th_planning" style="font-size: 12px;">
+                                                            <div>
+                                                                du {{etude.debut|FormatDate}}
+                                                            </div>
+                                                            <div>
+                                                                au {{etude_fin|FormatDate}}
+                                                            </div>   
+                                                        </th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
                                                                 {% for i in 1|Range_boucle:etude_duree %}
@@ -1352,9 +1333,8 @@
                                                 <tbody>
                                                     {% for phase in phases %}
                                                     <tr>
-                                                        <td class="td_planning">Phase {{phase.numero}} </td>
-                                                        <td class="td_planning" style="text-align: center;">{{phase.nb_JEH}} JEHs</td>
-                                                        <td class="td_planning" style="width: 70%;">
+                                                        <td class="td_planning">Phase {{phase.numero}} : {{phase.nb_JEH}} JEHs </td>
+                                                        <td class="td_planning" style="width: 80%;">
                                                             <div class="bar_container_plan" >
                                                                 <div class="bar_plan" id="bar_plan-{{ phase.numero }}">
                                                                     <div class="label_plan"> {{phase.duree_semaine}} semaines</div>
@@ -3982,6 +3962,10 @@
     <script src="{% static 'polls/js/demo/chart-pie-etude.js' %}"></script>
     <!-- <script src="{% static 'polls/js/demo/chart-phases.js' %}"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsp si ca va creer des problèmes -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 
     

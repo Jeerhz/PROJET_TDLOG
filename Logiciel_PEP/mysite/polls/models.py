@@ -1042,8 +1042,9 @@ class Etude(models.Model):
             )
 
         if self.numero is None:
+            annee_encours = datetime.datetime.now().year
             max_numero = (
-                Etude.objects.aggregate(max_numero=Max("numero"))["max_numero"] or 0
+                Etude.objects.filter(date_creation__year=annee_encours).aggregate(max_numero=Max("numero"))["max_numero"] or 0
             )
             self.numero = max_numero + 1
 
@@ -2292,13 +2293,15 @@ class AddEtude(forms.ModelForm):
         if "user" in kwargs:
             print("ya je")
             je = kwargs["user"].je
+            annee_encours = datetime.datetime.now().year
 
-            max_numero = Etude.objects.filter(je=je).aggregate(
+            max_numero = Etude.objects.filter(date_creation__year=annee_encours).filter(je=je).aggregate(
                 max_numero=Max("numero")
             )["max_numero"]
         else:
             print("pas je")
-            max_numero = Etude.objects.aggregate(max_numero=Max("numero"))["max_numero"]
+            annee_encours = datetime.datetime.now().year
+            max_numero = Etude.objects.filter(date_creation__year=annee_encours).aggregate(max_numero=Max("numero"))["max_numero"]
         if max_numero is None:
             max_numero = 0
 
