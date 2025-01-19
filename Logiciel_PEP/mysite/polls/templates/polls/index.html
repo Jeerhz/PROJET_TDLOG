@@ -303,11 +303,11 @@
         <!-- Beginning of container-fluid -->
         <div class="container-fluid" >
             <div class="row">
-                <div class="col-12 ml-4">
+                <div class="col-12 ">
                     <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
                 </div>
             </div>
-            <div class="card mb-4 ml-4 mr-3 shadow">
+            <div class="card mb-4 mr-3 shadow">
                 <div class="table-responsive">
                     <table class="table table-hover text-center">
                         <thead style="background-color: #ffffff;">
@@ -336,7 +336,7 @@
                             <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                 <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ed_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                 {% if user_parametres.param_col_etude_numero %}
-                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                <td style="text-align: left; padding-right: 30px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":25"}}</td>
                                 {% endif %}
                                 
                                 {% if user_parametres.param_col_etude_client %}
@@ -538,19 +538,19 @@
         <!-- Beginning of container-fluid -->
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12 ml-4">
+                <div class="col-12 ">
                     <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en cours</h2>
                 </div>
             </div>
-            <div class="card mb-4 ml-4 mr-3 shadow">
+            <div class="card mb-4 mr-3 shadow">
                 <div class="table-responsive">
-                    <table class="table table-hover text-center">
+                    <table class="table table-hover text-center table-sm" style="width: 100%;">
                         <thead style="background-color: #ffffff;">
                             <tr>
                                 
-                                <th scope="col" style="width: 5%;"></th>
+                                <th scope="col" ></th>
                                 {% if user_parametres.param_col_etude_numero %}
-                                <th scope="col" style="width: 3%;text-align: left; ">Étude</th>
+                                <th scope="col" style="text-align: left; ">Étude</th>
                                 {% endif %}
                                 
                                 {% if user_parametres.param_col_etude_client %}
@@ -568,7 +568,7 @@
                                 <th scope="col">Avancement</th>
                                 {% endif%}
                                 
-                                <th scope="col" style="width: 5%;">Global</th>
+                                <th scope="col" >Global</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -576,7 +576,7 @@
                             <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                 <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_ec_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                 {% if user_parametres.param_col_etude_numero %}
-                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                <td style="text-align: left; padding-right: 30px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":25"}}</td>
                                 {% endif %}
                                 
                                 {% if user_parametres.param_col_etude_client %}
@@ -814,11 +814,11 @@
         <!-- Beginning of container-fluid -->
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12 ml-4">
+                <div class="col-12">
                     <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études terminées</h2>
                 </div>
             </div>
-            <div class="card mb-4 ml-4 mr-3 shadow">
+            <div class="card mb-4 mr-3 shadow">
                 <div class="table-responsive">
                     <table class="table table-hover text-center">
                         <thead style="background-color: #ffffff;">
@@ -848,7 +848,7 @@
                             <tr style="{% if etude.status == 'EN_COURS' %} background-color: #fff3cda1; {% elif etude.status == 'EN_NEGOCIATION'%} background-color: #ffe5d0d6; {% else %} background-color: #d4eddabd; {% endif %}" id="etude_row_{{etude.id}}">
                                 <td class="align-middle" style="cursor:pointer;" data-toggle="collapse" data-target="#sec_table_t_{{etude.id}}" class=""><img src="/static/polls/img/circle-chevron-down-solid.svg" style="width: 25px; height: 25px;"></img></td>
                                 {% if user_parametres.param_col_etude_numero %}
-                                <td style="text-align: left; padding-right: 50px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":50"}}</td>
+                                <td style="text-align: left; padding-right: 30px;" ><strong>{{etude.ref}}</strong> - {{etude.titre|slice:":25"}}</td>
                                 {% endif %}
                                 
                                 {% if user_parametres.param_col_etude_client %}
