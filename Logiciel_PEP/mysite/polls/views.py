@@ -3169,7 +3169,7 @@ def editer_convention(request, iD):
                     semaine_s=semaine_s,
                 )
 
-                """output_dir = "polls/static/polls/img"
+                output_dir = "polls/static/polls/img"
                 os.makedirs(output_dir, exist_ok=True)
                 os.chdir(output_dir)
                 filename = "tab_planning.png"
@@ -3187,9 +3187,9 @@ def editer_convention(request, iD):
 
                 image_stream = BytesIO(image_data)
                 image = InlineImage(template, image_stream, width=Mm(173))
-                time1.sleep(1)"""
+                time1.sleep(1)
 
-                output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
+                """output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
     
                 os.makedirs(output_dir, exist_ok=True)
 
@@ -3214,7 +3214,7 @@ def editer_convention(request, iD):
                 # Save the instance to persist the change
                 instance.save()
 
-                image = InlineImage(template, instance.planning_image, width=Mm(173))
+                image = InlineImage(template, instance.planning_image, width=Mm(173))"""
 
 
 
@@ -4278,7 +4278,7 @@ def editer_devis(request, iD):
                 semaine_s=semaine_s,
             )
             
-            """output_dir = "polls/static/polls/img"
+            output_dir = "polls/static/polls/img"
             os.makedirs(output_dir, exist_ok=True)
             os.chdir(output_dir)
             filename = "tab_planning.png"
@@ -4296,9 +4296,10 @@ def editer_devis(request, iD):
             image = InlineImage(template, image_stream, width=Mm(173))
             time1.sleep(1)
 
-            /Users/antonyfeord/SYLOG_29_09/PROJET_TDLOG/Logiciel_PEP/mysite/tab_planning1.png
-            """
-            output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
+            
+
+
+            """output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
     
             os.makedirs(output_dir, exist_ok=True)
 
@@ -4323,7 +4324,7 @@ def editer_devis(request, iD):
             # Save the instance to persist the change
             instance.save()
 
-            image = InlineImage(template, instance.planning_image, width=Mm(173))
+            image = InlineImage(template, instance.planning_image, width=Mm(173))"""
 
 
 
