@@ -675,15 +675,6 @@ class Etude(models.Model):
         CADRE = "Convention cadre"
         ETUDE = "Convention d'étude"
 
-    class Departement(models.TextChoices):
-        IMI = "IMI", "IMI"
-        SEGF = "SEGF", "SEGF"
-        GMM = "GMM", "GMM"
-        _1A = "1A", "1A"
-        GCC = "GCC", "GCC"
-        VET = "VET", "VET"
-        GI = "GI", "GI"
-        AUTRE = "AUTRE", "Autre"
 
     class Mandat(models.TextChoices):
         M025 = "025", "025"
@@ -770,7 +761,6 @@ class Etude(models.Model):
         blank=True,
         verbose_name="Nature du contact",
     )
-    models.TextField(blank=True, null=True, default="")
     contexte = models.TextField(blank=True, null=True, default="")
     objectifs = models.TextField(blank=True, null=True, default="")
     periode_de_garantie = models.IntegerField(default=90)
@@ -965,20 +955,38 @@ class Etude(models.Model):
         return nombres_de_phases
 
     def montant_phase_HT(self):
-        phases = Phase.objects.filter(etude=self)
-        total_montant_HT = (
-            sum(
-                phase.montant_HT_par_JEH * phase.nb_JEH
-                for phase in phases
-                if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+        if self.type_convention=="Convention d'étude":
+            phases = Phase.objects.filter(etude=self)
+            total_montant_HT = (
+                sum(
+                    phase.montant_HT_par_JEH * phase.nb_JEH
+                    for phase in phases
+                    if phase.montant_HT_par_JEH is not None and phase.nb_JEH is not None
+                )
+                if phases
+                else 0
             )
-            if phases
-            else 0
-        )
-        return total_montant_HT
+            return total_montant_HT
+        elif self.type_convention=="Convention cadre":
+            total_montant_HT=0
+            bdcs=self.get_bon_commandes()
+            for bdc in bdcs:
+                if bdc.debut:
+                    total_montant_HT+=bdc.montant_phase_HT()
+            return total_montant_HT
+        else:
+            return 0
+
 
     def montant_HT_total(self):
-        return self.frais_dossier + self.montant_phase_HT()
+        if self.type_convention=="Convention d'étude":
+            return self.frais_dossier + self.montant_phase_HT()
+        elif self.type_convention=="Convention cadre":
+            bdcs=self.get_bon_commandes()
+            frais_bdc= sum(bdc.frais_dossier for bdc in bdcs)
+            return frais_bdc+self.frais_dossier + self.montant_phase_HT()
+        else:
+            return 0
 
     def TVA(self):
         return (self.taux_tva / 100) * self.montant_HT_total()
@@ -1014,7 +1022,7 @@ class Etude(models.Model):
         )
 
     def get_bon_commandes(self):
-        return BonCommande.objects.filter(etude=self)
+        return BonCommande.objects.filter(etude=self).order_by("numero")
 
     def facture_solde(self):
         factures = Facture.objects.filter(etude=self).order_by("numero_facture")
@@ -1664,7 +1672,10 @@ class BonCommande(models.Model):
     def save(self, *args, **kwargs):
         if self.numero is None:
             self.numero = self.etude.numero * 100
-        super(BonCommande, self).save(*args, **kwargs)
+        if "some_key" in kwargs and isinstance(kwargs["some_key"], dict):
+            # Extract values properly before passing
+            kwargs.update(kwargs.pop("some_key"))  
+        super().save(*args, **kwargs)
 
     def ref(self):
         return str(f"{self.etude.ref()}bc{self.numero}")
@@ -1854,12 +1865,18 @@ class Phase(models.Model):
         return assignations_JEH
 
     def bon(self):
-        association_bdc = self.associations_bdc
-        return (
-            association_bdc.first().bon_de_commande
-            if association_bdc.first().exists()
-            else None
-        )
+        if self.etude.type_convention == "Convention cadre":
+            association_bdc = self.associations_bdc
+            if association_bdc:
+                return association_bdc.first().bon_de_commande
+            else:
+                return None
+        else:
+            return None
+        
+        
+    
+    
 
 
 class AssignationJEH(models.Model):
@@ -2266,7 +2283,8 @@ class AddEtude(forms.ModelForm):
             "cahier_des_charges",
             "suivi_document",
             "fin_etude",
-            "planning_image"
+            "planning_image",
+            "frais_dossier"
         ]
         widgets = {
             "client": SelectSearch(

@@ -7,7 +7,7 @@ var labels = Object.keys(repartitionData);
 var dataValues = Object.values(repartitionData);
 
 // Example colors (you can generate more if needed)
-var dataColors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',  '#E6B333', '#3366E6']
+var dataColors = ['rgb(0,154,166)', 'rgb(255,182,18)']
 
 var ctx = document.getElementById("PieChartEtudeSatus");
 var myPieChart = new Chart(ctx, {

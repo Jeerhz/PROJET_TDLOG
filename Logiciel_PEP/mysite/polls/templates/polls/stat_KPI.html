@@ -28,6 +28,13 @@
             text-overflow: clip;
             max-width: none;
         }
+        .violet_sncf {
+            color:rgb(110,30,120);
+        }
+
+        .canard_sncf {
+            color: rgb(0, 154, 166),
+        }
         
     </style>
 
@@ -89,7 +96,7 @@
 
 
             <!-- Card Client Count -->
-            <div class="col-xl-3 col-md-6 mb-4">
+            <div class="col-xl-3 col-md-6 mb-4" >
                 <div class="card border-left-info shadow h-100 py-2">
                     <div class="card-body" style ="padding: 10px;padding-top: 4px;">
                         <div class="row no-gutters align-items-center">
@@ -100,13 +107,13 @@
                                     </div>
                                     
                                 <div class="text-xs text-info text-uppercase mb-1">
-                                    Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_etudes026|FormatNombres}} €</span>
+                                    Rétributions : <span style="font-weight: 1000; color: black;">{{retributions_totales|FormatNombres}} €</span>
                                 </div>
                                 <div class="text-xs text-info text-uppercase mb-1">
-                                    Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retrib_moye_etude|FormatNombres}} €</span>
+                                    Rétribution moyenne par étude : <span style="font-weight: 1000; color: black;">{{retribution_moyenne_etude|FormatNombres}} €</span>
                                 </div>
                                 <div class="text-xs text-info text-uppercase mb-1">
-                                    Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retrib_moye_etudiant|FormatNombres}} €</span>
+                                    Rétribution moyenne par étudiant : <span style="font-weight: 1000; color: black;">{{retribution_moyenne_etudiant|FormatNombres}} €</span>
                                 </div>
                                     
                                 
@@ -126,11 +133,11 @@
                             <div class="col mr-2">
                                 
                                 <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants_026}} </span>intervenants 026 </div>
+                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants}} </span>intervenants 026 </div>
                                 <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants_diff_026}} </span>intervenants 026 différents </div>
+                                    <span style="font-weight: 1000; color: black;">{{nb_intervenants_diffs}} </span>intervenants 026 différents </div>
                                 <div class="text-xs text-warning text-uppercase mb-1" style="font-weight: 600;">
-                                    <span style="font-weight: 1000; color: black;">{{moyen_int_etude|FormatNombres}} </span>intervenants par études </div>
+                                    <span style="font-weight: 1000; color: black;">{{moyenne_inter_mission|FormatNombres}} </span>intervenants par études </div>
 
                                     
                                 
@@ -144,14 +151,14 @@
         
         <!-- Content Row -->
 
-        
+        <!-- obsolète  
         <div class="row">
 
-            <!-- Area Chart -->
+            
             
             <div class="col-xl-12 col-lg-7">
                 <div class="card shadow mb-4">
-                    <!-- Card Header - Dropdown -->
+                   
                     
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
                         <h6 class="m-0 font-weight-bold text-primary">Le chiffre d'affaires par mois</h6>
@@ -170,6 +177,56 @@
         <script>
             var dico_CA_mois = {{ dico_CA_mois|safe }};
         </script>
+        -->
+
+
+
+        <h6 class="m-0 font-weight-bold text-primary" style="text-align: center;">Chiffre d'affaires (date de début de la mission)</h6>
+        <div style="width: 100%; height: 300px; margin: auto; padding-bottom: 20px;">
+            <canvas id="CA_par_mois"></canvas>
+        </div>
+        <script>
+            var liste_mois = {{ liste_mois|safe }};
+            var liste_CA_mois = {{ liste_CA_mois|safe }};
+        </script>
+    
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var ctx = document.getElementById("CA_par_mois").getContext("2d");
+        
+                var CA_par_mois = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: liste_mois,
+                        datasets: [{
+                            label: "CA (HT)",
+                            data: liste_CA_mois,
+                            borderColor: "rgba(60, 55, 50, 0.2)",
+                            backgroundColor: "rgba(60, 55, 50, 0.2)",
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointBackgroundColor: "black"
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+
+        
+       
+       
+
+        
+
 
         <div class="row">
             
@@ -179,14 +236,10 @@
                 <div class="card shadow mb-4">
                     <!-- Card Header - Dropdown -->
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Devis envoyés / missions signées</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Devis envoyés / Missions signées</h6>
                     </div>
-                    
-                    <!-- Card Body -->
-                    
-                    
-                    <div class="chart-area">
-                        <canvas id="myBarChart"></canvas>
+                    <div style="width: 100%; height: 300px; margin: auto;">
+                        <canvas id="Devis_envo_sign"></canvas>
                     </div>
                 </div>
             </div>                                                
@@ -195,34 +248,139 @@
 
 
         <script>
-            var dico_suivi_devis = {{ dico_suivi_devis|safe }};
+            var liste_mois_devis = {{ liste_mois_devis|safe }};
+            var liste_devis_envo = {{ liste_devis_envo|safe }};
+            var liste_devis_sign = {{ liste_devis_sign|safe }};  // Second dataset
         </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var ctx = document.getElementById("Devis_envo_sign").getContext("2d");
+
+                var Devis_envo_sign = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: liste_mois_devis,
+                        datasets: [
+                            {
+                                label: "Devis envoyés",
+                                data: liste_devis_envo,
+                                borderColor: "rgba(0, 154, 166, 1)",
+                                backgroundColor: "rgba(60, 55, 50, 0)",
+                                borderWidth: 2,
+                                pointRadius: 5,
+                                pointBackgroundColor: "rgba(0, 154, 166, 1)"
+                            },
+                            {
+                                label: "Missions signées",
+                                data: liste_devis_sign,
+                                borderColor: "rgba(0, 136, 206, 1)",
+                                backgroundColor: "rgba(60, 55, 50, 0)",
+                                borderWidth: 2,
+                                pointRadius: 5,
+                                pointBackgroundColor: "rgba(0, 136, 206, 1)"
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1  
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+
         <div class="row">
+                    
 
             <!-- Area Chart -->
-            
             <div class="col-xl-12 col-lg-7">
                 <div class="card shadow mb-4">
                     <!-- Card Header - Dropdown -->
-                    
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
                         <h6 class="m-0 font-weight-bold text-primary">Avenants à la CE par mois</h6>
                     </div>
-                    <div class="chart-area">
-                        <canvas  id="BarChartCE"></canvas >
+                    <div style="width: 100%; height: 300px; margin: auto;">
+                        <canvas id="Avenants_CE_mois"></canvas>
                     </div>
-                
-                </div>     
-            
+                </div>
             </div>                                                
             
         </div>
-        
+
 
         <script>
-            var dico_avenants_mois_ce = {{ dico_avenants_mois_ce|safe }};
+            var liste_date_avenants = {{ liste_date_avenants|safe }};
+            var liste_nb_avenants = {{ liste_nb_avenants|safe }};
+            var liste_nb_avenants_del = {{ liste_nb_avenants_del|safe }};
+            var liste_nb_avenants_bud = {{ liste_nb_avenants_bud|safe }};
         </script>
-        <!--End Row-->
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var ctx = document.getElementById("Avenants_CE_mois").getContext("2d");
+
+                var Avenants_CE_mois = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: liste_date_avenants,
+                        datasets: [
+                            {
+                                label: "Avenants",
+                                data: liste_nb_avenants,
+                                borderColor: "rgba(0, 136, 206, 1)",
+                                backgroundColor: "rgba(60, 55, 50, 0)",
+                                borderWidth: 2,
+                                pointRadius: 5,
+                                pointBackgroundColor: "rgba(0, 136, 206, 1)"
+                            },
+                            {
+                                label: "Avenants délais",
+                                data: liste_nb_avenants_del,
+                                borderColor: "rgba(224, 82, 6, 1)",
+                                backgroundColor: "rgba(60, 55, 50, 0)",
+                                borderWidth: 2,
+                                pointRadius: 5,
+                                pointBackgroundColor: "rgba(224, 82, 6, 1)"
+                            },
+                            {
+                                label: "Avenants budget",
+                                data: liste_nb_avenants_bud,
+                                borderColor: "rgba(130, 190, 0, 1)",
+                                backgroundColor: "rgba(60, 55, 50, 0)",
+                                borderWidth: 2,
+                                pointRadius: 5,
+                                pointBackgroundColor: "rgba(130, 190, 0, 1)"
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1  
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+
+
+       
+        
+
+        
 
         <!--New row-->
         <div class="row">
@@ -329,7 +487,7 @@
                     </div>
                     <!-- Card Body -->
                     <div class="card-body" style="padding-bottom: 10px;">
-                        <div class="mt-1 text-center font-weight-bold text-secondary"> Total : {{chiffre_affaire_total}} €</div>
+                        <div class="mt-1 text-center font-weight-bold text-secondary">{{nb_intervenants}} intervenants</div>
                         <div class="chart-pie pt-4 pb-2">
                             <canvas id="PieChartDepartEleve"></canvas>
                         </div>
@@ -370,7 +528,7 @@
                     </div>
                     <!-- Card Body -->
                     <div class="card-body" style="padding-bottom: 10px;">
-                        <div class="mt-1 text-center font-weight-bold text-secondary"> {{nb_intervenants_026}} intervenants</div>
+                        <div class="mt-1 text-center font-weight-bold text-secondary"> {{nb_intervenants}} intervenants</div>
                         <div class="chart-pie pt-4 pb-2">
                             <canvas id="PieChartGenreIntervenants"></canvas>
                         </div>
@@ -517,13 +675,11 @@
             
 
         </div>
-
+        <!-- 
         <div class="row">
 
-            <!-- Area Chart -->
             <div class="col-xl-12 col-lg-7">
                 <div class="card shadow mb-4">
-                    <!-- Card Header - Dropdown -->
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-center">
                         <h6 class="m-0 font-weight-bold text-primary">Graphe du C.A</h6>
                         <div class="dropdown no-arrow">
@@ -539,13 +695,17 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Card Body -->
+                    
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label for="start_date">Date de début:</label>
-                                <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
-                            </div>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="col-md-1">
+                                    <label for="start_date">Date de début:</label>
+                                    <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
                             <div class="col-md-3">
                                 <label for="end_date">Date de fin:</label>
                                 <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
@@ -569,7 +729,7 @@
 
             </script>
         </div>
-
+        -->
         
         
             

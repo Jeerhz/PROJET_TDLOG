@@ -263,8 +263,8 @@
                                 {% for phase in etude.phases.all %}
                                 <h6>Phase {{ phase.numero }}</h6>
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
-                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.id }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.id }}" class="form-control" value=""></li>
                                 </ul>
                                 {% endfor %}
                             </div>
@@ -295,8 +295,8 @@
                                 
                                 <h6>Phase {{ phase.numero }}</h6>
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.numero }}" class="form-control" value=""></li>
-                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.numero }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-business-time"></i><strong>Nombre JEH : </strong> <input type="text" name="nb_jeh_phase{{ phase.id }}" class="form-control" value=""></li>
+                                    <li class="list-group-item"><i class="fas fa-money-bill"></i> <strong>Pourcentage rétribution : </strong> <input type="text" name="pourcentage_retribution_phase{{ phase.id }}" class="form-control" value=""></li>
                                 </ul>
                                 {% endfor %}
                                 {% endfor %}
@@ -496,7 +496,9 @@
                                                             <li class="list-group-item"> <strong>Fin :</strong> <span id="etude-fin"> {% if etude.fin %} {{ etude.fin|FormatDate  }} {% else %} pas de fin {% endif %}</span></li>
                                                             <li class="list-group-item"><strong> Nombre de JEH :</strong> <span id="etude-nb_JEH">{{ etude_nbJEH }}</span></li>
                                                             <li class="list-group-item"><strong> Montant Total JEHs :</strong> <span id="etude-montant">{{ etude_total_montant_phases|FormatNombres }}</span> €</li>
+                                                            {% if type_convention == "Convention d'étude" %}
                                                             <li class="list-group-item"><strong>Frais de dossier :</strong> <span id="etude-frais">{{ etude.frais_dossier|FormatNombres }}</span> €</li>
+                                                            {% endif %}
                                                             <li class="list-group-item"><strong>Remarque :</strong> <span id="etude-remarque">{{ etude.remarque }}</span> </li>
                                                             <li class="list-group-item"> <strong>Numéro :</strong> <span id="etude-numero">{{ etude.numero }}</span></li>
 
@@ -526,7 +528,9 @@
                                                                             <li class="list-group-item"><strong> Fin :</strong> <input type="date" name="fin" class="form-control" value="{{ etude.fin|date:'Y-m-d' }}" ></li>
                                                                             <li class="list-group-item"><strong> Nombre de JEH :</strong> <input type="number" name="nb_JEH" class="form-control" value="{{ etude_nbJEH }}" readonly></li>
                                                                             <li class="list-group-item"><strong> Montant Total JEHs :</strong> <input type="number" name="montant_phase_HT" class="form-control" value="{{ etude_total_montant_phases }}" readonly></li>
+                                                                            {% if type_convention == "Convention d'étude" %}
                                                                             <li class="list-group-item"> <strong>Frais de dossier :</strong> <input type="number" name="frais_dossier" class="form-control" value="{{ etude.frais_dossier }}"></li>
+                                                                            {% endif %}
                                                                             <li class="list-group-item"><strong>Remarque :</strong> <input type="char" name="remarque" class="form-control" value="{{ etude.remarque }}"> </li>
                                                                             <li class="list-group-item"><strong>Numéro :</strong> <input type="number" name="numero" class="form-control" value="{{ etude.numero }}" required step="1"> </li>
 
@@ -1384,7 +1388,7 @@
                                 <div class="tab-pane fade" id="bons" role="tabpanel" aria-labelledby="bons-tab">
                                     <div class="card mb-3">
                                         <div  class="col-12 mb-4" style="padding:20px; margin: 0px;" >
-                                            <a data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=0 %}" data-new="true" data-toggle="modal" data-target="#ajoutBDC">
+                                            <a data-toggle="modal" data-target="#ajoutBDC">
                                                 <i class="fas fa-plus mr-2"></i>Ajouter un bon de commande
                                             </a>
                                             {% if bons %}
@@ -1435,7 +1439,7 @@
                                                                 
                                                                 <div class="text-right">
                                                                     <!-- Modify Button -->
-                                                                    <button type="button" class="btn btn-outline-secondary mt-3" data-href="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}" data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" data-new="false" data-toggle="modal" data-target="#ajoutBDC">Modifier</button>
+                                                                    <button type="button" class="btn btn-outline-secondary mt-3" data-toggle="modal" data-target="#modifier_BDC_{{bon.id}}">Modifier</button>
                                                                     <!-- Delete Button-->
                                                                     <button type="button" 
                                                                             class="btn btn-outline-danger mt-3" 
@@ -1443,27 +1447,27 @@
                                                                             data-getinfohref="{% url 'get_object_info' model_name='BonCommande' object_id=bon.id %}" 
                                                                             data-new="false" 
                                                                             data-toggle="modal" 
-                                                                            data-target="#deleteModalBDC">
+                                                                            data-target="#deleteModalBDC_{{bon.id}}">
                                                                         Supprimer
                                                                     </button>
                                                                 </div>
                                                                 
                                                                 <!-- Delete Modal -->
-                                                                <div class="modal fade" id="deleteModalBDC" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabelBDC" aria-hidden="true">
+                                                                <div class="modal fade" id="deleteModalBDC_{{bon.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabelBDC_{{bon.id}}" aria-hidden="true">
                                                                     <div class="modal-dialog" role="document">
                                                                         <div class="modal-content">
                                                                             <div class="modal-header">
-                                                                                <h5 class="modal-title" id="deleteModalLabelBDC">Supprimer le bon de commande</h5>
+                                                                                <h5 class="modal-title" id="deleteModalLabelBDC_{{bon.id}}">Supprimer le bon de commande</h5>
                                                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                                     <span aria-hidden="true">&times;</span>
                                                                                 </button>
                                                                             </div>
                                                                             <div class="modal-body">
-                                                                                Êtes-vous sûr de vouloir supprimer ce bon de commande ?
+                                                                                Êtes-vous sûr de vouloir supprimer le bon {{bon}} ?
                                                                             </div>
                                                                             <div class="modal-footer">
                                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                                                <form id="deleteBDCForm" method="POST" action="{% url 'delete_bdc' id_etude=etude.id id_bon=bon.id %}">
+                                                                                <form id="deleteBDCForm_{{bon.id}}" method="POST" action="{% url 'delete_bdc' id_etude=etude.id id_bon=bon.id %}">
                                                                                     {% csrf_token %}
                                                                                     <button type="submit" class="btn btn-outline-danger">Supprimer</button>
                                                                                 </form>
@@ -1478,12 +1482,117 @@
                                                     
                                                     
                                                 </div>
+                                                <div class="modal fade" id="modifier_BDC_{{bon.id}}" tabindex="-1" role="dialog" aria-labelledby="modifier_BDC_{{bon.id}}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-xl" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" >Modifier le bdc {{bon}}</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <form id="formmodifier_BDC_{{bon.id}}" method="POST" action="{% url 'modifier_bon_commande' id_etude=iD id_bon=bon.id %}">
+                                                                <div class="modal-body">
+                                                                    {% csrf_token %}
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="numeroBDC" class="col-sm-4 col-form-label">Numéro bon de commande :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="number" name="numero_bdc" class="form-control" id="numeroBDC" value="{{bon.numero}}" required>
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="debut" class="col-sm-4 col-form-label">Début :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="date" name="debut" class="form-control" id="debut" value="{{ bon.debut|date:'Y-m-d' }}">
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="fin" class="col-sm-4 col-form-label">Fin :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="date" name="fin" class="form-control" id="fin" value="{{bon.fin_bdc|date:'Y-m-d'}}">
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="frais_dossier" class="col-sm-4 col-form-label">Frais de dossier :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="number" name="frais_dossier" class="form-control" id="frais_dossier" value="{{bon.frais_dossier}}">
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="remarqueBDC" class="col-sm-4 col-form-label">Remarque :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="text" name="remarque_bdc" class="form-control" id="remarqueBDC" value="{{bon.remarque}}">
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="objectifsBDC" class="col-sm-4 col-form-label">Objectifs :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="text" name="objectifs_bdc" class="form-control" id="objectifsBDC" value="{{bon.objectifs}}">
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div>Cahier des Charges :</div>
+                                                                    <li class="form-group row mb-3" id="livrable_bdc_{{bon.id}}" style="padding: 10px;">
+                                                                        {% for key, value in bon.cahier_des_charges.items %}
+                                                                        <div class="input-group mb-2" data-key="{{ key }}">
+                                                                            <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                                            <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                                            <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
+                                                                        </div>
+                                                                        {% endfor %}
+                                                                    </li>
+                                                                    <span style="margin-bottom: 50px; padding-left: 0px;"><button type="button" class="btn btn-secondary" id="ajouter_livrable_bdc_{{bon.id}}" >Ajouter un livrable</button></span>
+                                                                    <br style="padding-bottom: 20px;">
+                                                                    <div style="padding-top: 20px;" class="form-group row mb-3">
+                                                                        <label for="periode_de_garantieBDC" class="col-sm-4 col-form-label">Période de garantie :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="number" name="periode_de_garantie_bdc" class="form-control" id="periode_de_garantieBDC" value="{{bon.periode_de_garantie}}" required>
+                                                                        </div>
+                                                                    </div> 
+                                                                    <div class="form-group row mb-3">
+                                                                        <label for="acompte_pourcentageBDC" class="col-sm-4 col-form-label">Pourcentage de l'acompte :</label>
+                                                                        <div class="col-sm-8 justify-content-center">
+                                                                            <input type="number" name="acompte_pourcentage_bdc" class="form-control" id="acompte_pourcentageBDC" value="{{bon.acompte_pourcentage}}" required>
+                                                                        </div>
+                                                                    </div> 
+                                                                    
+                                                                
+                                                                    <!-- Button to add new key-value pair inputs -->
+                                                                    
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                                                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                                                                </div>
+                                                            </form>
+                                                            <script>
+                                                                document.getElementById('ajouter_livrable_bdc_{{bon.id}}').addEventListener('click', function () {
+                                                                    // Create a new input group for key-value pairs
+                                                                    const newField = document.createElement('div');
+                                                                    newField.className = 'input-group mb-2';
+                                                                    newField.innerHTML = `
+                                                                        <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
+                                                                        <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
+                                                                        <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
+                                                                    `;
+                                                                    document.getElementById('livrable_bdc_{{bon.id}}').appendChild(newField);
+                                                                });
+                                                            
+                                                                // Event delegation to handle removal of dynamically added fields
+                                                                document.getElementById('livrable_bdc_{{bon.id}}').addEventListener('click', function (event) {
+                                                                    if (event.target.classList.contains('btn-remove')) {
+                                                                        event.target.parentElement.remove();
+                                                                    }
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             {% endfor %}
                                             {% endif %}
                                         </div>
                                         <!-- Début formulaire ajout bon de commande -->
-                                        <div class="modal fade" id="ajoutBDC" tabindex="-1" role="dialog" aria-labelledby="titreBDC" aria-hidden="true">
+                                        <div class="modal fade" id="ajoutBDC" tabindex="-1" role="dialog" aria-labelledby="ajoutBDC" aria-hidden="true">
                                             <div class="modal-dialog modal-xl" role="document">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
@@ -1492,7 +1601,7 @@
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
-                                                    <form id="formAjoutBDC" method="post">
+                                                    <form id="formAjoutBDC" method="POST" action="{% url 'modifier_bon_commande' id_etude=iD id_bon=0 %}">
                                                         <div class="modal-body">
                                                             {% csrf_token %}
                                                             <div class="form-group row mb-3">
@@ -1532,7 +1641,7 @@
                                                                 </div>
                                                             </div> 
                                                             <div>Cahier des Charges :</div>
-                                                            <li class="form-group row mb-3" id="livrable_bdc" style="padding: 10px;">
+                                                            <li class="form-group row mb-3" id="nv_livrable_bdc_{{bon.id}}" style="padding: 10px;">
                                                                 {% for key, value in bon.cahier_des_charges.items %}
                                                                 <div class="input-group mb-2" data-key="{{ key }}">
                                                                     <input type="text" name="keys_bdc[]" class="form-control" placeholder="n°" value="{{ key }}">
@@ -1541,7 +1650,7 @@
                                                                 </div>
                                                                 {% endfor %}
                                                             </li>
-                                                            <span style="margin-bottom: 50px; padding-left: 0px;"><button type="button" class="btn btn-secondary" id="add-field-btn" >Ajouter un livrable</button></span>
+                                                            <span style="margin-bottom: 50px; padding-left: 0px;"><button type="button" class="btn btn-secondary" id="bt_nv_livrable_bdc_{{bon.id}}" >Ajouter un livrable</button></span>
                                                             <br style="padding-bottom: 20px;">
                                                             <div style="padding-top: 20px;" class="form-group row mb-3">
                                                                 <label for="periode_de_garantieBDC" class="col-sm-4 col-form-label">Période de garantie :</label>
@@ -1566,7 +1675,7 @@
                                                         </div>
                                                     </form>
                                                     <script>
-                                                        document.getElementById('add-field-btn').addEventListener('click', function () {
+                                                        document.getElementById('bt_nv_livrable_bdc_{{bon.id}}').addEventListener('click', function () {
                                                             // Create a new input group for key-value pairs
                                                             const newField = document.createElement('div');
                                                             newField.className = 'input-group mb-2';
@@ -1575,11 +1684,11 @@
                                                                 <input type="text" name="values_bdc[]" class="form-control" placeholder="livrable" value="{{ value }}">
                                                                 <button type="button" class="btn btn-outline-danger btn-remove">Supprimer</button>
                                                             `;
-                                                            document.getElementById('livrable_bdc').appendChild(newField);
+                                                            document.getElementById('nv_livrable_bdc_{{bon.id}}').appendChild(newField);
                                                         });
                                                     
                                                         // Event delegation to handle removal of dynamically added fields
-                                                        document.getElementById('livrable_bdc').addEventListener('click', function (event) {
+                                                        document.getElementById('nv_livrable_bdc_{{bon.id}}').addEventListener('click', function (event) {
                                                             if (event.target.classList.contains('btn-remove')) {
                                                                 event.target.parentElement.remove();
                                                             }

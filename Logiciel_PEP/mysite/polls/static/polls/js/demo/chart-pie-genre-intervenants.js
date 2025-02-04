@@ -7,7 +7,7 @@ var labels = Object.keys(genre_inter);
 var dataValues = Object.values(genre_inter);
 
 // Example colors (you can generate more if needed)
-var dataColors = [ '#FF33FF', '#FFFF99'];
+var dataColors = [ 'rgb(130,190,0)', 'rgb(205,0,55)'];
 
 var ctx = document.getElementById("PieChartGenreIntervenants");
 var myPieChart = new Chart(ctx, {
