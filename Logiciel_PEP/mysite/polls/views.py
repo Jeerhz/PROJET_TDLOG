@@ -2645,12 +2645,6 @@ def stat_KPI_2(request):
                 for bdc in bdcs:
                     if bdc.debut:
                         mois = bdc.debut.strftime("%m-%Y")
-<<<<<<< HEAD
-                    else:
-                        date_now = datetime.datetime.now()
-                        mois = date_now.strftime("%m-%Y")
-=======
->>>>>>> adle/local
 
                         if int(mois[3:]) >= int(derniere_date_CA[3:]) and int(
                             mois[0:2]
@@ -6055,10 +6049,6 @@ def modifier_etude_form(request, iD):
         if request.method == "POST":
             debut = request.POST.get("debut")
             fin_etude = request.POST.get("fin")
-<<<<<<< HEAD
-=======
-
->>>>>>> adle/local
             frais_dossier = request.POST.get("frais_dossier")
             if frais_dossier:
                 etude.frais_dossier = frais_dossier
