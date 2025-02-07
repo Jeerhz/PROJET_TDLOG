@@ -3299,7 +3299,7 @@ def stat_KPI(request):
             context = {}
         return HttpResponse(template.render(context, request))
     except Exception as e:
-        template = loader.get_template("polls/error.html")
+        template = loader.get_template("polls/page_error.html")
         context = {"error": e}
         return HttpResponse(template.render(context, request))
 
