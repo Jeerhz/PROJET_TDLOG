@@ -207,10 +207,10 @@
 
         <!-- Begin Page Content -->
         
-        <div class="card-header mt-3">
+        <div class="card-header mt-3" style="margin:0px !important; padding-top: 0px !important; padding-bottom: 0px !important;">
             
             
-            <div class="card-body p-3">
+            <div class="card-body p-3" style="padding: 0px;">
                 <div class="row justify-content-between">
                     <!-- Card Mission terminée (Annuel) -->
                     <div class="col-xl-3 col-md-6 mb-3">
@@ -269,13 +269,13 @@
 
                     <div class="col-xl-3 col-md-6 mb-3">
                         <div class="card shadow h-100 d-flex flex-column" style="border-left: 4px solid black;"> <!-- Add flex-column for Flexbox -->
-                            <div class="card-body d-flex flex-column"> <!-- Make the card-body a flex container -->
+                            <div class="card-body d-flex flex-column" style="padding-top:5px; padding-bottom: 5px;"> <!-- Make the card-body a flex container -->
                                 <form action="{% url 'index' %}" method="post" class="h-100 d-flex flex-column">
                                     {% csrf_token %}
-                                    <div class="form-group flex-grow-1"> <!-- Use flex-grow-1 to make the form expand -->
-                                        <select multiple class="form-control" id="mandat-select" name="mandat-select">
+                                    <div class="form-group flex-grow-1" style="margin-bottom: 8px;"> <!-- Use flex-grow-1 to make the form expand -->
+                                        <select multiple class="form-control" id="mandat-select" name="mandat-select" style="height: auto;">
                                             {% for choice in mandat_choices %}
-                                            <option value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %}>
+                                            <option style="text-align: center;" value="{{ choice.0 }}"{% if choice in mandat_default %} selected{% endif %} >
                                                 Mandat {{ choice.1 }}
                                             </option>
                                             {% endfor %}
@@ -301,15 +301,15 @@
 
         {% if user_parametres.param_statut_etude_ed %}
         <!-- Beginning of container-fluid -->
-        <div class="container-fluid" >
+        <div class="container-fluid" style="padding-top: 0px; padding-right: 0px;" >
             <div class="row">
                 <div class="col-12 ">
-                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en discussion</h2>
+                    <h2 class="mt-4 mb-2" style="font-weight: 500; font-size: 1.5rem; text-align: center; color: black;">Études en discussion</h2>
                 </div>
             </div>
             <div class="card mb-4 mr-3 shadow">
                 <div class="table-responsive">
-                    <table class="table table-hover text-center">
+                    <table class="table table-hover text-center table-sm" style="width: 100%;">
                         <thead style="background-color: #ffffff;">
                             <tr>
                                 <th scope="col" style="width: 5%;"></th>
@@ -536,10 +536,10 @@
 
         {% if user_parametres.param_statut_etude_ec %}
         <!-- Beginning of container-fluid -->
-        <div class="container-fluid">
+        <div class="container-fluid"  style="padding-top: 0px; padding-right: 0px; ">
             <div class="row">
                 <div class="col-12 ">
-                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études en cours</h2>
+                    <h2 class="mt-4 mb-2" style="font-weight: 500; font-size: 1.5rem; text-align: center; color: black;">Études en cours</h2>
                 </div>
             </div>
             <div class="card mb-4 mr-3 shadow">
@@ -812,15 +812,15 @@
         
         {% if user_parametres.param_statut_etude_t %}
         <!-- Beginning of container-fluid -->
-        <div class="container-fluid">
+        <div class="container-fluid"  style="padding-top: 0px; padding-right: 0px; ">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="mt-4 mb-2 text-secondary" style="font-weight: 300; font-size: 1.5rem;">Études terminées</h2>
+                    <h2 class="mt-4 mb-2" style="font-weight: 500; font-size: 1.5rem; text-align: center; color: black;">Études terminées</h2>
                 </div>
             </div>
             <div class="card mb-4 mr-3 shadow">
                 <div class="table-responsive">
-                    <table class="table table-hover text-center">
+                    <table class="table table-hover text-center table-sm" style="width: 100%;">
                         <thead style="background-color: #ffffff;">
                             <tr>
                                 <th scope="col" style="width: 5%;"></th>

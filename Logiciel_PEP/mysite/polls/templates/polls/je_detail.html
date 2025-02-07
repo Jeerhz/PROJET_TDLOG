@@ -39,6 +39,7 @@
                                 <li class="list-group-item"><strong>TVA :</strong> {{ je.TVA }}</li>
                                 <li class="list-group-item"><strong>IBAN :</strong> {{ je.IBAN }}</li>
                                 <li class="list-group-item"><strong>BIC :</strong> {{ je.BIC }}</li>
+                                <li class="list-group-item"><strong>Base URSSAF :</strong> {{ je.base_urssaf|FormatNombres }}</li>
                                 <li class="list-group-item"><strong>Nombre de Membres :</strong> {{ je.member_set.count }}</li>
                                 <li class="list-group-item"><strong>Nombre d'Inscrits :</strong> {{ je.student_set.count }}</li>
                                 <li class="list-group-item"><strong>Chiffres d'Affaires :</strong> {{ je.chiffres_affaires }} €</li>
@@ -54,15 +55,16 @@
                             <form action="{% url 'modifier_je' je.id %}" method="post" id="je-f-form">
                                 {% csrf_token %}
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item"><i class="fas fa-file-alt mr-2"></i><strong>Nom:</strong> <input type="text" name="nom" class="form-control" value="{{ je.nom }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Raison Sociale:</strong> <input type="text" name="raison_sociale" class="form-control" value="{{ je.raison_sociale }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse:</strong> <input type="text" name="rue" class="form-control" value="{{ je.rue }}"> <input type="text" name="ville" class="form-control mt-1" value="{{ je.ville }}"> <input type="text" name="code_postal" class="form-control mt-1" value="{{ je.code_postal }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-id-badge mr-2"></i><strong>SIRET:</strong> <input type="text" name="siret" class="form-control" value="{{ je.siret }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-layer-group mr-2"></i><strong>APE:</strong> <input type="text" name="APE" class="form-control" value="{{ je.APE }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-percent mr-2"></i><strong>TVA:</strong> <input type="text" name="TVA" class="form-control" value="{{ je.TVA }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-credit-card mr-2"></i><strong>IBAN:</strong> <input type="text" name="IBAN" class="form-control" value="{{ je.IBAN }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>BIC:</strong> <input type="text" name="BIC" class="form-control" value="{{ je.BIC }}"></li>
-                                    <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires:</strong> <input type="number" name="chiffres_affaires" class="form-control" value="{{ je.chiffres_affaires }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-file-alt mr-2"></i><strong>Nom :</strong> <input type="text" name="nom" class="form-control" value="{{ je.nom }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-briefcase mr-2"></i><strong>Raison Sociale :</strong> <input type="text" name="raison_sociale" class="form-control" value="{{ je.raison_sociale }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-map-marker-alt mr-2"></i><strong>Adresse :</strong> <input type="text" name="rue" class="form-control" value="{{ je.rue }}"> <input type="text" name="ville" class="form-control mt-1" value="{{ je.ville }}"> <input type="text" name="code_postal" class="form-control mt-1" value="{{ je.code_postal }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-id-badge mr-2"></i><strong>SIRET :</strong> <input type="text" name="siret" class="form-control" value="{{ je.siret }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-layer-group mr-2"></i><strong>APE :</strong> <input type="text" name="APE" class="form-control" value="{{ je.APE }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-percent mr-2"></i><strong>TVA :</strong> <input type="text" name="TVA" class="form-control" value="{{ je.TVA }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-credit-card mr-2"></i><strong>IBAN :</strong> <input type="text" name="IBAN" class="form-control" value="{{ je.IBAN }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>BIC :</strong> <input type="text" name="BIC" class="form-control" value="{{ je.BIC }}"></li>
+                                    <li class="list-group-item"><i class="fas fa-university mr-2"></i><strong>Base URSSAF :</strong> <input type="number" name="base_urssaf" class="form-control" value="{{ je.base_urssaf }}" step="any"></li>
+                                    <li class="list-group-item"><i class="fas fa-money-bill-wave mr-2"></i><strong>Chiffres d'Affaires :</strong> <input type="number" name="chiffres_affaires" class="form-control" value="{{ je.chiffres_affaires }}" step="any"></li>
                                 </ul>
                                 <div class="row justify-content-between mt-3">
                                     <div class="col-auto">

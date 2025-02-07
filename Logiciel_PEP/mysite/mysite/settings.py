@@ -258,6 +258,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_BEAT_SCHEDULE = {
     "send-reminder-emails-every-day": {
         "task": "polls.tasks.send_reminder_emails",
-        "schedule": crontab(hour=8, minute=0),
+        "schedule": crontab(hour=8, minute=0),  # Adjust this according to your needs
     },
 }

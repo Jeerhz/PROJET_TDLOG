@@ -7,7 +7,7 @@ var labels = Object.keys(repartitionData_nb);
 var dataValues = Object.values(repartitionData_nb);
 
 // Example colors (you can generate more if needed)
-var dataColors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99'];
+var dataColors = ['rgb(0,154,166)', 'rgb(255,182,18)']
 
 var ctx = document.getElementById("PieChartEtudeSatusnb");
 var myPieChart = new Chart(ctx, {
@@ -34,7 +34,12 @@ var myPieChart = new Chart(ctx, {
       caretPadding: 10,
     },
     legend: {
-      display: false,  // Disable the default Chart.js legend
+      display: true,  // Display the legend
+      position: 'bottom',  // You can also use 'top', 'left', or 'right'
+      labels: {
+        boxWidth: 20,  // Size of the box next to the label
+        padding: 15,  // Space between labels
+      },
     },
     cutoutPercentage: 80,
   },
