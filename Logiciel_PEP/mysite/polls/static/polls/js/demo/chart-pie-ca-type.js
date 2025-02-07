@@ -16,7 +16,7 @@ function generateColors(count) {
 // Pie Chart Example
 var ctx = document.getElementById("PieChartCAType");
 var labels = ["Grande Entreprise", "Secteur Public", "Start-Up et TPE", "PME", "ETI", "Association"];
-var dataColors = ['#4A90E2', '#D0021B', '#7B8D8E', '#F5A623', '#8B572A', '#50E3C2'];
+var dataColors = ['rgb(0,154,166)', 'rgb(255,182,18)', 'rgb(130,190,0)', 'rgb(205,0,55)', 'rgb(161,0,107)', 'rgb(210,255,0)', 'rgb(0,136,206)', 'rgb(110,30,120)', 'rgb(224,82,6)','rgb(213,43,30)']; // Couleurs pour chaque secteur
 var myPieChart2 = new Chart(ctx, {
   type: 'doughnut',
   data: {

@@ -54,7 +54,7 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(to bottom, white, #4661b382); color: white;">
 
             <!-- Sidebar - Brand -->
             <img class="my-custom-logo" src="{{ request.user.je.logo.url }}">
@@ -183,7 +183,7 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-0 static-top shadow" style="background: linear-gradient(to right, white, #5170cc82); color: white;">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -204,17 +204,17 @@
                             <div class="list-group" id="suggestions-results"></div>
                         </div>
                     </form>
-                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter une étude</span>
+                    <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Etude' iD=0 %}" >
+                        <i class="fas fa-plus" style="color  :#374c8c !important;"></i>
+                        <span style="color  :#374c8c !important;">Ajouter une étude</span>
                     </a>
                     <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Client' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un client</span>
+                        <i class="fas fa-plus" style="color  :#374c8c !important;"></i>
+                        <span style="color  :#374c8c !important;">Ajouter un client</span>
                     </a>
                     <a class="nav-link" style="margin-bottom: 0.2rem; padding: 0.3rem 0.5rem; margin-right: 1rem;" href="{% url 'input' modelName='Student' iD=0 %}">
-                        <i class="fas fa-plus"></i>
-                        <span>Ajouter un étudiant</span>
+                        <i class="fas fa-plus" style="color  :#374c8c !important;"></i>
+                        <span style="color  :#374c8c !important;">Ajouter un étudiant</span>
                     </a>
 
                     <!-- Topbar Navbar -->
@@ -382,7 +382,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user }}</span>
+                                <span class="mr-2 d-none d-lg-inline text-600 small" style="color: white;">{{ request.user }}</span>
                                 <img class="img-profile rounded-circle"
                                     src="{{ request.user.photo.url }}">
                             </a>

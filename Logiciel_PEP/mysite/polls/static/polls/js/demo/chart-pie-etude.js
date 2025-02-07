@@ -14,7 +14,7 @@ var labels = Object.keys(repartition_budget);
 var dataValues = Object.values(repartition_budget);
 
 // Example colors (you can generate more if needed)
-var dataColors = ['#1f3753', '#800080', '#800000']
+var dataColors = ['rgb(0,154,166)', 'rgb(255,182,18)', 'rgb(130,190,0)', 'rgb(205,0,55)', 'rgb(161,0,107)', 'rgb(210,255,0)', 'rgb(0,136,206)', 'rgb(110,30,120)', 'rgb(224,82,6)','rgb(213,43,30)']; // Couleurs pour chaque secteur
 
 var ctx = document.getElementById("PieChartEtude");
 var myPieChart = new Chart(ctx, {

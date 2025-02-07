@@ -5,7 +5,7 @@ Chart.defaults.global.defaultFontColor = '#858796';
 
 var labels2 = Object.keys(dico_ca_departement);
 var dataValues2 = Object.values(dico_ca_departement);
-var dataColors2 = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',  '#E6B333', '#3366E6']
+var dataColors2 = ['rgb(0,154,166)', 'rgb(255,182,18)', 'rgb(130,190,0)', 'rgb(205,0,55)', 'rgb(161,0,107)', 'rgb(210,255,0)', 'rgb(0,136,206)', 'rgb(110,30,120)', 'rgb(224,82,6)','rgb(213,43,30)']; // Couleurs pour chaque secteur
 
 // Example colors (you can generate more if needed)
 

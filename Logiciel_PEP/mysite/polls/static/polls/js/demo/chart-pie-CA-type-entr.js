@@ -5,7 +5,7 @@ Chart.defaults.global.defaultFontColor = '#858796';
 
 var labels2 = Object.keys(CA_typeentreprise);
 var dataValues2 = Object.values(CA_typeentreprise);
-var dataColors2 = ['#0071C5', '#FFD700', '#DC143C', '#008B8B', '#B8860B', '#4682B4', '#DAA520', '#808080']; // Couleurs pour chaque secteur
+var dataColors2 = ['rgb(0,154,166)', 'rgb(255,182,18)', 'rgb(130,190,0)', 'rgb(205,0,55)', 'rgb(161,0,107)', 'rgb(210,255,0)']; // Couleurs pour chaque secteur
 
 // Example colors (you can generate more if needed)
 
@@ -50,7 +50,7 @@ var labels = Object.keys(dico_ca_secteur);
 var dataValues = Object.values(dico_ca_secteur);
 
 // Example colors (you can generate more if needed)
-var dataColors = ['#0071C5', '#FFD700', '#DC143C', '#008B8B', '#B8860B', '#4682B4', '#DAA520', '#808080']; // Couleurs pour chaque secteur
+var dataColors = ['rgb(0,154,166)', 'rgb(255,182,18)', 'rgb(130,190,0)', 'rgb(205,0,55)', 'rgb(161,0,107)', 'rgb(210,255,0)']; // Couleurs pour chaque secteur
 
 var ctx = document.getElementById("PieChartCAdSecteur");
 var myPieChart = new Chart(ctx, {
