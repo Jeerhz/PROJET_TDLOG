@@ -65,15 +65,49 @@
                                 <th style="padding-left: 60px; padding-right: 15px;" class="text-left">Étudiant</th>
                                 <th class="text-center">Promotion</th>
                                 <th style="padding-left: 15px; padding-right: 60px;" class="text-right">Département</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody id="etudiantTableBody" style="color: rgba(8, 20, 1, 0.828);">
                             <!-- Entrées pour l'annuaire étudiant avec des liens vers les profils -->
                             {% for student in student_list %}
-                            <tr onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
-                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left">{{ student.titre }} {{ student.first_name }} {{ student.last_name }} </td>
-                                <td style="padding-left: 15px; padding-right: 15px;" class="text-center"> {{ student.promotion }} </td>
-                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right"> {{ student.departement }} </td>
+                            <tr >
+                                <td style="padding-left: 60px; padding-right: 15px;" class="text-left"onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;">
+                                    {{ student.titre }} {{ student.first_name }} {{ student.last_name }} </td>
+                                <td style="padding-left: 15px; padding-right: 15px;" class="text-center" onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;"> 
+                                    {{ student.promotion }} </td>
+                                <td style="padding-left: 15px; padding-right: 60px;" class="text-right" onclick="location.href=&quot;{% url 'details' 'Student' student.id %}&quot;"> 
+                                    {{ student.departement }} </td>
+                                
+                                <td>
+                                    
+                                    <button type="button" class="close" data-toggle="modal" data-target="#deleteModaleleve{{ student.id }}" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <div class="modal fade" id="deleteModaleleve{{ student.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModaleleve{{ student.id }}" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModaleleve{{ student.id }}">Supprimer Élève</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Êtes-vous sûr de vouloir supprimer cet élève ?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                    <form id="deleteStudentForm" method="POST" action="{% url 'delete_student' student.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-outline-danger">Supprimer</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                                        
+                                    
+                                </td>
 
                             </tr>
                             {% endfor %}
