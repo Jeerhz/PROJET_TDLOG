@@ -147,6 +147,7 @@ class Client(models.Model):
         PME = "PME", "Petite et moyenne entreprise"
         ETI = "ETI", "Entreprise de taille intermédiaire"
         ASSOCIATION = "ASSOCIATION", "Association"
+        PARTICULIER = "PARTICULIER", "Particulier"
 
     class Secteur(models.TextChoices):
         INDUSTRIE = "INDUSTRIE", "Industrie"

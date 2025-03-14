@@ -3020,23 +3020,31 @@ def stat_KPI(request):
                 avenants_ce_dico[date][2] += 1
 
         dates = [datetime.datetime.strptime(m, "%m-%Y") for m in avenants_ce_dico]
-        start_date, end_date = (min(dates), max(dates)) if dates else (None, None)
-        liste_date_avenants = []
-        current_date = start_date
+        if len(dates) != 0:
+            start_date, end_date = min(dates), max(dates)
+            liste_date_avenants = []
+            current_date = start_date
 
-        while current_date <= end_date:
-            date_ajou = current_date.strftime("%m-%Y")
-            liste_date_avenants.append(date_ajou)
-            if date_ajou not in avenants_ce_dico:
-                avenants_ce_dico[date_ajou] = {0: 0, 1: 0, 2: 0}
-            current_date += relativedelta(months=1)
-        liste_nb_avenants = [avenants_ce_dico[mois][0] for mois in liste_date_avenants]
-        liste_nb_avenants_del = [
-            avenants_ce_dico[mois][1] for mois in liste_date_avenants
-        ]
-        liste_nb_avenants_bud = [
-            avenants_ce_dico[mois][2] for mois in liste_date_avenants
-        ]
+            while current_date <= end_date:
+                date_ajou = current_date.strftime("%m-%Y")
+                liste_date_avenants.append(date_ajou)
+                if date_ajou not in avenants_ce_dico:
+                    avenants_ce_dico[date_ajou] = {0: 0, 1: 0, 2: 0}
+                current_date += relativedelta(months=1)
+            liste_nb_avenants = [
+                avenants_ce_dico[mois][0] for mois in liste_date_avenants
+            ]
+            liste_nb_avenants_del = [
+                avenants_ce_dico[mois][1] for mois in liste_date_avenants
+            ]
+            liste_nb_avenants_bud = [
+                avenants_ce_dico[mois][2] for mois in liste_date_avenants
+            ]
+        else:
+            liste_date_avenants = []
+            liste_nb_avenants = []
+            liste_nb_avenants_del = []
+            liste_nb_avenants_bud = []
 
         assi_JEHs = AssignationJEH.objects.filter(eleve__je=je_user)
         assi_JEHs_dico_temp = {}
@@ -3099,16 +3107,22 @@ def stat_KPI(request):
                         graphe_CA_mois[debut_m] += bon["ca"]
 
         dates = [datetime.datetime.strptime(m, "%m-%Y") for m in graphe_CA_mois]
-        start_date, end_date = min(dates), max(dates)
-        liste_mois = []
-        current_date = start_date
+        if len(dates) != 0:
+            start_date, end_date = min(dates), max(dates)
+            liste_mois = []
+            current_date = start_date
 
-        while current_date <= end_date:
-            date_ajou = current_date.strftime("%m-%Y")
-            liste_mois.append(date_ajou)
-            if date_ajou not in graphe_CA_mois:
-                graphe_CA_mois[date_ajou] = 0
-            current_date += relativedelta(months=1)
+            while current_date <= end_date:
+                date_ajou = current_date.strftime("%m-%Y")
+                liste_mois.append(date_ajou)
+                if date_ajou not in graphe_CA_mois:
+                    graphe_CA_mois[date_ajou] = 0
+                current_date += relativedelta(months=1)
+
+            liste_CA_mois = [graphe_CA_mois[mois] for mois in liste_mois]
+        else:
+            graphe_CA_mois = []
+            liste_mois = []
 
         liste_CA_mois = [graphe_CA_mois[mois] for mois in liste_mois]
 
@@ -3200,21 +3214,26 @@ def stat_KPI(request):
                     infos_devis_signes[mois] += 1
 
         dates = [datetime.datetime.strptime(m, "%m-%Y") for m in infos_devis_envoyes]
-        start_date, end_date = min(dates), max(dates)
-        liste_mois_devis = []
-        current_date = start_date
+        if len(dates) != 0:
+            start_date, end_date = min(dates), max(dates)
+            liste_mois_devis = []
+            current_date = start_date
 
-        while current_date <= end_date:
-            date_ajou = current_date.strftime("%m-%Y")
-            liste_mois_devis.append(date_ajou)
-            if date_ajou not in infos_devis_envoyes:
-                infos_devis_envoyes[date_ajou] = 0
-            if date_ajou not in infos_devis_signes:
-                infos_devis_signes[date_ajou] = 0
-            current_date += relativedelta(months=1)
+            while current_date <= end_date:
+                date_ajou = current_date.strftime("%m-%Y")
+                liste_mois_devis.append(date_ajou)
+                if date_ajou not in infos_devis_envoyes:
+                    infos_devis_envoyes[date_ajou] = 0
+                if date_ajou not in infos_devis_signes:
+                    infos_devis_signes[date_ajou] = 0
+                current_date += relativedelta(months=1)
 
-        liste_devis_envo = [infos_devis_envoyes[mois] for mois in liste_mois_devis]
-        liste_devis_sign = [infos_devis_signes[mois] for mois in liste_mois_devis]
+            liste_devis_envo = [infos_devis_envoyes[mois] for mois in liste_mois_devis]
+            liste_devis_sign = [infos_devis_signes[mois] for mois in liste_mois_devis]
+        else:
+            liste_mois_devis = []
+            liste_devis_envo = []
+            liste_devis_sign = []
 
         # Calcul des autres métriques
         liste_messages = Message.objects.filter(
