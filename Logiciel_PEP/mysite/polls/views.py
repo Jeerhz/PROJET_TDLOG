@@ -5690,64 +5690,48 @@ def nouveau_BV(request, id_etude, id_eleve):
 
 def generer_BV(request, id_bv):
     if request.user.is_authenticated:
-        try:
-            bv = BV.objects.get(id=id_bv)
-            eleve = bv.eleve
-            je = eleve.je
-            etude = bv.etude
+        bv = BV.objects.get(id=id_bv)
+        eleve = bv.eleve
+        je = eleve.je
+        etude = bv.etude
 
-            chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
+        chemin_absolu = os.path.join("polls/static/polls/template_bv_sylog.xlsx")
 
-            classeur = openpyxl.load_workbook(chemin_absolu)
+        classeur = openpyxl.load_workbook(chemin_absolu)
 
-            # Sélectionner la feuille de calcul
-            feuille = classeur.active
+        # Sélectionner la feuille de calcul
+        feuille = classeur.active
 
-            # Modifier la cellule G4
-            feuille["H2"] = f"N° {bv}"
-            feuille["I13"] = bv.retr_brute
-            feuille["I14"] = bv.nb_JEH
-            feuille["G4"] = eleve.first_name + " " + eleve.last_name
-            feuille["G6"] = eleve.adress
-            feuille["G8"] = eleve.code_postal + " " + eleve.country
-            feuille["I3"] = datetime.datetime.now().strftime("%d %B %Y")
-            feuille["C13"] = etude.ref()
+        # Modifier la cellule G4
+        feuille["H2"] = f"N° {bv}"
+        feuille["I13"] = bv.retr_brute
+        feuille["I14"] = bv.nb_JEH
+        feuille["G4"] = eleve.first_name + " " + eleve.last_name
+        feuille["G6"] = eleve.adress
+        feuille["G8"] = eleve.code_postal + " " + eleve.country
+        feuille["I3"] = datetime.datetime.now().strftime("%d %B %Y")
+        feuille["C13"] = etude.ref()
 
-            feuille["C14"] = (
-                f"{etude.ref()}rdm-{eleve.last_name[0] + eleve.first_name[0]}"
-            )
+        feuille["C14"] = f"{etude.ref()}rdm-{eleve.last_name[0] + eleve.first_name[0]}"
 
-            # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
-            # feuille['C13']= assignation_jeh.reference
-            feuille["H10"] = eleve.numero_ss
+        # assignation_jeh = AssignationJEH.objects.get(etude=etude, student=eleve)
+        # feuille['C13']= assignation_jeh.reference
+        feuille["H10"] = eleve.numero_ss
 
-            # info JE
-            feuille["I15"] = je.base_urssaf
-            feuille["F23"] = je.taux_ATMP
-            # Sauvegarder les modifications dans le fichier Excel
-            output = BytesIO()
-            classeur.save(output)
-            output.seek(0)
+        # info JE
+        feuille["I15"] = je.base_urssaf
+        feuille["F23"] = je.taux_ATMP
+        # Sauvegarder les modifications dans le fichier Excel
+        output = BytesIO()
+        classeur.save(output)
+        output.seek(0)
 
-            # Specify a new name for the downloaded file
-            download_filename = f"BV_{bv}_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
+        # Specify a new name for the downloaded file
+        download_filename = f"BV_{bv}_{eleve.last_name.upper()}_{etude.ref()}.xlsx"
 
-            # Return the file with the new filename
-            response = FileResponse(
-                output, as_attachment=True, filename=download_filename
-            )
-
-            return response
-
-        except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-
-        except:
-            template = loader.get_template("polls/page_error.html")
-            context = {
-                "error_message": "Un problème a été détecté dans la base de données."
-            }
+        # Return the file with the new filename
+        response = FileResponse(output, as_attachment=True, filename=download_filename)
+        return response
 
     else:
         template = loader.get_template("polls/login.html")
