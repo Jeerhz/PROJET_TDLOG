@@ -105,6 +105,8 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+.DStore
+
 # PyBuilder
 .pybuilder/
 target/
