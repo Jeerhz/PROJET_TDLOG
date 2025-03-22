@@ -5,6 +5,7 @@ from polls.models import AssignationJEH
 from num2words import num2words
 from datetime import datetime, timedelta
 import locale
+import re
 
 register = template.Library()
 
@@ -18,7 +19,10 @@ def FormatDate(value):
             locale.setlocale(
                 locale.LC_TIME, "fr_FR"
             )  # Fallback for environments without UTF-8 locale
-        return value.strftime("%d %B %Y")
+        day = value.day  # Gets the day number without leading zeros
+        formatted_date = f"{day} {value.strftime('%B %Y')}"
+        formatted_date = re.sub(r"^1 ", "1er ", formatted_date)
+        return formatted_date
     return value
 
 

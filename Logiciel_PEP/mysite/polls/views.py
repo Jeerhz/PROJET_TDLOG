@@ -2942,101 +2942,86 @@ def renvoyer_donnees(champs_x, champs_y, donnes_entrees):
 
 
 def stat_KPI(request):
-    try:
-        if request.user.is_authenticated:
-            je_user = request.user.je
-            etudes = Etude.objects.filter(je=je_user).order_by("debut")
-            etudes_dico = {"ed": [], "ec": [], "term": []}
-            liste_infos = [
-                "debut",
-                "status",
-                "mandat",
-                "departement",
-                "type_convention",
-            ]
-            dico_id_etude_status = {}
-            for etude in etudes:
-                id_etude = etude.id
-                dico_temp = {}
-                for champs in liste_infos:
-                    dico_temp[champs] = getattr(etude, champs, None)
-                dico_temp["ca"] = etude.montant_HT_total()
-                dico_temp["id"] = id_etude
-                dico_temp["fin"] = etude.fin()
-                if etude.client:
-                    client = etude.client
-                    type_entreprise = client.get_type_display()
-                    secteur = client.get_secteur_display()
-                else:
-                    client = "pas de client"
-                    type_entreprise = "pas de type"
-                    secteur = "pas de secteur"
-                dico_temp["client"] = client
-                dico_temp["type_entreprise"] = type_entreprise
-                dico_temp["secteur"] = secteur
-                if etude.raison_contact:
-                    dico_temp["raison_contact"] = etude.get_raison_contact_display()
-                else:
-                    dico_temp["raison_contact"] = "pas renseigné"
+    if request.user.is_authenticated:
+        je_user = request.user.je
+        etudes = Etude.objects.filter(je=je_user).order_by("debut")
+        etudes_dico = {"ed": [], "ec": [], "term": []}
+        liste_infos = ["debut", "status", "mandat", "departement", "type_convention"]
+        dico_id_etude_status = {}
+        for etude in etudes:
+            id_etude = etude.id
+            dico_temp = {}
+            for champs in liste_infos:
+                dico_temp[champs] = getattr(etude, champs, None)
+            dico_temp["ca"] = etude.montant_HT_total()
+            dico_temp["id"] = id_etude
+            dico_temp["fin"] = etude.fin()
+            if etude.client:
+                client = etude.client
+                type_entreprise = client.get_type_display()
+                secteur = client.get_secteur_display()
+            else:
+                client = "pas de client"
+                type_entreprise = "pas de type"
+                secteur = "pas de secteur"
+            dico_temp["client"] = client
+            dico_temp["type_entreprise"] = type_entreprise
+            dico_temp["secteur"] = secteur
+            if etude.raison_contact:
+                dico_temp["raison_contact"] = etude.get_raison_contact_display()
+            else:
+                dico_temp["raison_contact"] = "pas renseigné"
 
-                if etude.status == "EN_NEGOCIATION":
-                    etudes_dico["ed"].append(dico_temp)
-                    dico_id_etude_status[id_etude] = [
-                        "ed",
-                        dico_temp["type_convention"],
-                    ]
-                elif etude.status == "EN_COURS":
-                    etudes_dico["ec"].append(dico_temp)
-                    dico_id_etude_status[id_etude] = [
-                        "ec",
-                        dico_temp["type_convention"],
-                    ]
-                elif etude.status == "TERMINEE":
-                    etudes_dico["term"].append(dico_temp)
-                    dico_id_etude_status[id_etude] = [
-                        "term",
-                        dico_temp["type_convention"],
-                    ]
+            if etude.status == "EN_NEGOCIATION":
+                etudes_dico["ed"].append(dico_temp)
+                dico_id_etude_status[id_etude] = ["ed", dico_temp["type_convention"]]
+            elif etude.status == "EN_COURS":
+                etudes_dico["ec"].append(dico_temp)
+                dico_id_etude_status[id_etude] = ["ec", dico_temp["type_convention"]]
+            elif etude.status == "TERMINEE":
+                etudes_dico["term"].append(dico_temp)
+                dico_id_etude_status[id_etude] = ["term", dico_temp["type_convention"]]
 
-            bdcs = BonCommande.objects.filter(etude__je=je_user)
-            liste_infos = ["id", "debut", "fin_bdc", "numero"]
-            bdcs_etudes_dico = {}
-            for bon in bdcs:
-                etude_id = bon.etude.id
-                if etude_id not in bdcs_etudes_dico:
-                    bdcs_etudes_dico[etude_id] = []
-                dico_temp = {
-                    "id": bon.id,
-                    "debut": bon.debut,
-                    "fin": bon.fin_bdc,
-                    "ca": bon.montant_HT_total(),
-                }
-                bdcs_etudes_dico[etude_id].append(dico_temp)
+        bdcs = BonCommande.objects.filter(etude__je=je_user)
+        liste_infos = ["id", "debut", "fin_bdc", "numero"]
+        bdcs_etudes_dico = {}
+        for bon in bdcs:
+            etude_id = bon.etude.id
+            if etude_id not in bdcs_etudes_dico:
+                bdcs_etudes_dico[etude_id] = []
+            dico_temp = {
+                "id": bon.id,
+                "debut": bon.debut,
+                "fin": bon.fin_bdc,
+                "ca": bon.montant_HT_total(),
+            }
+            bdcs_etudes_dico[etude_id].append(dico_temp)
 
-            devis = Devis.objects.filter(etude__je=je_user)
-            devis_dico = []
-            for devi in devis:
-                etude_id = devi.etude.id
-                date = devi.date_signature
-                devis_dico.append({"etude": etude_id, "date": date})
+        devis = Devis.objects.filter(etude__je=je_user)
+        devis_dico = []
+        for devi in devis:
+            etude_id = devi.etude.id
+            date = devi.date_signature
+            devis_dico.append({"etude": etude_id, "date": date})
 
-            avenants_signes = AvenantConventionEtude.objects.filter(
-                date_signature__isnull=False, ce__etude__je=je_user
-            )
-            avenants_ce_dico = {}
+        avenants_signes = AvenantConventionEtude.objects.filter(
+            date_signature__isnull=False, ce__etude__je=je_user
+        )
+        avenants_ce_dico = {}
 
-            for avenant in avenants_signes:
-                date = avenant.date_signature.strftime("%m-%Y")
-                if date not in avenants_ce_dico:
-                    avenants_ce_dico[date] = {0: 0, 1: 0, 2: 0}
-                avenants_ce_dico[date][0] += 1
-                if avenant.avenant_delais:
-                    avenants_ce_dico[date][1] += 1
-                if avenant.avenant_budget:
-                    avenants_ce_dico[date][2] += 1
+        for avenant in avenants_signes:
+            date = avenant.date_signature.strftime("%m-%Y")
+            if date not in avenants_ce_dico:
+                avenants_ce_dico[date] = {0: 0, 1: 0, 2: 0}
+            avenants_ce_dico[date][0] += 1
+            if avenant.avenant_delais:
+                avenants_ce_dico[date][1] += 1
+            if avenant.avenant_budget:
+                avenants_ce_dico[date][2] += 1
 
-            dates = [datetime.datetime.strptime(m, "%m-%Y") for m in avenants_ce_dico]
-            start_date, end_date = (min(dates), max(dates)) if dates else (None, None)
+        dates = [datetime.datetime.strptime(m, "%m-%Y") for m in avenants_ce_dico]
+        if len(dates) != 0:
+            start_date, end_date = min(dates), max(dates)
             liste_date_avenants = []
             current_date = start_date
 
@@ -3055,68 +3040,74 @@ def stat_KPI(request):
             liste_nb_avenants_bud = [
                 avenants_ce_dico[mois][2] for mois in liste_date_avenants
             ]
+        else:
+            liste_date_avenants = []
+            liste_nb_avenants = []
+            liste_nb_avenants_del = []
+            liste_nb_avenants_bud = []
 
-            assi_JEHs = AssignationJEH.objects.filter(eleve__je=je_user)
-            assi_JEHs_dico_temp = {}
-            assi_JEHs_dico = []
-            for assignation in assi_JEHs:
-                eleve = assignation.eleve
-                eleve_id = eleve.id
-                etude_id = assignation.phase.etude.id
+        assi_JEHs = AssignationJEH.objects.filter(eleve__je=je_user)
+        assi_JEHs_dico_temp = {}
+        assi_JEHs_dico = []
+        for assignation in assi_JEHs:
+            eleve = assignation.eleve
+            eleve_id = eleve.id
+            etude_id = assignation.phase.etude.id
+            dico_temp = {
+                "titre": eleve.titre,
+                "departement": eleve.get_departement_display(),
+                "promotion": eleve.get_promotion_display(),
+                "retribution": assignation.retribution_brute_totale(),
+                "pourcentage": assignation.pourcentage_retribution,
+                "status_mission": assignation.phase.etude.get_status_display(),
+                "eleve_id": eleve_id,
+                "membre": eleve.is_member(),
+            }
+            if dico_id_etude_status[etude_id][1] == "Convention cadre":
+                etude_id = f"{etude_id}_{assignation.phase.bon().id}"
+            if etude_id not in assi_JEHs_dico_temp:
+                assi_JEHs_dico_temp[etude_id] = {}
+            if eleve_id not in assi_JEHs_dico_temp[etude_id]:
+                assi_JEHs_dico_temp[etude_id][eleve_id] = []
+            assi_JEHs_dico_temp[etude_id][eleve_id].append(dico_temp)
+
+        for etude in assi_JEHs_dico_temp:
+            for eleve in assi_JEHs_dico_temp[etude]:
+                liste_assi = assi_JEHs_dico_temp[etude][eleve]
                 dico_temp = {
-                    "titre": eleve.titre,
-                    "departement": eleve.get_departement_display(),
-                    "promotion": eleve.get_promotion_display(),
-                    "retribution": assignation.retribution_brute_totale(),
-                    "pourcentage": assignation.pourcentage_retribution,
-                    "status_mission": assignation.phase.etude.get_status_display(),
-                    "eleve_id": eleve_id,
-                    "membre": eleve.is_member(),
+                    "titre": liste_assi[0]["titre"],
+                    "departement": liste_assi[0]["departement"],
+                    "promotion": liste_assi[0]["promotion"],
+                    "retribution": sum(elt["retribution"] for elt in liste_assi),
+                    "status_mission": liste_assi[0]["status_mission"],
+                    "eleve_id": liste_assi[0]["eleve_id"],
+                    "membre": liste_assi[0]["membre"],
                 }
-                if dico_id_etude_status[etude_id][1] == "Convention cadre":
-                    etude_id = f"{etude_id}_{assignation.phase.bon().id}"
-                if etude_id not in assi_JEHs_dico_temp:
-                    assi_JEHs_dico_temp[etude_id] = {}
-                if eleve_id not in assi_JEHs_dico_temp[etude_id]:
-                    assi_JEHs_dico_temp[etude_id][eleve_id] = []
-                assi_JEHs_dico_temp[etude_id][eleve_id].append(dico_temp)
+                assi_JEHs_dico.append(dico_temp)
 
-            for etude in assi_JEHs_dico_temp:
-                for eleve in assi_JEHs_dico_temp[etude]:
-                    liste_assi = assi_JEHs_dico_temp[etude][eleve]
-                    dico_temp = {
-                        "titre": liste_assi[0]["titre"],
-                        "departement": liste_assi[0]["departement"],
-                        "promotion": liste_assi[0]["promotion"],
-                        "retribution": sum(elt["retribution"] for elt in liste_assi),
-                        "status_mission": liste_assi[0]["status_mission"],
-                        "eleve_id": liste_assi[0]["eleve_id"],
-                        "membre": liste_assi[0]["membre"],
-                    }
-                    assi_JEHs_dico.append(dico_temp)
-
-            graphe_CA_mois = {}
-            etudes_ecterm = etudes_dico["ec"] + etudes_dico["term"]
-            for etude in etudes_ecterm:
-                if etude["type_convention"] == "Convention d'étude":
-                    debut_mois = etude["debut"]
+        graphe_CA_mois = {}
+        etudes_ecterm = etudes_dico["ec"] + etudes_dico["term"]
+        for etude in etudes_ecterm:
+            if etude["type_convention"] == "Convention d'étude":
+                debut_mois = etude["debut"]
+                if debut_mois:
+                    debut_m = debut_mois.strftime("%m-%Y")
+                    if debut_m not in graphe_CA_mois:
+                        graphe_CA_mois[debut_m] = 0
+                    graphe_CA_mois[debut_m] += etude["ca"]
+            elif etude["type_convention"] == "Convention cadre":
+                id_etude = etude["id"]
+                for bon in bdcs_etudes_dico[id_etude]:
+                    print("bon", bon)
+                    debut_mois = bon["debut"]
                     if debut_mois:
                         debut_m = debut_mois.strftime("%m-%Y")
                         if debut_m not in graphe_CA_mois:
                             graphe_CA_mois[debut_m] = 0
-                        graphe_CA_mois[debut_m] += etude["ca"]
-                elif etude["type_convention"] == "Convention cadre":
-                    id_etude = etude["id"]
-                    for bon in bdcs_etudes_dico[id_etude]:
-                        print("bon", bon)
-                        debut_mois = bon["debut"]
-                        if debut_mois:
-                            debut_m = debut_mois.strftime("%m-%Y")
-                            if debut_m not in graphe_CA_mois:
-                                graphe_CA_mois[debut_m] = 0
-                            graphe_CA_mois[debut_m] += bon["ca"]
+                        graphe_CA_mois[debut_m] += bon["ca"]
 
-            dates = [datetime.datetime.strptime(m, "%m-%Y") for m in graphe_CA_mois]
+        dates = [datetime.datetime.strptime(m, "%m-%Y") for m in graphe_CA_mois]
+        if len(dates) != 0:
             start_date, end_date = min(dates), max(dates)
             liste_mois = []
             current_date = start_date
@@ -3129,97 +3120,99 @@ def stat_KPI(request):
                 current_date += relativedelta(months=1)
 
             liste_CA_mois = [graphe_CA_mois[mois] for mois in liste_mois]
+        else:
+            graphe_CA_mois = []
+            liste_mois = []
 
-            dico_ca_departement = renvoyer_donnees("departement", "ca", etudes_ecterm)
-            dico_ca_typeentreprise = renvoyer_donnees(
-                "type_entreprise", "ca", etudes_ecterm
-            )
-            dico_ca_secteur = renvoyer_donnees("secteur", "ca", etudes_ecterm)
-            dictionaire_dep_eleve = renvoyer_donnees(
-                "departement", "nombre", assi_JEHs_dico
-            )
-            dico_genre_inter = renvoyer_donnees("titre", "nombre", assi_JEHs_dico)
-            nb_etudes_ec = {
-                0: len(etudes_dico["ec"]),
-                1: sum(elt["ca"] for elt in etudes_dico["ec"]),
-            }
-            nb_etude_ed = {
-                0: len(etudes_dico["ed"]),
-                1: sum(elt["ca"] for elt in etudes_dico["ed"]),
-            }
-            nb_etudes_term_026 = {
-                0: len(etudes_dico["term"]),
-                1: sum(elt["ca"] for elt in etudes_dico["term"]),
-            }
-            ca_026 = sum(elt["ca"] for elt in etudes_ecterm if elt["mandat"] == "026")
-            ca_026_cutoff = 0
+        dico_ca_departement = renvoyer_donnees("departement", "ca", etudes_ecterm)
+        dico_ca_typeentreprise = renvoyer_donnees(
+            "type_entreprise", "ca", etudes_ecterm
+        )
+        dico_ca_secteur = renvoyer_donnees("secteur", "ca", etudes_ecterm)
+        dictionaire_dep_eleve = renvoyer_donnees(
+            "departement", "nombre", assi_JEHs_dico
+        )
+        dico_genre_inter = renvoyer_donnees("titre", "nombre", assi_JEHs_dico)
+        nb_etudes_ec = {
+            0: len(etudes_dico["ec"]),
+            1: sum(elt["ca"] for elt in etudes_dico["ec"]),
+        }
+        nb_etude_ed = {
+            0: len(etudes_dico["ed"]),
+            1: sum(elt["ca"] for elt in etudes_dico["ed"]),
+        }
+        nb_etudes_term_026 = {
+            0: len(etudes_dico["term"]),
+            1: sum(elt["ca"] for elt in etudes_dico["term"]),
+        }
+        ca_026 = sum(elt["ca"] for elt in etudes_ecterm if elt["mandat"] == "026")
+        ca_026_cutoff = 0
 
-            repartition_nb_etudes = {
-                "en cours": len(etudes_dico["ec"]),
-                "terminées": len(etudes_dico["term"]),
-            }
-            repartition_CA_etudes = {
-                "en cours": nb_etudes_ec[1],
-                "terminées": nb_etudes_term_026[1],
-            }
+        repartition_nb_etudes = {
+            "en cours": len(etudes_dico["ec"]),
+            "terminées": len(etudes_dico["term"]),
+        }
+        repartition_CA_etudes = {
+            "en cours": nb_etudes_ec[1],
+            "terminées": nb_etudes_term_026[1],
+        }
 
-            for etude in etudes_ecterm:
-                ca_etude = etude["ca"]
-                if etude["debut"] and etude["debut"] > datetime.date(2024, 5, 1):
-                    if etude["fin"] and etude["fin"] > datetime.date(2025, 5, 1):
-                        pourc = 1 - (etude["fin"] - datetime.date(2025, 5, 1)) / (
-                            etude["fin"] - etude["debut"]
-                        )
-                        ca_026_cutoff += ca_etude * pourc
-                    else:
-                        ca_026_cutoff += ca_etude
-                elif etude["debut"] and etude["debut"] < datetime.date(2024, 5, 1):
-                    if etude["fin"] and etude["fin"] > datetime.date(2024, 5, 1):
-                        pourc = (etude["fin"] - datetime.date(2024, 5, 1)) / (
-                            etude["fin"] - etude["debut"]
-                        )
-                        ca_026_cutoff += ca_etude * pourc
+        for etude in etudes_ecterm:
+            ca_etude = etude["ca"]
+            if etude["debut"] and etude["debut"] > datetime.date(2024, 5, 1):
+                if etude["fin"] and etude["fin"] > datetime.date(2025, 5, 1):
+                    pourc = 1 - (etude["fin"] - datetime.date(2025, 5, 1)) / (
+                        etude["fin"] - etude["debut"]
+                    )
+                    ca_026_cutoff += ca_etude * pourc
                 else:
                     ca_026_cutoff += ca_etude
+            elif etude["debut"] and etude["debut"] < datetime.date(2024, 5, 1):
+                if etude["fin"] and etude["fin"] > datetime.date(2024, 5, 1):
+                    pourc = (etude["fin"] - datetime.date(2024, 5, 1)) / (
+                        etude["fin"] - etude["debut"]
+                    )
+                    ca_026_cutoff += ca_etude * pourc
+            else:
+                ca_026_cutoff += ca_etude
 
             ca_en_nego = sum(elt["ca"] for elt in etudes_dico["ed"])
 
-            nb_intervenants = len(assi_JEHs_dico)
-            nb_intervenants_diffs = len({elt["eleve_id"]: 1 for elt in assi_JEHs_dico})
-            moyenne_inter_mission = nb_intervenants / len(assi_JEHs_dico_temp)
-            retributions_totales = sum(elt["retribution"] for elt in assi_JEHs_dico)
-            retribution_moyenne_etude = retributions_totales / len(assi_JEHs_dico_temp)
-            retribution_moyenne_etudiant = retributions_totales / nb_intervenants
-            taux_ouverture = (
-                1
-                - sum(elt["retribution"] for elt in assi_JEHs_dico if elt["membre"])
-                / retributions_totales
-                if retributions_totales > 0
-                else 1
-            )
+        nb_intervenants = len(assi_JEHs_dico)
+        nb_intervenants_diffs = len({elt["eleve_id"]: 1 for elt in assi_JEHs_dico})
+        moyenne_inter_mission = nb_intervenants / len(assi_JEHs_dico_temp)
+        retributions_totales = sum(elt["retribution"] for elt in assi_JEHs_dico)
+        retribution_moyenne_etude = retributions_totales / len(assi_JEHs_dico_temp)
+        retribution_moyenne_etudiant = retributions_totales / nb_intervenants
+        taux_ouverture = (
+            1
+            - sum(elt["retribution"] for elt in assi_JEHs_dico if elt["membre"])
+            / retributions_totales
+            if retributions_totales > 0
+            else 1
+        )
 
-            start_date = request.GET.get("start_date")
-            end_date = request.GET.get("end_date")
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
 
-            infos_devis_envoyes = {}
-            infos_devis_signes = {}
-            for devi in devis_dico:
-                if devi["date"]:
-                    mois = devi["date"].strftime("%m-%Y")
-                    if mois not in infos_devis_envoyes:
-                        infos_devis_envoyes[mois] = 0
-                    infos_devis_envoyes[mois] += 1
-                    if (
-                        dico_id_etude_status[devi["etude"]][0] == "ec"
-                        or dico_id_etude_status[devi["etude"]][0] == "term"
-                    ):
-                        if mois not in infos_devis_signes:
-                            infos_devis_signes[mois] = 0
-                        infos_devis_signes[mois] += 1
+        infos_devis_envoyes = {}
+        infos_devis_signes = {}
+        for devi in devis_dico:
+            if devi["date"]:
+                mois = devi["date"].strftime("%m-%Y")
+                if mois not in infos_devis_envoyes:
+                    infos_devis_envoyes[mois] = 0
+                infos_devis_envoyes[mois] += 1
+                if (
+                    dico_id_etude_status[devi["etude"]][0] == "ec"
+                    or dico_id_etude_status[devi["etude"]][0] == "term"
+                ):
+                    if mois not in infos_devis_signes:
+                        infos_devis_signes[mois] = 0
+                    infos_devis_signes[mois] += 1
 
-            dates = [
-                datetime.datetime.strptime(m, "%m-%Y") for m in infos_devis_envoyes
-            ]
+        dates = [datetime.datetime.strptime(m, "%m-%Y") for m in infos_devis_envoyes]
+        if len(dates) != 0:
             start_date, end_date = min(dates), max(dates)
             liste_mois_devis = []
             current_date = start_date
@@ -3235,73 +3228,70 @@ def stat_KPI(request):
 
             liste_devis_envo = [infos_devis_envoyes[mois] for mois in liste_mois_devis]
             liste_devis_sign = [infos_devis_signes[mois] for mois in liste_mois_devis]
-
-            # Calcul des autres métriques
-            liste_messages = Message.objects.filter(
-                destinataire=request.user,
-                read=False,
-                date__range=(
-                    timezone.now() - timezone.timedelta(days=20),
-                    timezone.now(),
-                ),
-            ).order_by("date")
-            message_count = liste_messages.count()
-            liste_messages = liste_messages[:3]
-            all_notifications = request.user.notifications.order_by("-date_effet")
-            notification_list = [notif for notif in all_notifications if notif.active()]
-            notification_count = len(notification_list)
-
-            template = loader.get_template("polls/stat_KPI.html")
-            context = {
-                "liste_messages": liste_messages,
-                "message_count": message_count,
-                "notification_list": notification_list,
-                "notification_count": notification_count,
-                "start_date": start_date,
-                "end_date": end_date,
-                "ca_026": ca_026,
-                "ca_026_cutoff": ca_026_cutoff,
-                "ca_potentiel": ca_en_nego + ca_026_cutoff,
-                "nb_etudes_ec": nb_etudes_ec,
-                "nb_etude_ed": nb_etude_ed,
-                "nb_etudes_term_026": nb_etudes_term_026,
-                "dictionaire_dep_eleve": dictionaire_dep_eleve,
-                "totale_nb_ecterm": nb_etudes_ec[0] + nb_etudes_term_026[0],
-                "repartition_CA_etudes": repartition_CA_etudes,
-                "totale_CA_ecterm": repartition_CA_etudes["en cours"]
-                + repartition_CA_etudes["terminées"],
-                "retributions_etudes026": retributions_totales,
-                "dico_genre_inter": dico_genre_inter,
-                "dico_ca_typeentreprise": dico_ca_typeentreprise,
-                "dico_ca_departement": dico_ca_departement,
-                "dico_ca_secteur": dico_ca_secteur,
-                "nb_intervenants": nb_intervenants,
-                "nb_intervenants_diffs": nb_intervenants_diffs,
-                "moyenne_inter_mission": moyenne_inter_mission,
-                "liste_mois": liste_mois,
-                "liste_CA_mois": liste_CA_mois,
-                "liste_mois_devis": liste_mois_devis,
-                "liste_devis_sign": liste_devis_sign,
-                "liste_devis_envo": liste_devis_envo,
-                "retributions_totales": retributions_totales,
-                "retribution_moyenne_etude": retribution_moyenne_etude,
-                "retribution_moyenne_etudiant": retribution_moyenne_etudiant,
-                "taux_ouverture": taux_ouverture * 100,
-                "liste_date_avenants": liste_date_avenants,
-                "liste_nb_avenants": liste_nb_avenants,
-                "liste_nb_avenants_del": liste_nb_avenants_del,
-                "liste_nb_avenants_bud": liste_nb_avenants_bud,
-                "repartition_nb_etudes": repartition_nb_etudes,
-            }
-
         else:
-            template = loader.get_template("polls/login.html")
-            context = {}
-        return HttpResponse(template.render(context, request))
-    except Exception as e:
-        template = loader.get_template("polls/page_error.html")
-        context = {"error": e}
-        return HttpResponse(template.render(context, request))
+            liste_mois_devis = []
+            liste_devis_envo = []
+            liste_devis_sign = []
+
+        # Calcul des autres métriques
+        liste_messages = Message.objects.filter(
+            destinataire=request.user,
+            read=False,
+            date__range=(timezone.now() - timezone.timedelta(days=20), timezone.now()),
+        ).order_by("date")
+        message_count = liste_messages.count()
+        liste_messages = liste_messages[:3]
+        all_notifications = request.user.notifications.order_by("-date_effet")
+        notification_list = [notif for notif in all_notifications if notif.active()]
+        notification_count = len(notification_list)
+
+        template = loader.get_template("polls/stat_KPI.html")
+        context = {
+            "liste_messages": liste_messages,
+            "message_count": message_count,
+            "notification_list": notification_list,
+            "notification_count": notification_count,
+            "start_date": start_date,
+            "end_date": end_date,
+            "ca_026": ca_026,
+            "ca_026_cutoff": ca_026_cutoff,
+            "ca_potentiel": ca_en_nego + ca_026_cutoff,
+            "nb_etudes_ec": nb_etudes_ec,
+            "nb_etude_ed": nb_etude_ed,
+            "nb_etudes_term_026": nb_etudes_term_026,
+            "dictionaire_dep_eleve": dictionaire_dep_eleve,
+            "totale_nb_ecterm": nb_etudes_ec[0] + nb_etudes_term_026[0],
+            "repartition_CA_etudes": repartition_CA_etudes,
+            "totale_CA_ecterm": repartition_CA_etudes["en cours"]
+            + repartition_CA_etudes["terminées"],
+            "retributions_etudes026": retributions_totales,
+            "dico_genre_inter": dico_genre_inter,
+            "dico_ca_typeentreprise": dico_ca_typeentreprise,
+            "dico_ca_departement": dico_ca_departement,
+            "dico_ca_secteur": dico_ca_secteur,
+            "nb_intervenants": nb_intervenants,
+            "nb_intervenants_diffs": nb_intervenants_diffs,
+            "moyenne_inter_mission": moyenne_inter_mission,
+            "liste_mois": liste_mois,
+            "liste_CA_mois": liste_CA_mois,
+            "liste_mois_devis": liste_mois_devis,
+            "liste_devis_sign": liste_devis_sign,
+            "liste_devis_envo": liste_devis_envo,
+            "retributions_totales": retributions_totales,
+            "retribution_moyenne_etude": retribution_moyenne_etude,
+            "retribution_moyenne_etudiant": retribution_moyenne_etudiant,
+            "taux_ouverture": taux_ouverture * 100,
+            "liste_date_avenants": liste_date_avenants,
+            "liste_nb_avenants": liste_nb_avenants,
+            "liste_nb_avenants_del": liste_nb_avenants_del,
+            "liste_nb_avenants_bud": liste_nb_avenants_bud,
+            "repartition_nb_etudes": repartition_nb_etudes,
+        }
+
+    else:
+        template = loader.get_template("polls/login.html")
+        context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def fetch_data(request):
@@ -4013,88 +4003,82 @@ def editer_pv(request, iD, type):
 
 def editer_rdm(request, id_etude, id_eleve):
     if request.user.is_authenticated:
+        etude = Etude.objects.get(id=id_etude)
+
+        eleve = Student.objects.get(id=id_eleve)
+        if not etude.client:
+            raise ValueError("Définir un client")
+
+        client = etude.client
+        assignations = list(
+            AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
+                "phase__numero"
+            )
+        )
+        je = eleve.je
+        president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+        remuneration = sum(
+            assignment.retribution_brute_totale() for assignment in assignations
+        )
+        date_fin = timezone.now().date()
+        for assignation in assignations:
+            if assignation.phase.date_fin > date_fin:
+                date_fin = assignation.phase.date_fin
+        etudiant_nb_JEH = sum(assignation.nombre_JEH for assignation in assignations)
+
+        template_path = os.path.join(
+            conf_settings.BASE_DIR, "polls/templates/polls/RDM_026.docx"
+        )
+        template = DocxTemplate(template_path)
+
+        model = RDM
+        if not RDM.objects.filter(etude=etude, eleve=eleve).first():
+            rdm = model(etude=etude, eleve=eleve)
+            rdm.save()
+        rdm = RDM.objects.get(etude=etude, eleve=eleve)
+        ref_m = etude.ref()
+        ref_d = rdm
+        ce = f"{ref_m}ce"
+        date = timezone.now().date()
+        annee = date.strftime("%Y")
+        context = {
+            "etude": etude,
+            "client": client,
+            "rdm": rdm,
+            "ref_d": ref_d,
+            "etudiant": eleve,
+            "ref_m": ref_m,
+            "assignations": assignations,
+            "annee": annee,
+            "president": president,
+            "etudiant_nb_JEH": etudiant_nb_JEH,
+            "date_fin": date_fin,
+            "remuneration": remuneration,
+            "ce": ce,
+        }
+
+        env = Environment()
+        env.filters["FormatNombres"] = format_nombres
+        env.filters["EnLettres"] = en_lettres
+        env.filters["ChiffreLettre"] = chiffre_lettres
         try:
-            etude = Etude.objects.get(id=id_etude)
-
-            eleve = Student.objects.get(id=id_eleve)
-            if not etude.client:
-                raise ValueError("Définir un client")
-
-            client = etude.client
-            assignations = list(
-                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
-                    "phase__numero"
-                )
-            )
-            je = eleve.je
-            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
-            remuneration = sum(
-                assignment.retribution_brute_totale() for assignment in assignations
-            )
-            date_fin = timezone.now().date()
-            for assignation in assignations:
-                if assignation.phase.date_fin > date_fin:
-                    date_fin = assignation.phase.date_fin
-            etudiant_nb_JEH = sum(
-                assignation.nombre_JEH for assignation in assignations
-            )
-
-            template_path = os.path.join(
-                conf_settings.BASE_DIR, "polls/templates/polls/RDM_026.docx"
-            )
-            template = DocxTemplate(template_path)
-
-            model = RDM
-            if not RDM.objects.filter(etude=etude, eleve=eleve).first():
-                rdm = model(etude=etude, eleve=eleve)
-                rdm.save()
-            rdm = RDM.objects.get(etude=etude, eleve=eleve)
-            ref_m = etude.ref()
-            ref_d = rdm
-            ce = f"{ref_m}ce"
-            date = timezone.now().date()
-            annee = date.strftime("%Y")
-            context = {
-                "etude": etude,
-                "client": client,
-                "rdm": rdm,
-                "ref_d": ref_d,
-                "etudiant": eleve,
-                "ref_m": ref_m,
-                "assignations": assignations,
-                "annee": annee,
-                "president": president,
-                "etudiant_nb_JEH": etudiant_nb_JEH,
-                "date_fin": date_fin,
-                "remuneration": remuneration,
-                "ce": ce,
-            }
-
-            env = Environment()
-            env.filters["FormatNombres"] = format_nombres
-            env.filters["EnLettres"] = en_lettres
-            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
-            output = BytesIO()
-            template.save(output)
-            output.seek(0)
-            filename = f"{ref_d}.docx"
-            response = FileResponse(
-                output,
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            return response
-        except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-
-        except:
+        except Exception as RenderingError:
             template = loader.get_template("polls/page_error.html")
             context = {
-                "error_message": "Un problème a été détecté dans la base de données."
+                "error_message": f"Un problème est survenu lors du rendu du Document Word {RenderingError}."
             }
-
+            return HttpResponse(template.render(context, request))
+        output = BytesIO()
+        template.save(output)
+        output.seek(0)
+        filename = f"{ref_d}.docx"
+        response = FileResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
     else:
         template = loader.get_template("polls/login.html")
         context = {}
@@ -4103,109 +4087,105 @@ def editer_rdm(request, id_etude, id_eleve):
 
 def editer_avenant_rdm_ce(request, id_etude, id_eleve):
     if request.user.is_authenticated:
+        etude = Etude.objects.get(id=id_etude)
+        eleve = Student.objects.get(id=id_eleve)
+        num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
+        date_fin = request.POST.get("date_fin")
+        causes = request.POST.get("causes_avenants")
+        ref_ba = request.POST.get("ref_ba")
+        ref_rdm = request.POST.get("ref_rdm")
+        dico_mois = {
+            1: "janvier",
+            2: "février",
+            3: "mars",
+            4: "avril",
+            5: "mai",
+            6: "juin",
+            7: "juillet",
+            8: "août",
+            9: "septembre",
+            10: "octobre",
+            11: "novembre",
+            12: "décembre",
+        }
+
+        annee_fin, mois_fin, jour_fin = date_fin[0:4], date_fin[5:7], date_fin[8:10]
+
+        date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
+        if etude.type_convention == "Convention cadre":
+            ref_ce = f"{etude.ref()}cc"
+            pass
+
+        if etude.type_convention == "Convention d'étude":
+            ref_ce = f"{etude.ref()}ce"
+            assignations = list(
+                AssignationJEH.objects.filter(eleve=eleve, phase__etude=etude).order_by(
+                    "phase__numero"
+                )
+            )
+            remuneration = sum(
+                assignment.retribution_brute_totale() for assignment in assignations
+            )
+
+        # num avenant
+        # ref avenant
+
+        nb_JEH = sum(assignment.nombre_JEH for assignment in assignations)
+        president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
+
+        ref_dernier_avenant = None
+        if num_dernier_avenant > 0:
+            ref_dernier_avenant = f"{etude.ref()}ae{num_dernier_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
+        num_avenant = num_dernier_avenant + 1
+        ref_avenant = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
+
+        template_path = os.path.join(
+            conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_026.docx"
+        )
+        template = DocxTemplate(template_path)
+
+        date = timezone.now().date()
+        annee = date.strftime("%Y")
+        context = {
+            "etude": etude,
+            "eleve": eleve,
+            "date_fin_format": date_fin_format,
+            "ref_avenant": ref_avenant,
+            "ref_dernier_avenant": ref_dernier_avenant,
+            "ref_ba": ref_ba,
+            "annee": annee,
+            "remuneration": remuneration,
+            "assignations": assignations,
+            "ref_rdm": ref_rdm,
+            "nb_JEH": nb_JEH,
+            "president": president,
+            "causes": causes,
+            "ref_ce": ref_ce,
+            "ref_etude": etude.ref(),
+        }
+
+        env = Environment()
+        env.filters["FormatNombres"] = format_nombres
+        env.filters["EnLettres"] = en_lettres
+        env.filters["ChiffreLettre"] = chiffre_lettres
         try:
-            etude = Etude.objects.get(id=id_etude)
-            eleve = Student.objects.get(id=id_eleve)
-            num_dernier_avenant = int(request.POST.get("num_dernier_avenant"))
-            date_fin = request.POST.get("date_fin")
-            causes = request.POST.get("causes_avenants")
-            ref_ba = request.POST.get("ref_ba")
-            ref_rdm = request.POST.get("ref_rdm")
-            dico_mois = {
-                1: "janvier",
-                2: "février",
-                3: "mars",
-                4: "avril",
-                5: "mai",
-                6: "juin",
-                7: "juillet",
-                8: "août",
-                9: "septembre",
-                10: "octobre",
-                11: "novembre",
-                12: "décembre",
-            }
-
-            annee_fin, mois_fin, jour_fin = date_fin[0:4], date_fin[5:7], date_fin[8:10]
-
-            date_fin_format = f"{int(jour_fin)} {dico_mois[int(mois_fin)]} {annee_fin}"
-            if etude.type_convention == "Convention cadre":
-                ref_ce = f"{etude.ref()}cc"
-                pass
-
-            if etude.type_convention == "Convention d'étude":
-                ref_ce = f"{etude.ref()}ce"
-                assignations = list(
-                    AssignationJEH.objects.filter(
-                        eleve=eleve, phase__etude=etude
-                    ).order_by("phase__numero")
-                )
-                remuneration = sum(
-                    assignment.retribution_brute_totale() for assignment in assignations
-                )
-
-            # num avenant
-            # ref avenant
-
-            nb_JEH = sum(assignment.nombre_JEH for assignment in assignations)
-            president = {"titre": "M.", "first_name": "Thomas", "last_name": "Debray"}
-
-            ref_dernier_avenant = None
-            if num_dernier_avenant > 0:
-                ref_dernier_avenant = f"{etude.ref()}ae{num_dernier_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
-            num_avenant = num_dernier_avenant + 1
-            ref_avenant = f"{etude.ref()}ae{num_avenant:02d}-{eleve.last_name[0]}{eleve.first_name[0]}"
-
-            template_path = os.path.join(
-                conf_settings.BASE_DIR, "polls/templates/polls/Avenant_rdm_026.docx"
-            )
-            template = DocxTemplate(template_path)
-
-            date = timezone.now().date()
-            annee = date.strftime("%Y")
-            context = {
-                "etude": etude,
-                "eleve": eleve,
-                "date_fin_format": date_fin_format,
-                "ref_avenant": ref_avenant,
-                "ref_dernier_avenant": ref_dernier_avenant,
-                "ref_ba": ref_ba,
-                "annee": annee,
-                "remuneration": remuneration,
-                "assignations": assignations,
-                "ref_rdm": ref_rdm,
-                "nb_JEH": nb_JEH,
-                "president": president,
-                "causes": causes,
-                "ref_ce": ref_ce,
-                "ref_etude": etude.ref(),
-            }
-
-            env = Environment()
-            env.filters["FormatNombres"] = format_nombres
-            env.filters["EnLettres"] = en_lettres
-            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
-            output = BytesIO()
-            template.save(output)
-            output.seek(0)
-            filename = f"{ref_avenant}.docx"
-            response = FileResponse(
-                output,
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            return response
-
-        except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-
-        except:
+        except Exception as RenderingError:
             template = loader.get_template("polls/page_error.html")
             context = {
-                "error_message": "Un problème a été détecté dans la base de données."
+                "error_message": f"Un problème est survenu lors du rendu du Document Word {RenderingError}."
             }
+            return HttpResponse(template.render(context, request))
+        output = BytesIO()
+        template.save(output)
+        output.seek(0)
+        filename = f"{ref_avenant}.docx"
+        response = FileResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     else:
         template = loader.get_template("polls/login.html")
@@ -4215,71 +4195,68 @@ def editer_avenant_rdm_ce(request, id_etude, id_eleve):
 
 def editer_acf(request, id_etude, id_eleve):
     if request.user.is_authenticated:
+        etude = Etude.objects.get(id=id_etude)
+        eleve = Student.objects.get(id=id_eleve)
+        if not etude.client:
+            raise ValueError("Définir un client")
+        else:
+            client = etude.client.nom_societe
+        president_titre = "M."
+        president_prenom = "Thomas"
+        president_nom = "Debray"
+        num_etude = etude.ref()
+        titre = eleve.titre
+        nom = eleve.last_name
+        prenom = eleve.first_name
+        etude_titre = etude.titre
+        date = timezone.now().date()
+        annee = date.strftime("%Y")
+
+        template_path = os.path.join(
+            conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx"
+        )
+        template = DocxTemplate(template_path)
+
+        context = {
+            "etude": etude,
+            "client": client,
+            "president_titre": president_titre,
+            "president_prenom": president_prenom,
+            "president_nom": president_nom,
+            "num_etude": num_etude,
+            "titre": titre,
+            "annee": annee,
+            "nom": nom,
+            "prenom": prenom,
+            "etude_titre": etude_titre,
+            "adresse": eleve.adress,
+            "code_postal": eleve.code_postal,
+            "ville": eleve.ville,
+            "portable": eleve.phone_number,
+        }
+
+        env = Environment()
+        env.filters["FormatNombres"] = format_nombres
+        env.filters["EnLettres"] = en_lettres
+        env.filters["ChiffreLettre"] = chiffre_lettres
         try:
-            etude = Etude.objects.get(id=id_etude)
-            eleve = Student.objects.get(id=id_eleve)
-            if not etude.client:
-                raise ValueError("Définir un client")
-            else:
-                client = etude.client.nom_societe
-            president_titre = "M."
-            president_prenom = "Thomas"
-            president_nom = "Debray"
-            num_etude = etude.ref()
-            titre = eleve.titre
-            nom = eleve.last_name
-            prenom = eleve.first_name
-            etude_titre = etude.titre
-            date = timezone.now().date()
-            annee = date.strftime("%Y")
-
-            template_path = os.path.join(
-                conf_settings.BASE_DIR, "polls/templates/polls/ACF_etudiant_026.docx"
-            )
-            template = DocxTemplate(template_path)
-
-            context = {
-                "etude": etude,
-                "client": client,
-                "president_titre": president_titre,
-                "president_prenom": president_prenom,
-                "president_nom": president_nom,
-                "num_etude": num_etude,
-                "titre": titre,
-                "annee": annee,
-                "nom": nom,
-                "prenom": prenom,
-                "etude_titre": etude_titre,
-                "adresse": eleve.adress,
-                "code_postal": eleve.code_postal,
-                "ville": eleve.ville,
-                "portable": eleve.phone_number,
-            }
-
-            env = Environment()
-            env.filters["FormatNombres"] = format_nombres
-            env.filters["EnLettres"] = en_lettres
-            env.filters["ChiffreLettre"] = chiffre_lettres
             template.render(context, env)
-            output = BytesIO()
-            template.save(output)
-            output.seek(0)
-            filename = f"ACF_{num_etude}{nom}.docx"
-            response = FileResponse(
-                output,
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            return response
-        except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-
-        except:
+        except Exception as RenderingError:
             template = loader.get_template("polls/page_error.html")
             context = {
-                "error_message": "Un problème a été détecté dans la base de données."
+                "error_message": f"Un problème est survenu lors du rendu du Document Word {RenderingError}."
             }
+            return HttpResponse(template.render(context, request))
+        output = BytesIO()
+        template.save(output)
+        output.seek(0)
+        filename = f"ACF_{num_etude}{nom}.docx"
+        response = FileResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     else:
         template = loader.get_template("polls/login.html")
@@ -4289,101 +4266,108 @@ def editer_acf(request, id_etude, id_eleve):
 
 def editer_acf_client(request, iD):
     if request.user.is_authenticated:
+        etude = Etude.objects.get(id=iD)
+        if not etude.client:
+            raise ValueError("Définir un client")
+
+        client = etude.client
+        je_president_titre = "M."
+        je_president_prenom = "Thomas"
+        je_president_nom = "Debray"
+        num_etude = etude.ref()
+        client_adresse = client.rue
+        client_code_postal = client.code_postal
+        client_ville = client.ville
+
+        client_pays = client.country
+        if etude.client_representant_legale is None:
+            raise ValueError("Définir un représentant légal")
+        client_titre = etude.client_representant_legale.titre
+        client_prenom = etude.client_representant_legale.first_name
+        client_nom = etude.client_representant_legale.last_name
+        client_fonction = etude.client_representant_legale.fonction
+
+        etude_titre = etude.titre
+        date = timezone.now().date()
+        mois = [
+            "Janvier",
+            "Février",
+            "Mars",
+            "Avril",
+            "Mai",
+            "Juin",
+            "Juillet",
+            "Août",
+            "Septembre",
+            "Octobre",
+            "Novembre",
+            "Décembre",
+        ]
+
+        # Format the date
+        general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
+        annee = date.strftime("%Y")
+        general_date_creation = date.strftime("%d %B %Y")
+
+        template_path = os.path.join(
+            conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx"
+        )
+        template = DocxTemplate(template_path)
         try:
-            etude = Etude.objects.get(id=iD)
-            if not etude.client:
-                raise ValueError("Définir un client")
-
-            client = etude.client
-            je_president_titre = "M."
-            je_president_prenom = "Thomas"
-            je_president_nom = "Debray"
-            num_etude = etude.ref()
-            client_adresse = client.rue
-            client_code_postal = client.code_postal
-            client_ville = client.ville
-
-            client_pays = client.country
-            if etude.client_representant_legale is None:
-                raise ValueError("Définir un représentant légal")
-            client_titre = etude.client_representant_legale.titre
-            client_prenom = etude.client_representant_legale.first_name
-            client_nom = etude.client_representant_legale.last_name
-            client_fonction = etude.client_representant_legale.fonction
-
-            etude_titre = etude.titre
-            date = timezone.now().date()
-            mois = [
-                "Janvier",
-                "Février",
-                "Mars",
-                "Avril",
-                "Mai",
-                "Juin",
-                "Juillet",
-                "Août",
-                "Septembre",
-                "Octobre",
-                "Novembre",
-                "Décembre",
-            ]
-
-            # Format the date
-            general_date_creation = f"{date.day} {mois[date.month - 1]} {date.year}"
-            annee = date.strftime("%Y")
-            general_date_creation = date.strftime("%d %B %Y")
-
-            template_path = os.path.join(
-                conf_settings.BASE_DIR, "polls/templates/polls/ACF_Client_026.docx"
-            )
-            template = DocxTemplate(template_path)
             logo_client = InlineImage(template, client.logo, width=Mm(20))
-            client = client.nom_societe
+        except Exception as ImageInlineError:
+            template = loader.get_template("polls/page_error.html")
             context = {
-                "etude": etude,
-                "client": client,
-                "je_president_titre": je_president_titre,
-                "je_president_prenom": je_president_prenom,
-                "je_president_nom": je_president_nom,
-                "num_etude": num_etude,
-                "general_date_creation": general_date_creation,
-                "annee": annee,
-                "client_adresse": client_adresse,
-                "client_code_postal": client_code_postal,
-                "etude_titre": etude_titre,
-                "client_ville": client_ville,
-                "client_pays": client_pays,
-                "client_titre": client_titre,
-                "client_prenom": client_prenom,
-                "client_nom": client_nom,
-                "client_fonction": client_fonction,
-                "logo_client": logo_client,
+                "error_message": f"Un problème est survenu lors du chargement du Logo du client: {ImageInlineError}."
             }
+            return HttpResponse(template.render(context, request))
 
-            env = Environment()
-            env.filters["FormatNombres"] = format_nombres
-            env.filters["EnLettres"] = en_lettres
-            env.filters["ChiffreLettre"] = chiffre_lettres
+        client = client.nom_societe
+        context = {
+            "etude": etude,
+            "client": client,
+            "je_president_titre": je_president_titre,
+            "je_president_prenom": je_president_prenom,
+            "je_president_nom": je_president_nom,
+            "num_etude": num_etude,
+            "general_date_creation": general_date_creation,
+            "annee": annee,
+            "client_adresse": client_adresse,
+            "client_code_postal": client_code_postal,
+            "etude_titre": etude_titre,
+            "client_ville": client_ville,
+            "client_pays": client_pays,
+            "client_titre": client_titre,
+            "client_prenom": client_prenom,
+            "client_nom": client_nom,
+            "client_fonction": client_fonction,
+            "logo_client": logo_client,
+        }
+
+        env = Environment()
+        env.filters["FormatNombres"] = format_nombres
+        env.filters["EnLettres"] = en_lettres
+        env.filters["ChiffreLettre"] = chiffre_lettres
+
+        try:
             template.render(context, env)
-            output = BytesIO()
-            template.save(output)
-            output.seek(0)
-            filename = f"ACF_{num_etude}{client}.docx"
-            response = FileResponse(
-                output,
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            return response
-        except ValueError as ve:
-            template = loader.get_template("polls/page_error.html")
-            context = {"error_message": str(ve)}
-
-        except:
+        except Exception as RenderingError:
             template = loader.get_template("polls/page_error.html")
             context = {
-                "error_message": "Un problème a été détecté dans la base de données."
+                "error_message": f"Un problème est survenu lors du rendu du Document Word {RenderingError}."
             }
+            return HttpResponse(template.render(context, request))
+
+        output = BytesIO()
+        template.save(output)
+        output.seek(0)
+        filename = f"ACF_{num_etude}{client}.docx"
+        response = FileResponse(
+            output,
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     else:
         template = loader.get_template("polls/login.html")
@@ -4680,7 +4664,14 @@ def editer_devis(request, iD):
                 image_data = img_file.read()
 
             image_stream = BytesIO(image_data)
-            image = InlineImage(template, image_stream, width=Mm(173))
+            try:
+                image = InlineImage(template, image_stream, width=Mm(173))
+            except Exception as ImageInlineError:
+                template = loader.get_template("polls/page_error.html")
+                context = {
+                    "error_message": f"Un problème est survenu lors du chargement de l'image du planning: {ImageInlineError}."
+                }
+                return HttpResponse(template.render(context, request))
             time1.sleep(1)
 
             """output_dir = os.path.join(conf_settings.BASE_DIR, "polls/static/polls/img")
@@ -6076,6 +6067,7 @@ def modifier_etude_form(request, iD):
         if request.method == "POST":
             debut = request.POST.get("debut")
             fin_etude = request.POST.get("fin")
+
             frais_dossier = request.POST.get("frais_dossier")
             if frais_dossier:
                 etude.frais_dossier = frais_dossier

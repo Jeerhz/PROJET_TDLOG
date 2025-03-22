@@ -138,7 +138,7 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            font-size: 10px;
+            font-size: 12px;
             transform: translate(-50%, -50%);
             color: white;
         }
@@ -1315,15 +1315,16 @@
                                                 <h6 class="text font-weight-bold primary center">Planning prévisionel du déroulement de l'étude :</h6>
                                             </div>
                                             <table class="table_planning">
+                                                <caption style="caption-side: top; text-align: center; color: #000;">
+                                                    Du {{etude.debut|FormatDate}} au {{etude_fin|FormatDate}}
+                                                </caption>
                                                 <thead>
                                                     <tr>
                                                         <th class="th_planning" style="font-size: 12px;">
                                                             <div>
-                                                                du {{etude.debut|FormatDate}}
+                                                                semaines :
                                                             </div>
-                                                            <div>
-                                                                au {{etude_fin|FormatDate}}
-                                                            </div>   
+                                                            
                                                         </th>
                                                         <th class="th_planning">
                                                             <div class="semaines_plan">
@@ -1341,7 +1342,7 @@
                                                         <td class="td_planning" style="width: 80%;">
                                                             <div class="bar_container_plan" >
                                                                 <div class="bar_plan" id="bar_plan-{{ phase.numero }}">
-                                                                    <div class="label_plan"> {{phase.duree_semaine}} semaines</div>
+                                                                    <div class="label_plan"> {{phase.duree_semaine}} </div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -2555,9 +2556,12 @@
                                                             </div>
                                                             
                                                             <table class="table_planning">
+                                                                <caption style="caption-side: top; text-align: center; color: #000;">
+                                                                    Du {{etude.debut|FormatDate}} au {{etude_fin|FormatDate}}
+                                                                </caption>
                                                                 <thead>
                                                                     <tr>
-                                                                        <th class="th_planning" style="font-size: 12px;">{{etude.debut|FormatDate}} - {{etude_fin|FormatDate}}</th>
+                                                                        <th class="th_planning" style="font-size: 12px;">semaines :</th>
                                                                         <th class="th_planning"></th>
                                                                         <th class="th_planning">
                                                                             <div class="semaines_plan">
@@ -2572,12 +2576,12 @@
                                                                     {% if  eleve.assignations_for_etude %}
                                                                     {% for assignation in  eleve.assignations_for_etude %}
                                                                     <tr>
-                                                                        <td class="td_planning">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
-                                                                        <td class="td_planning" style="text-align: center;">{{assignation.nombre_JEH}} JEHs</td>
-                                                                        <td class="td_planning" style="width: 70%;">
+                                                                        <td class="td_planning" style="width: 22%;">Phase {{assignation.phase.numero}} : {{assignation.phase.titre}}</td>
+                                                                        <td class="td_planning" style="text-align: center; font-size: 12px; width: 6%;" >{{assignation.nombre_JEH}} JEHs</td>
+                                                                        <td class="td_planning" style="width: 72%;">
                                                                             <div class="bar_container_plan" >
                                                                                 <div class="bar_plan" id="bar_plan-{{eleve.id}}-{{assignation.phase.numero}}">
-                                                                                    <div class="label_plan"> {{assignation.phase.duree_semaine}} semaines</div>
+                                                                                    <div class="label_plan">{{assignation.phase.duree_semaine}}</div>
                                                                                 </div>
                                                                             </div>
                                                                         </td>
